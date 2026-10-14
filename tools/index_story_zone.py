@@ -1,4 +1,4 @@
-"""Bounded readers for FF427 directories, netconststrings, and rawfile assets.
+"""Bounded readers for FF423 directories, netconststrings, and rawfile assets.
 
 REA: directory 0x484750; asset loaders 0x495d60 and 0x494d00.
 Preserve serialized order: a per-map string list is not the full runtime registry.
@@ -59,25 +59,51 @@ def read_assets(zone):
     return assets
 
 
-def read_ncs(data):
+def read_ncs(data, block3=None):
+    """Resolve shared XStrings only against this zone's replayed block-3 bytes."""
     if len(data) < 20:
         raise ValueError('truncated NCS')
     name_ptr, kind, source, count, strings_ptr = struct.unpack_from('<5I', data)
-    if name_ptr != 0xffffffff or strings_ptr != (0xffffffff if count else 0):
-        raise ValueError('unsupported NCS pointer')
-    end = data.index(b'\0', 20)
-    name = data[20:end].decode('ascii')
-    start = end + 1
-    cursor = start + count * 4
-    if cursor > len(data):
-        raise ValueError('truncated NCS pointer array')
+    cursor = 20
+
+    def pooled_offset(pointer):
+        if not pointer or (pointer - 1) >> 28 != 3 or block3 is None:
+            raise ValueError('unresolved NCS block-3 reference')
+        offset = (pointer - 1) & 0xfffffff
+        if offset > len(block3):
+            raise ValueError('NCS reference outside replayed block')
+        return offset
+
+    def text(pointer):
+        nonlocal cursor
+        if pointer == 0xffffffff:
+            end = data.index(b'\0', cursor)
+            value = data[cursor:end].decode('ascii')
+            cursor = end + 1
+            return value
+        offset = pooled_offset(pointer)
+        return block3[offset:block3.index(b'\0', offset)].decode('ascii')
+
+    name = text(name_ptr)
+    refs = b''
+    if strings_ptr == 0xffffffff:
+        end = cursor + count * 4
+        if end > len(data):
+            raise ValueError('truncated NCS pointer array')
+        refs, cursor = data[cursor:end], end
+    elif strings_ptr:
+        offset = pooled_offset(strings_ptr)
+        if count > (len(block3) - offset) // 4:
+            raise ValueError('truncated pooled NCS pointer array')
+        refs = block3[offset:offset + count * 4]
+    elif count:
+        raise ValueError('missing NCS pointer array')
     strings = []
     for index in range(count):
-        if struct.unpack_from('<I', data, start + index * 4)[0] != 0xffffffff:
-            raise ValueError('unsupported NCS string reference')
-        end = data.index(b'\0', cursor)
-        strings.append(data[cursor:end].decode('ascii'))
-        cursor = end + 1
+        pointer = struct.unpack_from('<I', refs, index * 4)[0]
+        if strings_ptr != 0xffffffff and pointer == 0xffffffff:
+            raise ValueError('inline NCS string cannot originate from a pooled array')
+        strings.append(text(pointer))
     if cursor != len(data):
         raise ValueError('unaccounted NCS bytes')
     return {'name': name, 'type': kind, 'source': source, 'strings': strings}

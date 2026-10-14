@@ -24,7 +24,7 @@ kernel.QueryFullProcessImageNameW.argtypes = [wintypes.HANDLE, wintypes.DWORD,
                                             wintypes.LPWSTR, ctypes.POINTER(wintypes.DWORD)]
 
 
-def capture(pid, image_base, marketplace=False, weapon_progression=False, pve=False, commands=False):
+def capture(pid, image_base, marketplace=False, weapon_progression=False, pve=False, commands=False, netconst=False):
     handle = kernel.OpenProcess(0x1010, False, pid)  # QUERY_LIMITED_INFORMATION | VM_READ
     if not handle:
         raise ctypes.WinError(ctypes.get_last_error())
@@ -53,6 +53,16 @@ def capture(pid, image_base, marketplace=False, weapon_progression=False, pve=Fa
 
         if read(image_base, 2) != b'MZ':
             raise ValueError('Unexpected module base')
+
+        if netconst:
+            from story_netconst423 import read_registration
+            result = read_registration(read, image_base)
+            result.update(exe_sha256=SHA256, pid=pid, image_base=image_base,
+                          scope='Network registration names and checksum only; no map-ready claim')
+            output = ROOT / 'research/evidence/live-netconst-registration423.json'
+            output.write_text(json.dumps(result, indent=2), encoding='utf-8')
+            print(output)
+            return
 
         if commands:
             # REA 0x6ece70: cmd_function_s is next/name/callback; read only.
@@ -166,7 +176,8 @@ if __name__ == '__main__':
     parser.add_argument('--weapon-progression', action='store_true', help='Read only the primary and secondary weapon rank tables')
     parser.add_argument('--pve', action='store_true', help='Read only the map and game type tables')
     parser.add_argument('--commands', action='store_true', help='Read only the registered console command names and callbacks')
+    parser.add_argument('--netconst', action='store_true', help='Read only network registration names and verify their CRC seed')
     args = parser.parse_args()
-    if sum((args.marketplace, args.weapon_progression, args.pve, args.commands)) > 1:
+    if sum((args.marketplace, args.weapon_progression, args.pve, args.commands, args.netconst)) > 1:
         parser.error('Choose one bounded capture scope')
-    capture(args.pid, args.base, args.marketplace, args.weapon_progression, args.pve, args.commands)
+    capture(args.pid, args.base, args.marketplace, args.weapon_progression, args.pve, args.commands, args.netconst)
