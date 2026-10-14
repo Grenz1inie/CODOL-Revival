@@ -1,0 +1,4 @@
+# Offline resource readers and execution of verified x86 client readers.
+-r requirements.txt
+pefile==2024.8.26
+unicorn==2.1.4
