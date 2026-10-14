@@ -1,0 +1,118 @@
+# 10 PVE 菜单、剧情解锁与地图启动
+
+[总览](README.md) · [会话与游戏服务器](07-session-game-server.md)
+
+## 目标与验收
+
+按顺序恢复：本版本 PVE 模式入口 → 全部剧情关卡可选 → 剧情地图加载及可交互游玩。
+模式可见、关卡解锁、地图可玩分别验收；前两项通过不代表第三项完成。
+范围限于本地单人恢复，不包含联网组队、公开匹配或后续版本资源移植。
+用户确认正常流程为：点击“开始战斗”后加载所选地图。完成标准是实际进入对应地图并可操作；修复错误提示仅用于排障，不是最终交付。
+
+## 已确认的起点
+
+- 用户截图只显示剧情模式；首关“身份不明”可选，后续关卡带锁。
+- `src/dw_lobby.py` 的发布文件分支仍对 `mp_playlists_shipRetail_release.info` 返回空文件；不能由此推断完整模式配置已恢复。
+- REA 既有反编译 `0x605af0` 注册 `ui_unlock_allplaylists`；目前仅有注册证据，尚未验证它的消费者和效果。
+- 原始 EXE 有 `GetPlayList`、`GetPlayListCategories`、`GetNewUnlockedCoopStoryMaps` 字符串。后续需连接注册、处理函数和字段消费，不能只凭名称改档案。
+- [只读运行时表](../../research/evidence/live-pve-tables.json)来自当前客户端 PID 51896：`mp/coMapList.csv` 79 行，`mp/coGameTypesTable.csv` 36 行。前者包含剧情、survival、evac、zm 等地图；表中项目不等于本地资源完整或可运行。
+- [解锁条件表](../../research/evidence/live-marketplace.json)包含剧情条件 `cf_ch_coop_*`（150–162）及僵尸训练条件180。当前剧情地图行实际引用150–159；不能按表中所有条件号批量填充。
+- 剧情候选启动字符串包含 `mmstart sv_resetServer; ... g_difficulty ... map ...`。它是调查入口，尚未证明客户端可以独立运行该链路。
+
+## 实施边界与顺序
+
+### 首关启动复现（2026-10-14）
+
+用户选择“身份不明”并点击“开始匹配”后，原菜单上显示“战斗开始”与等待动画，未进入地图加载。对应连接 `127.0.0.1:49925`，09:23:59–09:24:18 UTC 的[完整事件关联](../../research/evidence/pve-first-story-start-events.json)包含 `11/13 → 28/1 → 21/5 → 11/4 → 9/16 → 68/1 → 71/15`。当前服务均将这些未实现任务返回成功码、零结果。
+
+其中 `9/16` 为 seq109、参数143字节，`68/1` 为 seq110；两者的客户端响应消费仍待还原。截图后仍收到周期请求，且检查时客户端唯一已建立 TCP 连接仍为本地大厅3074；这些证据不能证明地图加载或对局服务器连接成功，也不能仅凭空结果断定哪个任务直接造成等待。
+
+1. REA 跟踪 playlist 解析、菜单过滤和剧情锁判定，读取限定的本地模式表；优先现有配置/发布文件/档案接口，不修改 EXE、不注入或写进程内存。
+2. 按实际格式补齐模式配置，针对已证实的剧情条件进行定点解锁。保留等级、货币、库存和非目标档案字段，写前备份；游戏运行时拒绝离线档案写入。
+3. 跟踪“开始匹配”到会话响应、目标地址和地图加载。确认本地启动分支或所需服务契约后实施；不向未知请求随意填成功对象。
+4. 逐关检查可选状态，至少实际进入首关并验证移动/任务流程；其他关卡记录各自状态。重登检查持久化。
+
+## 代码与测试范围
+
+### 剧情关卡解锁：已实测
+
+2026-10-14，用户在重启后确认“接头”至“倒计时”的锁消失，最后一关可选。此验收覆盖菜单解锁，不包含进入地图或完成任务。
+
+REA 消费链：`AS_IsMapUnlocked` 的处理函数 `0x5b1960` → `0x4a4b10`（按 `mp/unlockFlags.csv` 名称列查数字条件 ID）→ `0x4a4ca0`（读取私有档案 `unlockFlagsNew[index]`，要求至少1）。地图条件来自 `coMapList` 第22列；对应证据为 [字段消费](../../research/evidence/pve-map-unlock-fields.json)、[地图判定](../../research/evidence/pve-map-unlock-checks.json)、[运行时 schema](../../research/evidence/live-player-schema.json)。
+
+`PrivateProfileStore.unlock_story` 仅将 `unlockFlagsNew[150..159]` 提高至至少1；当前 secure v19 schema 对应解压档案偏移8595至8613、步长2。保留较大原值，沿用 CRC、压缩、扩展字段、备份及原子保存。它不伪造关卡通关记录，也不修改隐藏模式的可见性配置。
+
+控制器“剧情关卡 → 解锁全部剧情关卡”调用 `POST /api/profile/story`，只接收 `user_id`。游戏运行期间拒绝修改；停止后操作，再启动游戏读取。当前账号已应用。相关测试先失败后实现：档案无关字节/CRC、备份与重载、重复操作、缺失及损坏档案；HTTP 游戏运行中拒绝、非法账号及多余字段拒绝。
+
+### 地图启动：仍未恢复
+
+重启后的第二次复现见 [事件记录](../../research/evidence/pve-restarted-story-start-events.json)：连接 `127.0.0.1:58561`，北京时间17:47:16–17:47:50，仍停在“战斗开始”。
+
+已定位实际查找服务器请求为 **21/5**：`0xa56f50` 构造任务，`0x6d4900` 发起并注册 `0x6d4790` 回调，`0x6eb2c0` 消费候选列表。空列表分支生成 `dwRoomMessageStartGameFailed`（原因2），UI 映射到 `@SF_UI_ERROR_NO_DEDICATED_SERVER`；但当前界面未显示此错误，消息投递链还需追踪。证据：[请求与消费](../../research/evidence/pve-find-consumption.json)、[回调与错误映射](../../research/evidence/pve-start-dispatch.json)。这不证明9/16导致卡住。
+
+`0x6e4a20` 同时存在查找/预订服务器分支和本地命令分支。当前大厅 [运行时命令表](../../research/evidence/live-console-commands.json) 共201项，包含 `room.startgame`，未包含 `map`、`devmap`、`mmstart`、`sv_resetServer`。因此不能凭 `map` 字符串或本地分支存在就宣称客户端可独立开图；这也不证明其他运行阶段永远不注册这些命令。
+
+进一步排除一个捷径：已注册的 `startSingleplayer` 在 `0x467ff0` 跳转 `0x63f810`，只是拼接并启动另一程序 `codoSP_ship.exe +set intro 0`；当前游戏根目录无此 EXE。证据：[跳转字节](../../research/evidence/pve-singleplayer-command-bytes.json)、[启动目标](../../research/evidence/pve-start-singleplayer-target.json)。它不是现有 PVE 剧情页的已验证开图入口，也不能据此断定 PVE 必须依赖该 EXE。
+
+失败消息投递链静态确认：`0x6e2140` 汇编将队列类型设为2，再进入 `0x6e1f40`；`0x6e7560` 刷新房间队列并通过 `0x6ca350 → 0xa4ced0` 发送 **11/4**。客户端发送过该任务，但目前大厅只应答空成功，没有实现房间广播下行；该缺口是否直接造成等待/按钮状态不复位，仍需下行消费者及对照实验确认。不能将其等同于已恢复地图加载。
+
+复现脚本：`python -B tools/story-start-hitl.py`。它记录本次开始后的大厅事件，人工点击首关后报告 `waiting` / `error` / `unresponsive` / `playable`；只有实际进入地图且能移动才为0。采用人工观察是因为管理员窗口自动输入仍受前台与窗口尺寸约束，不能用“已发送点击”作为通过条件。首轮脚本未包含用户实际反馈的 `unresponsive`，因此拒绝该输入、未生成判定；后补此状态，尚待重新运行，不能称已完成自动复现闭环。
+
+18:12 用户反馈再次点击无反应，截图仍在已解锁剧情页、没有等待弹窗。同一连接在18:04:20已发生 `21/5` 与 `11/4`，之后没有新的启动请求。关联证据：[解锁后当前会话事件](../../research/evidence/pve-unlocked-no-response-events.json)。当前手动复现与截图可作为调查依据；持续自动输入仍未可靠，下一次启动验证应使用新会话。
+
+本轮集中回归：`python -B -m unittest discover -s tests -v`，48项通过；前端 TypeScript/Vite 构建通过。控制器已重载，用户实际游戏确认解锁；地图启动未修复。
+
+- 预计涉及 `src/dw_lobby.py` 的 publisher/会话分支、`src/dw_progression.py` 的定点解锁、`src/controller.py` 与 `web/src/main.tsx` 的操作入口；只有启动参数路径确认必要时才修改 `scripts/Launch-Game.ps1`。
+- 本地启动与会话代码是否需要新增模块，由当前客户端调用链决定；不预建通用匹配框架。
+- 沿用已同意的档案存储、HTTP 与真实游戏验收边界；协议通过已有加密大厅测试边界验证。
+- 每个行为先失败测试再最小实现：档案 CRC/扩展字段/无关字节/备份重载；模式发布文件内容与未知文件兼容；HTTP 参数及运行中拒写；错误无部分修改。客户端字段/协议未确认之前不写猜测性测试。
+- 相关测试按切片运行，最终集中回归现有认证、档案、货币、库存链路；不把自动测试通过当作游戏可玩证明。
+
+## 工具与当前状态
+
+项目与客户端导出代码均已有 GitNexus / CodeGraph 索引。2026-10-14 本轮开始时，GitNexus 索引后无源码更新，CodeGraph 已索引文件哈希全部一致；客户端索引仅覆盖已导出的伪代码，不是完整游戏调用图。
+
+`Read-PlayerSchema.ps1 -Pve` 只读取上述两张 string table，沿用 EXE 路径/哈希核验和只读进程权限，证据写入 `research/evidence/live-pve-tables.json`。用户对同类限定管理员只读提取已有默认授权，UAC 仍需人工确认。
+
+状态：剧情关卡解锁已完成真实游戏验收；全部 PVE 模式入口和剧情地图启动仍在恢复中。
+
+### 房间消息下行修复与新的阻塞（2026-10-14 18:39）
+
+已按 REA 还原并实现 `11/4` 同连接房间消息下行。`0xa4ced0` 序列化 channel uint64、blob、message-type uint32；`0xa3d5a0` 下行读取 sender uint64、sender-name string、channel uint64、blob（最大1024字节）、message-type uint32。`0xa42db0` 的事件7/8均进入该消费者，`0xa43ba0` 使用内层消息类型2分派推送。实现采用事件8，正常任务应答后发送独立推送；共享加密帧序号，推送不增加任务 transaction。
+
+证据：[下行反序列化](../../research/evidence/pve-channel-push-deserializer.json)、[分派汇编](../../research/evidence/pve-push-dispatcher-assembly.json)、[事件跳转表](../../research/evidence/pve-push-case-table.json)。当前仅支持本地单玩家同连接回送，不是跨连接房间服务器。
+
+真实验证：`python -B tools/story-start-hitl.py` 返回 **FAIL: error**。用户确认从无限等待变为“服务器繁忙中”；连接63428在10:38:32 UTC收到 `11/4` 推送后立即发出 `11/2` 离开频道。见[本轮 HITL 记录](../../research/evidence/story-start-hitl-20261014-183912.json)。这证明失败消息链产生了客户端可见行为，未加载地图。
+
+随后补齐 `11/13` 的单房间创建结果：`0xa4c940` 请求一个结果，`0xa55970` 初始化对象，`0xa55a40` 读取 u64/u32/u32/u64/bool/bool/u32。返回频道1、两个计数字段各1、当前用户、两个false和末尾0；后面三个字段的业务语义尚未确认，保留构造默认值。见[结果契约](../../research/evidence/pve-channel-info-wire.json)。该分支加密协议测试先失败再通过，服务PID57632已采用；游戏PID36316已启动，但此创建结果尚未完成新一轮真实游戏验收。
+
+当前服务器查询 **21/5仍返回零候选**。非空候选在 `0x6e48e0` 触发 `mmbook`，`0x6e6f60` 等待匹配服务器身份的 `mmbook accepted` 后才发送 `mmstart ... map ...`，并广播开始消息。不能只填一个虚构候选、返回 accepted 或伪造快照来声称恢复关卡。见[查询契约](../../research/evidence/pve-server-find-contract.json)、[预订与创建](../../research/evidence/pve-channel-create-and-server-book.json)、[预订响应处理](../../research/evidence/pve-channel-create-sdk.json)。
+
+本轮集中回归52项通过；仅后端及协议测试变化，无前端变化。开图目标的 HITL 仍为失败。
+
+### 对局引擎参考与下一阶段边界
+
+重新查阅用户提供的论坛：2025年的[原研究](https://discord.com/channels/1274846235941015683/1274846236410773526/1344479654416748625)明确区分大厅与对局服务缺失。该历史判断不代表目前所有版本状态；2026-10-14的[测试构建频道](https://discord.com/channels/1274846235941015683/1559618014486470828)有2.6.9.7、1.1.1.13包，本次搜索尚未找到3.3.3.3可直接使用的对局实现。
+
+仅按 HTTP Range 提取2.6.9.7参考包的目录和相关源码，没有下载整个3.06GB包、安装或执行其中程序。`room_host2697.py` 启动独立 `codol_dedrun.exe`；`run_native_connection.py` 改写实验客户端副本，装载 `client_native_loopback.dll`；其源码使用运行时钩子桥接原生包队列。服务端二进制包含2697专用 gamestate、snapshot、实体、资源编号和武器适配符号，不能直接换成3.3.3.3地址后宣称兼容。
+
+参考归档在 `research/references/codol2697/`，以原样 `.txt`/`.bin` 保存，执行仅使用已授权隔离副本。已获取服务端二进制，SHA256 `1736926655100b53499ae75ea5bddd0741983c12c89cdb51d49aef8a0be03243`；压缩包目录未发现对应服务端C/C++源码（仅包含客户端桥接源码）。包内自带审计文件不是本项目的运行验证。
+
+后续技术分支、所需源码及权限边界见[对局适配方案](../reports/20261014-native-gameplay-gap.md)。原始EXE、运行中客户端、系统设置均未按参考方案修改。
+
+### 参考引擎与3.3.3.3的实际协议差异
+
+REA已确认：参考引擎配置字符串别名组数量写11位，当前客户端读10位；索引上限也由0x1dd6变为0x1b91。引擎缺少有效客户端注册表时会拒绝发送gamestate。因此不能直接发布参考服务端为可用候选。首关是 `coop_training_mp_cargoship/coop`，不是PvP货轮地图。
+
+地址、原字节、资源格式限制和隔离实验边界见[原生兼容性记录](../reports/20261014-dedrun-3333-compatibility.md)。现已执行隔离参考引擎副本的离线探针，并修改该副本验证局部兼容；原游戏与正式存档保持不变，开图验收仍未通过。
+
+### 首关资源恢复与真实消费者（2026-10-14）
+
+详见[首关资源链](../reports/20261014-story-resource-chain.md)。已恢复17个IFS包、校验解码11个FF；首关315个loose负载解码成功。地图实体、碰撞资源和基线文件存在，但并非完整服务端实现。
+
+- 注册：首关12张NCS已解析；公共依赖有5张含共享引用，最终ID与CRC尚未形成。
+- 基线：当前客户端实际读取700条272字节实体状态，序号与实体编号不同；已还原到新实体snapshot delta消费者。
+- 参考引擎：常量包重建通过，主包仍卡在模型/特效，加载图卡在材质。只改版本号或跳过长度检查不能完成适配。
+- 剧情：首关有956个实体和任务标签；已检查FF中仅有特效GSC，主任务脚本尚未找到，不能宣称依赖齐全。
+
+本轮集中回归60项通过，覆盖资源提取、FF块校验、目录、基线边界、隔离引擎探针及原有协议。未重载正式服务，也没有新的游戏内通过结论；移动、射击和剧情触发仍待恢复后由用户实测。

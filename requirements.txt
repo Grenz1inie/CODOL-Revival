@@ -1,0 +1,2 @@
+# Validated on CPython 3.13.7, Windows x64.
+cryptography==48.0.1

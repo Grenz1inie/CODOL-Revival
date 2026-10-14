@@ -1,0 +1,77 @@
+"""One-shot, user-authorized Windows MCP input test; no persistent elevation."""
+import argparse
+import ctypes
+from ctypes import wintypes
+import json
+from pathlib import Path
+import time
+
+ROOT = Path(__file__).resolve().parents[1]
+GAME = ROOT.parent / 'CODOL_Experience_V3.3.3.3_FULL.7z/codoMP_client_shipRetail.exe'
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--pid', type=int, required=True)
+    parser.add_argument('--hwnd', type=int, required=True)
+    parser.add_argument('--target', choices=('backpack', 'capture', 'story-start'), default='backpack')
+    args = parser.parse_args()
+    if not ctypes.windll.shell32.IsUserAnAdmin():
+        raise PermissionError('This one-shot test requires the approved elevated process')
+    user = ctypes.WinDLL('user32', use_last_error=True)
+    user.SetProcessDPIAware()
+    kernel = ctypes.WinDLL('kernel32', use_last_error=True)
+    kernel.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+    kernel.OpenProcess.restype = wintypes.HANDLE
+    kernel.QueryFullProcessImageNameW.argtypes = [wintypes.HANDLE, wintypes.DWORD, wintypes.LPWSTR, ctypes.POINTER(wintypes.DWORD)]
+    kernel.CloseHandle.argtypes = [wintypes.HANDLE]
+    handle = kernel.OpenProcess(0x1000, False, args.pid)
+    if not handle:
+        raise ctypes.WinError(ctypes.get_last_error())
+    try:
+        name = ctypes.create_unicode_buffer(32768)
+        length = wintypes.DWORD(len(name))
+        if not kernel.QueryFullProcessImageNameW(handle, 0, name, ctypes.byref(length)) or Path(name.value).resolve() != GAME.resolve():
+            raise ValueError('Unexpected target executable')
+    finally:
+        kernel.CloseHandle(handle)
+    hwnd = wintypes.HWND(args.hwnd)
+    owner = wintypes.DWORD()
+    user.GetWindowThreadProcessId(hwnd, ctypes.byref(owner))
+    if owner.value != args.pid:
+        raise ValueError('Window no longer belongs to the verified game')
+    rectangle, origin = wintypes.RECT(), wintypes.POINT()
+    if not user.GetClientRect(hwnd, ctypes.byref(rectangle)) or not user.ClientToScreen(hwnd, ctypes.byref(origin)):
+        raise ctypes.WinError(ctypes.get_last_error())
+    if args.target != 'capture' and (rectangle.right, rectangle.bottom) != (1280, 960):
+        raise ValueError('Window size differs from the observed screenshot; do not click')
+    from windows_mcp import uia
+    if not uia.SetForegroundWindow(args.hwnd) or uia.GetForegroundWindow() != args.hwnd:
+        raise RuntimeError('Game did not become foreground; do not click')
+    from PIL import ImageGrab
+    time.sleep(0.5)
+    stamp = time.strftime('%Y%m%d-%H%M%S')
+    ImageGrab.grab().save(ROOT / f'runtime/captures/screenshots/{stamp}-admin-input-before.png')
+    # Observed warehouse > Backpack tab, relative to the 1280x960 client area.
+    point = {'backpack': (56, 117), 'story-start': (1040, 820)}.get(args.target)
+    x, y = (origin.x + point[0], origin.y + point[1]) if point else (None, None)
+    if point:
+        uia.SetCursorPos(x, y)
+        time.sleep(0.5)
+        uia.Click(x, y)
+    time.sleep(1)
+    screenshot = ROOT / f'runtime/captures/screenshots/{stamp}-admin-{args.target}.png'
+    ImageGrab.grab().save(screenshot)
+    result = {'pid': args.pid, 'hwnd': args.hwnd, 'target': args.target,
+              'screen_point': [x, y], 'click_count': int(point is not None), 'screenshot': str(screenshot)}
+    (ROOT / 'research/evidence/admin-input-test.json').write_text(json.dumps(result, indent=2), encoding='utf-8')
+    print(json.dumps(result))
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except Exception:
+        import traceback
+        (ROOT / 'runtime/logs/admin-input-test.log').write_text(traceback.format_exc(), encoding='utf-8')
+        raise

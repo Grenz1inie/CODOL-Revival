@@ -1,0 +1,12 @@
+# Index only maintained development code.
+/*
+!/src/
+!/tests/
+!/tools/
+!/scripts/
+!/web/
+/web/node_modules/
+/web/dist/
+/tests/fixtures/
+**/__pycache__/
+*.py[cod]

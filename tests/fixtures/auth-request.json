@@ -1,0 +1,6 @@
+{
+  "auth_task": "10",
+  "iv_seed": "12345678",
+  "title_id": "1002",
+  "extra_data": "{\"user_id\": \"1\"}"
+}

@@ -1,0 +1,12 @@
+{
+  "exclude": [
+    "data/",
+    "runtime/",
+    "archive/",
+    "research/",
+    "docs/",
+    "tests/fixtures/",
+    ".gitnexus/",
+    "**/__pycache__/"
+  ]
+}
