@@ -1,0 +1,1271 @@
+--- a/src/codol/assets/codol_netconst_index.c
++++ b/src/codol/assets/codol_netconst_index.c
+@@ -1,13 +1,13 @@
+ #include "codol_netconst_index.h"
+ #include <stdlib.h>
+ #include <string.h>
+-/* Client table cac018; capacity includes reserved index zero. */
+-static const unsigned layout[20][2]={
+-    {0x712,0x800},{0x1412,0x400},{0xf12,0x20},{0x1132,0x190},
+-    {0x2c8,0x3ff},{0x1dd7,0},{0xf32,0x200},{0x13c2,0x10},
+-    {0x13d2,0x40},{0x1812,0x40},{0x1b16,0xf},{0x1b25,0xf},
+-    {0x70f,3},{0x1852,700},{0x268,0x60},{0x1dd7,0},
+-    {0x1b55,0x80},{0x18,0xc8},{0xe0,0xc8},{0x1dd7,0}};
++/* Current client 0xc57118: base, capacity, reserved prefix. */
++static const unsigned layout[CODOL2697_NCS_KINDS][3]={
++    {2051,1024,1},{4355,1024,1},{3075,32,1},{3619,400,1},
++    {952,1023,1},{7058,0,0},{3107,512,1},{4275,16,1},
++    {4291,64,0},{5379,64,1},{6351,16,1},{6367,16,1},
++    {2047,4,1},{5443,900,1},{856,96,0},{7058,0,0},
++    {6416,128,1},{6343,8,1},{24,320,0},{344,320,0},{7058,0,0}};
+ typedef struct { const codol_netconst_t *table; int localized; } sort_entry;
+ static int target_compare(const char *a,const char *b)
+ {
+@@ -37,7 +37,7 @@
+ void CODOL_FreeNetConstIndex(codol_netconst_index_t *out)
+ {
+     unsigned k;if(!out)return;
+-    for(k=0;k<20;++k)free(out->kinds[k].values);
++    for(k=0;k<CODOL2697_NCS_KINDS;++k)free(out->kinds[k].values);
+     memset(out,0,sizeof(*out));
+ }
+ static uint32_t append_crc(uint32_t crc,const char *text)
+@@ -58,11 +58,14 @@
+     codol_netconst_index_t result={0}; sort_entry *order=NULL;size_t t;unsigned k,i,j;
+     if(!out || !language || !*language || count>4096 || (count&&!tables))return 0;
+     result.checksum_seed=result.checksum=seed;
+-    for(k=0;k<20;++k){result.kinds[k].base=layout[k][0];result.kinds[k].capacity=layout[k][1];}
++    for(k=0;k<CODOL2697_NCS_KINDS;++k){
++        result.kinds[k].base=layout[k][0];result.kinds[k].capacity=layout[k][1];
++        result.kinds[k].reserved=layout[k][2];
++    }
+     if(count && !(order=calloc(count,sizeof(*order))))return 0;
+     for(t=0;t<count;++t){
+         const codol_netconst_t *s=tables+t;
+-        if(!s->name || !*s->name || (s->count&&s->kind>=17) || s->count>65536 || (s->count&&!s->values))goto fail;
++        if(!s->name || !*s->name || (s->count&&s->kind>=CODOL2697_NCS_KINDS) || s->count>65536 || (s->count&&!s->values))goto fail;
+         for(i=0;i<s->count;++i)if(!s->values[i])goto fail;
+         order[t].table=s;order[t].localized=language_prefix(s->name,language);
+     }
+@@ -86,7 +89,7 @@
+             }
+         }
+         dest->count=before+added;
+-        if(dest->base!=CODOL2697_CONFIGSTRING_SENTINEL && dest->count>=dest->capacity)goto fail;
++        if(dest->base!=CODOL2697_CONFIGSTRING_SENTINEL && dest->count+dest->reserved>dest->capacity)goto fail;
+     }
+     free(order);CODOL_FreeNetConstIndex(out);*out=result;return 1;
+ fail:
+@@ -94,13 +97,15 @@
+ }
+ const char *CODOL_NetConstValue(const codol_netconst_index_t *index,unsigned kind,unsigned value)
+ {
+-    if(!index || kind>=20 || !value || value>index->kinds[kind].count)return NULL;
+-    return index->kinds[kind].values[value-1];
++    if(!index || kind>=CODOL2697_NCS_KINDS)return NULL;
++    const codol_netconst_kind_t *k=index->kinds+kind;
++    if(value<k->reserved || value-k->reserved>=k->count)return NULL;
++    return k->values[value-k->reserved];
+ }
+ int CODOL_NetConstFind(const codol_netconst_index_t *index,unsigned kind,const char *name)
+ {
+-    unsigned i;if(!index || kind>=20 || !name)return -1;
+-    for(i=0;i<index->kinds[kind].count;++i)if(!strcmp(index->kinds[kind].values[i],name))return (int)i+1;
++    unsigned i;if(!index || kind>=CODOL2697_NCS_KINDS || !name)return -1;
++    for(i=0;i<index->kinds[kind].count;++i)if(!strcmp(index->kinds[kind].values[i],name))return (int)(i+index->kinds[kind].reserved);
+     return -1;
+ }
+ void CODOL_FreeNetConstTables(codol_netconst_t *tables,size_t count)
+--- a/src/codol/assets/codol_netconst_index.h
++++ b/src/codol/assets/codol_netconst_index.h
+@@ -1,11 +1,11 @@
+ #ifndef CODOL_NETCONST_INDEX_H
+ #define CODOL_NETCONST_INDEX_H
+ #include "codol_netconst.h"
+-#define CODOL2697_NCS_KINDS 20u
+-#define CODOL2697_CONFIGSTRING_SENTINEL 7639u
++#define CODOL2697_NCS_KINDS 21u
++#define CODOL2697_CONFIGSTRING_SENTINEL 7058u
+ typedef struct {
+     const char **values; /* Owned array, text borrows mounted zones. */
+-    unsigned count,base,capacity;
++    unsigned count,base,capacity,reserved;
+ } codol_netconst_kind_t;
+ typedef struct {
+     codol_netconst_kind_t kinds[CODOL2697_NCS_KINDS];
+--- a/src/codol/net/codol_wire.h
++++ b/src/codol/net/codol_wire.h
+@@ -7,7 +7,7 @@
+ 
+ #define CODOL_PROTOCOL 187
+ #define CODOL_PORT 17733
+-#define CODOL_FRAGMENT_SIZE 1162u
++#define CODOL_FRAGMENT_SIZE 1154u
+ #define CODOL_MAX_FRAGMENTS 128u
+ #define CODOL_MAX_MESSAGE (CODOL_FRAGMENT_SIZE * CODOL_MAX_FRAGMENTS)
+ #define CODOL_SEQUENCE_MASK UINT32_C(0x1fffffff)
+--- a/src/codol/player/codol_usercmd.c
++++ b/src/codol/player/codol_usercmd.c
+@@ -64,6 +64,8 @@
+             if (c.buttons & 4) {
+                 c.meleeChargeYaw = delta_short(&r, k, from->meleeChargeYaw);
+                 c.meleeChargeDist = delta_bits(&r, k, from->meleeChargeDist, 8);
++                /* Current client writer 0x5a1be0 adds a keyed 11-bit target. */
++                c.meleeTarget = delta_bits(&r, k, from->meleeTarget, 11);
+             }
+         }
+     }
+--- a/src/codol/player/codol_usercmd.h
++++ b/src/codol/player/codol_usercmd.h
+@@ -7,12 +7,14 @@
+ 
+ #define CODOL_MAX_USERCMDS 255
+ #define CODOL_WEAPON_IDS 1024
++#define CODOL3333_USERCMD 1
+ 
+ typedef struct {
+     uint32_t serverTime, buttons;
+     uint16_t angles[3], weapon, offHandIndex, altModeWeapon, meleeChargeYaw;
+     uint8_t direction, meleeChargeDist, selectedLocation[2], selectedLocationAngle;
+     uint8_t remoteAngles[2];
++    uint16_t meleeTarget;
+ } codol_usercmd_t;
+ 
+ /* Atomic output: no partially decoded command is published on failure. */
+--- a/src/codol/snapshot/codol_2697_adapter.c
++++ b/src/codol/snapshot/codol_2697_adapter.c
+@@ -43,18 +43,30 @@
+ }
+ int CODOL2697_AdaptPlayer(codol2697_player_fields_t *out,const codol_player_fields_t *s,const codol2697_adapter_t *a)
+ {
+-    codol2697_player_fields_t n={0};uint32_t perks[2]={0,0};
++    codol2697_player_fields_t n={0};uint32_t perks[3]={0,0,0};
+     adapter_failure[0]=0;if(!out||!s)return 0;
+-    /* Retail 410d30 reads column 0 of coPerkStatsTable without reindexing.
+-     * 51ff39 and 43dff8 use LSB-first bits at 4ac/4b0, whereas C1
+-     * exports eight selected IDs at 4b0..4cc. Zero is the empty slot. */
++    /* Current 415520 bounds IDs to 96; 43b5d0 sets LSB-first bits at
++     * PS+4c0..4c8. C1 exports eight selected IDs at 4b0..4cc. */
+     for(unsigned slot=0;slot<8;++slot) {
+         uint32_t id=player(s,0x4b0+4*slot);
+-        if(id>=64){snprintf(adapter_failure,sizeof(adapter_failure),"perk slot %u ID %u exceeds target bitset",slot,id);return 0;}
++        if(id>=96){snprintf(adapter_failure,sizeof(adapter_failure),"perk slot %u ID %u exceeds target bitset",slot,id);return 0;}
+         if(id)perks[id/32]|=UINT32_C(1)<<(id%32);
+     }
+     for(unsigned i=0;i<CODOL2697_PLAYER_FIELDS;++i) {
+-        unsigned o=CODOL2697_PlayerField(i)->offset,old=o;uint32_t v;
++        unsigned o=CODOL2697_PlayerField(i)->offset,old;uint32_t v;
++        if(o>=0x4c0 && o<=0x4c8){n.field[i]=perks[(o-0x4c0)/4];continue;}
++        if(o==0x4bc){n.field[i]=(perks[0]|perks[1]|perks[2])!=0;continue;}
++        /* Rebase the current field profile to the retained semantic adapter.
++         * Current-only fields stay neutral; never read an unrelated C1 slot.
++         * 5a18e0 independently confirms angles, stance and weapon offsets. */
++        if(o==0x94 || o==0x1ac || o==0x218 || o==0x4b4 || o==0x4b8 || o>=0x3508)continue;
++        if(o>=0x98 && o<=0x148)o-=4;
++        else if(o>=0x1b0 && o<=0x214)o-=4;
++        else if(o>=0x230 && o<=0x4b0)o-=12;
++        else if(o>=0x558 && o<=0x5b4)o-=0x30;
++        else if(o>=0x5b8 && o<=0x3348)o-=0x2c;
++        else if(o==0x334c || o==0x3350)o-=0x28;
++        old=o;
+         if(o>=0xf4 && o<=0x10c && (o-0xf4)%8==0) {
+             unsigned k=(o-0xf4)/8;
+             if(!event(a,player(s,0xf4+4*k),player(s,0x104+4*k),n.field+i))return 0;continue;
+@@ -65,13 +77,6 @@
+         }
+         /* Removed legacy gun angles and radar fields are not shifted into new
+          * target members. Target-only state is neutral until a producer exists. */
+-        /* Retail perk_sidebar_hud visibility calls UI op 237 (5ff0bb),
+-         * which reads byte PS+4a8. Native script toggles are 520010/5200b0.
+-         * C1 drives a different timed menu instead. In the local target
+-         * match show the native sidebar when an equipped perk set exists;
+-         * its own spectator/hardcore/menu predicates still govern drawing. */
+-        if(o==0x4a8){n.field[i]=(perks[0]|perks[1])!=0;continue;}
+-        if(o==0x4ac||o==0x4b0){n.field[i]=perks[(o-0x4ac)/4];continue;}
+         if(o==0x1fc){n.field[i]=2047;continue;}
+         if(o>=0x200 && o<=0x4a4)old+=8;
+         else if(o>=0x51c)old+=0x14;
+@@ -79,7 +84,7 @@
+         /* Both cursor-hint readers reserve 0..4 and encode a weapon as
+          * index+4. Its embedded resource index also crosses versions. */
+         if(o==0x200 && v>4) {
+-            v-=4;if(!remap(a,13,&v) || v>=700)return 0;v+=4;
++            v-=4;if(!remap(a,13,&v) || v>=900)return 0;v+=4;
+         }
+         /* Hint text is a zero-based legacy pool, including slot zero.
+          * Retail uses its independent NCS hint dictionary (kind 14).
+@@ -87,7 +92,7 @@
+         if(o==0x204 && player(s,0x208)!=0 && v!=255 && v!=UINT32_MAX) {
+             unsigned mapped;
+             if(v>=96 || !a || !a->resolve ||
+-               !a->resolve(a->opaque,14,v,&mapped) || !mapped || mapped>=255) {
++               !a->resolve(a->opaque,14,v,&mapped) || mapped>=255) {
+                 snprintf(adapter_failure,sizeof(adapter_failure),"hint pool source %u cursor %u",v,player(s,0x208));return 0;
+             }
+             v=mapped;
+@@ -227,14 +232,14 @@
+ void CODOL2697_DefaultUsercmd(const codol2697_player_fields_t *s,codol_usercmd_t *out)
+ {
+     if(!out)return;memset(out,0,sizeof(*out));if(!s)return;
+-    out->weapon=held(s,0x334);out->altModeWeapon=held(s,0x338);out->offHandIndex=held(s,0x320);
+-    for(unsigned i=0;i<2;++i)out->angles[i]=(uint16_t)(int)((held_float(s,0x14c+4*i)-held_float(s,0x9c+4*i))*(65536.f/360.f));
++    /* Current client's default delta base, 0x5a18e0. */
++    out->weapon=held(s,0x340);out->altModeWeapon=held(s,0x344);out->offHandIndex=held(s,0x32c);
++    for(unsigned i=0;i<2;++i)out->angles[i]=(uint16_t)lrintf((held_float(s,0x14c+4*i)-held_float(s,0xa0+4*i))*(65536.f/360.f));
+     if(held(s,0x10)&0x1000u) {
+-        uint32_t ef=held(s,0xec);float lean=held_float(s,0x94);
++        uint32_t ef=held(s,0xf0);
+         if(ef&8)out->buttons|=0x100;else if(ef&4)out->buttons|=0x200;
+-        if(lean<0)out->buttons|=0x40;else if(lean>0)out->buttons|=0x80;
+-        if(held_float(s,0x340)!=0.f)out->buttons|=0x800;
+-        if(held(s,0xc)&0x4000)out->buttons|=2;
++        if(held_float(s,0x34c)!=0.f)out->buttons|=0x800;
++        out->meleeTarget=2047;
+     }
+ }
+ 
+--- a/src/codol/snapshot/codol_2697_arrays.c
++++ b/src/codol/snapshot/codol_2697_arrays.c
+@@ -224,6 +224,9 @@
+     }
+     CODOL_WriteBits(m, 0, 1);
+     /* 5. ps+0x5D0, the objective and waypoint array. */
++    /* Current 0x5a4230 inserts four optional state sections before objectives.
++     * The retained core has no producers for these sections. */
++    CODOL_WriteBits(m, 0, 4);
+     if (!write_objectives(m, from, to, ctx)) goto fail;
+     /* 6. A single gate covers both HUD arrays, including count-zero deletion. */
+     for (i = 0; i < 2; ++i) {
+--- a/src/codol/snapshot/codol_2697_configstrings.c
++++ b/src/codol/snapshot/codol_2697_configstrings.c
+@@ -9,8 +9,8 @@
+     /* Filled from the actual client registration; name slots start at zero. */
+     for(unsigned k=0;k<CODOL2697_NCS_KINDS;++k) {
+         const codol_netconst_kind_t *s=n->kinds+k;
+-        if(k==18 || s->base==CODOL2697_CONFIGSTRING_SENTINEL)continue;
+-        unsigned first=s->base+(k==17?0:1);
++        if(k==19 || s->base==CODOL2697_CONFIGSTRING_SENTINEL)continue;
++        unsigned first=s->base+s->reserved;
+         if(index>=first && index-first<s->count)return 0;
+     }
+     return 1;
+@@ -27,7 +27,7 @@
+     const codol2697_weapon_recipe_t *recipes,size_t recipe_count)
+ {
+     unsigned char used[CODOL2697_CS_COUNT]={0};size_t pool=1;int previous;
+-    if(!m||m->failed||!constants||count>CODOL2697_CS_COUNT||alias_count>2047||recipe_count>1023||
++    if(!m||m->failed||!constants||count>CODOL2697_CS_COUNT||alias_count>1023||recipe_count>1023||
+        (count&&!rows)||(alias_count&&!aliases)||(recipe_count&&!recipes))goto bad;
+     for(size_t i=0;i<count;++i){
+         const char *s=rows[i].value;size_t n;
+@@ -44,24 +44,27 @@
+     }
+     for(size_t i=0;i<recipe_count;++i){
+         const codol2697_weapon_recipe_t *r=recipes+i;char text[32];
+-        if(!reserve(r->index,used)||r->weapon>1023||r->camo>127||r->count>15)goto bad;
+-        pool+=(size_t)snprintf(text,sizeof(text),"** %u %u",r->weapon,r->camo)+1;
++        if(!reserve(r->index,used)||r->weapon>1023||r->camo>255||r->extra9>511||r->count>15)goto bad;
++        pool+=(size_t)snprintf(text,sizeof(text),"** %u %u %u",r->weapon,r->camo,r->extra9)+1;
+         for(unsigned j=0;j<r->count;++j){
+-            if(r->attachment[j]>4095)goto bad;
++            if(r->attachment[j]>16383)goto bad;
+             pool+=(size_t)snprintf(text,sizeof(text)," %u",r->attachment[j]);
+         }
+     }
+     if(pool>CODOL2697_CS_POOL)goto bad;
+     m->bit=0;CODOL_WriteByte(m,CODOL2697_SVC_CONFIGSTRINGS);CODOL_WriteShort(m,(unsigned)count);previous=-1;
+     for(size_t i=0;i<count;++i){index_bits(m,rows[i].index,&previous);CODOL_WriteString(m,rows[i].value);}
+-    CODOL_WriteBits(m,(unsigned)alias_count,11);previous=-1;
++    CODOL_WriteBits(m,(unsigned)alias_count,10);previous=-1;
+     for(size_t i=0;i<alias_count;++i){index_bits(m,aliases[i].index,&previous);CODOL_WriteBits(m,aliases[i].weapon,10);}
+     CODOL_WriteBits(m,(unsigned)recipe_count,10);previous=-1;
+     for(size_t i=0;i<recipe_count;++i){
+         const codol2697_weapon_recipe_t *r=recipes+i;
+         index_bits(m,r->index,&previous);CODOL_WriteBits(m,r->weapon,10);
+-        CODOL_WriteBits(m,r->camo,7);CODOL_WriteBits(m,r->count,4);
+-        for(unsigned j=0;j<r->count;++j)CODOL_WriteBits(m,r->attachment[j],12);
++        CODOL_WriteBits(m,r->camo,8);
++        CODOL_WriteBits(m,r->extra9!=0,1);
++        if(r->extra9)CODOL_WriteBits(m,r->extra9,9);
++        CODOL_WriteBits(m,r->count,4);
++        for(unsigned j=0;j<r->count;++j)CODOL_WriteBits(m,r->attachment[j],14);
+     }
+     CODOL_WriteByte(m,CODOL2697_SVC_EOF);return !m->failed;
+ bad:
+--- a/src/codol/snapshot/codol_2697_configstrings.h
++++ b/src/codol/snapshot/codol_2697_configstrings.h
+@@ -3,12 +3,13 @@
+ #pragma pack(push, 8)
+ #include "codol_msg.h"
+ #include "codol_netconst_index.h"
+-#define CODOL2697_CS_COUNT 7639u
++#define CODOL3333_PORT 1
++#define CODOL2697_CS_COUNT 7058u
+ #define CODOL2697_CS_POOL 131072u
+ typedef struct { unsigned index; const char *value; } codol2697_configstring_t;
+ typedef struct { unsigned index,weapon; } codol2697_weapon_alias_t;
+ typedef struct {
+-    unsigned index,weapon,camo,count;
++    unsigned index,weapon,camo,count,extra9;
+     unsigned attachment[15];
+ } codol2697_weapon_recipe_t;
+ /* Versioned svc_configstring body. Ordinary strings, "* weapon" aliases,
+--- a/src/codol/snapshot/codol_2697_delta.c
++++ b/src/codol/snapshot/codol_2697_delta.c
+@@ -3,12 +3,14 @@
+ #include <math.h>
+ #include <string.h>
+ 
+-/* Measured at target 0xCABCE0; checked against the actual 0x5AD520 reader. */
++/* Current widths 0xc56d70; verified with the actual 0x5a2240 reader. */
+ static const unsigned char event_bits[CODOL2697_EVENTS] = {
+-  11,0,6,14,14,32,32,32,32,0,14,6,2,2,2,2,10,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+-  10,10,5,5,8,8,0,0,5,5,0,5,5,5,5,5,5,5,5,0,0,10,10,10,2,2,0,11,0,5,5,11,8,8,
+-  8,0,0,0,8,0,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,9,8,17,17,17,17,9,10,8,0,
+-  0,0,0,0,0,10,0,0,0,10,19,10,0,0,0,0,0,8,0,0,6,6,6,6,6,10,13,0,0,5,5,11,11
++  11,0,6,14,14,32,32,32,32,0,14,6,2,2,2,2,10,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
++  0,0,10,10,5,5,8,8,0,0,5,5,0,5,5,5,5,5,5,5,5,0,0,0,2,2,2,2,2,2,0,10,
++  10,10,2,2,0,11,0,5,5,11,8,8,8,0,0,0,8,0,8,8,8,8,8,8,8,8,8,8,8,8,8,8,
++  8,8,8,8,9,8,18,18,18,18,9,10,9,10,16,16,16,16,0,19,17,18,16,8,0,0,0,0,0,0,10,0,
++  0,0,10,19,10,0,0,0,0,0,8,0,0,6,6,6,6,6,10,13,0,0,5,5,11,11,0,0,0,0,5,0,
++  0,0,
+ };
+ unsigned CODOL2697_EventParameterBits(unsigned id)
+ {
+@@ -67,6 +69,25 @@
+             CODOL_WriteBits(m,0,1);CODOL_WriteByte(m,f^t);
+         }
+         break;
++    case -101:
++        if(t>63)goto fail;
++        CODOL_WriteBits(m,f!=t,1);
++        if(f!=t)CODOL_WriteBits(m,t,6);
++        break;
++    case -55:
++        /* Current client 0x5a2750: two independently changed sections. */
++        if (t > 0x1fffu) goto fail;
++        CODOL_WriteBits(m, (f & 0x7fu) != (t & 0x7fu), 1);
++        if ((f & 0x7fu) != (t & 0x7fu)) {
++            CODOL_WriteBits(m, t & 15u, 4);
++            CODOL_WriteBits(m, (t >> 4) & 7u, 3);
++        }
++        CODOL_WriteBits(m, (f & 0x1f80u) != (t & 0x1f80u), 1);
++        if ((f & 0x1f80u) != (t & 0x1f80u)) {
++            CODOL_WriteBits(m, (t >> 12) & 1u, 1);
++            CODOL_WriteBits(m, (t >> 7) & 31u, 5);
++        }
++        break;
+     case -57:
+         if (t > 1) goto fail;
+         CODOL_WriteBits(m,t,1);break;
+@@ -107,7 +128,7 @@
+     scratch=*ctx;CODOL_MsgWriteInit(&msg,buffer,sizeof(buffer));
+     if (!CODOL2697_WriteDeltaValue(&msg,bits,from,to,event_id,&scratch)) return 0;
+     switch (bits) {
+-    case -94:case -93:case -75:case -57:case -56: *held=to;return 1;
++    case -101:case -94:case -93:case -75:case -57:case -56:case -55: *held=to;return 1;
+     case -85: {
+         unsigned fa=(unsigned)(from>>24),ta=(unsigned)(to>>24);
+         if ((from&0xffffffu)==(to&0xffffffu) && ((fa && !ta) || (!fa && ta==255)))
+--- a/src/codol/snapshot/codol_2697_gamestate.c
++++ b/src/codol/snapshot/codol_2697_gamestate.c
+@@ -1,12 +1,13 @@
+ #include "codol_2697_gamestate.h"
+ #include "codol_2697_service.h"
++#include <string.h>
+ static int valid_map(const char *s)
+ {
+     unsigned n=0;
+     if(!s||!*s)return 0;
+     for(;*s;++s,++n) {
+         unsigned char c=(unsigned char)*s;
+-        if(n>=63||!((c>='a'&&c<='z')||(c>='A'&&c<='Z')||
++        if(n>=31||!((c>='a'&&c<='z')||(c>='A'&&c<='Z')||
+                      (c>='0'&&c<='9')||c=='_'))return 0;
+     }
+     return 1;
+@@ -16,11 +17,13 @@
+     const codol2697_weapon_alias_t *aliases,size_t alias_count,
+     const codol2697_weapon_recipe_t *recipes,size_t recipe_count)
+ {
+-    if(!m||m->failed||!state||!valid_map(state->map_name)||state->client_number>=32)goto bad;
++    if(!m||m->failed||!state||!valid_map(state->map_name)||state->client_number>=19)goto bad;
++    if(!state->category || (strcmp(state->category,"mp") &&
++       strcmp(state->category,"coop") && strcmp(state->category,"zm")))goto bad;
+     m->bit=0;
+     CODOL_WriteByte(m,CODOL2697_SVC_GAMESTATE);
+     CODOL_WriteLong(m,state->command_sequence);
+-    CODOL_WriteString(m,state->map_name);CODOL_WriteString(m,"mp");
++    CODOL_WriteString(m,state->map_name);CODOL_WriteString(m,state->category);
+     CODOL_WriteLong(m,state->netconst_checksum);
+     if(!CODOL2697_WriteConfigstrings(m,constants,rows,count,aliases,alias_count,recipes,recipe_count))goto bad;
+     CODOL_WriteLong(m,state->client_number);CODOL_WriteLong(m,state->checksum_feed);
+--- a/src/codol/snapshot/codol_2697_gamestate.h
++++ b/src/codol/snapshot/codol_2697_gamestate.h
+@@ -1,11 +1,13 @@
+ #ifndef CODOL_2697_GAMESTATE_H
+ #define CODOL_2697_GAMESTATE_H
++#define CODOL3333_CATEGORY 1
+ #pragma pack(push, 8)
+ #include "codol_2697_configstrings.h"
+ typedef struct {
+     uint32_t command_sequence, netconst_checksum, checksum_feed;
+     unsigned client_number;
+     const char *map_name;
++    const char *category;
+ } codol2697_gamestate_t;
+ /* Service payload only: the caller supplies the transport/reliable ACK
+  * envelope separately. Dictionary checksum must describe the client's
+--- a/src/codol/snapshot/codol_2697_profile.c
++++ b/src/codol/snapshot/codol_2697_profile.c
+@@ -2,235 +2,241 @@
+ #include "codol_2697_profile.h"
+ #include <stddef.h>
+ static const codol2697_field_t player[CODOL2697_PLAYER_FIELDS] = {
+-    {0x0, -97, 0},
+-    {0xf0, -75, 0},
+-    {0x114, -75, 0},
+-    {0x264, -16, 0},
+-    {0x498, -70, 3},
+-    {0xc8, 16, 0},
+-    {0x344, -88, 0},
+-    {0xc4, 11, 0},
+-    {0x1c, -88, 3},
+-    {0x260, 11, 0},
+-    {0x24, -88, 3},
+-    {0x20, -88, 3},
+-    {0x18, 8, 3},
+-    {0x2c, -88, 3},
+-    {0x28, -88, 3},
+-    {0xe8, -8, 3},
+-    {0x30, -88, 3},
+-    {0x270, 6, 0},
+-    {0x150, -87, 0},
+-    {0x14c, -87, 0},
+-    {0xc, 31, 0},
+-    {0xf4, -94, 0},
+-    {0xfc, -94, 0},
+-    {0x104, -94, 0},
+-    {0x10c, -94, 0},
+-    {0x118, -75, 0},
+-    {0x11c, -75, 0},
+-    {0xcc, 11, 0},
+-    {0xec, -98, 0},
+-    {0x154, -87, 0},
+-    {0x244, -88, 0},
+-    {0xc0, 16, 0},
+-    {0x1bc, 8, 0},
+-    {0x1c0, 8, 0},
+-    {0x15c, -88, 0},
+-    {0x238, -97, 0},
+-    {0x23c, -97, 0},
+-    {0x22c, -97, 0},
+-    {0x158, -8, 0},
+-    {0x334, 10, 0},
+-    {0x338, 10, 0},
+-    {0x340, -88, 0},
+-    {0xd8, 10, 0},
+-    {0x240, 16, 0},
+-    {0x268, -16, 0},
+-    {0xa0, -100, 0},
+-    {0x120, -94, 0},
+-    {0xa8, 11, 0},
+-    {0x128, -94, 0},
+-    {0x130, -94, 0},
+-    {0x138, -94, 0},
+-    {0x27c, 11, 0},
+-    {0x8, -16, 0},
+-    {0x320, 10, 0},
+-    {0x10, 27, 0},
+-    {0x180, 8, 0},
+-    {0x144, 11, 0},
+-    {0x148, 11, 0},
+-    {0x38, 11, 0},
+-    {0x24c, 0, 0},
+-    {0x140, 8, 0},
+-    {0x98, 16, 0},
+-    {0x1b0, 16, 0},
+-    {0x28c, 6, 0},
+-    {0x90, 16, 0},
+-    {0x59c, 0, 0},
+-    {0x5a0, 0, 0},
+-    {0x17c, 8, 0},
+-    {0x200, 11, 0},
+-    {0x1ec, 11, 0},
+-    {0x1f0, 6, 0},
+-    {0x9c, -100, 0},
+-    {0x1cc, 2, 0},
+-    {0x1d0, 2, 0},
+-    {0x184, 8, 0},
+-    {0x188, 7, 0},
+-    {0xdc, 16, 0},
+-    {0xe0, 2, 0},
+-    {0x33c, 22, 0},
+-    {0x208, 11, 0},
+-    {0x34, -16, 0},
+-    {0x204, -8, 0},
+-    {0x164, -8, 0},
+-    {0x21c, 2, 0},
+-    {0x220, 2, 0},
+-    {0x4, 8, 0},
+-    {0xe4, 3, 0},
+-    {0x3328, -97, 0},
+-    {0x214, 1, 2},
+-    {0x218, 1, 2},
+-    {0x224, 1, 0},
+-    {0x278, 3, 0},
+-    {0x64, 8, 0},
+-    {0x168, 1, 2},
+-    {0x16c, 0, 0},
+-    {0x170, 0, 0},
+-    {0x160, 32, 0},
+-    {0x234, 1, 2},
+-    {0x1a0, 0, 0},
+-    {0x1a8, 0, 0},
+-    {0x1a4, 0, 0},
+-    {0x20c, 1, 2},
+-    {0x25c, 7, 0},
+-    {0x538, 2, 0},
+-    {0x230, 1, 2},
+-    {0xb8, 32, 0},
+-    {0x580, -97, 0},
+-    {0x584, 16, 2},
+-    {0x57c, 4, 0},
+-    {0x354, 1, 2},
+-    {0x284, -16, 0},
+-    {0x254, 32, 0},
+-    {0x324, 32, 0},
+-    {0x328, 32, 0},
+-    {0x32c, 32, 0},
+-    {0x330, 32, 0},
+-    {0x258, 4, 0},
+-    {0xbc, 0, 0},
+-    {0x250, 0, 0},
+-    {0x3308, 32, 0},
+-    {0x3c, -16, 0},
+-    {0x40, 10, 0},
+-    {0x178, 0, 0},
+-    {0x174, 0, 0},
+-    {0x274, 1, 0},
+-    {0x4a8, -57, 2},
+-    {0x4ac, 32, 0},
+-    {0x4b0, 32, 0},
+-    {0x68, 8, 0},
+-    {0x6c, 8, 0},
+-    {0x70, 8, 0},
+-    {0x74, 8, 0},
+-    {0x78, 8, 0},
+-    {0x7c, 5, 0},
+-    {0x80, 5, 0},
+-    {0x84, 5, 0},
+-    {0x88, 5, 0},
+-    {0x8c, 5, 0},
+-    {0xa40, 11, 0},
+-    {0xa44, 11, 0},
+-    {0xa48, 8, 0},
+-    {0x530, 2, 0},
+-    {0x294, 3, 0},
+-    {0x54c, 11, 0},
+-    {0xa3c, 32, 0},
+-    {0x228, 8, 0},
+-    {0x544, 11, 0},
+-    {0x590, 0, 0},
+-    {0x594, 0, 0},
+-    {0x598, 0, 0},
+-    {0x4a4, -97, 0},
+-    {0x49c, -100, 0},
+-    {0x4a0, 8, 0},
+-    {0x1d8, -100, 0},
+-    {0x14, 3, 0},
+-    {0x1e0, -100, 0},
+-    {0x1e4, -100, 0},
+-    {0x3304, 32, 0},
+-    {0x5ac, 0, 0},
+-    {0x1f4, 8, 0},
+-    {0x18c, 1, 0},
+-    {0xac, 0, 0},
+-    {0x280, -16, 0},
+-    {0x290, 1, 0},
+-    {0x1d4, -100, 0},
+-    {0x1dc, -100, 0},
+-    {0x1e8, -100, 0},
+-    {0x3320, 3, 0},
+-    {0x3324, -97, 0},
+-    {0x54, 11, 0},
+-    {0x58, 6, 0},
+-    {0x5c, 11, 0},
+-    {0x331c, 7, 0},
+-    {0x248, 16, 0},
+-    {0x550, 11, 0},
+-    {0x53c, 2, 0},
+-    {0x60, -97, 0},
+-    {0x1ac, 2, 0},
+-    {0xb0, 0, 0},
+-    {0x210, 32, 0},
+-    {0x558, 10, 0},
+-    {0x55c, 10, 0},
+-    {0x560, 10, 0},
+-    {0x564, 10, 0},
+-    {0x568, 10, 0},
+-    {0x56c, 10, 0},
+-    {0x570, 10, 0},
+-    {0x574, 10, 0},
+-    {0x534, 2, 0},
+-    {0xb4, 0, 0},
+-    {0x26c, -16, 0},
+-    {0x288, -16, 0},
+-    {0xa4, -100, 0},
+-    {0x34c, 6, 0},
+-    {0x350, 2, 0},
+-    {0x484, 7, 0},
+-    {0x488, 11, 0},
+-    {0x48c, -92, 0},
+-    {0x490, -91, 0},
+-    {0x494, -90, 0},
+-    {0x1b4, 8, 0},
+-    {0x1b8, 8, 0},
+-    {0x1c4, 8, 0},
+-    {0x1c8, 8, 0},
+-    {0x548, 11, 0},
+-    {0x58c, 0, 0},
+-    {0x5a4, 0, 0},
+-    {0x5a8, 0, 0},
+-    {0x5b0, 2, 0},
+-    {0x5b8, -57, 0},
+-    {0x32fc, 32, 0},
+-    {0x3300, 32, 0},
+-    {0x330c, 32, 0},
+-    {0x3310, 32, 0},
+-    {0x3314, 32, 0},
+-    {0x3318, 32, 0},
+-    {0x578, 2, 0},
+-    {0x94, 0, 0},
+-    {0x348, 32, 1},
+-    {0x528, 10, 0},
+-    {0x52c, 10, 0},
+-    {0x554, 11, 0},
+-    {0x540, 2, 0},
+-    {0x588, 1, 2},
+-    {0x44, 11, 0},
+-    {0x48, 11, 0},
+-    {0x4c, 11, 0},
+-    {0x50, 11, 0},
+-    {0x1fc, 11, 0},
++    {0,-97,0},
++    {244,-75,0},
++    {280,-75,0},
++    {624,-16,0},
++    {1188,-70,3},
++    {204,16,0},
++    {848,-88,0},
++    {200,11,0},
++    {28,-88,3},
++    {620,11,0},
++    {36,-88,3},
++    {32,-88,3},
++    {24,8,3},
++    {44,-88,3},
++    {40,-88,3},
++    {236,-8,3},
++    {48,-88,3},
++    {636,6,0},
++    {336,-87,0},
++    {332,-87,0},
++    {12,32,0},
++    {248,-94,0},
++    {256,-94,0},
++    {264,-94,0},
++    {272,-94,0},
++    {284,-75,0},
++    {288,-75,0},
++    {208,11,0},
++    {240,-98,0},
++    {340,-87,0},
++    {592,-88,0},
++    {196,16,0},
++    {448,8,0},
++    {452,8,0},
++    {348,-88,0},
++    {580,-97,0},
++    {584,-97,0},
++    {568,-97,0},
++    {344,-8,0},
++    {832,10,0},
++    {836,10,0},
++    {844,-88,0},
++    {220,10,0},
++    {588,16,0},
++    {628,-16,0},
++    {164,-100,0},
++    {292,-94,0},
++    {172,11,0},
++    {300,-94,0},
++    {308,-94,0},
++    {316,-94,0},
++    {648,11,0},
++    {8,-16,0},
++    {812,10,0},
++    {16,28,0},
++    {384,8,0},
++    {328,10,0},
++    {56,11,0},
++    {600,0,0},
++    {324,8,0},
++    {156,16,0},
++    {436,16,0},
++    {664,6,0},
++    {144,16,0},
++    {1480,0,0},
++    {1484,0,0},
++    {380,8,0},
++    {516,11,0},
++    {496,11,0},
++    {500,6,0},
++    {160,-100,0},
++    {464,2,0},
++    {468,2,0},
++    {388,8,0},
++    {392,7,0},
++    {224,16,0},
++    {228,2,0},
++    {840,22,0},
++    {524,11,0},
++    {52,-16,0},
++    {520,-8,0},
++    {356,-8,0},
++    {536,-101,2},
++    {4,8,0},
++    {232,3,0},
++    {13136,-97,0},
++    {560,1,0},
++    {644,3,0},
++    {100,8,0},
++    {360,1,2},
++    {364,0,0},
++    {368,0,0},
++    {352,32,0},
++    {576,1,2},
++    {416,0,0},
++    {424,0,0},
++    {420,0,0},
++    {428,-97,0},
++    {528,1,2},
++    {616,8,0},
++    {1384,2,0},
++    {572,1,2},
++    {188,32,0},
++    {1456,-97,0},
++    {1460,16,2},
++    {1452,4,0},
++    {864,1,2},
++    {656,-16,0},
++    {608,32,0},
++    {816,32,0},
++    {820,32,0},
++    {824,32,0},
++    {828,32,0},
++    {612,4,0},
++    {192,0,0},
++    {604,0,0},
++    {13108,32,0},
++    {60,-16,0},
++    {64,10,0},
++    {376,0,0},
++    {372,0,0},
++    {640,1,0},
++    {1212,-57,2},
++    {1216,32,0},
++    {1220,32,0},
++    {1224,32,0},
++    {104,8,0},
++    {108,8,0},
++    {112,8,0},
++    {116,8,0},
++    {120,8,0},
++    {124,5,0},
++    {128,5,0},
++    {132,5,0},
++    {136,5,0},
++    {140,5,0},
++    {2668,11,0},
++    {2672,11,0},
++    {2676,8,0},
++    {1376,2,0},
++    {672,3,0},
++    {1404,11,0},
++    {2664,32,0},
++    {564,8,0},
++    {1396,11,0},
++    {1468,0,0},
++    {1472,0,0},
++    {1476,0,0},
++    {1200,-97,0},
++    {1192,-100,0},
++    {1196,8,0},
++    {1204,14,0},
++    {1208,2,0},
++    {476,-100,0},
++    {20,3,0},
++    {484,-100,0},
++    {488,-100,0},
++    {13104,32,0},
++    {1496,0,0},
++    {504,8,0},
++    {396,1,0},
++    {176,0,0},
++    {652,-16,0},
++    {668,1,0},
++    {472,-100,0},
++    {480,-100,0},
++    {492,-100,0},
++    {13132,-97,0},
++    {84,11,0},
++    {88,6,0},
++    {92,11,0},
++    {13128,7,0},
++    {596,16,0},
++    {1408,11,0},
++    {1388,2,0},
++    {96,-97,0},
++    {432,2,0},
++    {180,0,0},
++    {532,32,0},
++    {1416,10,0},
++    {1420,10,0},
++    {1424,10,0},
++    {1428,10,0},
++    {1432,10,0},
++    {1436,10,0},
++    {1440,10,0},
++    {1444,10,0},
++    {1380,2,0},
++    {184,0,0},
++    {632,-16,0},
++    {660,-16,0},
++    {168,-100,0},
++    {856,6,0},
++    {860,2,0},
++    {1168,7,0},
++    {1172,11,0},
++    {1176,-92,0},
++    {1180,-91,0},
++    {1184,-90,0},
++    {440,8,0},
++    {444,8,0},
++    {456,8,0},
++    {460,8,0},
++    {1400,11,0},
++    {1464,0,0},
++    {1488,0,0},
++    {1492,0,0},
++    {1500,2,0},
++    {1508,-57,0},
++    {13096,32,0},
++    {13100,32,0},
++    {13112,32,0},
++    {13116,32,0},
++    {13120,32,0},
++    {13124,32,0},
++    {1448,2,0},
++    {148,0,0},
++    {152,0,0},
++    {852,32,1},
++    {1368,10,0},
++    {1372,10,0},
++    {1412,11,0},
++    {1392,2,0},
++    {68,11,0},
++    {72,11,0},
++    {76,11,0},
++    {80,11,0},
++    {512,11,0},
++    {13576,4,0},
++    {13580,32,0},
++    {13584,32,0},
++    {13588,32,0},
++    {13592,-55,0},
++    {13596,-57,0},
++    {13600,0,0},
+ };
+ static const codol2697_field_t entities[CODOL2697_ENTITY_TABLES][CODOL2697_ENTITY_FIELDS] = {
+   { /* type 0, table 0xca77e8 */
+@@ -1642,6 +1648,7 @@
+     {0x108, 32, 1},
+   },
+ };
++/* Current event names at 0xce4390. */
+ static const char *names[CODOL2697_EVENTS] = {
+     "EV_NONE",
+     "EV_FOLIAGE_SOUND",
+@@ -1698,6 +1705,14 @@
+     "EV_SV_FIRE_WEAPON_LASTSHOT_LEFT",
+     "EV_MELEE_SWIPE",
+     "EV_FIRE_MELEE",
++    "EV_MELEE_INIT",
++    "EV_MELEE_TRACE",
++    "EV_MELEE_TRACE_DIR1",
++    "EV_MELEE_TRACE_DIR2",
++    "EV_MELEE_PRE_TRACE",
++    "EV_MELEE_PRE_TRACE_DIR1",
++    "EV_MELEE_PRE_TRACE_DIR2",
++    "EV_MELEE_END",
+     "EV_PREP_OFFHAND",
+     "EV_USE_OFFHAND",
+     "EV_SWITCH_OFFHAND",
+@@ -1743,6 +1758,17 @@
+     "EV_KILL_FX_ON_TAG",
+     "EV_PLAY_VIEWMODEL_FX_ON_TAG",
+     "EV_STOP_VIEWMODEL_FX_ON_TAG",
++    "EV_PLAY_WEAPONMODEL_FX_ON_TAG",
++    "EV_STOP_WEAPONMODEL_FX_ON_TAG",
++    "EV_PLAY_FX_ON_CUSTOMIZATION_TAG",
++    "EV_PLAY_FX_ON_CUSTOMIZATION_TAG_NO_SCALE",
++    "EV_STOP_FX_ON_CUSTOMIZATION_TAG",
++    "EV_KILL_FX_ON_CUSTOMIZATION_TAG",
++    "EV_PLAY_PROCEDURAL_LINE_FX",
++    "EV_PLAY_PROCEDURAL_LINE_FX_ON_TAG",
++    "EV_PLAY_PROCEDURAL_LINE_FX_ON_CUSTOMIZATION_TAG",
++    "EV_KILL_PROCEDURAL_LINE_FX_ON_TAG",
++    "EV_KILL_PROCEDURAL_LINE_FX_ON_CUSTOMIZATION_TAG",
+     "EV_EXPLODER",
+     "EV_PHYS_EXPLOSION_SPHERE",
+     "EV_PHYS_EXPLOSION_CYLINDER",
+@@ -1778,6 +1804,14 @@
+     "EV_DTP_LAND",
+     "EV_HITACTOR_FIRE_WEAPON",
+     "EV_HITACTOR_FIRE_WEAPON_LASTSHOT",
++    "EV_POWER_ACTIVATED",
++    "EV_POWER_DENIED",
++    "EV_RESTRICTED_WEAPON",
++    "EV_COMPASS_PING",
++    "EV_IMPULSE_CLIENT_RAGDOLL",
++    "EV_STOP_SMOKE_FX",
++    "EV_FROZEN_INPUT",
++    "EV_UNFROZEN_INPUT",
+ };
+ const codol2697_field_t *CODOL2697_PlayerField(unsigned index) {
+     return index < CODOL2697_PLAYER_FIELDS ? player + index : NULL;
+@@ -1830,111 +1864,111 @@
+     case 46: return 52; /* EV_SV_FIRE_WEAPON_LASTSHOT_LEFT */
+     case 47: return 53; /* EV_MELEE_SWIPE */
+     case 48: return 54; /* EV_FIRE_MELEE */
+-    case 49: return 55; /* EV_PREP_OFFHAND */
+-    case 50: return 56; /* EV_USE_OFFHAND */
+-    case 51: return 57; /* EV_SWITCH_OFFHAND */
+-    case 52: return 58; /* EV_MELEE_HIT */
+-    case 53: return 59; /* EV_MELEE_MISS */
+-    case 54: return 60; /* EV_MELEE_BLOOD */
+-    case 55: return 61; /* EV_FIRE_TURRET */
+-    case 57: return 63; /* EV_FIRE_QUADBARREL_1 */
+-    case 58: return 64; /* EV_FIRE_QUADBARREL_2 */
+-    case 60: return 66; /* EV_BULLET_HIT */
+-    case 63: return 69; /* EV_BULLET_HIT_CLIENT_SMALL */
+-    case 64: return 70; /* EV_BULLET_HIT_CLIENT_LARGE */
+-    case 69: return 75; /* EV_GRENADE_BOUNCE */
+-    case 73: return 79; /* EV_GRENADE_EXPLODE */
+-    case 76: return 82; /* EV_ROCKET_EXPLODE */
+-    case 77: return 83; /* EV_ROCKET_EXPLODE_NOMARKS */
+-    case 78: return 84; /* EV_FLASHBANG_EXPLODE */
+-    case 79: return 85; /* EV_CUSTOM_EXPLODE */
+-    case 80: return 86; /* EV_CUSTOM_EXPLODE_NOMARKS */
+-    case 81: return 87; /* EV_CHANGE_TO_DUD */
+-    case 82: return 88; /* EV_DUD_EXPLODE */
+-    case 83: return 89; /* EV_DUD_IMPACT */
+-    case 87: return 92; /* EV_PLAY_FX */
+-    case 89: return 94; /* EV_PLAY_FX_ON_TAG */
+-    case 90: return 96; /* EV_STOP_FX_ON_TAG */
+-    case 95: return 101; /* EV_PHYS_EXPLOSION_SPHERE */
+-    case 96: return 102; /* EV_PHYS_EXPLOSION_CYLINDER */
+-    case 97: return 103; /* EV_PHYS_EXPLOSION_JOLT */
+-    case 99: return 105; /* EV_PHYS_JITTER */
+-    case 100: return 106; /* EV_EARTHQUAKE */
+-    case 101: return 107; /* EV_GRENADE_SUICIDE */
+-    case 102: return 108; /* EV_DETONATE */
+-    case 103: return 109; /* EV_NIGHTVISION_WEAR */
+-    case 104: return 110; /* EV_NIGHTVISION_REMOVE */
+-    case 105: return 111; /* EV_MISSILE_REMOTE_BOOST */
+-    case 107: return 113; /* EV_OBITUARY */
+-    case 110: return 116; /* EV_TARGET_TOO_CLOSE_HINT */
+-    case 112: return 118; /* EV_LOCKON_REQUIRED_HINT */
+-    case 116: return 122; /* EV_FOOTSTEP_SPRINT */
+-    case 117: return 123; /* EV_FOOTSTEP_RUN */
+-    case 118: return 124; /* EV_FOOTSTEP_WALK */
+-    case 119: return 125; /* EV_FOOTSTEP_PRONE */
+-    case 120: return 126; /* EV_JUMP */
+-    case 121: return 127; /* EV_LANDING_HARD */
+-    case 122: return 127; /* EV_LANDING_HARD */
+-    case 123: return 127; /* EV_LANDING_HARD */
+-    case 124: return 127; /* EV_LANDING_HARD */
+-    case 125: return 127; /* EV_LANDING_HARD */
+-    case 126: return 127; /* EV_LANDING_HARD */
+-    case 127: return 127; /* EV_LANDING_HARD */
+-    case 128: return 127; /* EV_LANDING_HARD */
+-    case 129: return 127; /* EV_LANDING_HARD */
+-    case 130: return 127; /* EV_LANDING_HARD */
+-    case 131: return 127; /* EV_LANDING_HARD */
+-    case 132: return 127; /* EV_LANDING_HARD */
+-    case 133: return 127; /* EV_LANDING_HARD */
+-    case 134: return 127; /* EV_LANDING_HARD */
+-    case 135: return 127; /* EV_LANDING_HARD */
+-    case 136: return 127; /* EV_LANDING_HARD */
+-    case 137: return 127; /* EV_LANDING_HARD */
+-    case 138: return 127; /* EV_LANDING_HARD */
+-    case 139: return 127; /* EV_LANDING_HARD */
+-    case 140: return 127; /* EV_LANDING_HARD */
+-    case 141: return 127; /* EV_LANDING_HARD */
+-    case 142: return 127; /* EV_LANDING_HARD */
+-    case 143: return 127; /* EV_LANDING_HARD */
+-    case 144: return 127; /* EV_LANDING_HARD */
+-    case 145: return 127; /* EV_LANDING_HARD */
+-    case 146: return 127; /* EV_LANDING_HARD */
+-    case 147: return 127; /* EV_LANDING_HARD */
+-    case 148: return 127; /* EV_LANDING_HARD */
+-    case 149: return 127; /* EV_LANDING_HARD */
+-    case 152: return 128; /* EV_LANDING_PAIN */
+-    case 153: return 128; /* EV_LANDING_PAIN */
+-    case 154: return 128; /* EV_LANDING_PAIN */
+-    case 155: return 128; /* EV_LANDING_PAIN */
+-    case 156: return 128; /* EV_LANDING_PAIN */
+-    case 157: return 128; /* EV_LANDING_PAIN */
+-    case 158: return 128; /* EV_LANDING_PAIN */
+-    case 159: return 128; /* EV_LANDING_PAIN */
+-    case 160: return 128; /* EV_LANDING_PAIN */
+-    case 161: return 128; /* EV_LANDING_PAIN */
+-    case 162: return 128; /* EV_LANDING_PAIN */
+-    case 163: return 128; /* EV_LANDING_PAIN */
+-    case 164: return 128; /* EV_LANDING_PAIN */
+-    case 165: return 128; /* EV_LANDING_PAIN */
+-    case 166: return 128; /* EV_LANDING_PAIN */
+-    case 167: return 128; /* EV_LANDING_PAIN */
+-    case 168: return 128; /* EV_LANDING_PAIN */
+-    case 169: return 128; /* EV_LANDING_PAIN */
+-    case 170: return 128; /* EV_LANDING_PAIN */
+-    case 171: return 128; /* EV_LANDING_PAIN */
+-    case 172: return 128; /* EV_LANDING_PAIN */
+-    case 173: return 128; /* EV_LANDING_PAIN */
+-    case 174: return 128; /* EV_LANDING_PAIN */
+-    case 175: return 128; /* EV_LANDING_PAIN */
+-    case 176: return 128; /* EV_LANDING_PAIN */
+-    case 177: return 128; /* EV_LANDING_PAIN */
+-    case 178: return 128; /* EV_LANDING_PAIN */
+-    case 179: return 128; /* EV_LANDING_PAIN */
+-    case 180: return 128; /* EV_LANDING_PAIN */
+-    case 183: return 129; /* EV_MANTLE */
+-    case 184: return 130; /* EV_SCOPE_ZOOM */
+-    case 185: return 131; /* EV_DTP_LAUNCH */
+-    case 186: return 132; /* EV_DTP_LAND */
++    case 49: return 63; /* EV_PREP_OFFHAND */
++    case 50: return 64; /* EV_USE_OFFHAND */
++    case 51: return 65; /* EV_SWITCH_OFFHAND */
++    case 52: return 66; /* EV_MELEE_HIT */
++    case 53: return 67; /* EV_MELEE_MISS */
++    case 54: return 68; /* EV_MELEE_BLOOD */
++    case 55: return 69; /* EV_FIRE_TURRET */
++    case 57: return 71; /* EV_FIRE_QUADBARREL_1 */
++    case 58: return 72; /* EV_FIRE_QUADBARREL_2 */
++    case 60: return 74; /* EV_BULLET_HIT */
++    case 63: return 77; /* EV_BULLET_HIT_CLIENT_SMALL */
++    case 64: return 78; /* EV_BULLET_HIT_CLIENT_LARGE */
++    case 69: return 83; /* EV_GRENADE_BOUNCE */
++    case 73: return 87; /* EV_GRENADE_EXPLODE */
++    case 76: return 90; /* EV_ROCKET_EXPLODE */
++    case 77: return 91; /* EV_ROCKET_EXPLODE_NOMARKS */
++    case 78: return 92; /* EV_FLASHBANG_EXPLODE */
++    case 79: return 93; /* EV_CUSTOM_EXPLODE */
++    case 80: return 94; /* EV_CUSTOM_EXPLODE_NOMARKS */
++    case 81: return 95; /* EV_CHANGE_TO_DUD */
++    case 82: return 96; /* EV_DUD_EXPLODE */
++    case 83: return 97; /* EV_DUD_IMPACT */
++    case 87: return 100; /* EV_PLAY_FX */
++    case 89: return 102; /* EV_PLAY_FX_ON_TAG */
++    case 90: return 104; /* EV_STOP_FX_ON_TAG */
++    case 95: return 120; /* EV_PHYS_EXPLOSION_SPHERE */
++    case 96: return 121; /* EV_PHYS_EXPLOSION_CYLINDER */
++    case 97: return 122; /* EV_PHYS_EXPLOSION_JOLT */
++    case 99: return 124; /* EV_PHYS_JITTER */
++    case 100: return 125; /* EV_EARTHQUAKE */
++    case 101: return 126; /* EV_GRENADE_SUICIDE */
++    case 102: return 127; /* EV_DETONATE */
++    case 103: return 128; /* EV_NIGHTVISION_WEAR */
++    case 104: return 129; /* EV_NIGHTVISION_REMOVE */
++    case 105: return 130; /* EV_MISSILE_REMOTE_BOOST */
++    case 107: return 132; /* EV_OBITUARY */
++    case 110: return 135; /* EV_TARGET_TOO_CLOSE_HINT */
++    case 112: return 137; /* EV_LOCKON_REQUIRED_HINT */
++    case 116: return 141; /* EV_FOOTSTEP_SPRINT */
++    case 117: return 142; /* EV_FOOTSTEP_RUN */
++    case 118: return 143; /* EV_FOOTSTEP_WALK */
++    case 119: return 144; /* EV_FOOTSTEP_PRONE */
++    case 120: return 145; /* EV_JUMP */
++    case 121: return 146; /* EV_LANDING_HARD */
++    case 122: return 146; /* EV_LANDING_HARD */
++    case 123: return 146; /* EV_LANDING_HARD */
++    case 124: return 146; /* EV_LANDING_HARD */
++    case 125: return 146; /* EV_LANDING_HARD */
++    case 126: return 146; /* EV_LANDING_HARD */
++    case 127: return 146; /* EV_LANDING_HARD */
++    case 128: return 146; /* EV_LANDING_HARD */
++    case 129: return 146; /* EV_LANDING_HARD */
++    case 130: return 146; /* EV_LANDING_HARD */
++    case 131: return 146; /* EV_LANDING_HARD */
++    case 132: return 146; /* EV_LANDING_HARD */
++    case 133: return 146; /* EV_LANDING_HARD */
++    case 134: return 146; /* EV_LANDING_HARD */
++    case 135: return 146; /* EV_LANDING_HARD */
++    case 136: return 146; /* EV_LANDING_HARD */
++    case 137: return 146; /* EV_LANDING_HARD */
++    case 138: return 146; /* EV_LANDING_HARD */
++    case 139: return 146; /* EV_LANDING_HARD */
++    case 140: return 146; /* EV_LANDING_HARD */
++    case 141: return 146; /* EV_LANDING_HARD */
++    case 142: return 146; /* EV_LANDING_HARD */
++    case 143: return 146; /* EV_LANDING_HARD */
++    case 144: return 146; /* EV_LANDING_HARD */
++    case 145: return 146; /* EV_LANDING_HARD */
++    case 146: return 146; /* EV_LANDING_HARD */
++    case 147: return 146; /* EV_LANDING_HARD */
++    case 148: return 146; /* EV_LANDING_HARD */
++    case 149: return 146; /* EV_LANDING_HARD */
++    case 152: return 147; /* EV_LANDING_PAIN */
++    case 153: return 147; /* EV_LANDING_PAIN */
++    case 154: return 147; /* EV_LANDING_PAIN */
++    case 155: return 147; /* EV_LANDING_PAIN */
++    case 156: return 147; /* EV_LANDING_PAIN */
++    case 157: return 147; /* EV_LANDING_PAIN */
++    case 158: return 147; /* EV_LANDING_PAIN */
++    case 159: return 147; /* EV_LANDING_PAIN */
++    case 160: return 147; /* EV_LANDING_PAIN */
++    case 161: return 147; /* EV_LANDING_PAIN */
++    case 162: return 147; /* EV_LANDING_PAIN */
++    case 163: return 147; /* EV_LANDING_PAIN */
++    case 164: return 147; /* EV_LANDING_PAIN */
++    case 165: return 147; /* EV_LANDING_PAIN */
++    case 166: return 147; /* EV_LANDING_PAIN */
++    case 167: return 147; /* EV_LANDING_PAIN */
++    case 168: return 147; /* EV_LANDING_PAIN */
++    case 169: return 147; /* EV_LANDING_PAIN */
++    case 170: return 147; /* EV_LANDING_PAIN */
++    case 171: return 147; /* EV_LANDING_PAIN */
++    case 172: return 147; /* EV_LANDING_PAIN */
++    case 173: return 147; /* EV_LANDING_PAIN */
++    case 174: return 147; /* EV_LANDING_PAIN */
++    case 175: return 147; /* EV_LANDING_PAIN */
++    case 176: return 147; /* EV_LANDING_PAIN */
++    case 177: return 147; /* EV_LANDING_PAIN */
++    case 178: return 147; /* EV_LANDING_PAIN */
++    case 179: return 147; /* EV_LANDING_PAIN */
++    case 180: return 147; /* EV_LANDING_PAIN */
++    case 183: return 148; /* EV_MANTLE */
++    case 184: return 149; /* EV_SCOPE_ZOOM */
++    case 185: return 150; /* EV_DTP_LAUNCH */
++    case 186: return 151; /* EV_DTP_LAND */
+     default: return -1;
+     }
+ }
+--- a/src/codol/snapshot/codol_2697_profile.h
++++ b/src/codol/snapshot/codol_2697_profile.h
+@@ -5,10 +5,10 @@
+ #ifndef CODOL_2697_PROFILE_H
+ #define CODOL_2697_PROFILE_H
+ #include <stdint.h>
+-#define CODOL2697_PLAYER_FIELDS 229u
++#define CODOL2697_PLAYER_FIELDS 235u
+ #define CODOL2697_ENTITY_FIELDS 62u
+ #define CODOL2697_ENTITY_TABLES 22u
+-#define CODOL2697_EVENTS 135u
++#define CODOL2697_EVENTS 162u
+ typedef struct { uint16_t offset; int16_t bits; uint8_t hint; } codol2697_field_t;
+ const codol2697_field_t *CODOL2697_PlayerField(unsigned index);
+ const codol2697_field_t *CODOL2697_EntityField(unsigned type, unsigned index);
+--- a/src/codol/snapshot/codol_2697_resources.c
++++ b/src/codol/snapshot/codol_2697_resources.c
+@@ -28,8 +28,9 @@
+ const char *CODOL2697_ResourceName(const codol2697_resources_t *r,unsigned k,unsigned s)
+ {
+     const codol_netconst_kind_t *n;
+-    if(!r||!r->ready||k>=20||!s)return NULL;n=r->constants.kinds+k;
+-    if(s<=n->count)return CODOL_NetConstValue(&r->constants,k,s);
++    if(!r||!r->ready||k>=CODOL2697_NCS_KINDS)return NULL;n=r->constants.kinds+k;
++    if(s<n->reserved)return NULL;
++    if(s-n->reserved<n->count)return CODOL_NetConstValue(&r->constants,k,s);
+     if(s>=n->capacity||n->base+s>=CODOL2697_CONFIGSTRING_SENTINEL)return NULL;
+     return r->dynamic[n->base+s];
+ }
+@@ -43,9 +44,9 @@
+     name=CODOL_GetEffectiveConfigstring(s->overrides,s->inherited,base+source);
+     if(!name||!*name)return 0;
+     found=CODOL_NetConstFind(&s->resources->constants,kind,name);
+-    if(found>0){*target=(unsigned)found;return 1;}
++    if(found>=0){*target=(unsigned)found;return 1;}
+     k=s->resources->constants.kinds+kind;
+-    for(slot=k->count+1;slot<k->count+1+s->resources->dynamic_count[kind];++slot)
++    for(slot=k->count+k->reserved;slot<k->count+k->reserved+s->resources->dynamic_count[kind];++slot)
+         if(!strcmp(name,s->resources->dynamic[k->base+slot])){*target=slot;return 1;}
+     if(slot>=k->capacity || k->base+slot>=CODOL2697_CONFIGSTRING_SENTINEL)return 0;
+     copy=malloc(strlen(name)+1);if(!copy)return 0;strcpy(copy,name);
+@@ -55,7 +56,7 @@
+ {
+     unsigned base,cap;const char *name;
+     if(!s||!source||!CODOL2697_InternalResourceRange(kind,&base,&cap))return 0;
+-    if(!target){*source=0;return 1;}
++    if(!target && s->resources->constants.kinds[kind].reserved){*source=0;return 1;}
+     name=CODOL2697_ResourceName(s->resources,kind,target);if(!name)return 0;
+     for(unsigned i=(kind==8||kind==14)?0:1;i<cap;++i) {
+         const char *v=CODOL_GetEffectiveConfigstring(s->overrides,s->inherited,base+i);
+--- a/src/codol/snapshot/codol_game.c
++++ b/src/codol/snapshot/codol_game.c
+@@ -51,6 +51,9 @@
+         if(!isfinite(position[i])) goto fail;
+     }
+     time=CODOL_ReadLong(&wire);
++    /* Current sender 0x4602a0 appends one more word after prediction time.
++     * Preserve alignment; its gameplay meaning is not yet established. */
++    CODOL_ReadLong(&wire);
+     if(wire.failed) goto fail;
+     memcpy(commands,decoded,count*sizeof(*commands));
+     memcpy(origin,position,sizeof(position)); *origin_time=time;
+--- a/src/codol/snapshot/codol_game.h
++++ b/src/codol/snapshot/codol_game.h
+@@ -8,7 +8,7 @@
+ int CODOL_ReadUsercmdMSG(msg_t *msg, uint32_t key,
+                          const codol_usercmd_t *from, codol_usercmd_t *to);
+ /* Whole movement payload after its count byte: zero-based command chain and
+- * four-word predicted-origin trailer. Outputs and engine cursors commit only
++ * five-word prediction trailer. Outputs and engine cursors commit only
+  * after all commands/trailer validate; failure marks overflow. */
+ int CODOL_ReadUsermoveMSG(msg_t *,uint32_t key,unsigned count,codol_usercmd_t *commands,
+                           size_t capacity,float origin[3],uint32_t *origin_time);
+--- a/src/codol/snapshot/codol_sv_state.c
++++ b/src/codol/snapshot/codol_sv_state.c
+@@ -72,7 +72,7 @@
+     };
+     codol_netconst_t *tables=NULL;size_t count=0;codol_netconst_index_t index={0};
+     codol_configstrings_t next={0};int ok=0;
+-    if(!zone_type||strcmp(zone_type,"mp")||*inherited_zone_type)return 0;
++    if(!zone_type||(strcmp(zone_type,"mp")&&strcmp(zone_type,"coop")&&strcmp(zone_type,"zm"))||*inherited_zone_type)return 0;
+     if(CODOL_LoadMountedNetConsts(&tables,&count)!=1) {
+         Com_Printf(CON_CHANNEL_SERVER,"CoDOL 2697 resource table decode failed\n");goto done;
+     }
+@@ -83,11 +83,11 @@
+             Com_Printf(CON_CHANNEL_SERVER,"CoDOL 2697 invalid client registration export\n");goto done;
+         }
+     }
+-    if(!CODOL_BuildNetConstIndexSeeded(tables,count,"chinese",target_registration.seed,&index)) {
++    if(!CODOL_BuildNetConstIndexSeeded(tables,count,"chi",target_registration.seed,&index)) {
+         Com_Printf(CON_CHANNEL_SERVER,"CoDOL 2697 resource index failed (%u tables)\n",(unsigned)count);goto done;
+     }
+     if(target_registration.codinfo_count) {
+-        codol_netconst_kind_t *k=index.kinds+17;
++        codol_netconst_kind_t *k=index.kinds+18;
+         k->values=calloc(target_registration.codinfo_count,sizeof(*k->values));if(!k->values)goto done;
+         k->count=target_registration.codinfo_count;
+         for(unsigned i=0;i<k->count;++i)k->values[i]=target_registration.codinfo_names[i];
+@@ -205,7 +205,7 @@
+     uint32_t crc;
+ #ifdef CODOL_SERVER
+     if(CODOL_Target2697ArchivesActive()) {
+-        codol2697_gamestate_t state={sequence,target_resources.constants.checksum,checksum_feed,client_number,map};
++        codol2697_gamestate_t state={sequence,target_resources.constants.checksum,checksum_feed,client_number,map,zone_type};
+         if(!msg||!msg->data||msg->overflowed||msg->splitData||msg->cursize<0||msg->maxsize<msg->cursize||
+            !max_clients||max_clients>32||client_number>=max_clients||
+            !CODOL_ServerMapIdentityMatches(map,zone_type)||!CODOL_SetServerInfo(map,gametype,max_clients,hostname)||
