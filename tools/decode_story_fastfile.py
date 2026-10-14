@@ -1,4 +1,4 @@
-"""Read CODOL 3.3.3.3 signed FF427 using the matching client's embedded material.
+"""Read CODOL 3.3.3.3 signed FF423 using the matching client's embedded material.
 
 REA consumers: 0x4847e0 header, 0x4843f0 material, 0x483e90 block verification.
 This restores the zone byte stream; it does not port zone structs or run scripts.
@@ -20,7 +20,7 @@ def decode(client, wire, map_name):
     if hashlib.sha256(client).hexdigest() != CLIENT_SHA256:
         raise ValueError('client hash mismatch')
     if wire[:12] != b'IWff0100\xa7\x01\0\0' or len(wire) < 277 + 3 * BLOCK or (len(wire) - 277) % BLOCK:
-        raise ValueError('unsupported/truncated signed FF427')
+        raise ValueError('unsupported/truncated signed FF423')
     pe = pefile.PE(data=client, fast_load=True)
     key = serialization.load_der_private_key(pe.get_data(0x859fa0, 0x4a7), None)
     verifier = serialization.load_der_public_key(pe.get_data(0x85a448, 0x10e))

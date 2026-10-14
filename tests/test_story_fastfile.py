@@ -1,4 +1,4 @@
-"""427 FF decoding at the file boundary, with current-client crypto metadata."""
+"""423 FF decoding at the file boundary, with current-client crypto metadata."""
 import importlib.util
 import json
 from pathlib import Path

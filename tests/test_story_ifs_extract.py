@@ -22,10 +22,16 @@ class StoryIfsExtractTests(unittest.TestCase):
             folder = Path(folder)
             archive = folder / source.name
             shutil.copyfile(source, archive)
+            listing = subprocess.run([str(EXPERIMENT / 'ifs-read.exe'),
+                                      str(GAME / 'IIPS/IFS2.dll'), str(archive), '--list'],
+                                     capture_output=True, text=True, timeout=30)
+            self.assertEqual(listing.returncode, 0, listing.stderr)
+            self.assertEqual(list(folder.iterdir()), [archive])
             result = subprocess.run([str(EXPERIMENT / 'ifs-read.exe'),
                                      str(GAME / 'IIPS/IFS2.dll'), str(archive), str(folder)],
                                     capture_output=True, text=True, timeout=30)
             self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(listing.stdout, result.stdout)
             rows = [line.split('\t', 2) for line in result.stdout.splitlines()]
             self.assertEqual(len(rows), 3)
             contents = {name.lower().replace('\\', '/'): (folder / (index + '.bin')).read_bytes()

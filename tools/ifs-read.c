@@ -17,7 +17,7 @@ typedef void (__thiscall *Close)(void *, void *, int);
 
 int main(int argc, char **argv) {
     if (argc != 4) {
-        fprintf(stderr, "usage: ifs-read DLL ARCHIVE_COPY EXISTING_OUTPUT_DIR\n");
+        fprintf(stderr, "usage: ifs-read DLL ARCHIVE_COPY EXISTING_OUTPUT_DIR|--list\n");
         return 2;
     }
     fprintf(stderr, "Loading IFS DLL\n");
@@ -53,6 +53,10 @@ int main(int argc, char **argv) {
         if (!name || flags != 0x80000000u || size != entry[8] || entry[3] ||
             size > 512u * 1024u * 1024u) {
             fprintf(stderr, "Unsupported entry %u %s flags=%x\n", i, name ? name : "(null)", flags); result = 8; break;
+        }
+        if (!strcmp(argv[3], "--list")) {
+            printf("%u\t%u\t%s\n", i, size, name);
+            continue;
         }
         void *data = malloc(size ? size : 1);
         if (!data) { result = 9; break; }

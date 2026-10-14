@@ -26,7 +26,8 @@ def main():
         manifest = json.loads((STAGE / source / 'manifest.json').read_text())
         for item in (f for a in manifest['archives'] for f in a['files'] if f['name'].endswith('.ff')):
             task = subprocess.run([str(executable), '--codol-archive-probe', str(ROOT / item['file']), str(client)],
-                                  cwd=STAGE, env=env, capture_output=True, text=True, timeout=30,
+                                  cwd=STAGE, env=env, capture_output=True, text=True,
+                                  errors='backslashreplace', timeout=30,
                                   creationflags=subprocess.CREATE_NO_WINDOW)
             log = STAGE / (Path(item['name']).name + '.probe.log')
             log.write_text(task.stdout + task.stderr, encoding='utf-8')
@@ -36,6 +37,10 @@ def main():
     (STAGE / 'archive427-probes.json').write_text(json.dumps({
         'input_sha256': hashlib.sha256(original).hexdigest(),
         'output_sha256': hashlib.sha256(patched).hexdigest(),
+        'input_size': len(original),
+        'output_size': len(patched),
+        'appended_bytes': len(patched) - len(original),
+        'appended_sha256': hashlib.sha256(patched[len(original):]).hexdigest(),
         'changed_offsets': [hex(i) for i, (a, b) in enumerate(zip(original, patched)) if a != b],
         'probes': rows}, indent=2), encoding='utf-8')
 
