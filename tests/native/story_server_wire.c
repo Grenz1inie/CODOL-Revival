@@ -34,7 +34,97 @@ done:
 }
 
 static int test_resolve(void *opaque,unsigned kind,unsigned source,unsigned *target)
-{(void)opaque;*target=source+10;return kind==0||kind==13;}
+{(void)opaque;*target=source+10;return kind==0||kind==9||kind==13;}
+
+__declspec(dllexport) size_t native_obituary(void *out,unsigned capacity,unsigned selector)
+{
+    codol_entity_state_t source={0};codol2697_entity_t target={0},held={0};
+    codol2697_adapter_t adapter={test_resolve,NULL};codol_delta_context_t ctx={0};codol_msg_t msg;
+    source.type=21+107;ctx.server_time=1000;
+    for(unsigned i=0;i<CODOL_ENTITY_FIELDS;++i) {
+        unsigned offset=CODOL_EntityField(source.type,i)->offset;
+        if(offset==0xac)source.field[i]=selector&255;
+        if(offset==0xe0)source.field[i]=selector>>8;
+    }
+    if(!CODOL2697_AdaptEntity(&target,&source,&adapter))return 0;
+    CODOL_MsgWriteInit(&msg,out,capacity);
+    if(!CODOL2697_WriteEntityPayload(&msg,NULL,&target,&held,&ctx))return 0;
+    CODOL_WriteByte(&msg,6);return msg.failed?0:msg.size;
+}
+
+__declspec(dllexport) size_t native_engine_snapshot(void *out,unsigned capacity)
+{
+    codol2697_adapter_t adapter={test_resolve,NULL};codol_delta_context_t ctx={0};
+    codol2697_snapshot_t frame={0};codol2697_player_fields_t player={0};
+    codol2697_entity_t entities[2]={0};codol2697_client_t client={0};codol2697_actor_t actor={0};
+    codol_entity_state_t source={0};codol_client_state_t source_client={0};
+    codol_client_appearance_t appearance={0};codol_actor_state_t source_actor={0};codol_msg_t msg;
+    for(unsigned i=0;i<CODOL_ENTITY_FIELDS;++i) {
+        unsigned offset=CODOL_EntityField(0,i)->offset;
+        if(offset==0x98)source.field[i]=5;
+        if(offset==0x18)source.field[i]=0x41400000;
+    }
+    if(!CODOL2697_AdaptEntity(entities,&source,&adapter))return 0;
+    memset(&source,0,sizeof(source));source.number=1;source.type=21+107;
+    for(unsigned i=0;i<CODOL_ENTITY_FIELDS;++i)
+        if(CODOL_EntityField(source.type,i)->offset==0xac)source.field[i]=5;
+    if(!CODOL2697_AdaptEntity(entities+1,&source,&adapter))return 0;
+    appearance.model=5;appearance.attach_model[0]=6;appearance.attach_tag[0]=2;
+    if(!CODOL_OverlayClientAppearance(&source_client,&appearance) ||
+       !CODOL2697_AdaptClient(&client,&source_client,&adapter))return 0;
+    unsigned model=5,speed=0x3f000000;
+    memcpy(source_actor.data+0xc,&model,4);memcpy(source_actor.data+0x50,&speed,4);
+    if(!CODOL2697_AdaptActor(&actor,&source_actor,&adapter))return 0;
+    player.field[0]=1000;ctx.server_time=1000;frame.sequence=1;frame.player=&player;
+    frame.entities=entities;frame.entity_count=2;frame.clients=&client;frame.client_count=1;
+    frame.actors=&actor;frame.actor_count=1;
+    CODOL_MsgWriteInit(&msg,out,capacity);
+    return CODOL2697_WriteSnapshot(&msg,&frame,NULL,NULL,8,&ctx)?msg.size:0;
+}
+
+__declspec(dllexport) size_t native_entity(void *out,unsigned capacity,unsigned type,
+    unsigned previous_type,const unsigned *offsets,const uint64_t *previous,
+    const uint64_t *values,unsigned count,uint64_t *reached)
+{
+    codol2697_entity_t from={0},to={0},held={0};codol_msg_t msg;codol_delta_context_t ctx={0};
+    from.number=to.number=7;from.type=previous_type;to.type=type;ctx.server_time=1000;
+    for(unsigned i=0;i<CODOL2697_ENTITY_FIELDS;++i)for(unsigned j=0;j<count;++j) {
+        if(CODOL2697_EntityField(type,i)->offset==offsets[j])to.field[i]=values[j];
+        if(previous_type!=UINT32_MAX && CODOL2697_EntityField(previous_type,i)->offset==offsets[j])
+            from.field[i]=previous[j];
+    }
+    CODOL_MsgWriteInit(&msg,out,capacity);
+    if(!CODOL2697_WriteEntityPayload(&msg,previous_type==UINT32_MAX?NULL:&from,&to,&held,&ctx))return 0;
+    for(unsigned i=0;i<CODOL2697_ENTITY_FIELDS;++i)for(unsigned j=0;j<count;++j)
+        if(CODOL2697_EntityField(type,i)->offset==offsets[j])reached[j]=held.field[i];
+    CODOL_WriteByte(&msg,6);return msg.failed?0:msg.size;
+}
+
+__declspec(dllexport) size_t native_object_state(void *out,unsigned capacity,
+    unsigned actor,const void *raw,void *reached)
+{
+    codol_msg_t msg;codol_delta_context_t ctx={0};ctx.server_time=1000;
+    CODOL_MsgWriteInit(&msg,out,capacity);
+    if(actor) {
+        codol2697_actor_t to={0},held={0};memcpy(to.data,raw,sizeof(to.data));
+        if(!CODOL2697_WriteActors(&msg,NULL,0,&to,1,&held,&ctx))return 0;
+        memcpy(reached,held.data,sizeof(held.data));
+    } else {
+        codol2697_client_t to={0},held={0};
+        for(unsigned i=0;i<CODOL2697_CLIENT_FIELDS;++i) {
+            unsigned offset=CODOL2697_ClientField(i)->offset;
+            if(offset<0x134)memcpy(to.field+i,(const char *)raw+offset,4);
+        }
+        if(!CODOL2697_WriteClientPayload(&msg,NULL,&to,&ctx) ||
+           !CODOL2697_ReachClient(&held,NULL,&to,&ctx))return 0;
+        memset(reached,0,0x134);
+        for(unsigned i=0;i<CODOL2697_CLIENT_FIELDS;++i) {
+            unsigned offset=CODOL2697_ClientField(i)->offset;
+            if(offset<0x134)memcpy((char *)reached+offset,held.field+i,4);
+        }
+    }
+    CODOL_WriteByte(&msg,6);return msg.failed?0:msg.size;
+}
 
 __declspec(dllexport) size_t native_adapt_player(void *out,unsigned capacity,
     const unsigned *offsets,const unsigned *values,unsigned count)

@@ -12,7 +12,8 @@ import json
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'tools'))
-from build_native_server import STAGE, prepare, build_wire_probe, build_input_probe
+from build_native_server import (STAGE, prepare, build_wire_probe, build_input_probe,
+                                 build_publication_probe)
 from client_reader423 import ClientReader423
 from story_netconst423 import LAYOUT
 
@@ -33,6 +34,8 @@ class NativeServer423Tests(unittest.TestCase):
         build_wire_probe(source, library)
         cls.input_probe = Path(cls.directory.name) / 'input.exe'
         build_input_probe(source, cls.input_probe)
+        cls.publication_probe = Path(cls.directory.name) / 'publication.exe'
+        build_publication_probe(source, cls.publication_probe)
         cls.lib = ctypes.CDLL(str(library))
         cls.addClassCleanup(_ctypes.FreeLibrary, cls.lib._handle)
         cls.lib.native_configstrings.argtypes = [ctypes.c_void_p] + [ctypes.c_uint] * 6
@@ -60,6 +63,17 @@ class NativeServer423Tests(unittest.TestCase):
         cls.lib.native_adapt_player.argtypes = [ctypes.c_void_p,ctypes.c_uint,
             ctypes.POINTER(ctypes.c_uint),ctypes.POINTER(ctypes.c_uint),ctypes.c_uint]
         cls.lib.native_adapt_player.restype = ctypes.c_size_t
+        cls.lib.native_entity.argtypes = [ctypes.c_void_p]+[ctypes.c_uint]*3+[
+            ctypes.POINTER(ctypes.c_uint),ctypes.POINTER(ctypes.c_uint64),
+            ctypes.POINTER(ctypes.c_uint64),ctypes.c_uint,ctypes.POINTER(ctypes.c_uint64)]
+        cls.lib.native_entity.restype = ctypes.c_size_t
+        cls.lib.native_object_state.argtypes = [ctypes.c_void_p,ctypes.c_uint,
+            ctypes.c_uint,ctypes.c_void_p,ctypes.c_void_p]
+        cls.lib.native_object_state.restype = ctypes.c_size_t
+        cls.lib.native_engine_snapshot.argtypes = [ctypes.c_void_p,ctypes.c_uint]
+        cls.lib.native_engine_snapshot.restype = ctypes.c_size_t
+        cls.lib.native_obituary.argtypes = [ctypes.c_void_p,ctypes.c_uint,ctypes.c_uint]
+        cls.lib.native_obituary.restype = ctypes.c_size_t
 
     def setUp(self):
         self.buffer = ctypes.create_string_buffer(0x20000)
@@ -75,6 +89,50 @@ class NativeServer423Tests(unittest.TestCase):
         ok = self.lib.native_registry(tables, len(tables), seed, summary,
                                      self.buffer, len(self.buffer))
         return ok, list(summary), self.buffer.raw
+
+    def test_native_publication_uses_current_client_banks(self):
+        expected = {0: 0, 25: 25, 224: 344, 225: 345,
+                    1280: 0x7b7, 1299: 0x7ca, 1300: 0x7f3, 1310: 0x7fd,
+                    1312: 0x800, 1314: 0x802, 3971: 0xfb3, 4226: 0x10b2,
+                    6062: 0x18c7, 6069: 0x18ce, 6100: 0x18ef, 6131: 0x190e,
+                    6132: 0x190f, 4244: 4292}
+        rows = json.loads(subprocess.check_output(
+            [str(self.publication_probe), 'map', *map(str, expected), '24', '4243', '6518']))
+        for source, mapped, target in rows:
+            with self.subTest(source=source):
+                if source in expected:
+                    self.assertEqual((mapped, target), (1, expected[source]))
+                else:
+                    self.assertEqual(mapped, -1 if source == 6518 else 0)
+        result = json.loads(subprocess.check_output(
+            [str(self.publication_probe), 'link', 'd 5300 tag_origin']))
+        self.assertEqual(result, [1, 'd 6803 tag_origin'])
+
+    def test_native_obituary_separates_weapons_and_damage_icons(self):
+        # 0x50d270 selects weapon icons below 900, then MOD icons at 900+ID.
+        for source in [1, 699, *range(700, 717)]:
+            with self.subTest(selector=source):
+                size = self.lib.native_obituary(self.buffer,len(self.buffer),source)
+                self.assertGreater(size,0)
+                fields, remaining = self.client.entity(self.buffer.raw[:size],base_type=0xffffffff)
+                expected = source+10 if source<700 else source+200+(source>=711)
+                self.assertEqual(fields[0xa8],expected)
+                self.assertEqual(remaining,b'\x06')
+        self.assertEqual(self.lib.native_obituary(self.buffer,len(self.buffer),717),0)
+
+    def test_native_registration_accepts_current_count_and_rejects_bad_export(self):
+        path = Path(self.directory.name) / 'registration.txt'
+        for count, expected in ((266, 1), (267, 0)):
+            names = [f'name{i}' for i in range(count)]
+            checksum = zlib.crc32(''.join(names).encode())
+            content = f'codol2697-registration 2 {checksum:x} {count} {count} {checksum:x}\n'
+            content += '\n'.join(names+names)+'\n'
+            path.write_text(content)
+            result = json.loads(subprocess.check_output([str(self.publication_probe), 'registration', str(path)]))
+            self.assertEqual(result, [1, count, count] if expected else [0, 0, 0])
+            path.write_text(content.replace(names[-1]+'\n', 'changed\n', 1))
+            self.assertEqual(json.loads(subprocess.check_output(
+                [str(self.publication_probe), 'registration', str(path)])), [0, 0, 0])
 
     def test_native_registry_matches_current_layout_order_and_crc(self):
         ok, summary, names = self.registry([
@@ -162,6 +220,63 @@ class NativeServer423Tests(unittest.TestCase):
             result,remaining=self.client.playerstate(self.buffer.raw[:size],server_time=0)
             self.assertEqual(result,list(values))
             self.assertEqual(remaining,b'\x06')
+
+    def test_native_entities_spawn_update_and_change_type(self):
+        word=lambda value:struct.unpack('<I',struct.pack('<f',value))[0]
+        offsets=(ctypes.c_uint*5)(0x18,0x1c,0x20,0xa0,0x104)
+        previous=(ctypes.c_uint64*5)()
+        previous_type=0xffffffff
+        for kind in (0,1,1,14,21,22+161):
+            values=(ctypes.c_uint64*5)(word(12.5),word(-20),word(40),0x1234,123)
+            if kind==1:values[0]=word(24.5)
+            reached=(ctypes.c_uint64*5)()
+            size=self.lib.native_entity(self.buffer,len(self.buffer),kind,previous_type,
+                offsets,previous,values,len(offsets),reached)
+            self.assertGreater(size,0,f'entity type {kind}')
+            result,remaining=self.client.entity(self.buffer.raw[:size],
+                base_type=0 if previous_type==0xffffffff else previous_type,
+                base=dict(zip(offsets,previous)))
+            self.assertEqual(result[4],kind)
+            self.assertEqual({offset:result[offset] for offset in offsets},dict(zip(offsets,reached)))
+            for i in range(3):
+                actual=struct.unpack('<f',struct.pack('<I',reached[i]))[0]
+                wanted=struct.unpack('<f',struct.pack('<I',values[i]))[0]
+                self.assertAlmostEqual(actual,wanted,delta=0.5)
+            self.assertEqual(list(reached)[3:],list(values)[3:])
+            self.assertEqual(remaining,b'\x06')
+            previous,previous_type=reached,kind
+
+    def test_native_client_and_actor_state_reach_current_fields(self):
+        for actor,fields in ((False,{0x14:1023,0x3c:19,0x40:63,0x84:0xdeadbeef,
+                                    0x98:123,0x114:7,0x11c:19,0x120:65535,0x130:3}),
+                             (True,{0xc:100,0x14:101,0x18:102,0x4c:0x3f000000,0x50:0x42b40000})):
+            with self.subTest(actor=actor):
+                raw=bytearray(0x58 if actor else 0x134)
+                for offset,value in fields.items():struct.pack_into('<I',raw,offset,value)
+                reached=ctypes.create_string_buffer(len(raw))
+                size=self.lib.native_object_state(self.buffer,len(self.buffer),actor,bytes(raw),reached)
+                self.assertGreater(size,0)
+                result,remaining=self.client.object_state(self.buffer.raw[:size],actor=actor)
+                self.assertEqual(result,reached.raw)
+                self.assertEqual(remaining,b'\x06')
+                for offset,value in fields.items():
+                    self.assertEqual(struct.unpack_from('<I',result,offset)[0],value)
+
+    def test_engine_objects_reach_nonempty_current_snapshot(self):
+        size=self.lib.native_engine_snapshot(self.buffer,len(self.buffer))
+        self.assertGreater(size,0)
+        result=self.client.snapshot(self.buffer.raw[:size],sequence=1)
+        self.assertEqual((result['entities'],result['clients'],result['actors']),(2,1,1))
+        word=lambda raw,offset:struct.unpack_from('<I',raw,offset)[0]
+        self.assertEqual(word(result['entities_data'][0],0x98),15)
+        self.assertEqual(word(result['entities_data'][1],4),22+132)
+        self.assertEqual(word(result['entities_data'][1],0xa8),15)
+        self.assertEqual(word(result['clients_data'][0],0x14),15)
+        self.assertEqual(word(result['clients_data'][0],0x18),16)
+        self.assertEqual(word(result['clients_data'][0],0x40),12)
+        self.assertEqual(word(result['actors_data'][0],0xc),15)
+        self.assertEqual(word(result['actors_data'][0],0x4c),0x3f000000)
+        self.assertEqual(result['remaining'],b'\x06')
 
     def test_native_input_baseline_matches_current_client(self):
         word=lambda value:struct.unpack('<I',struct.pack('<f',value))[0]

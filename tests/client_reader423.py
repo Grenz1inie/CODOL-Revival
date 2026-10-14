@@ -25,6 +25,9 @@ class ClientReader423:
             0xc55f70 - pe.OPTIONAL_HEADER.ImageBase, 235 * 12)))
         self.event_widths = list(struct.unpack('<162I', pe.get_data(
             0xc56d70-pe.OPTIONAL_HEADER.ImageBase, 162*4)))
+        self.entity_fields = [list(struct.iter_unpack('<iii', pe.get_data(
+            pointer-pe.OPTIONAL_HEADER.ImageBase, count*12))) for pointer,count in
+            struct.iter_unpack('<II',pe.get_data(0xc56cb8-pe.OPTIONAL_HEADER.ImageBase,23*8))]
         self.kinds = bytearray([255]) * 7058
         layout = pe.get_data(0xc57118 - pe.OPTIONAL_HEADER.ImageBase, 21 * 12)
         for kind, (start, capacity, reserved) in enumerate(struct.iter_unpack('<3I', layout)):
@@ -148,6 +151,61 @@ class ClientReader423:
         finally:
             cpu.hook_del(hook)
 
+    def entity(self, wire, *, base_type=0, base=None):
+        cpu=self.cpu
+        msg,data,source,dest,stack,end=0x30000000,0x30001000,0x30280000,0x30290000,0x303ff000,0x303ffff0
+        keys=struct.unpack('<3I',cpu.mem_read(0xcda23c,12))
+        for address in (source,dest):
+            cpu.mem_write(address,bytes(0x110))
+            for i,key in enumerate(keys):
+                offset=0x18+i*4
+                cpu.mem_write(address+offset,struct.pack('<I',(~key^(address+offset))&0xffffffff))
+        cpu.mem_write(source+4,struct.pack('<I',base_type))
+        fields={offset:bits for offset,bits,_ in self.entity_fields[min(base_type,22)]}
+        for offset,value in (base or {}).items():
+            if offset in (0x18,0x1c,0x20):
+                value^=(~keys[(offset-0x18)//4]^(source+offset))&0xffffffff
+            cpu.mem_write(source+offset,struct.pack('<Q' if fields[offset]==-94 else '<I',value))
+        self.error=False
+        cpu.mem_write(data,wire)
+        cpu.mem_write(msg,struct.pack('<12I',0,1,data,0,len(wire),len(wire),0,0,0,0,0,0))
+        cpu.mem_write(stack,struct.pack('<6I',end,msg,1000,source,dest,7))
+        cpu.reg_write(UC_X86_REG_ESP,stack)
+        cpu.emu_start(0x5a3670,end,count=500000)
+        overflow,=struct.unpack('<I',cpu.mem_read(msg,4))
+        if self.error or overflow or cpu.reg_read(UC_X86_REG_EIP)!=end:
+            raise ValueError('client rejected entity')
+        kind,=struct.unpack('<I',cpu.mem_read(dest+4,4))
+        result={offset:struct.unpack('<Q' if bits==-94 else '<I',
+            cpu.mem_read(dest+offset,8 if bits==-94 else 4))[0]
+            for offset,bits,_ in self.entity_fields[min(kind,22)]}
+        for i,key in enumerate(keys):
+            offset=0x18+i*4
+            result[offset]^=(~key^(dest+offset))&0xffffffff
+        cursor,=struct.unpack('<I',cpu.mem_read(msg+28,4))
+        return result,wire[cursor:]
+
+    def object_state(self, wire, *, actor=False):
+        cpu=self.cpu
+        msg,data,source,dest,stack,end=0x30000000,0x30001000,0x30280000,0x30290000,0x303ff000,0x303ffff0
+        size,count,table,gap=(0x58,24,0xc54298,3) if actor else (0x134,76,0xc55b68,1)
+        initial=bytes(cpu.mem_read(0xc57218,size)) if actor else bytes(size)
+        cpu.mem_write(source,initial);cpu.mem_write(dest,bytes(size))
+        cpu.mem_write(data,wire)
+        # Actor zero: present, sequential number, not removed; its public
+        # encoder includes this 3-bit envelope before the generic reader.
+        self.error=False
+        cpu.mem_write(msg,struct.pack('<12I',0,1,data,0,len(wire),len(wire),0,
+            1 if actor else 0,3 if actor else 0,0,0,0))
+        cpu.mem_write(stack,struct.pack('<8I',end,msg,1000,source,dest,count,table,gap))
+        cpu.reg_write(UC_X86_REG_ESP,stack)
+        cpu.emu_start(0x5a34f0,end,count=500000)
+        overflow,=struct.unpack('<I',cpu.mem_read(msg,4))
+        if self.error or overflow or cpu.reg_read(UC_X86_REG_EIP)!=end:
+            raise ValueError('client rejected object state')
+        cursor,=struct.unpack('<I',cpu.mem_read(msg+28,4))
+        return bytes(cpu.mem_read(dest,size)),wire[cursor:]
+
     def _return(self, cpu, address, size, context):
         stack = cpu.reg_read(UC_X86_REG_ESP)
         ret, = struct.unpack('<I', cpu.mem_read(stack, 4))
@@ -251,7 +309,9 @@ class ClientReader423:
         stack, end = 0x303ff000, 0x303ffff0
         cpu.mem_write(client, bytes(0x9000))
         # One real snapshot-ring slot, no prior network history.
-        for offset, value in ((0x8664, 1), (0x8668, 0),
+        for offset, value in ((0x8664, 1), (0x8668, 0), (0x8670,32), (0x8674,32),
+                              (0x8688,0x302b0000^0x9100d3fb),
+                              (0x868c,0x302c0000^0x3613bda3),
                               (0x8680, 0x30260000 ^ 0x336f4a9b),
                               (0x867c, 0x30270000 ^ 0x96b9dc91)):
             cpu.mem_write(client + offset, struct.pack('<I', value))
@@ -279,6 +339,11 @@ class ClientReader423:
                 result[name], = struct.unpack('<I', cpu.mem_read(0x7996128 + offset, 4))
             cursor, = struct.unpack('<I', cpu.mem_read(msg + 28, 4))
             result['remaining'] = wire[cursor:]
+            for name,address,stride in (('entities',0x7999690,0x110),
+                                         ('clients',0x302b0000,0x134),('actors',0x302c0000,0x58)):
+                if result[name]:
+                    result[name+'_data']=[bytes(cpu.mem_read(address+i*stride,stride))
+                                         for i in range(result[name])]
             return result
         finally:
             cpu.hook_del(hook)

@@ -55,7 +55,8 @@ def build_wire_probe(source, output):
         'codol_2697_delta.c', 'codol_delta.c', 'codol_2697_arrays.c', 'codol_2697_snapshot.c',
         'codol_2697_entities.c', 'codol_2697_clients.c', 'codol_2697_actors.c',
         'codol_2697_anim.c', 'codol_glass_snapshot.c', 'codol_2697_adapter.c',
-        'codol_playerstate.c', 'codol_2697_resources.c', 'codol_configstrings.c')]
+        'codol_playerstate.c', 'codol_2697_resources.c', 'codol_configstrings.c',
+        'codol_entities.c', 'codol_clients.c', 'codol_actors.c')]
     files += [areas[2] / name for name in ('codol_netconst_index.c', 'codol_netconst.c')]
     files += [areas[3] / 'codol_usercmd.c']
     env = dict(os.environ, PATH=str(compiler) + os.pathsep + os.environ['SystemRoot'] + '/System32')
@@ -77,6 +78,22 @@ def build_input_probe(source, output):
     env = dict(os.environ, PATH=str(compiler) + os.pathsep + os.environ['SystemRoot'] + '/System32')
     subprocess.run([str(compiler / 'gcc.exe'), '-m32', '-O1', '-std=gnu11', '-static-libgcc',
         '-ffunction-sections', '-fno-asynchronous-unwind-tables', '-Wl,--gc-sections',
+        *['-I' + str(p) for p in includes], *map(str, files), '-o', str(output)],
+        env=env, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+
+def build_publication_probe(source, output):
+    source = Path(source)
+    compiler = Path('A:/Coding/MinGW/bin')
+    includes = [source / 'src', *[p for p in (source / 'src/codol').iterdir() if p.is_dir()]]
+    files = [ROOT / 'tests/native/story_server_publication.c']
+    files += [source / 'src/codol' / name for name in
+              ('snapshot/codol_2697_publication.c', 'snapshot/codol_2697_resources.c',
+               'snapshot/codol_2697_registration.c', 'snapshot/codol_configstrings.c',
+               'assets/codol_netconst_index.c', 'assets/codol_netconst.c')]
+    env = dict(os.environ, PATH=str(compiler) + os.pathsep + os.environ['SystemRoot'] + '/System32')
+    subprocess.run([str(compiler / 'gcc.exe'), '-m32', '-O1', '-std=gnu11', '-static-libgcc',
+        '-DCODOL_SERVER', '-ffunction-sections', '-fno-asynchronous-unwind-tables', '-Wl,--gc-sections',
         *['-I' + str(p) for p in includes], *map(str, files), '-o', str(output)],
         env=env, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
@@ -122,4 +139,3 @@ if __name__ == '__main__':
     else:
         prepare(source)
     print(json.dumps(build_core(source),indent=2))
-
