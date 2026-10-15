@@ -4,6 +4,7 @@ Offsets below start at the DDL data, after the four-byte profile CRC.
 REA 0x6d7740 reads the same envelope for public and private profiles.
 """
 from datetime import datetime, timezone
+from pathlib import Path
 import struct
 import threading
 import zlib
@@ -47,6 +48,29 @@ class PrivateProfileStore:
         wire = path.read_bytes()
         self._decode(wire)
         return b'\x0a' + struct.pack('<Q', user_id) + wire[:-1]
+
+    def export_native(self, user_id, directory):
+        """Export the validated original zlib stream for the native reader."""
+        if type(user_id) is not int or not 0 < user_id < 1 << 64:
+            raise ProfileError('invalid UID: expected a nonzero uint64')
+        with self.lock:
+            profile = self.load(user_id)
+            if profile is None:
+                raise ProfileError('private profile not found')
+            wire = profile[9:] + b'\0'
+            length = struct.unpack_from('<I', wire, 17)[0]
+            compressed = wire[21:21 + length]
+            # The native reader requires one exact stream, without trailing bytes.
+            stream = zlib.decompressobj()
+            stream.decompress(compressed)
+            if not stream.eof or stream.unused_data:
+                raise ProfileError('private profile compressed length mismatch')
+            target = Path(directory) / f'mpdata_s.{user_id}'
+            target.parent.mkdir(parents=True, exist_ok=True)
+            temporary = target.with_name(target.name + '.tmp')
+            temporary.write_bytes(compressed)
+            temporary.replace(target)
+            return target
 
     def summary(self, user_id):
         result = self.load(user_id)

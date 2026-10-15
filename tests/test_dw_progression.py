@@ -1,5 +1,7 @@
 """Private profile wire/persistence contract, grounded in the live v19 schema."""
 from pathlib import Path
+import base64
+import hashlib
 import struct
 import sys
 import tempfile
@@ -8,12 +10,26 @@ import zlib
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 from dw_progression import PrivateProfileStore
-from dw_profiles import validate_profile
+from dw_profiles import ProfileError, validate_profile
 from dw_lobby import handle_lobby
 from test_dw_lobby import HELLO, MemorySocket, client_auth, request
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 USER_ID = 0xe94a180c65d3c23b
+
+# Existing v19 backup 20261014T074245316871-e94a180c65d3c23b.bin.
+# Wire SHA256: dc7e11a3f636768ee1122806375bcf2ad79fbcfeab77b59f16f9dd6af8ddff34.
+# Keep the captured compression, CRC and extension bytes unchanged.
+CAPTURE_V19 = base64.b64decode(
+    'CAEAAAAIAQAAAAhWKpOfEwhrAAAAeJztzrENQFAYhdE/odRpzKBT6xUGsIHCEBZ4rQHsYgVT2MKb'
+    'QRQi5yRfeZM7tdteR8SydikAAAAA4P+K3JArH2yrZrz645xfvgQAAAAAAAAAAAAAAAAAAAAAAAAA'
+    'AAAAAAAAAHzBDdUIB0AHAAAAAAcAAAAABwAAAAAHAAAAAAcAAAAABwAAAAAHAAAAAAcAAAAABwAA'
+    'AAAHAAAAAAcAAAAABwAAAAAHAAAAAAcAAAAABwAAAAANAAAAAAcAAAAABwAAAAAHAwAAAAdGAAAA'
+    'BwQAAAAHAAAAAAcAAAAABwAAAAAHAAAAAAcAAAAABwAAAAAHAAAAAAcAAAAABwAAAAAHAAAAAAcA'
+    'AAAABwAAAAAHAAAAAAcAAAAADQAAAAAA'
+)
+NATIVE_V19_SHA256 = 'b334ca17c875340466bb41feea611dc99439e45d1527d4223f016dcd19f25034'
+RAW_V19_SHA256 = 'd8bbaa4f6aeeb76dcc8646af7a2aca528900e6dd3a75185f6e5baaeef62a6a3f'
 
 
 class ProgressionTests(unittest.TestCase):
@@ -127,6 +143,87 @@ class ProgressionTests(unittest.TestCase):
                 with self.subTest(level=level, prestige=prestige), self.assertRaises(ValueError):
                     store.set_progression(USER_ID, level, prestige)
                 self.assertEqual(store.load(USER_ID), saved)
+
+
+class NativeProfileExportTests(unittest.TestCase):
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory(prefix='codol-profile-export-')
+        self.addCleanup(temporary.cleanup)
+        self.root = Path(temporary.name)
+        self.store = PrivateProfileStore(self.root / 'data', self.root / 'backups')
+        self.store.save(USER_ID, CAPTURE_V19)
+        self.source = self.store.directory / f'{USER_ID:016x}.bin'
+
+    def test_export_preserves_captured_v19_zlib_and_source(self):
+        before = self.source.stat()
+        destination = self.root / 'instance' / 'profiles'
+        result = self.store.export_native(USER_ID, destination)
+        self.assertEqual(result, destination / 'mpdata_s.16810275000640848443')
+        self.assertEqual(len(result.read_bytes()), 107)
+        self.assertEqual(hashlib.sha256(result.read_bytes()).hexdigest(), NATIVE_V19_SHA256)
+        self.assertEqual(self.source.read_bytes(), CAPTURE_V19)
+        self.assertEqual(self.source.stat().st_mtime_ns, before.st_mtime_ns)
+        self.assertFalse(self.store.backups.exists())
+        self.assertEqual(list(destination.iterdir()), [result])
+
+    def test_export_replaces_only_selected_uid_file(self):
+        destination = self.root / 'profiles'
+        destination.mkdir()
+        target = destination / f'mpdata_s.{USER_ID}'
+        target.write_bytes(b'previous profile')
+        other = destination / 'mpdata_s.1'
+        other.write_bytes(b'other player')
+        self.assertEqual(self.store.export_native(USER_ID, str(destination)), target)
+        self.assertEqual(hashlib.sha256(target.read_bytes()).hexdigest(), NATIVE_V19_SHA256)
+        self.assertEqual(other.read_bytes(), b'other player')
+        self.assertEqual(self.source.read_bytes(), CAPTURE_V19)
+        self.assertEqual(set(destination.iterdir()), {target, other})
+
+    def assert_export_rejected(self, user_id, message):
+        original = self.source.read_bytes() if self.source.exists() else None
+        for existing in (False, True):
+            with self.subTest(existing=existing):
+                destination = self.root / ('existing' if existing else 'absent')
+                target = destination / f'mpdata_s.{user_id}'
+                if existing:
+                    destination.mkdir(exist_ok=True)
+                    target.write_bytes(b'keep previous export')
+                before = {p.name: p.read_bytes() for p in destination.iterdir()} if existing else {}
+                with self.assertRaisesRegex(ProfileError, message):
+                    self.store.export_native(user_id, destination)
+                if existing:
+                    self.assertEqual({p.name: p.read_bytes() for p in destination.iterdir()}, before)
+                else:
+                    self.assertFalse(destination.exists())
+                self.assertEqual(self.source.read_bytes() if self.source.exists() else None, original)
+
+    def test_export_rejects_invalid_uid_without_writes(self):
+        for user_id in (None, False, True, 0, -1, 1 << 64, 1.0, str(USER_ID)):
+            with self.subTest(user_id=user_id):
+                self.assert_export_rejected(user_id, 'UID')
+
+    def test_export_rejects_bad_length_and_crc_without_writes(self):
+        # The compressed segment is exactly bytes 21..127 in this capture.
+        bad_crc = CAPTURE_V19[:11] + bytes([CAPTURE_V19[11] ^ 1]) + CAPTURE_V19[12:]
+        raw = bytearray(zlib.decompress(CAPTURE_V19[21:128]))
+        raw[17000] ^= 1
+        packed = zlib.compress(raw)
+        damaged = {
+            'short length': CAPTURE_V19[:17] + struct.pack('<I', 106) + CAPTURE_V19[21:],
+            'oversized length': CAPTURE_V19[:17] + struct.pack('<I', 1000) + CAPTURE_V19[21:],
+            'trailing compressed byte': CAPTURE_V19[:17] + struct.pack('<I', 108)
+                + CAPTURE_V19[21:128] + b'\0' + CAPTURE_V19[128:],
+            'envelope CRC': bad_crc,
+            'record CRC': CAPTURE_V19[:17] + struct.pack('<I', len(packed)) + packed + CAPTURE_V19[128:],
+        }
+        for name, wire in damaged.items():
+            with self.subTest(damage=name):
+                self.source.write_bytes(wire)
+                self.assert_export_rejected(USER_ID, '')
+
+    def test_export_rejects_missing_profile_without_writes(self):
+        self.source.unlink()
+        self.assert_export_rejected(USER_ID, 'not found')
 
 
 if __name__ == '__main__':
