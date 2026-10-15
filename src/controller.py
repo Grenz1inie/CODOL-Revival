@@ -119,6 +119,23 @@ def create_server(root, port=8765, *, game_status=game_running):
                             self.reply({'error': result.stderr.decode('utf-8', errors='replace')}, 500)
                             return
                     self.reply({'message': '游戏已启动；界面与等级以游戏实际显示为准。'})
+                elif url.path == '/api/game/stop' and writing:
+                    if body:
+                        raise ValueError('停止游戏不接受参数')
+                    with mutation_lock:
+                        if not game_status():
+                            self.reply({'message': '游戏未运行。'})
+                            return
+                        result = subprocess.run(['powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File',
+                                                 str(root / 'scripts/Stop-Game.ps1')], capture_output=True,
+                                                creationflags=subprocess.CREATE_NO_WINDOW, timeout=90)
+                        if result.returncode:
+                            self.reply({'error': result.stderr.decode('utf-8', errors='replace') or '停止游戏失败。'}, 500)
+                            return
+                        if game_status():
+                            self.reply({'error': '停止未完成，游戏仍在运行。'}, 500)
+                            return
+                    self.reply({'message': '游戏已停止。'})
                 elif url.path == '/api/inventory' and not writing:
                     uid = query.get('user_id', [''])[0]
                     if not re.fullmatch('[0-9a-f]{16}', uid):

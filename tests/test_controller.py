@@ -1,10 +1,12 @@
 """Control API contract: temp state/docs, no game processes or real saves."""
 import json
+import subprocess
 from pathlib import Path
 import sys
 import tempfile
 import threading
 import unittest
+from unittest.mock import patch
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
@@ -50,6 +52,53 @@ class ControllerTests(unittest.TestCase):
                 self.call('/api/settings', bad)
             self.assertEqual(caught.exception.code, 400)
         self.assertEqual(self.call('/api/settings'), {'skip_tutorial': False})
+
+    def test_stop_game_is_idempotent_when_not_running(self):
+        with patch('controller.subprocess.run') as run:
+            self.assertEqual(self.call('/api/game/stop', {}), {'message': '游戏未运行。'})
+        run.assert_not_called()
+
+    def test_stop_game_runs_existing_script_and_confirms_exit(self):
+        self.running = True
+
+        def stop(command, **kwargs):
+            self.assertEqual(command, ['powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass',
+                                      '-File', str(self.root / 'scripts/Stop-Game.ps1')])
+            self.running = False
+            return subprocess.CompletedProcess(command, 0, b'', b'')
+
+        with patch('controller.subprocess.run', side_effect=stop) as run:
+            self.assertEqual(self.call('/api/game/stop', {}), {'message': '游戏已停止。'})
+        self.assertEqual(run.call_count, 1)
+        self.assertFalse(self.call('/api/status')['game_running'])
+
+    def test_stop_game_failures_never_report_success(self):
+        self.running = True
+        for result, error in [
+            (subprocess.CompletedProcess([], 1, b'', b'UAC cancelled'), 'UAC cancelled'),
+            (subprocess.CompletedProcess([], 0, b'', b''), '游戏仍在运行'),
+            (subprocess.TimeoutExpired('powershell.exe', 90), 'timed out'),
+        ]:
+            with self.subTest(error=error), patch('controller.subprocess.run') as run:
+                if isinstance(result, Exception):
+                    run.side_effect = result
+                else:
+                    run.return_value = result
+                with self.assertRaises(HTTPError) as caught:
+                    self.call('/api/game/stop', {})
+                self.assertEqual(caught.exception.code, 500)
+                self.assertIn(error, json.load(caught.exception)['error'])
+                self.assertTrue(self.call('/api/status')['game_running'])
+
+    def test_stop_game_rejects_get_cross_origin_and_process_arguments(self):
+        self.running = True
+        with patch('controller.subprocess.run') as run:
+            for data, headers, status in [(None, {}, 404), ({'pid': 123}, {}, 400),
+                                           ({}, {'Origin': 'https://example.com'}, 403)]:
+                with self.subTest(data=data, headers=headers), self.assertRaises(HTTPError) as caught:
+                    self.call('/api/game/stop', data, **headers)
+                self.assertEqual(caught.exception.code, status)
+        run.assert_not_called()
 
     def test_story_unlock_api_rejects_live_game_and_preserves_other_profile_fields(self):
         from dw_progression import PrivateProfileStore
