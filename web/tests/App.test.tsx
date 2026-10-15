@@ -45,6 +45,16 @@ async function ready() {
 }
 
 describe('控制器原有操作契约', () => {
+  it('紧凑操作区提供可访问的档案选择、分区名称和当前导航状态', async () => {
+    await ready();
+    expect(screen.getByRole('combobox', {name: '当前档案'})).toBeTruthy();
+    expect(button('游戏控制').getAttribute('aria-current')).toBe('page');
+    const wallet = screen.getByRole('region', {name: '游戏币与商城'});
+    expect(within(wallet).getByLabelText('增加数量')).toBeTruthy();
+    expect(within(wallet).getByLabelText('增加点券数量')).toBeTruthy();
+    expect(screen.getByRole('region', {name: '限时物品续期'})).toBeTruthy();
+  });
+
   it('读取档案、余额与启动选项，空库存不显示续期表单', async () => {
     await ready();
     expect(screen.getByText('44,445')).toBeTruthy();
