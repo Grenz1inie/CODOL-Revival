@@ -1,23 +1,2623 @@
-version 797
+version 798
 
-catinfo 1 1 0 "" "Killhouse DM" "Killhouse DM"
+// UI review catalogue adapted from the user-provided Server playlist (version 796).
+// Published playlist IDs, map rows and rules retained; unused gametypes omitted to fit the 32-type client limit.
+// Category rows use this client's five fields. No global engine tuning.
+// Chinese text restored; obsolete online activity schedules omitted for local menu review.
+
+catinfo 11    1     0 "狼人行动" "狼人行动"
+catinfo 2     1     1 "经典爆破模式" "经典爆破模式"
+catinfo 1     1     0 "冲锋团队竞技" "冲锋团队竞技"
+catinfo 16    1     4 "夺宝奇兵" "夺宝奇兵"
+catinfo 13    1     1 "勇者游戏" "勇者游戏"
+catinfo 15    1     0 "无畏护送" "无畏护送"
+catinfo 14    1     0 "核子橄榄球" "核子橄榄球"
+catinfo 10	  1     8 "轮换模式" "轮换模式"
+catinfo 3     1     0 "战术团队竞技" "战术团队竞技"
+catinfo 12    1     0 "躲猫猫" "躲猫猫"
+catinfo 5     1     0 "营救模式" "营救模式"
+catinfo 9     1     0 "乱斗模式" "乱斗模式"
+catinfo 4     1     0 "科技爆破模式" "科技爆破模式"
+catinfo 7     1     0 "开发赛单" "开发赛单"
+catinfo 8     1     0 "测试赛单" "测试赛单"
+
+catinfo 21    0     0 "剧情模式任务" "剧情模式任务"
+catinfo 30    0     4 "塔防模式" "塔防模式"
+catinfo 29    0     1 "僵尸猎场" "僵尸猎场"
+catinfo 28    0     0 "末日小队" "末日小队"
+catinfo 22    0     0 "机械僵尸" "机械僵尸"
+catinfo 23    0     0 "生存模式" "生存模式"
+catinfo 26    0     0 "丧尸生存" "丧尸生存"
+catinfo 20    0     0 "超级丧尸大战" "超级丧尸大战"
+catinfo 24    0     0 "限时模式" "限时模式"
+catinfo 25    0     0 "开发赛单" "开发赛单"
+
+gametype tdm
+name MPUI_TEAM_DEATHMATCH
+script war
+teambased
+rule scr_game_playerwaittime				20
+rule scr_game_playerwaitcountfactor			0.4
+
+gametype cha
+name MPUI_CHA
+script cha
+teambased
+rule scr_game_playerwaittime				20
+rule scr_game_playerwaitcountfactor			0.4
+
+gametype dom
+name MPUI_DOMINATION
+script dom
+teambased
+rule scr_game_playerwaittime				30
+rule scr_game_playerwaitcountfactor			0.6
+
+gametype hp
+name MPUI_HARDPOINT
+script hp
+teambased
+rule scr_game_playerwaittime				30
+rule scr_game_playerwaitcountfactor			0.6
+
+gametype sd
+name MPUI_SEARCH_AND_DESTROY
+script sd
+teambased
+rule scr_game_playerwaittime				40
+rule scr_game_playerwaitcountfactor			0.8
+
+gametype sr
+name MPUI_SEARCH_AND_RESCUE
+script sr
+teambased
+rule scr_game_playerwaittime				40
+rule scr_game_playerwaitcountfactor			0.8
 
 gametype ffa
 name MPUI_DEATHMATCH
 script dm
 
+gametype tjugg
+name MPUI_TJUGG
+script tjugg
+teambased
+
+gametype kc
+name MPUI_CONF
+script conf
+teambased
+rule scr_game_playerwaittime				20
+rule scr_game_playerwaitcountfactor			0.4
+
+gametype borg
+name MPUI_BORG
+script borg
+
+gametype gun
+name MPUI_GUN
+script gun
+
+gametype oic
+name MPUI_OIC
+script oic
+
+gametype sas
+name MPUI_SAS
+script sas
+
+gametype coop
+name MPUI_SPEC_OPS
+script coop
+
+gametype zm
+name MPUI_ZOMBIE
+script zm
+
+gametype clash
+name MPUI_CLASH
+script clash
+
+gametype zarena
+name MPUI_SPEC_OPS
+script zarena
+
+gametype zsurv
+name MPUI_SPEC_OPS
+script zsurv
+
+gametype zchamp
+name MPUI_SPEC_OPS
+script zchamp
+
+gametype zhunt
+name MPUI_SPEC_OPS
+script zhunt
+
+gametype td
+name MPUI_SPEC_OPS
+script td
+
+gametype sdp
+name MPUI_SEARCH_AND_DESTROY_PLUS
+script sdp
+teambased
+rule scr_game_playerwaittime				40
+rule scr_game_playerwaitcountfactor			0.8
+
+gametype vip
+name MPUI_VIP
+script vip
+teambased
+
+gametype robbery
+name MPUI_ROBBERY
+script robbery
+teambased
+
+gametype spy
+name MPUI_SPY
+script spy
+
+gametype hostage
+name MPUI_HOSTAGE
+script hostage
+teambased
+
+gametype ph
+name MPUI_PROP_HUNT
+script ph
+teambased
+
+gametype chicken
+name MPUI_chicken
+script chicken
+teambased
+
+gametype dmz
+name MPUI_DMZ
+script dmz
+
+gametype nftbl
+name MPUI_NFTBL
+script nftbl
+
 playlist 1
 displayorder 1
 category 1
-name chinese "Killhouse DM"
-name english "Killhouse DM"
-description chinese "1 player + 1 AI"
-description english "1 player + 1 AI"
+name chinese "实战对抗"
+name english "实战对抗"
+description chinese "冲锋(随机地图)-冲锋团队竞技模式，人数6V6，死亡后固定复活点复活，在10分钟内，率先达到50击杀的队伍获胜。"
+description english "冲锋(随机地图)-冲锋团队竞技模式，人数6V6，死亡后固定复活点复活，在10分钟内，率先达到50击杀的队伍获胜。"
 buildversion default cb3 release
 unlocklevelend 70
-vsrule "1V1"
-minparty 1
-maxparty 1
+vsrule "6V6"
+combattraining
+onboardbonus
+difficulty 0
+minparty 0
+maxparty 4
 rule 1011 1
-rule 3265 2
-mp_killhouse_sh,ffa,1
+rule 3265 4
+maxhumanplayersperteam 3
+rule scr_cha_scorelimit 50
+rule scr_cha_timelimit 10
+rule scr_cha_roundlimit 2
+rule scr_cha_roundswitch 2
+rule scr_cha_winlimit 1
+rule scr_cha_halftime 1
+rule scr_cha_scorelimithalftime 1
+mp_nuked,cha,1
+mp_mideast,cha,1
+mp_shipment_long,cha,1
+mp_cha_quad,cha,1
+mp_mountain,cha,1
+wargodWarmRoundId 216
+
+playlist 123
+displayorder 0
+category 2
+name chinese "实战对抗"
+name english "实战对抗"
+description chinese "人数6V6，进攻方必须在时限内在目标位置安装并引爆炸弹，防守方要阻止炸弹引爆。率先取胜9回合的队伍获得最终胜利，回合内不能重生，8回合后双方换边。"
+description english "人数6V6，进攻方必须在时限内在目标位置安装并引爆炸弹，防守方要阻止炸弹引爆。率先取胜9回合的队伍获得最终胜利，回合内不能重生，8回合后双方换边。"
+buildversion default cb3 release
+unlocklevelend 70
+vsrule "6V6"
+combattraining
+onboardbonus
+difficulty 1
+minparty 0
+maxparty 0
+rule 1011 1
+rule 3265 6
+maxhumanplayersperteam 3
+mp_crash_tropical,sd,1
+mp_estate_tropical,sd,1
+mp_fav_tropical,sd,1
+mp_cross_fire,sd,1
+mp_mountain,sd,1
+mp_terminal_cls,sd,1
+mp_tunisia,sd,1
+mp_dome,sd,1
+wargodWarmRoundId 217
+
+playlist 4
+displayorder 3
+category 9
+name chinese "冲锋团竞6V6"
+name english "冲锋团竞6V6"
+description chinese "人数6V6，死亡后固定复活点复活，在20分钟内，率先达到100击杀的队伍或时间结束击杀数最高的队伍获胜。"
+description english "人数6V6，死亡后固定复活点复活，在20分钟内，率先达到100击杀的队伍或时间结束击杀数最高的队伍获胜。"
+buildversion default cb3 release
+ranked
+minparty 1
+maxparty 6
+unlocklevelend 70
+vsrule "6V6"
+rule 1011 6
+rule 3265 12
+rule scr_cha_scorelimit 100
+rule scr_cha_timelimit 20
+rule scr_cha_roundlimit 2
+rule scr_cha_roundswitch 2
+rule scr_cha_winlimit 1
+rule scr_cha_halftime 1
+rule scr_cha_scorelimithalftime 1
+mp_nuked,cha,3
+mp_shipment_long,cha,3
+mp_cha_quad,cha,3
+mp_mideast,cha,3
+mp_highrise,cha,3
+mp_mountain,cha,3
+mp_offshore,cha,3
+mp_streamline,cha,3
+mp_strike_sh,cha,3
+mp_showdown,cha,3
+mp_overwatch_sh,cha,3
+mp_wasteland_sh,cha,3
+mp_lookout_sh,cha,3
+mp_interchange_sh,cha,3
+mp_mission_sh,cha,3
+streakBreakId 158
+
+playlist 110
+displayorder 7
+category 1
+name chinese "-核弹小镇"
+name english "-核弹小镇"
+description chinese "人数9V9，死亡后固定复活点复活，在20分钟内，率先达到150击杀的队伍或时间结束击杀数最高的队伍获胜。"
+description english "人数9V9，死亡后固定复活点复活，在20分钟内，率先达到150击杀的队伍或时间结束击杀数最高的队伍获胜。"
+buildversion default cb3 release
+ranked
+minparty 1
+maxparty 3
+unlocklevelend 70
+vsrule "9V9"
+rule scr_ground_war 1
+rule 1011 12
+rule 3265 18
+rule scr_cha_scorelimit 150
+rule scr_cha_timelimit 20
+mp_nuked,cha,1
+
+playlist 238
+displayorder 6
+category 1
+name chinese "-边境废墟"
+name english "-边境废墟"
+description chinese "人数9V9，死亡后固定复活点复活，在20分钟内，率先达到150击杀的队伍或时间结束击杀数最高的队伍获胜。"
+description english "人数9V9，死亡后固定复活点复活，在20分钟内，率先达到150击杀的队伍或时间结束击杀数最高的队伍获胜。"
+buildversion default cb3 release
+ranked
+minparty 1
+maxparty 3
+unlocklevelend 70
+vsrule "9V9"
+rule scr_ground_war 1
+rule 1011 12
+rule 3265 18
+rule scr_cha_scorelimit 150
+rule scr_cha_timelimit 20
+mp_wasteland_sh,cha,1
+
+playlist 250
+displayorder 4
+category 1
+name chinese "-立交封锁"
+name english "-立交封锁"
+description chinese "人数9V9，死亡后固定复活点复活，在20分钟内，率先达到150击杀的队伍或时间结束击杀数最高的队伍获胜。"
+description english "人数9V9，死亡后固定复活点复活，在20分钟内，率先达到150击杀的队伍或时间结束击杀数最高的队伍获胜。"
+buildversion default cb3 release
+ranked
+minparty 1
+maxparty 3
+unlocklevelend 70
+vsrule "9V9"
+rule scr_ground_war 1
+rule 1011 12
+rule 3265 18
+rule scr_cha_scorelimit 150
+rule scr_cha_timelimit 20
+mp_interchange_sh,cha,1
+
+playlist 253
+displayorder 3
+category 1
+name chinese "-残垣之镇"
+name english "-残垣之镇"
+description chinese "人数9V9，死亡后固定复活点复活，在20分钟内，率先达到150击杀的队伍或时间结束击杀数最高的队伍获胜。"
+description english "人数9V9，死亡后固定复活点复活，在20分钟内，率先达到150击杀的队伍或时间结束击杀数最高的队伍获胜。"
+buildversion default cb3 release
+ranked
+minparty 1
+maxparty 3
+unlocklevelend 70
+vsrule "9V9"
+rule scr_ground_war 1
+rule 1011 12
+rule 3265 18
+rule scr_cha_scorelimit 150
+rule scr_cha_timelimit 20
+mp_mission_sh,cha,1
+new
+
+playlist 68
+displayorder 12
+category 8
+name chinese "战神排位赛"
+name english "战神排位赛"
+description chinese "最强玩家的竞技舞台，战神在这里产生！采取经典爆破&据点争夺模式随机出现的比赛方式，并拥有专属奖励。开放时间：下午13点-晚上23点。"
+description english "最强玩家的竞技舞台，战神在这里产生！采取经典爆破&据点争夺模式随机出现的比赛方式，并拥有专属奖励。开放时间：下午13点-晚上23点。"
+buildversion default cb3 release
+ranked
+itemban uav_pro riotshield_mp javelin_mp m79_mp rpg_mp at4_mp uav counter_uav airdrop sr71_mp specialty_paint claymore_mp sho_mkswatak47gld sra_hbsak47gld gre_gp30heak104ss cqc_akimbominiuzibdiamond the_variablemsr the_fixsmallak104gld sco_targetfinderak47platinum sra_microphoneak104smart airdrop_wargod sra_scrambleraa12modern gre_pulseradaran94vulcan all_wat_mag_ssr riotshieldzhloot_mp specialty_siderollingexpert
+novoting
+minparty 1
+maxparty 3
+unlocklevelend  70
+vsrule "5V5"
+rule 1011 10
+rule 3265 10
+levelrestricted
+novoting
+mp_crash_tropical,sd,1
+mp_cross_fire,sd,1
+mp_storm_spring,sd,1
+mp_tunisia,sd,1
+mp_firingrange,sd,1
+mp_fav_tropical,dom,1
+mp_district,dom,1
+mp_seatown,dom,1
+mp_mountain,dom,1
+mp_storm_spring,dom,1
+
+playlist 10
+displayorder 10
+category 23
+name chinese "生存模式"
+name english "生存模式"
+description chinese "抵抗一波又一波敌人的侵袭，通过击杀敌人获取金钱，用金钱来换取弹药、技能、防弹衣以及连杀技能帮助你坚持到战斗结束！"
+description english "抵抗一波又一波敌人的侵袭，通过击杀敌人获取金钱，用金钱来换取弹药、技能、防弹衣以及连杀技能帮助你坚持到战斗结束！"
+buildversion default cb3 release
+difficulty 0
+unlocklevelend 70
+survival
+minparty 1
+maxparty 6
+rule 1011 1
+rule 3265 6
+coop_survival_mp_cross_fire,coop,1
+coop_survival_mp_crash_tropical,coop,1
+coop_survival_mp_fav_tropical,coop,1
+coop_survival_mp_highrise,coop,1
+coop_survival_mp_mountain,coop,1
+coop_survival_mp_terminal_cls,coop,1
+
+playlist 112
+displayorder 112
+category 23
+name chinese "坠机之地"
+name english "坠机之地"
+description chinese "抵抗一波又一波敌人的侵袭，通过击杀敌人获取金钱，用金钱来换取弹药、技能、防弹衣以及连杀技能帮助你坚持到战斗结束！"
+description english "抵抗一波又一波敌人的侵袭，通过击杀敌人获取金钱，用金钱来换取弹药、技能、防弹衣以及连杀技能帮助你坚持到战斗结束！"
+buildversion default cb3 release
+difficulty 0
+unlocklevelend 70
+survival
+minparty 1
+maxparty 6
+rule 1011 1
+rule 3265 6
+coop_survival_mp_crash_tropical,coop,1
+
+playlist 86
+displayorder 86
+category 23
+name chinese "交叉火力"
+name english "交叉火力"
+description chinese "抵抗一波又一波敌人的侵袭，通过击杀敌人获取金钱，用金钱来换取弹药、技能、防弹衣以及连杀技能帮助你坚持到战斗结束！"
+description english "抵抗一波又一波敌人的侵袭，通过击杀敌人获取金钱，用金钱来换取弹药、技能、防弹衣以及连杀技能帮助你坚持到战斗结束！"
+buildversion default cb3 release
+difficulty 0
+unlocklevelend 70
+survival
+minparty 1
+maxparty 6
+rule 1011 1
+rule 3265 6
+coop_survival_mp_cross_fire,coop,1
+
+playlist 113
+displayorder 113
+category 23
+name chinese "贫民窟"
+name english "贫民窟"
+description chinese "抵抗一波又一波敌人的侵袭，通过击杀敌人获取金钱，用金钱来换取弹药、技能、防弹衣以及连杀技能帮助你坚持到战斗结束！"
+description english "抵抗一波又一波敌人的侵袭，通过击杀敌人获取金钱，用金钱来换取弹药、技能、防弹衣以及连杀技能帮助你坚持到战斗结束！"
+buildversion default cb3 release
+difficulty 0
+unlocklevelend 70
+survival
+minparty 1
+maxparty 6
+rule 1011 1
+rule 3265 6
+coop_survival_mp_fav_tropical,coop,1
+
+playlist 30
+displayorder 1
+category 3
+name chinese "实战对抗"
+name english "实战对抗"
+description chinese "大战场(随机地图)-战术团队竞技模式，人数9V9，死亡后在队友附近复活，在10分钟内，率先达到100击杀的队伍获胜。"
+description english "大战场(随机地图)-战术团队竞技模式，人数9V9，死亡后在队友附近复活，在10分钟内，率先达到100击杀的队伍获胜。"
+buildversion default cb3 release
+unlocklevelend 70
+vsrule "9V9"
+combattraining
+onboardbonus
+difficulty 0
+minparty 0
+maxparty 0
+rule scr_ground_war 1
+rule 1011 1
+rule 3265 8
+maxhumanplayersperteam 4
+rule scr_war_scorelimit 100
+rule scr_war_timelimit 10
+mp_afghan,tdm,1
+mp_estate_tropical,tdm,1
+mp_overgrown,tdm,1
+mp_storm_spring,tdm,1
+mp_fav_tropical,tdm,1
+mp_seatown,tdm,1
+mp_mountain,tdm,1
+mp_terminal_cls,tdm,1
+mp_subbase_sh,tdm,1
+mp_hardhat_sh,tdm,1
+mp_village,tdm,1
+mp_raid,tdm,1
+mp_dome,tdm,1
+
+playlist 6
+displayorder 4
+category 2
+name chinese "经典爆破6V6"
+name english "经典爆破6V6"
+description chinese "人数6V6，进攻方必须在规定时间内在目标位置安装并引爆炸弹，防守方要全力阻止炸弹被引爆。率先取胜9回合的队伍获得最终胜利，回合内不能重生，8回合后双方换边。"
+description english "人数6V6，进攻方必须在规定时间内在目标位置安装并引爆炸弹，防守方要全力阻止炸弹被引爆。率先取胜9回合的队伍获得最终胜利，回合内不能重生，8回合后双方换边。"
+buildversion default cb3 release
+ranked
+minparty 1
+maxparty 6
+unlocklevelend 70
+vsrule "6V6"
+rule 1011 6
+rule 3265 12
+mp_crash_tropical,sd,1
+mp_cross_fire,sd,1
+mp_estate_tropical,sd,1
+mp_fav_tropical,sd,1
+mp_firingrange,sd,1
+mp_storm_spring,sd,1
+mp_overgrown,sd,1
+mp_tunisia,sd,1
+mp_sd_proto1,sd,1
+mp_dome,sd,1
+mp_strike_sh,sd,1
+mp_qadeem_sh,sd,1
+mp_sd_jardin,sd,1
+mp_mogadishu_sh,sd,1
+mp_district,sd,1
+mp_overwatch_sh,sd,1
+mp_nightshift_sh,sd,1
+mp_italy_sh,sd,1
+mp_radiation_sh,sd,1
+mp_backlot_sh,sd,1
+mp_arkaden_sh,sd,1
+mp_derail_sh,sd,1
+mp_fallen_sh,sd,1
+mp_bootleg_sh,sd,1
+mp_lockdown_sh,sd,1
+mp_foundation_sh,sd,1
+mp_underground_sh,sd,1
+streakBreakId 159
+newbieBitMask 2
+wargodNewbieBitMask 8
+
+playlist 206
+displayorder 3
+category 2
+name chinese "经典爆破6V6 - 真实模式"
+name english "经典爆破6V6 - 真实模式"
+description chinese "6V6经典爆破的真实模式，在普通爆破的基础上隐藏了战斗界面信息，武器也变得更加致命。率先取胜9回合的队伍获得最终胜利，回合内不能重生，8回合后双方换边。"
+description english "6V6经典爆破的真实模式，在普通爆破的基础上隐藏了战斗界面信息，武器也变得更加致命。率先取胜9回合的队伍获得最终胜利，回合内不能重生，8回合后双方换边。"
+buildversion default cb3 release
+ranked
+minparty 1
+maxparty 6
+hardcore
+itemban all_kis uav airdrop counter_uav airdrop_sentry_minigun predator_missile precision_airstrike helicopter helicopter_flares helicopter_minigun ac130 sentry mortar_mp sr71_mp dogs_mp sam_turret uav_pro mortar_mp_pro dogs_mp_pro ac130_pro juggernaut missile_drone armor_locker umbrella_system juggernaut_pro tabun_gas_mp molotovcocktail_mp emp sentry_wargod missile_drone_wargod helicopter_shark sentry_graffiti juggernaut_wargod airdrop_wargod
+unlocklevelend 70
+vsrule "6V6"
+rule 1011 6
+rule 3265 12
+mp_crash_tropical,sd,1
+mp_cross_fire,sd,1
+mp_estate_tropical,sd,1
+mp_fav_tropical,sd,1
+mp_firingrange,sd,1
+mp_storm_spring,sd,1
+mp_overgrown,sd,1
+mp_tunisia,sd,1
+mp_sd_proto1,sd,1
+mp_dome,sd,1
+mp_strike_sh,sd,1
+mp_qadeem_sh,sd,1
+mp_sd_jardin,sd,1
+mp_mogadishu_sh,sd,1
+mp_district,sd,1
+mp_overwatch_sh,sd,1
+mp_nightshift_sh,sd,1
+mp_italy_sh,sd,1
+mp_radiation_sh,sd,1
+mp_backlot_sh,sd,1
+mp_arkaden_sh,sd,1
+mp_derail_sh,sd,1
+mp_fallen_sh,sd,1
+mp_bootleg_sh,sd,1
+mp_lockdown_sh,sd,1
+mp_foundation_sh,sd,1
+mp_underground_sh,sd,1
+
+playlist 126
+displayorder 2
+category 2
+name chinese "经典爆破9V9"
+name english "经典爆破9V9"
+description chinese "人数9V9，进攻方必须在规定时间内在目标位置安装并引爆炸弹，防守方要全力阻止炸弹被引爆。率先取胜9回合的队伍获得最终胜利，回合内不能重生，8回合后双方换边。"
+description english "人数9V9，进攻方必须在规定时间内在目标位置安装并引爆炸弹，防守方要全力阻止炸弹被引爆。率先取胜9回合的队伍获得最终胜利，回合内不能重生，8回合后双方换边。"
+buildversion default cb3 release
+ranked
+minparty 1
+maxparty 9
+unlocklevelend 70
+vsrule "9V9"
+rule 1011 12
+rule 3265 18
+rule scr_ground_war 1
+mp_crash_tropical,sd,1
+mp_cross_fire,sd,1
+mp_estate_tropical,sd,1
+mp_fav_tropical,sd,1
+mp_firingrange,sd,1
+mp_storm_spring,sd,1
+mp_overgrown,sd,1
+mp_tunisia,sd,1
+mp_sd_proto1,sd,1
+mp_strike_sh,sd,1
+mp_qadeem_sh,sd,1
+mp_sd_jardin,sd,1
+mp_overwatch_sh,sd,1
+mp_nightshift_sh,sd,1
+mp_italy_sh,sd,1
+mp_radiation_sh,sd,1
+mp_backlot_sh,sd,1
+mp_arkaden_sh,sd,1
+mp_derail_sh,sd,1
+mp_fallen_sh,sd,1
+mp_bootleg_sh,sd,1
+mp_lockdown_sh,sd,1
+mp_foundation_sh,sd,1
+mp_underground_sh,sd,1
+streakBreakId 161
+
+playlist 111
+displayorder 10
+category 2
+name chinese "-坠机之地"
+name english "-坠机之地"
+description chinese "人数6V6，坠机之地专属赛单。进攻方必须在规定时间内在目标位置安装并引爆炸弹，防守方要全力阻止炸弹被引爆。率先取胜9回合的队伍获得最终胜利，回合内不能重生，8回合后双方换边。"
+description english "人数6V6，坠机之地专属赛单。进攻方必须在规定时间内在目标位置安装并引爆炸弹，防守方要全力阻止炸弹被引爆。率先取胜9回合的队伍获得最终胜利，回合内不能重生，8回合后双方换边。"
+buildversion default cb3 release
+ranked
+minparty 1
+maxparty 6
+unlocklevelend 70
+vsrule "6V6"
+rule 1011 6
+rule 3265 12
+mp_crash_tropical,sd,1
+
+playlist 125
+displayorder 9
+category 2
+name chinese "-突尼斯小镇"
+name english "-突尼斯小镇"
+description chinese "经典爆破6V6模式地图。进攻方须在规定时间内在目标位置安装并引爆炸弹，防守方要全力阻止炸弹被引爆。率先取胜9回合的队伍获得最终胜利，回合内不能重生，8回合后双方换边。"
+description english "经典爆破6V6模式地图。进攻方须在规定时间内在目标位置安装并引爆炸弹，防守方要全力阻止炸弹被引爆。率先取胜9回合的队伍获得最终胜利，回合内不能重生，8回合后双方换边。"
+buildversion default cb3 release
+ranked
+minparty 1
+maxparty 6
+unlocklevelend 70
+vsrule "6V6"
+rule 1011 6
+rule 3265 12
+mp_tunisia,sd,1
+
+playlist 252
+displayorder 5
+category 2
+name chinese "-米德尔顿站"
+name english "-米德尔顿站"
+description chinese "经典爆破6V6模式地图。进攻方须在规定时间内在目标位置安装并引爆炸弹，防守方要全力阻止炸弹被引爆。率先取胜9回合的队伍获得最终胜利，回合内不能重生，8回合后双方换边。"
+description english "经典爆破6V6模式地图。进攻方须在规定时间内在目标位置安装并引爆炸弹，防守方要全力阻止炸弹被引爆。率先取胜9回合的队伍获得最终胜利，回合内不能重生，8回合后双方换边。"
+buildversion default cb3 release
+ranked
+minparty 1
+maxparty 6
+unlocklevelend 70
+vsrule "6V6"
+rule 1011 6
+rule 3265 12
+mp_underground_sh,sd,1
+new
+
+playlist 243
+displayorder 1
+category 15
+name chinese "无畏护送 6V6"
+name english "无畏护送 6V6"
+description chinese "人数6V6，护送方必须在规定时间内成功保护VIP人物完成撤离，防守方则要全力阻止。率先取胜7回合的队伍获得最终胜利，回合内不能重生，队友倒地后可以救援，5回合后双方换边。"
+description english "人数6V6，护送方必须在规定时间内成功保护VIP人物完成撤离，防守方则要全力阻止。率先取胜7回合的队伍获得最终胜利，回合内不能重生，队友倒地后可以救援，5回合后双方换边。"
+buildversion default cb3 release
+ranked
+minparty 1
+maxparty 6
+unlocklevelend 70
+vsrule "6V6"
+rule 1011 6
+rule 3265 12
+set scr_vip_roundlimit		13
+set scr_vip_winlimit		7
+set scr_vip_roundswitch		5
+
+mp_tunisia,vip,1
+mp_resistance_sh,vip,1
+mp_derail_sh,vip,1
+featured
+
+playlist 249
+displayorder 1
+category 16
+name chinese "夺宝奇兵 6V6"
+name english "夺宝奇兵 6V6"
+description chinese "人数6V6，抢夺中立钱箱和敌方钱箱中的金钱并存入己方钱箱中。率先拥有10000金钱的队伍或到达时间后金钱多的一方获胜，如果时间到达时双方金钱一致则进入加时…"
+description english "人数6V6，抢夺中立钱箱和敌方钱箱中的金钱并存入己方钱箱中。率先拥有10000金钱的队伍或到达时间后金钱多的一方获胜，如果时间到达时双方金钱一致则进入加时…"
+buildversion default cb3 release
+ranked
+minparty 1
+maxparty 6
+unlocklevelend 70
+vsrule "6V6"
+rule 1011 6
+rule 3265 12
+
+mp_overgrown,robbery,1
+mp_italy_sh,robbery,1
+
+playlist 122
+displayorder 11
+category 9
+name chinese "搜索救援"
+name english "搜索救援"
+description chinese "传统经典爆破规则之上，加入有趣的新突破。玩家搜集友方队友狗牌可以复活队友，搜集敌方狗牌可以阻止敌人复活。"
+description english "传统经典爆破规则之上，加入有趣的新突破。玩家搜集友方队友狗牌可以复活队友，搜集敌方狗牌可以阻止敌人复活。"
+buildversion default cb3 release
+ranked
+minparty 1
+maxparty 6
+unlocklevelend 70
+vsrule "6V6"
+rule 1011 6
+rule 3265 12
+mp_afghan,sr,1
+mp_crash_tropical,sr,1
+mp_cross_fire,sr,1
+mp_estate_tropical,sr,1
+mp_fav_tropical,sr,1
+mp_firingrange,sr,1
+mp_storm_spring,sr,1
+mp_overgrown,sr,1
+mp_seatown,sr,1
+mp_highrise,sr,1
+mp_mountain,sr,1
+mp_terminal_cls,sr,1
+mp_subbase_sh,sr,1
+mp_hardhat_sh,sr,1
+
+playlist 13
+displayorder 5
+category 3
+name chinese "战术团竞6V6"
+name english "战术团竞6V6"
+description chinese "人数6V6，死亡后在队友附近复活，在10分钟内，率先达到75击杀的队伍或时间结束击杀数最高的队伍获胜。"
+description english "人数6V6，死亡后在队友附近复活，在10分钟内，率先达到75击杀的队伍或时间结束击杀数最高的队伍获胜。"
+buildversion default cb3 release
+ranked
+minparty 1
+maxparty 6
+unlocklevelend 70
+vsrule "6V6"
+rule 1011 6
+rule 3265 12
+rule scr_war_scorelimit 75
+rule scr_war_timelimit 10
+mp_cargoship,tdm,1
+mp_crash_tropical,tdm,1
+mp_cross_fire,tdm,1
+mp_fav_tropical,tdm,1
+mp_firingrange,tdm,1
+mp_killhouse_sh,tdm,1
+mp_nuked,tdm,1
+mp_rust_long,tdm,1
+mp_storm_spring,tdm,1
+mp_seatown,tdm,1
+mp_highrise,tdm,1
+mp_mountain,tdm,1
+mp_terminal_cls,tdm,1
+mp_subbase_sh,tdm,1
+mp_hardhat_sh,tdm,1
+mp_village,tdm,1
+mp_raid,tdm,1
+mp_dome,tdm,1
+mp_strike_sh,tdm,1
+mp_qadeem_sh,tdm,1
+mp_mogadishu_sh,tdm,1
+mp_district,tdm,1
+mp_overwatch_sh,tdm,1
+mp_nightshift_sh,tdm,1
+mp_italy_sh,tdm,1
+mp_backlot_sh,tdm,1
+mp_radiation_sh,tdm,1
+mp_arkaden_sh,tdm,1
+mp_derail_sh,tdm,1
+mp_fallen_sh,tdm,1
+mp_bootleg_sh,tdm,1
+mp_lockdown_sh,tdm,1
+mp_foundation_sh,tdm,1
+mp_underground_sh,tdm,1
+
+playlist 14
+displayorder 3
+category 3
+name chinese "战术团竞9V9"
+name english "战术团竞9V9"
+description chinese "人数9V9，死亡后在队友附近复活，在10分钟内，率先达到150击杀的队伍或时间结束击杀数最高的队伍获胜。"
+description english "人数9V9，死亡后在队友附近复活，在10分钟内，率先达到150击杀的队伍或时间结束击杀数最高的队伍获胜。"
+buildversion default cb3 release
+ranked
+minparty 1
+maxparty 9
+unlocklevelend 70
+vsrule "9V9"
+rule 1011 12
+rule 3265 18
+rule scr_war_scorelimit 150
+rule scr_war_timelimit 10
+rule scr_ground_war 1
+mp_afghan,tdm,1
+mp_estate_tropical,tdm,1
+mp_fav_tropical,tdm,1
+mp_overgrown,tdm,1
+mp_storm_spring,tdm,1
+mp_seatown,tdm,1
+mp_highrise,tdm,1
+mp_mountain,tdm,1
+mp_terminal_cls,tdm,1
+mp_subbase_sh,tdm,1
+mp_hardhat_sh,tdm,1
+mp_village,tdm,1
+mp_raid,tdm,1
+mp_dome,tdm,1
+mp_strike_sh,tdm,1
+mp_qadeem_sh,tdm,1
+mp_mogadishu_sh,tdm,1
+mp_district,tdm,1
+mp_overwatch_sh,tdm,1
+mp_nightshift_sh,tdm,1
+mp_italy_sh,tdm,1
+mp_radiation_sh,tdm,1
+mp_backlot_sh,tdm,1
+mp_arkaden_sh,tdm,1
+mp_derail_sh,tdm,1
+mp_fallen_sh,tdm,1
+mp_bootleg_sh,tdm,1
+mp_lockdown_sh,tdm,1
+mp_foundation_sh,tdm,1
+mp_underground_sh,tdm,1
+
+playlist 207
+displayorder 4
+category 3
+name chinese "战术团竞9V9 - 真实模式"
+name english "战术团竞9V9 - 真实模式"
+description chinese "9V9战术团竞的真实模式，在普通战术团竞的基础上隐藏了战斗界面信息，武器也变得更加致命。在10分钟内，率先达到150击杀的队伍或时间结束击杀数最高的队伍获胜。"
+description english "9V9战术团竞的真实模式，在普通战术团竞的基础上隐藏了战斗界面信息，武器也变得更加致命。在10分钟内，率先达到150击杀的队伍或时间结束击杀数最高的队伍获胜。"
+buildversion default cb3 release
+ranked
+hardcore
+itemban all_kis uav airdrop counter_uav airdrop_sentry_minigun predator_missile precision_airstrike helicopter helicopter_flares helicopter_minigun ac130 sentry mortar_mp sr71_mp dogs_mp sam_turret uav_pro mortar_mp_pro dogs_mp_pro ac130_pro juggernaut missile_drone armor_locker umbrella_system juggernaut_pro tabun_gas_mp molotovcocktail_mp emp sentry_wargod missile_drone_wargod helicopter_shark sentry_graffiti juggernaut_wargod airdrop_wargod
+minparty 1
+maxparty 9
+unlocklevelend 70
+vsrule "9V9"
+rule 1011 12
+rule 3265 18
+rule scr_war_scorelimit 150
+rule scr_war_timelimit 10
+rule scr_ground_war 1
+mp_afghan,tdm,1
+mp_estate_tropical,tdm,1
+mp_fav_tropical,tdm,1
+mp_overgrown,tdm,1
+mp_storm_spring,tdm,1
+mp_seatown,tdm,1
+mp_highrise,tdm,1
+mp_mountain,tdm,1
+mp_terminal_cls,tdm,1
+mp_subbase_sh,tdm,1
+mp_hardhat_sh,tdm,1
+mp_village,tdm,1
+mp_raid,tdm,1
+mp_dome,tdm,1
+mp_strike_sh,tdm,1
+mp_qadeem_sh,tdm,1
+mp_mogadishu_sh,tdm,1
+mp_district,tdm,1
+mp_overwatch_sh,tdm,1
+mp_nightshift_sh,tdm,1
+mp_italy_sh,tdm,1
+mp_radiation_sh,tdm,1
+mp_backlot_sh,tdm,1
+mp_arkaden_sh,tdm,1
+mp_derail_sh,tdm,1
+mp_fallen_sh,tdm,1
+mp_bootleg_sh,tdm,1
+mp_lockdown_sh,tdm,1
+mp_foundation_sh,tdm,1
+mp_underground_sh,tdm,1
+
+playlist 15
+displayorder 1
+category 9
+name chinese "据点争夺"
+name english "据点争夺"
+description chinese "据点争夺模式：占领地图上的3个据点来帮助团队获得胜利，玩家每夺取一个据点可获得连杀奖励点。"
+description english "据点争夺模式：占领地图上的3个据点来帮助团队获得胜利，玩家每夺取一个据点可获得连杀奖励点。"
+buildversion default cb3 release
+ranked
+minparty 1
+maxparty 6
+unlocklevelend 70
+vsrule "6V6"
+rule 1011 6
+rule 3265 12
+mp_fav_tropical,dom,1
+mp_overgrown,dom,1
+mp_seatown,dom,1
+mp_mountain,dom,1
+mp_storm_spring,dom,1
+mp_dome,dom,1
+mp_strike_sh,dom,1
+mp_qadeem_sh,dom,1
+mp_mogadishu_sh,dom,1
+mp_district,dom,1
+mp_overwatch_sh,dom,1
+mp_nightshift_sh,dom,1
+mp_italy_sh,dom,1
+mp_radiation_sh,dom,1
+mp_backlot_sh,dom,1
+mp_arkaden_sh,dom,1
+mp_derail_sh,dom,1
+mp_fallen_sh,dom,1
+mp_bootleg_sh,dom,1
+mp_lockdown_sh,dom,1
+mp_foundation_sh,dom,1
+mp_underground_sh,dom,1
+
+playlist 71
+displayorder 2
+category 1
+name chinese "冲锋团竞9V9"
+name english "冲锋团竞9V9"
+description chinese "人数9V9，死亡后固定复活点复活，在20分钟内，率先达到150击杀的队伍或时间结束击杀数最高的队伍获胜。"
+description english "人数9V9，死亡后固定复活点复活，在20分钟内，率先达到150击杀的队伍或时间结束击杀数最高的队伍获胜。"
+buildversion default cb3 release
+ranked
+minparty 1
+maxparty 3
+unlocklevelend 70
+vsrule "9V9"
+rule 1011 12
+rule 3265 18
+rule scr_cha_scorelimit 150
+rule scr_cha_timelimit 20
+rule scr_ground_war 1
+mp_nuked,cha,1
+mp_shipment_long,cha,1
+mp_cha_quad,cha,1
+mp_mideast,cha,1
+mp_highrise,cha,1
+mp_mountain,cha,1
+mp_streamline,cha,1
+mp_offshore,cha,1
+mp_qadeem_sh,cha,1
+mp_showdown,cha,1
+mp_overwatch_sh,cha,1
+mp_wasteland_sh,cha,1
+mp_lookout_sh,cha,1
+mp_interchange_sh,cha,1
+mp_mission_sh,cha,1
+streakBreakId 160
+newbieBitMask 1
+wargodNewbieBitMask 4
+
+playlist 180
+displayorder 2
+category 9
+name chinese "冲锋团竞9V9-储油站"
+name english "冲锋团竞9V9-储油站"
+description chinese "人数9V9，死亡后固定复活点复活，在20分钟内，率先达到150击杀的队伍或时间结束击杀数最高的队伍获胜。"
+description english "人数9V9，死亡后固定复活点复活，在20分钟内，率先达到150击杀的队伍或时间结束击杀数最高的队伍获胜。"
+buildversion default cb3 release
+ranked
+minparty 1
+maxparty 9
+unlocklevelend 70
+vsrule "9V9"
+rule 1011 12
+rule 3265 18
+rule scr_cha_scorelimit 150
+rule scr_cha_timelimit 20
+rule scr_ground_war 1
+mp_rust_long,cha,1
+
+playlist 148
+displayorder 9
+category 9
+name chinese "热点争夺"
+name english "热点争夺"
+description chinese "人数6V6，占领并守卫热点获得分数，死亡后在随机位置复活。热点会在特定时间后按照一定规律移动。"
+description english "人数6V6，占领并守卫热点获得分数，死亡后在随机位置复活。热点会在特定时间后按照一定规律移动。"
+buildversion default cb3 release
+ranked
+minparty 1
+maxparty 6
+unlocklevelend 70
+vsrule "6V6"
+rule 1011 6
+rule 3265 12
+mp_raid,hp,1
+mp_village,hp,1
+mp_mountain,hp,1
+mp_nuked,hp,1
+mp_terminal_cls,hp,1
+mp_firingrange,hp,1
+
+playlist 120
+displayorder 10
+category 10
+name chinese "机械公敌-感染"
+name english "机械公敌-感染"
+description chinese "努力对抗机械军团的进攻，如果人类战士被干掉，将被异化成为机械战士，重生后加入机械军团阵营对抗人类。"
+description english "努力对抗机械军团的进攻，如果人类战士被干掉，将被异化成为机械战士，重生后加入机械军团阵营对抗人类。"
+buildversion default cb3 release
+ranked
+unlocklevelend 70
+noteamsplitting
+noteambalancing
+minparty 1
+maxparty 6
+rule 1011 8
+rule 3265 18
+mp_crash_tropical,borg,1
+mp_estate_tropical,borg,1
+mp_fav_tropical,borg,1
+mp_firingrange,borg,1
+mp_overgrown,borg,1
+mp_seatown,borg,1
+
+playlist 156
+displayorder 5
+category 9
+name chinese "科技爆破6V6"
+name english "科技爆破6V6"
+description chinese "人数6V6，比经典爆破玩法更丰富。玩家携带默认背包进入游戏，每轮开始前可购买武器和专属道具，一旦死亡背包物品将被清空。进攻方必须在规定时间内在目标位置安装并引爆炸弹…"
+description english "人数6V6，比经典爆破玩法更丰富。玩家携带默认背包进入游戏，每轮开始前可购买武器和专属道具，一旦死亡背包物品将被清空。进攻方必须在规定时间内在目标位置安装并引爆炸弹…"
+buildversion default cb3 release
+ranked
+minparty 1
+maxparty 6
+unlocklevelend 70
+vsrule "6V6"
+rule 1011 10
+rule 3265 12
+mp_tunisia,sdp,1
+mp_storm_spring,sdp,1
+mp_crash_tropical,sdp,1
+mp_sd_proto1,sdp,1
+mp_seatown,sdp,1
+mp_mountain,sdp,1
+mp_conflict,sdp,1
+mp_sd_jardin,sdp,1
+
+playlist 184
+displayorder 4
+category 9
+name chinese "科技爆破6V6-实战对抗"
+name english "科技爆破6V6-实战对抗"
+description chinese "人数6V6，比经典爆破玩法更丰富。玩家携带默认背包进入游戏，每轮开始前可购买武器和专属道具，一旦死亡背包物品将被清空。进攻方必须在规定时间内在目标位置安装并引爆炸弹…"
+description english "人数6V6，比经典爆破玩法更丰富。玩家携带默认背包进入游戏，每轮开始前可购买武器和专属道具，一旦死亡背包物品将被清空。进攻方必须在规定时间内在目标位置安装并引爆炸弹…"
+buildversion default cb3 release
+unlocklevelend 70
+vsrule "6V6"
+combattraining
+onboardbonus
+difficulty 1
+minparty 0
+maxparty 0
+rule 1011 1
+rule 3265 6
+maxhumanplayersperteam 3
+mp_tunisia,sdp,1
+mp_storm_spring,sdp,1
+mp_crash_tropical,sdp,1
+mp_sd_proto1,sdp,1
+mp_seatown,sdp,1
+mp_mountain,sdp,1
+mp_conflict,sdp,1
+
+playlist 186
+displayorder 6
+category 9
+name chinese "科技爆破6V6-能源基地"
+name english "科技爆破6V6-能源基地"
+description chinese "人数6V6，能源基地专属赛单。玩家携带默认背包进入游戏，每轮开始前可购买武器和专属道具，一旦死亡背包物品将被清空。进攻方必须在规定时间内在目标位置安装并引爆炸弹…"
+description english "人数6V6，能源基地专属赛单。玩家携带默认背包进入游戏，每轮开始前可购买武器和专属道具，一旦死亡背包物品将被清空。进攻方必须在规定时间内在目标位置安装并引爆炸弹…"
+buildversion default cb3 release
+ranked
+minparty 1
+maxparty 6
+unlocklevelend 70
+vsrule "6V6"
+rule 1011 10
+rule 3265 12
+mp_conflict,sdp,1
+
+playlist 188
+displayorder 7
+category 9
+name chinese "经典爆破6V6-乱斗赛单"
+name english "经典爆破6V6-乱斗赛单"
+description chinese "人数6V6，所含地图与正常经典爆破赛单不同。进攻方必须在规定时间内在目标位置安装并引爆炸弹，防守方要全力阻止炸弹被引爆。率先取胜9回合的队伍获得最终胜利，回合内不能重生…"
+description english "人数6V6，所含地图与正常经典爆破赛单不同。进攻方必须在规定时间内在目标位置安装并引爆炸弹，防守方要全力阻止炸弹被引爆。率先取胜9回合的队伍获得最终胜利，回合内不能重生…"
+buildversion default cb3 release
+ranked
+minparty 1
+maxparty 6
+unlocklevelend 70
+vsrule "6V6"
+rule 1011 6
+rule 3265 12
+mp_afghan,sd,1
+mp_seatown,sd,1
+mp_highrise,sd,1
+mp_mountain,sd,1
+mp_terminal_cls,sd,1
+mp_subbase_sh,sd,1
+mp_hardhat_sh,sd,1
+mp_village,sd,1
+mp_raid,sd,1
+
+playlist 189
+displayorder 8
+category 9
+name chinese "经典爆破9V9-乱斗赛单"
+name english "经典爆破9V9-乱斗赛单"
+description chinese "人数9V9，所含地图与正常经典爆破赛单不同。进攻方必须在规定时间内在目标位置安装并引爆炸弹，防守方要全力阻止炸弹被引爆。率先取胜9回合的队伍获得最终胜利，回合内不能重生…"
+description english "人数9V9，所含地图与正常经典爆破赛单不同。进攻方必须在规定时间内在目标位置安装并引爆炸弹，防守方要全力阻止炸弹被引爆。率先取胜9回合的队伍获得最终胜利，回合内不能重生…"
+buildversion default cb3 release
+ranked
+minparty 1
+maxparty 9
+unlocklevelend 70
+vsrule "9V9"
+rule 1011 12
+rule 3265 18
+rule scr_ground_war 1
+mp_afghan,sd,1
+mp_seatown,sd,1
+mp_highrise,sd,1
+mp_mountain,sd,1
+mp_terminal_cls,sd,1
+mp_subbase_sh,sd,1
+mp_hardhat_sh,sd,1
+mp_village,sd,1
+mp_raid,sd,1
+
+playlist 16
+displayorder 2
+category 10
+name chinese "疯狂小黑屋"
+name english "疯狂小黑屋"
+description chinese "玩家可携带发光武器或战术装备进入小黑屋，通过制造更多亮光观察敌人的位置，在激烈的团队竞技比赛中让你的敌人感受黑暗的恐惧吧。"
+description english "玩家可携带发光武器或战术装备进入小黑屋，通过制造更多亮光观察敌人的位置，在激烈的团队竞技比赛中让你的敌人感受黑暗的恐惧吧。"
+buildversion default cb3 release
+ranked
+itemban all_wea_rkt all_equ all_kis all_wat_sco_tar the_fixsmallak104gld the_variablemsr for_greswatm203type95army
+minparty 1
+maxparty 6
+unlocklevelend 70
+vsrule "6V6"
+rule 1011 6
+rule 3265 12
+rule scr_cha_scorelimit 255
+rule scr_cha_timelimit 20
+set scr_enable_jugg_transform 1
+
+mp_dr_shipment,tdm,1
+new
+
+playlist 154
+displayorder 12
+category 10
+name chinese "狙击战"
+name english "狙击战"
+description chinese "个人竞技赛单，玩家只能使用狙击步枪进行游戏。消灭其他玩家可得分，率先获得30击杀的玩家获得最终胜利。\n\n每周二进行模式循环更新"
+description english "个人竞技赛单，玩家只能使用狙击步枪进行游戏。消灭其他玩家可得分，率先获得30击杀的玩家获得最终胜利。\n\n每周二进行模式循环更新"
+buildversion default cb3 release
+ranked
+itemban all_wea_oth all_wea_mps all_wea_rkt all_wea_sho all_wea_lmg all_wea_pst all_wea_smg all_wea_ast all_wea_swd all_kis all_equ
+noteamsplitting
+noteambalancing
+minparty 0
+maxparty 0
+unlocklevelend 70
+rule 1011 6
+rule 3265 12
+set scr_special_game_mode 1
+set scr_game_disable_melee 1
+mp_afghan,ffa,1
+mp_cargoship,ffa,1
+mp_crash_tropical,ffa,1
+mp_cross_fire,ffa,1
+mp_estate_tropical,ffa,1
+mp_fav_tropical,ffa,1
+mp_overgrown,ffa,1
+mp_storm_spring,ffa,1
+mp_highrise,ffa,1
+mp_terminal_cls,ffa,1
+mp_subbase_sh,ffa,1
+
+playlist 181
+displayorder 12
+category 10
+name chinese "致命一发"
+name english "致命一发"
+description chinese "玩家携带只有一发子弹的武器，每完成一次击杀可以获得一发子弹！总共三轮比赛，率先获得20击杀的玩家获胜。\n\n每周二进行模式循环更新"
+description english "玩家携带只有一发子弹的武器，每完成一次击杀可以获得一发子弹！总共三轮比赛，率先获得20击杀的玩家获胜。\n\n每周二进行模式循环更新"
+buildversion default cb3 release
+ranked
+noteamsplitting
+noteambalancing
+rule scr_oic_timelimit 3
+minparty 0
+maxparty 0
+unlocklevelend 70
+rule 1011 6
+rule 3265 12
+mp_seatown,oic,1
+mp_highrise,oic,1
+mp_nuked,oic,1
+mp_firingrange,oic,1
+mp_terminal_cls,oic,1
+mp_crash_tropical,oic,1
+
+playlist 182
+displayorder 12
+category 10
+name chinese "原始战争"
+name english "原始战争"
+description chinese "玩家只能使用十字弩、战术弹簧刀和飞斧进行游戏，并杀敌得分。被飞斧杀死的玩家得分将被清零！比赛结束时，获得分数最高的玩家获胜。\n\n每周二进行模式循环更新"
+description english "玩家只能使用十字弩、战术弹簧刀和飞斧进行游戏，并杀敌得分。被飞斧杀死的玩家得分将被清零！比赛结束时，获得分数最高的玩家获胜。\n\n每周二进行模式循环更新"
+buildversion default cb3 release
+ranked
+noteamsplitting
+noteambalancing
+minparty 0
+maxparty 0
+unlocklevelend 70
+rule 1011 6
+rule 3265 12
+mp_crash_tropical,sas,1
+mp_nuked,sas,1
+mp_cross_fire,sas,1
+mp_fav_tropical,sas,1
+mp_firingrange,sas,1
+mp_seatown,sas,1
+mp_highrise,sas,1
+mp_terminal_cls,sas,1
+
+playlist 198
+displayorder 3
+category 9
+name chinese "靶场争霸"
+name english "靶场争霸"
+description chinese "单人靶场"
+description english "单人靶场"
+buildversion default cb3 release
+ranked
+itemban csg12ss_mp all_wea_oth all_wea_mps all_wea_rkt all_wea_pst all_wea_lmg all_wea_snp all_wea_smg all_wea_ast all_wea_swd all_kis all_equ
+minparty 0
+maxparty 0
+unlocklevelend 70
+rule 1011 1
+rule 3265 1
+rule scr_firingRangePartyStartTime 2018/5/22
+coop_train_mp_firingrange,coop,1
+
+playlist 235
+displayorder 2
+category 3
+name chinese "迷你战争"
+name english "迷你战争"
+description chinese "人数6V6，死亡后在队友附近复活，在10分钟内，率先达到100击杀的队伍或时间结束击杀数最高的队伍获胜。"
+description english "人数6V6，死亡后在队友附近复活，在10分钟内，率先达到100击杀的队伍或时间结束击杀数最高的队伍获胜。"
+buildversion default cb3 release
+ranked
+itemban all_kis
+minparty 1
+maxparty 6
+vsrule "6V6"
+unlocklevelend 70
+rule 1011 6
+rule 3265 12
+mp_dwarf_sh,tdm,1
+
+playlist 236
+displayorder 2
+category 1
+name chinese "生死狙击"
+name english "生死狙击"
+description chinese "竞技赛单，玩家只能使用狙击步枪进行游戏。消灭对方玩家可得分。"
+description english "竞技赛单，玩家只能使用狙击步枪进行游戏。消灭对方玩家可得分。"
+buildversion default cb3 release
+ranked
+itemban all_wea_oth all_wea_mps all_wea_rkt all_wea_sho all_wea_lmg all_wea_pst all_wea_smg all_wea_ast all_wea_swd all_kis all_equ
+minparty 1
+maxparty 6
+vsrule "6V6"
+unlocklevelend 70
+rule 1011 6
+rule 3265 12
+set scr_game_disable_melee 1
+mp_awp_arena,cha,1
+
+playlist 158
+name chinese "冲锋团竞6V6"
+name english "冲锋团竞6V6"
+description chinese "人数6V6，死亡后固定复活点复活，在20分钟内，率先达到100击杀的队伍或时间结束击杀数最高的队伍获胜。"
+description english "人数6V6，死亡后固定复活点复活，在20分钟内，率先达到100击杀的队伍或时间结束击杀数最高的队伍获胜。"
+buildversion default cb3 release
+unlocklevelend 70
+vsrule "6V6"
+combattraining
+difficulty 0
+minparty 0
+maxparty 0
+rule 1011 2
+rule 3265 6
+maxhumanplayersperteam 4
+rule scr_cha_scorelimit 100
+rule scr_cha_timelimit 20
+rule scr_cha_roundlimit 2
+rule scr_cha_roundswitch 2
+rule scr_cha_winlimit 1
+rule scr_cha_halftime 1
+rule scr_cha_scorelimithalftime 1
+mp_nuked,cha,1
+mp_shipment_long,cha,1
+mp_cha_quad,cha,1
+
+playlist 160
+name chinese "冲锋团竞9V9"
+name english "冲锋团竞9V9"
+description chinese "人数9V9，死亡后固定复活点复活，在20分钟内，率先达到150击杀的队伍或时间结束击杀数最高的队伍获胜。"
+description english "人数9V9，死亡后固定复活点复活，在20分钟内，率先达到150击杀的队伍或时间结束击杀数最高的队伍获胜。"
+buildversion default cb3 release
+unlocklevelend 70
+minparty 1
+maxparty 9
+vsrule "9V9"
+combattraining
+difficulty 0
+rule 1011 2
+rule 3265 9
+rule scr_ground_war 1
+maxhumanplayersperteam 5
+rule scr_cha_scorelimit 150
+rule scr_cha_timelimit 20
+mp_nuked,cha,1
+mp_shipment_long,cha,1
+mp_cha_quad,cha,1
+
+playlist 159
+name chinese "经典爆破6V6"
+name english "经典爆破6V6"
+description chinese "人数6V6，进攻方必须在规定时间内在目标位置安装并引爆炸弹，防守方要全力阻止炸弹被引爆。率先取胜9回合的队伍获得最终胜利，回合内不能重生，8回合后双方换边。"
+description english "人数6V6，进攻方必须在规定时间内在目标位置安装并引爆炸弹，防守方要全力阻止炸弹被引爆。率先取胜9回合的队伍获得最终胜利，回合内不能重生，8回合后双方换边。"
+buildversion default cb3 release
+unlocklevelend 70
+vsrule "6V6"
+combattraining
+difficulty 1
+minparty 0
+maxparty 0
+rule 1011 2
+rule 3265 6
+maxhumanplayersperteam 3
+mp_crash_tropical,sd,1
+mp_estate_tropical,sd,1
+mp_mountain,sd,1
+mp_terminal_cls,sd,1
+
+playlist 161
+name chinese "经典爆破9V9"
+name english "经典爆破9V9"
+description chinese "人数9V9，进攻方必须在规定时间内在目标位置安装并引爆炸弹，防守方要全力阻止炸弹被引爆。率先取胜9回合的队伍获得最终胜利，回合内不能重生，8回合后双方换边。"
+description english "人数9V9，进攻方必须在规定时间内在目标位置安装并引爆炸弹，防守方要全力阻止炸弹被引爆。率先取胜9回合的队伍获得最终胜利，回合内不能重生，8回合后双方换边。"
+buildversion default cb3 release
+minparty 1
+maxparty 9
+unlocklevelend 70
+vsrule "9V9"
+combattraining
+difficulty 0
+rule 1011 2
+rule 3265 8
+rule scr_ground_war 1
+maxhumanplayersperteam 5
+mp_crash_tropical,sd,1
+mp_estate_tropical,sd,1
+mp_firingrange,sd,1
+mp_storm_spring,sd,1
+mp_mountain,sd,1
+
+playlist 12
+displayorder 12
+category 23
+name chinese "生存模式"
+name english "生存模式"
+description chinese "完成普通难度才能解锁。这里的敌人已经丧心病狂了，为了干掉你甚至出动了从未派出过的部队，与队友默契地配合才能帮助你获得最后的胜利。"
+description english "完成普通难度才能解锁。这里的敌人已经丧心病狂了，为了干掉你甚至出动了从未派出过的部队，与队友默契地配合才能帮助你获得最后的胜利。"
+buildversion default cb3 release
+survival
+difficulty 2
+unlockflag uf_survival_completed_easy
+unlocklevelend 70
+minparty 1
+maxparty 6
+rule 1011 1
+rule 3265 6
+rule scr_xp_scale 1.2
+rule scr_gp_scale 1.2
+coop_survival_mp_cross_fire,coop,1
+coop_survival_mp_crash_tropical,coop,1
+coop_survival_mp_fav_tropical,coop,1
+coop_survival_mp_firingrange,coop,1
+coop_survival_mp_storm_spring,coop,1
+coop_survival_mp_seatown,coop,1
+coop_survival_mp_highrise,coop,1
+coop_survival_mp_mountain,coop,1
+coop_survival_mp_terminal_cls,coop,1
+coop_survival_mp_subbase_sh,coop,1
+coop_survival_mp_village,coop,1
+coop_survival_mp_raid,coop,1
+
+playlist 116
+displayorder 116
+category 23
+name chinese "坠机之地"
+name english "坠机之地"
+description chinese "完成普通难度才能解锁。这里的敌人已经丧心病狂了，为了干掉你甚至出动了从未派出过的部队，与队友默契地配合才能帮助你获得最后的胜利。"
+description english "完成普通难度才能解锁。这里的敌人已经丧心病狂了，为了干掉你甚至出动了从未派出过的部队，与队友默契地配合才能帮助你获得最后的胜利。"
+buildversion default cb3 release
+survival
+difficulty 2
+unlockflag uf_survival_completed_easy
+unlocklevelend 70
+minparty 1
+maxparty 6
+rule 1011 1
+rule 3265 6
+rule scr_xp_scale 1.2
+rule scr_gp_scale 1.2
+coop_survival_mp_crash_tropical,coop,1
+
+playlist 90
+displayorder 90
+category 23
+name chinese "交叉火力"
+name english "交叉火力"
+description chinese "完成普通难度才能解锁。这里的敌人已经丧心病狂了，为了干掉你甚至出动了从未派出过的部队，与队友默契地配合才能帮助你获得最后的胜利。"
+description english "完成普通难度才能解锁。这里的敌人已经丧心病狂了，为了干掉你甚至出动了从未派出过的部队，与队友默契地配合才能帮助你获得最后的胜利。"
+buildversion default cb3 release
+survival
+difficulty 2
+unlockflag uf_survival_completed_easy
+unlocklevelend 70
+minparty 1
+maxparty 6
+rule 1011 1
+rule 3265 6
+rule scr_xp_scale 1.2
+rule scr_gp_scale 1.2
+coop_survival_mp_cross_fire,coop,1
+
+playlist 117
+displayorder 117
+category 23
+name chinese "贫民窟"
+name english "贫民窟"
+description chinese "完成普通难度才能解锁。这里的敌人已经丧心病狂了，为了干掉你甚至出动了从未派出过的部队，与队友默契地配合才能帮助你获得最后的胜利。"
+description english "完成普通难度才能解锁。这里的敌人已经丧心病狂了，为了干掉你甚至出动了从未派出过的部队，与队友默契地配合才能帮助你获得最后的胜利。"
+buildversion default cb3 release
+survival
+difficulty 2
+unlockflag uf_survival_completed_easy
+unlocklevelend 70
+minparty 1
+maxparty 6
+rule 1011 1
+rule 3265 6
+rule scr_xp_scale 1.2
+rule scr_gp_scale 1.2
+coop_survival_mp_fav_tropical,coop,1
+
+playlist 109
+displayorder 3
+category 23
+name chinese "无尽生存"
+name english "无尽生存"
+description chinese "抵挡敌人一轮又一轮的进攻，挑战你的极限！"
+description english "抵挡敌人一轮又一轮的进攻，挑战你的极限！"
+buildversion default cb3 release
+survival
+difficulty 2
+unlocklevelend 70
+minparty 1
+maxparty 6
+rule 1011 1
+rule 3265 6
+rule scr_survival_unlimited_waves 1
+rule scr_survival_unlim_max_tokens_per_game 15
+rule scr_xp_scale 1.1
+rule scr_gp_scale 1.1
+coop_survival_mp_cross_fire,coop,1
+coop_survival_mp_crash_tropical,coop,1
+coop_survival_mp_fav_tropical,coop,1
+coop_survival_mp_firingrange,coop,1
+coop_survival_mp_storm_spring,coop,1
+coop_survival_mp_seatown,coop,1
+coop_survival_mp_highrise,coop,1
+coop_survival_mp_mountain,coop,1
+coop_survival_mp_terminal_cls,coop,1
+coop_survival_mp_subbase_sh,coop,1
+coop_survival_mp_village,coop,1
+coop_survival_mp_raid,coop,1
+
+playlist 155
+displayorder 1
+category 23
+name chinese "无尽幸存者"
+name english "无尽幸存者"
+description chinese "抵挡一轮又一轮的进攻，对战种类更丰富的敌人，挑战你的极限，成为最后的幸存者！"
+description english "抵挡一轮又一轮的进攻，对战种类更丰富的敌人，挑战你的极限，成为最后的幸存者！"
+buildversion default cb3 release
+survival
+difficulty 2
+unlocklevelend 70
+minparty 1
+maxparty 6
+rule 1011 1
+rule 3265 6
+rule scr_survival_unlimited_waves 1
+rule scr_survival_unlim_max_tokens_per_game 15
+rule scr_xp_scale 1.1
+rule scr_gp_scale 1.1
+rule scr_survival_unlimited_waves 1
+rule scr_survival_plus_mode 1
+coop_survival_mp_cross_fire,coop,1
+coop_survival_mp_crash_tropical,coop,1
+coop_survival_mp_fav_tropical,coop,1
+coop_survival_mp_raid,coop,1
+coop_survival_mp_village,coop,1
+coop_survival_mp_terminal_cls,coop,1
+coop_survival_mp_qadeem_sh,coop,1
+coop_survival_mp_overgrown,coop,1
+featured
+
+playlist 19
+displayorder 18
+category 22
+name chinese "随机地图"
+name english "随机地图"
+description chinese "抵抗一轮轮僵尸的侵袭，通过杀敌和修补窗户来获取电池，利用好神秘箱里的特殊道具，坚持到最后一轮！"
+description english "抵抗一轮轮僵尸的侵袭，通过杀敌和修补窗户来获取电池，利用好神秘箱里的特殊道具，坚持到最后一轮！"
+buildversion default cb3 release
+cyborg
+difficulty 0
+unlocklevelend 70
+minparty 1
+maxparty 4
+rule 1011 1
+rule 3265 4
+zm_asylum_sh,zm,1
+zm_prototype_sh,zm,1
+zm_sumpf_sh,zm,1
+zm_factory_sh,zm,1
+
+playlist 94
+displayorder 94
+category 22
+name chinese "机械体研究所"
+name english "机械体研究所"
+description chinese "抵抗一轮轮僵尸的侵袭，通过杀敌和修补窗户来获取电池，利用好神秘箱里的特殊道具，坚持到最后一轮！"
+description english "抵抗一轮轮僵尸的侵袭，通过杀敌和修补窗户来获取电池，利用好神秘箱里的特殊道具，坚持到最后一轮！"
+buildversion default cb3 release
+cyborg
+difficulty 0
+unlocklevelend 70
+minparty 1
+maxparty 4
+rule 1011 1
+rule 3265 4
+zm_asylum_sh,zm,1
+
+playlist 95
+displayorder 95
+category 22
+name chinese "恶灵沼泽"
+name english "恶灵沼泽"
+description chinese "抵抗一轮轮僵尸的侵袭，通过杀敌和修补窗户来获取电池，利用好神秘箱里的特殊道具，坚持到最后一轮！"
+description english "抵抗一轮轮僵尸的侵袭，通过杀敌和修补窗户来获取电池，利用好神秘箱里的特殊道具，坚持到最后一轮！"
+buildversion default cb3 release
+cyborg
+difficulty 0
+unlocklevelend 70
+minparty 1
+maxparty 4
+rule 1011 1
+rule 3265 4
+zm_sumpf_sh,zm,1
+
+playlist 191
+displayorder 191
+category 22
+name chinese "机械体制造工厂"
+name english "机械体制造工厂"
+description chinese "僵尸围城新地图。抵抗一轮轮僵尸的侵袭，通过杀敌和修补窗户来获取电池，利用好神秘箱里的特殊道具，坚持到最后一轮！"
+description english "僵尸围城新地图。抵抗一轮轮僵尸的侵袭，通过杀敌和修补窗户来获取电池，利用好神秘箱里的特殊道具，坚持到最后一轮！"
+buildversion default cb3 release
+cyborg
+difficulty 0
+unlocklevelend 70
+minparty 1
+maxparty 4
+rule 1011 1
+rule 3265 4
+zm_factory_sh,zm,1
+new
+
+playlist 21
+displayorder 20
+category 22
+name chinese "随机地图"
+name english "随机地图"
+description chinese "完成普通难度才能解锁。英雄难度下，僵尸不仅仅是从波数和数量上增加那么简单了，僵尸为了干掉你甚至出动了从未派出过的部队，听起来很刺激不是嘛，勇士来挑战吧！"
+description english "完成普通难度才能解锁。英雄难度下，僵尸不仅仅是从波数和数量上增加那么简单了，僵尸为了干掉你甚至出动了从未派出过的部队，听起来很刺激不是嘛，勇士来挑战吧！"
+buildversion default cb3 release
+cyborg
+difficulty 2
+unlockflag uf_fc_completed_easy
+unlocklevelend 70
+minparty 1
+maxparty 4
+rule 1011 1
+rule 3265 4
+rule scr_xp_scale 1.2
+rule scr_gp_scale 1.2
+zm_asylum_sh,zm,1
+zm_prototype_sh,zm,1
+zm_sumpf_sh,zm,1
+zm_factory_sh,zm,1
+
+playlist 98
+displayorder 98
+category 22
+name chinese "机械体研究所"
+name english "机械体研究所"
+description chinese "完成普通难度才能解锁。英雄难度下，僵尸不仅仅是从波数和数量上增加那么简单了，僵尸为了干掉你甚至出动了从未派出过的部队，听起来很刺激不是嘛，勇士来挑战吧！"
+description english "完成普通难度才能解锁。英雄难度下，僵尸不仅仅是从波数和数量上增加那么简单了，僵尸为了干掉你甚至出动了从未派出过的部队，听起来很刺激不是嘛，勇士来挑战吧！"
+buildversion default cb3 release
+cyborg
+difficulty 2
+unlockflag uf_fc_completed_easy
+unlocklevelend 70
+minparty 1
+maxparty 4
+rule 1011 1
+rule 3265 4
+rule scr_xp_scale 1.2
+rule scr_gp_scale 1.2
+zm_asylum_sh,zm,1
+
+playlist 99
+displayorder 99
+category 22
+name chinese "恶灵沼泽"
+name english "恶灵沼泽"
+description chinese "完成普通难度才能解锁。英雄难度下，僵尸不仅仅是从波数和数量上增加那么简单了，僵尸为了干掉你甚至出动了从未派出过的部队，听起来很刺激不是嘛，勇士来挑战吧！"
+description english "完成普通难度才能解锁。英雄难度下，僵尸不仅仅是从波数和数量上增加那么简单了，僵尸为了干掉你甚至出动了从未派出过的部队，听起来很刺激不是嘛，勇士来挑战吧！"
+buildversion default cb3 release
+cyborg
+difficulty 2
+unlockflag uf_fc_completed_easy
+unlocklevelend 70
+minparty 1
+maxparty 4
+rule 1011 1
+rule 3265 4
+rule scr_xp_scale 1.2
+rule scr_gp_scale 1.2
+zm_sumpf_sh,zm,1
+
+playlist 193
+displayorder 193
+category 22
+name chinese "机械体制造工厂"
+name english "机械体制造工厂"
+description chinese "完成普通难度才能解锁。英雄难度下，僵尸不仅仅是从波数和数量上增加那么简单了，僵尸为了干掉你甚至出动了从未派出过的部队，听起来很刺激不是嘛，勇士来挑战吧！"
+description english "完成普通难度才能解锁。英雄难度下，僵尸不仅仅是从波数和数量上增加那么简单了，僵尸为了干掉你甚至出动了从未派出过的部队，听起来很刺激不是嘛，勇士来挑战吧！"
+buildversion default cb3 release
+cyborg
+difficulty 2
+unlockflag uf_fc_completed_easy
+unlocklevelend 70
+minparty 1
+maxparty 4
+rule 1011 1
+rule 3265 4
+rule scr_xp_scale 1.2
+rule scr_gp_scale 1.2
+zm_factory_sh,zm,1
+new
+
+playlist 69
+displayorder 1
+category 20
+name chinese "丧尸竞技场"
+name english "丧尸竞技场"
+description chinese "与角斗士同伴们一起加入最壮观的游戏秀，为你的队伍在与丧尸群对抗的挑战中赢得一席之地。用技能来增强你们的战斗力，对抗数波丧尸的来袭并打败最终Boss来赢得粉丝们对你们的崇拜！"
+description english "与角斗士同伴们一起加入最壮观的游戏秀，为你的队伍在与丧尸群对抗的挑战中赢得一席之地。用技能来增强你们的战斗力，对抗数波丧尸的来袭并打败最终Boss来赢得粉丝们对你们的崇拜！"
+buildversion default cb3 release
+zarena
+difficulty 0
+unlocklevelend 70
+noteamsplitting
+noteambalancing
+minparty 1
+maxparty 4
+rule 1011 1
+rule 3265 4
+rule scr_xp_scale 1.1
+rule scr_gp_scale 1.1
+rule zarena_round_table recruit
+za_coliseum,zarena,1
+
+playlist 130
+displayorder 3
+category 20
+name chinese "丧尸竞技场"
+name english "丧尸竞技场"
+description chinese "与角斗士同伴们一起加入最壮观的游戏秀，为你的队伍在与丧尸群对抗的挑战中赢得一席之地。用技能来增强你们的战斗力，对抗数波丧尸的来袭并打败最终Boss来赢得粉丝们对你们的崇拜！"
+description english "与角斗士同伴们一起加入最壮观的游戏秀，为你的队伍在与丧尸群对抗的挑战中赢得一席之地。用技能来增强你们的战斗力，对抗数波丧尸的来袭并打败最终Boss来赢得粉丝们对你们的崇拜！"
+buildversion default cb3 release
+zarena
+difficulty 2
+unlockflag uf_zarena_completed_easy
+unlocklevelend 70
+noteamsplitting
+noteambalancing
+minparty 1
+maxparty 4
+rule 1011 1
+rule 3265 4
+rule scr_xp_scale 1.3
+rule scr_gp_scale 1.3
+rule zarena_round_table hero
+za_coliseum,zarena,1
+
+playlist 157
+displayorder 2
+category 20
+name chinese "无尽丧尸竞技场"
+name english "无尽丧尸竞技场"
+description chinese "在竞技场中对抗无穷无尽的丧尸狂潮。你能够坚持多久呢？"
+description english "在竞技场中对抗无穷无尽的丧尸狂潮。你能够坚持多久呢？"
+buildversion default cb3 release
+zarena
+difficulty 2
+unlocklevelend 70
+noteamsplitting
+noteambalancing
+minparty 1
+maxparty 4
+rule 1011 1
+rule 3265 4
+rule scr_xp_scale 1.3
+rule scr_gp_scale 1.3
+rule zarena_round_table unlimited
+za_coliseum,zarena,1
+featured
+
+playlist 135
+displayorder 50
+category 20
+name chinese "惊魂丧尸岛"
+name english "惊魂丧尸岛"
+description chinese "热带渡假村变成丧尸横行的末世乐园。战士们在惊魂丧尸岛再次齐聚，投入惊心动魄刺激不断的生死搏杀。扫荡丧尸，发现海岛的秘密，无限荣誉和财富属于你！"
+description english "热带渡假村变成丧尸横行的末世乐园。战士们在惊魂丧尸岛再次齐聚，投入惊心动魄刺激不断的生死搏杀。扫荡丧尸，发现海岛的秘密，无限荣誉和财富属于你！"
+img sfproto_za_island.tga
+buildversion default cb3 release
+zarena
+difficulty 0
+unlocklevelend 70
+noteamsplitting
+noteambalancing
+minparty 1
+maxparty 4
+rule 1011 1
+rule 3265 4
+rule scr_xp_scale 1.1
+rule scr_gp_scale 1.1
+rule zarena_round_table recruit
+za_island,zarena,1
+
+playlist 140
+displayorder 52
+category 20
+name chinese "惊魂丧尸岛"
+name english "惊魂丧尸岛"
+description chinese "热带渡假村变成丧尸横行的末世乐园。战士们在惊魂丧尸岛再次齐聚，投入惊心动魄刺激不断的生死搏杀。扫荡丧尸，发现海岛的秘密，无限荣誉和财富属于你！"
+description english "热带渡假村变成丧尸横行的末世乐园。战士们在惊魂丧尸岛再次齐聚，投入惊心动魄刺激不断的生死搏杀。扫荡丧尸，发现海岛的秘密，无限荣誉和财富属于你！"
+img sfproto_za_island.tga
+buildversion default cb3 release
+zarena
+difficulty 2
+unlockflag uf_zarena_completed_easy
+unlocklevelend 70
+noteamsplitting
+noteambalancing
+minparty 1
+maxparty 4
+rule 1011 1
+rule 3265 4
+rule scr_xp_scale 1.3
+rule scr_gp_scale 1.3
+rule zarena_round_table hero
+za_island,zarena,1
+
+playlist 143
+displayorder 4
+category 20
+name chinese "无尽惊魂丧尸岛"
+name english "无尽惊魂丧尸岛"
+description chinese "在惊魂丧尸岛，面对无尽丧尸狂潮，你能坚持多久？"
+description english "在惊魂丧尸岛，面对无尽丧尸狂潮，你能坚持多久？"
+img sfproto_za_island.tga
+buildversion default cb3 release
+zarena
+difficulty 2
+unlocklevelend 70
+noteamsplitting
+noteambalancing
+minparty 1
+maxparty 4
+rule 1011 1
+rule 3265 4
+rule scr_xp_scale 1.3
+rule scr_gp_scale 1.3
+rule zarena_round_table unlimited
+za_island,zarena,1
+
+playlist 151
+displayorder 55
+category 26
+name chinese "丧尸生存"
+name english "丧尸生存"
+description chinese "在这些经典的生存模式地图上，对抗丧尸潮的来袭！"
+description english "在这些经典的生存模式地图上，对抗丧尸潮的来袭！"
+buildversion default cb3 release
+zsurv
+difficulty 0
+unlocklevelend 70
+noteamsplitting
+noteambalancing
+minparty 1
+maxparty 4
+rule 1011 4
+rule 3265 4
+rule scr_xp_scale 1.1
+rule scr_gp_scale 1.1
+rule zarena_round_table recruit
+mp_crash_tropical,zsurv,1
+mp_seatown,zsurv,1
+mp_village,zsurv,1
+mp_raid,zsurv,1
+mp_cross_fire,zsurv,1
+
+playlist 147
+displayorder 54
+category 26
+name chinese "丧尸生存"
+name english "丧尸生存"
+description chinese "在这些经典的生存模式地图上，对抗丧尸潮的来袭！"
+description english "在这些经典的生存模式地图上，对抗丧尸潮的来袭！"
+buildversion default cb3 release
+zsurv
+difficulty 2
+unlocklevelend 70
+noteamsplitting
+noteambalancing
+minparty 1
+maxparty 4
+rule 1011 4
+rule 3265 4
+rule scr_xp_scale 1.3
+rule scr_gp_scale 1.3
+rule zarena_round_table hero
+mp_crash_tropical,zsurv,1
+mp_seatown,zsurv,1
+mp_village,zsurv,1
+mp_raid,zsurv,1
+mp_cross_fire,zsurv,1
+
+playlist 67
+displayorder 13
+category 9
+name chinese "首领团队竞技"
+name english "首领团队竞技"
+description chinese "首领团队竞技：每支队伍各有一名首领，杀死敌方首领将获得额外点数。"
+description english "首领团队竞技：每支队伍各有一名首领，杀死敌方首领将获得额外点数。"
+buildversion default cb3 release
+ranked
+minparty 1
+maxparty 6
+unlocklevelend 70
+vsrule "6V6"
+rule 1011 6
+rule 3265 12
+mp_mideast,tjugg,1
+mp_shipment_long,tjugg,1
+mp_rust_long,tjugg,1
+mp_nuked,tjugg,1
+mp_highrise,tjugg,1
+mp_mountain,tjugg,1
+mp_terminal_cls,tjugg,1
+
+playlist 23
+displayorder 11
+category 10
+name chinese "个人竞技"
+name english "个人竞技"
+description chinese "个人竞技：只为自己而战，不支持组队。"
+description english "个人竞技：只为自己而战，不支持组队。"
+buildversion default cb3 release
+ranked
+noteamsplitting
+noteambalancing
+minparty 0
+maxparty 0
+unlocklevelend 70
+rule 1011 4
+rule 3265 8
+mp_rust_long,ffa,1
+
+playlist 77
+displayorder 12
+category 9
+name chinese "抢钻大战9V9"
+name english "抢钻大战9V9"
+description chinese "杀敌抢钻石！敌人死后会掉落桔色钻石，队友死后会掉落蓝色钻石。收集桔色钻石得分，收集蓝色钻石阻止敌方得分。最先达到分数上限，或者在时限内分数最高的队伍获胜。"
+description english "杀敌抢钻石！敌人死后会掉落桔色钻石，队友死后会掉落蓝色钻石。收集桔色钻石得分，收集蓝色钻石阻止敌方得分。最先达到分数上限，或者在时限内分数最高的队伍获胜。"
+buildversion default cb3 release
+ranked
+minparty 1
+maxparty 9
+unlocklevelend 70
+vsrule "9V9"
+rule 1011 12
+rule 3265 18
+rule scr_conf_scorelimit 100
+mp_nuked,kc,1
+mp_rust_long,kc,1
+mp_shipment_long,kc,1
+mp_cha_quad,kc,1
+mp_mideast,kc,1
+mp_highrise,kc,1
+mp_mountain,kc,1
+mp_subbase_sh,kc,1
+mp_hardhat_sh,kc,1
+
+playlist 194
+displayorder 3
+category 5
+name chinese "营救小队6V6"
+name english "营救小队6V6"
+description chinese "人数6V6，玩家可以在每轮开始时选择一个指定的角色进入游戏。进攻方必须在时限内找到并解救人质，防守方要挟持人质并阻止他们被解救。5回合后双方换边。10轮后打平则会加赛一轮…"
+description english "人数6V6，玩家可以在每轮开始时选择一个指定的角色进入游戏。进攻方必须在时限内找到并解救人质，防守方要挟持人质并阻止他们被解救。5回合后双方换边。10轮后打平则会加赛一轮…"
+buildversion default cb3 release
+ranked
+minparty 1
+maxparty 6
+unlocklevelend 70
+vsrule "6V6"
+rule 1011 6
+rule 3265 12
+mp_estate_tropical,hostage,1
+mp_storm_spring,hostage,1
+mp_crash_tropical,hostage,1
+mp_conflict,hostage,1
+mp_fav_tropical,hostage,1
+mp_overgrown,hostage,1
+mp_tunisia,hostage,1
+
+playlist 195
+displayorder 2
+category 5
+name chinese "实战对抗"
+name english "实战对抗"
+description chinese "人数6V6，玩家可以在每轮开始时选择一个指定的角色进入游戏。进攻方必须在时限内找到并解救人质，防守方要挟持人质并阻止他们被解救。5回合后双方换边。10轮后打平则会加赛一轮…"
+description english "人数6V6，玩家可以在每轮开始时选择一个指定的角色进入游戏。进攻方必须在时限内找到并解救人质，防守方要挟持人质并阻止他们被解救。5回合后双方换边。10轮后打平则会加赛一轮…"
+buildversion default cb3 release
+unlocklevelend 70
+vsrule "6V6"
+combattraining
+onboardbonus
+difficulty 1
+minparty 0
+maxparty 0
+rule 1011 1
+rule 3265 6
+maxhumanplayersperteam 3
+mp_estate_tropical,hostage,1
+mp_storm_spring,hostage,1
+mp_crash_tropical,hostage,1
+mp_conflict,hostage,1
+mp_fav_tropical,hostage,1
+mp_overgrown,hostage,1
+mp_tunisia,hostage,1
+
+playlist 196
+displayorder 1
+category 10
+name chinese "躲猫猫"
+name english "躲猫猫"
+description chinese "比赛分为两队，防守方通过伪装成游戏内的物品藏匿自己，进攻方试图找到并消灭正在躲藏的变身玩家。规定时间内，防守方存活到回合结束则得分，进攻方找到并消灭变身的玩家则得分…"
+description english "比赛分为两队，防守方通过伪装成游戏内的物品藏匿自己，进攻方试图找到并消灭正在躲藏的变身玩家。规定时间内，防守方存活到回合结束则得分，进攻方找到并消灭变身的玩家则得分…"
+buildversion default cb3 release
+ranked
+minparty 1
+maxparty 6
+unlocklevelend 70
+vsrule "6V6"
+rule 1011 6
+rule 3265 12
+mp_qadeem_sh,ph,1
+mp_mountain,ph,1
+mp_seatown,ph,1
+mp_crash_tropical,ph,1
+mp_fav_tropical,ph,1
+mp_highrise,ph,1
+mp_raid,ph,1
+mp_village,ph,1
+
+playlist 204
+displayorder 4
+category 10
+name chinese "枪械游戏"
+name english "枪械游戏"
+description chinese "玩家要用每把武器完成一次击杀，被近战刀杀会导致你倒退一把武器，率先用完全部20把武器的玩家获得胜利（最后一把弹簧刀需要远距离击杀才算胜利）。"
+description english "玩家要用每把武器完成一次击杀，被近战刀杀会导致你倒退一把武器，率先用完全部20把武器的玩家获得胜利（最后一把弹簧刀需要远距离击杀才算胜利）。"
+buildversion default cb3 release
+ranked
+noteamsplitting
+noteambalancing
+minparty 0
+maxparty 0
+unlocklevelend 70
+rule 1011 6
+rule 3265 12
+mp_crash_tropical,gun,1
+mp_nuked,gun,1
+mp_cross_fire,gun,1
+mp_fav_tropical,gun,1
+mp_firingrange,gun,1
+mp_seatown,gun,1
+mp_highrise,gun,1
+mp_terminal_cls,gun,1
+
+playlist 218
+displayorder 2
+category 10
+name chinese "疯狂的小鸡 6V6"
+name english "疯狂的小鸡 6V6"
+description chinese "人数6V6，玩家使用鸡光炮将敌人变成鸡并消灭它获得点数。变成超级大鸡可以攻击敌人，变成小鸡，只好祈祷敌人手下留情。比赛结束时得分高的队伍获胜。"
+description english "人数6V6，玩家使用鸡光炮将敌人变成鸡并消灭它获得点数。变成超级大鸡可以攻击敌人，变成小鸡，只好祈祷敌人手下留情。比赛结束时得分高的队伍获胜。"
+buildversion default cb3 release
+ranked
+minparty 1
+maxparty 6
+unlocklevelend 70
+vsrule "6V6"
+rule 1011 6
+rule 3265 12
+rule scr_chicken_scorelimit 300
+rule scr_chicken_timelimit 15
+mp_crash_tropical,chicken,1
+mp_firingrange,chicken,1
+mp_nuked,chicken,1
+mp_seatown,chicken,1
+mp_village,chicken,1
+
+playlist 254
+displayorder 12
+category 10
+name chinese "核子橄榄球"
+name english "核子橄榄球"
+description chinese "人数5V5。两队在中圈争球，带球进攻，通过传球将球投进对方球门得分。比赛结束，分数高的队伍获胜！"
+description english "人数5V5。两队在中圈争球，带球进攻，通过传球将球投进对方球门得分。比赛结束，分数高的队伍获胜！"
+buildversion default cb3 release
+ranked
+itemban all_equ riotshield_mp gre_pulseradarr5rgpneon all_kis
+minparty 1
+maxparty 5
+unlocklevelend 70
+vsrule "5V5"
+rule 1011 10
+rule 3265 10
+mp_nukearena_sh,nftbl,1
+
+playlist 255
+displayorder 12
+category 10
+name chinese "迷你战争"
+name english "迷你战争"
+description chinese "人数6V6，死亡后在队友附近复活，在10分钟内，率先达到100击杀的队伍或时间结束击杀数最高的队伍获胜。"
+description english "人数6V6，死亡后在队友附近复活，在10分钟内，率先达到100击杀的队伍或时间结束击杀数最高的队伍获胜。"
+buildversion default cb3 release
+ranked
+itemban all_kis
+minparty 1
+maxparty 6
+vsrule "6V6"
+unlocklevelend 70
+rule 1011 6
+rule 3265 12
+mp_dwarf_sh,tdm,1
+
+playlist 150
+displayorder 14
+category 10
+name chinese "刀锋战场-战术团竞"
+name english "刀锋战场-战术团竞"
+description chinese "人数6v6, 第三人称的近战战术团队竞技模式, 使用你的近战武器展现出你出色的近战能力！使用地图上的加成道具帮助你和你的团队。"
+description english "人数6v6, 第三人称的近战战术团队竞技模式, 使用你的近战武器展现出你出色的近战能力！使用地图上的加成道具帮助你和你的团队。"
+buildversion default cb3 release
+ranked
+minparty 1
+maxparty 6
+unlocklevelend 70
+vsrule "6V6"
+rule 1011 4
+rule 3265 12
+rule scr_clash_mode_flag 2
+rule scr_clash_allow_change_rule 1
+rule scr_clash_timelimit 10
+rule scr_clash_scorelimit 100
+rule scr_clash_roundlimit 1
+rule scr_clash_winlimit 1
+rule scr_clash_roundswitch 1
+mp_melee_resort,clash,1
+mp_highrise,clash,1
+mp_mountain,clash,1
+
+playlist 152
+displayorder 15
+category 9
+name chinese "传统刀战-战术团竞"
+name english "传统刀战-战术团竞"
+description chinese "人数6v6，第一人称的近战战术团队竞技模式，你可以自定义你的技能，并将你的近战武器带入游戏。对敌人可以一击必杀！"
+description english "人数6v6，第一人称的近战战术团队竞技模式，你可以自定义你的技能，并将你的近战武器带入游戏。对敌人可以一击必杀！"
+buildversion default cb3 release
+ranked
+itemban type95_mp
+minparty 1
+maxparty 6
+unlocklevelend 70
+vsrule "6V6"
+rule 1011 4
+rule 3265 12
+rule scr_clash_mode_flag 4
+rule scr_clash_allow_change_rule 1
+rule scr_clash_timelimit 10
+rule scr_clash_scorelimit 50
+rule scr_clash_roundlimit 1
+rule scr_clash_winlimit 1
+rule scr_clash_roundswitch 3
+mp_melee_resort,clash,1
+mp_highrise,clash,1
+mp_mountain,clash,1
+
+playlist 153
+displayorder 16
+category 9
+name chinese "刀锋战场-夺旗模式"
+name english "刀锋战场-夺旗模式"
+description chinese "人数6v6，第三人称的夺旗刀战模式，夺取敌人的旗帜并将它带回你的基地！使用地图上的加成道具帮助你和你的团队。"
+description english "人数6v6，第三人称的夺旗刀战模式，夺取敌人的旗帜并将它带回你的基地！使用地图上的加成道具帮助你和你的团队。"
+buildversion default cb3 release
+ranked
+minparty 1
+maxparty 6
+unlocklevelend 70
+vsrule "6V6"
+rule 1011 4
+rule 3265 12
+rule scr_clash_mode_flag 3
+mp_melee_resort,clash,1
+mp_killhouse_sh,clash,1
+mp_nuked,clash,1
+mp_rust_long,clash,1
+mp_cargoship,clash,1
+
+playlist 175
+displayorder 80
+category 28
+name chinese "末日小队"
+name english "末日小队"
+description chinese "在炸弹专家-邓普希、守护者-尼古拉、神枪手-瑞奇、刀客-沙穆四位战士中选择一个作为你的角色，与其他玩家组成四人小队，联手抵挡一轮又一轮的丧尸进攻，成就你自己的传奇！"
+description english "在炸弹专家-邓普希、守护者-尼古拉、神枪手-瑞奇、刀客-沙穆四位战士中选择一个作为你的角色，与其他玩家组成四人小队，联手抵挡一轮又一轮的丧尸进攻，成就你自己的传奇！"
+buildversion default cb3 release
+zchamp
+difficulty 2
+unlocklevelend 70
+noteamsplitting
+noteambalancing
+minparty 1
+maxparty 4
+rule 1011 1
+rule 3265 4
+rule scr_xp_scale 1.3
+rule scr_gp_scale 1.3
+rule zarena_round_table hard
+mp_village,zchamp,1
+mp_raid,zchamp,1
+mp_crash_tropical,zchamp,1
+mp_cross_fire,zchamp,1
+mp_qadeem_sh,zchamp,1
+mp_strike_sh,zchamp,1
+mp_fav_tropical,zchamp,1
+new
+
+playlist 185
+displayorder 79
+category 28
+name chinese "末日小队"
+name english "末日小队"
+description chinese "在炸弹专家-邓普希、守护者-尼古拉、神枪手-瑞奇、刀客-沙穆四位战士中选择一个作为你的角色，与其他玩家组成四人小队，联手抵挡一轮又一轮的丧尸进攻，成就你自己的传奇！"
+description english "在炸弹专家-邓普希、守护者-尼古拉、神枪手-瑞奇、刀客-沙穆四位战士中选择一个作为你的角色，与其他玩家组成四人小队，联手抵挡一轮又一轮的丧尸进攻，成就你自己的传奇！"
+buildversion default cb3 release
+zchamp
+difficulty 0
+unlocklevelend 70
+noteamsplitting
+noteambalancing
+minparty 1
+maxparty 4
+rule 1011 1
+rule 3265 4
+rule scr_xp_scale 1.1
+rule scr_gp_scale 1.1
+rule zarena_round_table easy
+mp_village,zchamp,1
+mp_raid,zchamp,1
+mp_crash_tropical,zchamp,1
+mp_cross_fire,zchamp,1
+mp_qadeem_sh,zchamp,1
+mp_strike_sh,zchamp,1
+mp_fav_tropical,zchamp,1
+new
+
+playlist 205
+displayorder 2
+category 29
+name chinese "第一章 脱轨"
+name english "第一章 脱轨"
+description chinese "2084年，末日后幸存的人类仍然在与恶劣的自然环境作斗争。辐射风暴和遍布的僵尸群让脆弱的人类难以生存。黄蜂小队正在护送运输车将采集到的矿晶原石送回庇护所——西塔德尔…"
+description english "2084年，末日后幸存的人类仍然在与恶劣的自然环境作斗争。辐射风暴和遍布的僵尸群让脆弱的人类难以生存。黄蜂小队正在护送运输车将采集到的矿晶原石送回庇护所——西塔德尔…"
+buildversion default cb3 release
+itemban wild_overkill all_per
+zhunt
+difficulty 0
+unlocklevelend 70
+noteamsplitting
+noteambalancing
+nolevelbucketmatchesforjip
+noskillbucketmatchesforjip
+nominmatchesforjip
+minparty 1
+maxparty 6
+novoting
+rule 1011 1
+rule 3265 6
+rule playlistMapRotateSequentially 1
+mp_deathmarch_chap1,zhunt,1
+mp_deathmarch_chap1_b,zhunt,1
+
+playlist 231
+displayorder 3
+category 29
+name chinese "第二章 线索"
+name english "第二章 线索"
+description chinese "捕获哭泣者是每个猎人的美梦。传闻，流放者猎人贾马尔发现了找到哭泣者的方法，但他被囚禁在诺森堡监狱。猎人曼森招募了一个猎人小队，希望营救贾马尔，并获得哭泣者的线索......"
+description english "捕获哭泣者是每个猎人的美梦。传闻，流放者猎人贾马尔发现了找到哭泣者的方法，但他被囚禁在诺森堡监狱。猎人曼森招募了一个猎人小队，希望营救贾马尔，并获得哭泣者的线索......"
+buildversion default cb3 release
+itemban wild_overkill all_per
+zhunt
+difficulty 0
+unlocklevelend 70
+noteamsplitting
+noteambalancing
+nolevelbucketmatchesforjip
+noskillbucketmatchesforjip
+nominmatchesforjip
+minparty 1
+maxparty 6
+novoting
+rule 1011 1
+rule 3265 6
+rule playlistMapRotateSequentially 1
+mp_deathmarch_chap1_c,zhunt,1
+mp_deathmarch_chap1_d,zhunt,1
+
+playlist 229
+displayorder 4
+category 29
+name chinese "第零章 裂隙"
+name english "第零章 裂隙"
+description chinese "在2064年的陨石撞击后，方舟建立了保护伞阵列，用来防止辐射尘向方舟领地扩散。2069年，突如其来的陨石雨损坏了保护伞阵列中的一些防护单元。昆德兰庇护所派出了自己的特勤卫队…"
+description english "在2064年的陨石撞击后，方舟建立了保护伞阵列，用来防止辐射尘向方舟领地扩散。2069年，突如其来的陨石雨损坏了保护伞阵列中的一些防护单元。昆德兰庇护所派出了自己的特勤卫队…"
+buildversion default cb3 release
+itemban wild_overkill all_per
+zhunt
+difficulty 0
+unlocklevelend 70
+noteamsplitting
+noteambalancing
+nolevelbucketmatchesforjip
+noskillbucketmatchesforjip
+nominmatchesforjip
+minparty 1
+maxparty 6
+novoting
+rule 1011 1
+rule 3265 6
+rule playlistMapRotateSequentially 1
+mp_deathmarch_chap3_a,zhunt,1
+mp_deathmarch_chap3_b,zhunt,1
+
+playlist 245
+displayorder 1
+category 29
+name chinese "第三章 征兆(全新工坊)"
+name english "第三章 征兆(全新工坊)"
+description chinese "在诺森堡事件后，当时参与行动的流放者猎人们在几年间被逐一抓获，并集中关押于西塔德尔的外围区域。曼森正在计划营救这些猎人，但他的协助从来不会是免费的…"
+description english "在诺森堡事件后，当时参与行动的流放者猎人们在几年间被逐一抓获，并集中关押于西塔德尔的外围区域。曼森正在计划营救这些猎人，但他的协助从来不会是免费的…"
+buildversion default cb3 release
+itemban wild_overkill all_per
+zhunt
+difficulty 0
+unlocklevelend 70
+noteamsplitting
+noteambalancing
+nolevelbucketmatchesforjip
+noskillbucketmatchesforjip
+nominmatchesforjip
+minparty 1
+maxparty 6
+novoting
+rule 1011 1
+rule 3265 6
+rule playlistMapRotateSequentially 1
+mp_deathmarch_chap4_a,zhunt,1
+mp_deathmarch_chap4_b,zhunt,1
+featured
+
+playlist 251
+displayorder 1
+category 30
+name chinese "感染区"
+name english "感染区"
+description chinese "在西塔德尔陷落几个月后，方舟与流放者成立了一支联合远征队，他们的目的是前往感染区深处，并抢在他们那位共同的敌人之前，定位那个游离的的讯号。这次行动并不顺利…"
+description english "在西塔德尔陷落几个月后，方舟与流放者成立了一支联合远征队，他们的目的是前往感染区深处，并抢在他们那位共同的敌人之前，定位那个游离的的讯号。这次行动并不顺利…"
+buildversion default cb3 release
+td
+difficulty 0
+unlocklevelend 70
+noteamsplitting
+noteambalancing
+minparty 1
+maxparty 4
+rule 1011 1
+rule 3265 4
+mp_battlecity_mountains_td,td,1
+new
+homepagead 7
+
+playlist 142
+displayorder 142
+category 11
+name chinese "狼人行动"
+name english "狼人行动"
+description chinese "每个人将随机扮演一个角色。平民和警探需要识别并淘汰狼人；狼人则要小心翼翼的淘汰平民和警探。请擦亮你的双眼，开始你的表演，努力取得胜利吧！"
+description english "每个人将随机扮演一个角色。平民和警探需要识别并淘汰狼人；狼人则要小心翼翼的淘汰平民和警探。请擦亮你的双眼，开始你的表演，努力取得胜利吧！"
+buildversion default cb3 release
+ranked
+difficulty 0
+noteamsplitting
+noteambalancing
+minparty 0
+maxparty 0
+unlocklevelend 70
+rule 1011 6
+rule 3265 18
+mp_raid,spy,1
+mp_village,spy,1
+mp_strike_sh,spy,1
+mp_overwatch_sh,spy,1
+mp_district,spy,1
+mp_fav_tropical,spy,1
+mp_storm_spring,spy,1
+mp_radiation_sh,spy,1
+mp_arkaden_sh,spy,1
+mp_backlot_sh,spy,1
+
+homepagead 7
+
+playlist 199
+displayorder 13
+category 13
+name chinese "勇者游戏 单人"
+name english "勇者游戏 单人"
+overridename chinese "BattleCity"
+overridename english "ÓÂÕßÓÎÏ·"
+description chinese "勇者游戏单人模式。在废弃的未来城市中，克服多变的自然环境，收集武器装备，淘汰其他选手，成为最强勇者！"
+description english "勇者游戏单人模式。在废弃的未来城市中，克服多变的自然环境，收集武器装备，淘汰其他选手，成为最强勇者！"
+overridedescription chinese "Survive to be the winner."
+overridedescription english "ÔÚ·ÏÆúµÄÎ´À´³ÇÊÐÖÐ£¬¿Ë·þ¶à±äµÄ×ÔÈ»»·¾³£¬ÊÕ¼¯ÎäÆ÷×°±¸£¬ÌÔÌ­ÆäËûÑ¡ÊÖ£¬³ÉÎª×îÇ¿ÓÂÕß£¡"
+buildversion default cb3 release
+set scr_dmz_buddymode 0
+ranked
+nojip
+noteamsplitting
+noteambalancing
+minparty 0
+maxparty 0
+unlocklevelend 70
+rule 1011 17
+rule 3265 18
+mp_battlecity_mountains,dmz,3
+mp_battlecity,dmz,1
+buddy_playlist 200
+featured
+
+playlist 200
+displayorder 12
+category 13
+name chinese "勇者游戏 双人"
+name english "勇者游戏 双人"
+description chinese "勇者游戏双人模式。在废弃的未来城市中，和队友一起，克服多变的自然环境，收集武器装备，淘汰其他选手，成为最强队伍！"
+description english "勇者游戏双人模式。在废弃的未来城市中，和队友一起，克服多变的自然环境，收集武器装备，淘汰其他选手，成为最强队伍！"
+buildversion default cb3 release
+set scr_dmz_buddymode 1
+ranked
+nojip
+noteamsplitting
+noteambalancing
+minparty 0
+maxparty 2
+unlocklevelend 70
+rule 1011 16
+rule 3265 18
+mp_battlecity,dmz,1
+mp_battlecity_mountains,dmz,3
+featured
+
+playlist 214
+displayorder 23
+category 13
+name chinese "勇者游戏 绝命逃生"
+name english "勇者游戏 绝命逃生"
+description chinese "勇者游戏逃生（单人）玩法。地面资源较为匮乏，空中补给尤为珍贵。随着中心圈的逐渐缩小，找到出口逃离或淘汰其他人方可取得胜利，你会如何选择？"
+description english "勇者游戏逃生（单人）玩法。地面资源较为匮乏，空中补给尤为珍贵。随着中心圈的逐渐缩小，找到出口逃离或淘汰其他人方可取得胜利，你会如何选择？"
+buildversion default cb3 release
+set dmz_circle_reversed 1
+set scr_dmz_lootTableOption ReversedCircle
+set scr_dmz_buddymode 0
+ranked
+nojip
+noteamsplitting
+noteambalancing
+minparty 0
+maxparty 0
+unlocklevelend 70
+rule 1011 17
+rule 3265 18
+mp_battlecity,dmz,1
+homepagead 3
+
+playlist 216
+displayorder 1
+name chinese "实战对抗"
+name english "实战对抗"
+description chinese "冲锋(随机地图)-冲锋团队竞技模式，人数6V6，死亡后固定复活点复活，在10分钟内，率先达到50击杀的队伍获胜。"
+description english "冲锋(随机地图)-冲锋团队竞技模式，人数6V6，死亡后固定复活点复活，在10分钟内，率先达到50击杀的队伍获胜。"
+buildversion default cb3 release
+unlocklevelend 70
+vsrule "6V6"
+combattraining
+onboardbonus
+difficulty 0
+minparty 0
+maxparty 0
+rule 1011 1
+rule 3265 1
+maxhumanplayersperteam 3
+rule scr_cha_scorelimit 50
+rule scr_cha_timelimit 10
+rule scr_cha_roundlimit 2
+rule scr_cha_roundswitch 2
+rule scr_cha_winlimit 1
+rule scr_cha_halftime 1
+rule scr_cha_scorelimithalftime 1
+mp_nuked,cha,1
+mp_mideast,cha,1
+mp_shipment_long,cha,1
+mp_cha_quad,cha,1
+mp_mountain,cha,1
+
+playlist 217
+displayorder 1
+name chinese "实战对抗"
+name english "实战对抗"
+description chinese "人数6V6，进攻方必须在时限内在目标位置安装并引爆炸弹，防守方要阻止炸弹引爆。率先取胜9回合的队伍获得最终胜利，回合内不能重生，8回合后双方换边。"
+description english "人数6V6，进攻方必须在时限内在目标位置安装并引爆炸弹，防守方要阻止炸弹引爆。率先取胜9回合的队伍获得最终胜利，回合内不能重生，8回合后双方换边。"
+buildversion default cb3 release
+unlocklevelend 70
+vsrule "6V6"
+combattraining
+onboardbonus
+difficulty 1
+minparty 0
+maxparty 0
+rule 1011 1
+rule 3265 1
+maxhumanplayersperteam 3
+mp_crash_tropical,sd,1
+mp_estate_tropical,sd,1
+mp_fav_tropical,sd,1
+mp_cross_fire,sd,1
+mp_mountain,sd,1
+mp_terminal_cls,sd,1
+mp_tunisia,sd,1
+mp_dome,sd,1
+
+playlist 220
+displayorder 1
+category 8
+name chinese "周末勇者联赛 单人"
+name english "周末勇者联赛 单人"
+overridename chinese "BattleCity League"
+overridename english "ÖÜÄ©ÓÂÕßÁªÈü"
+description chinese "勇者游戏联赛单人模式。在废弃的未来城市中，克服多变的自然环境，收集武器装备，淘汰其他选手，成为最强勇者！"
+description english "勇者游戏联赛单人模式。在废弃的未来城市中，克服多变的自然环境，收集武器装备，淘汰其他选手，成为最强勇者！"
+overridedescription chinese "BattleCity League Description"
+overridedescription english "[ÁªÈüÃ¿ÖÜÁù¡¢ÈÕ 10µã-24µã¿ª·Å]ÔÚÓÂÕßÓÎÏ·³£¹æ±ÈÈüÖÐ³ÉÎªÓÅÊ¤Õß£¬ÒÔ»ñµÃÁªÈüÈë³¡È¯£¬¿É²ÎÓëÖÜÄ©ÓÂÕßÁªÈü¡£²ÎÓëÃ¿³¡ÁªÈü¶¼»áÓ®È¡»ý·Ö£¬²¢ÒÔ´Ë¶Ò»»·áºñ½±Àø¡£ÓÂÕß£¬ÔÚ¾Û¹âµÆÏÂµÄÎèÌ¨ÉÏÖ¤Ã÷ÄãµÄÊµÁ¦°É£¡"
+buildversion default cb3 release
+set scr_dmz_buddymode 0
+ranked
+nojip
+noteamsplitting
+noteambalancing
+minparty 0
+maxparty 0
+unlocklevelend 70
+rule 1011 17
+rule 3265 18
+mp_battlecity_mountains,dmz,3
+mp_battlecity,dmz,1
+buddy_playlist 221
+
+playlist 221
+displayorder 2
+category 8
+name chinese "周末勇者联赛 双人"
+name english "周末勇者联赛 双人"
+description chinese "勇者游戏联赛双人模式。在废弃的未来城市中，和队友一起，克服多变的自然环境，收集武器装备，淘汰其他选手，成为最强队伍！"
+description english "勇者游戏联赛双人模式。在废弃的未来城市中，和队友一起，克服多变的自然环境，收集武器装备，淘汰其他选手，成为最强队伍！"
+buildversion default cb3 release
+set scr_dmz_buddymode 1
+ranked
+nojip
+noteamsplitting
+noteambalancing
+minparty 0
+maxparty 2
+unlocklevelend 70
+rule 1011 16
+rule 3265 18
+mp_battlecity_mountains,dmz,3
+mp_battlecity,dmz,1
+
+playlist 237
+displayorder 143
+category 14
+name chinese "核子橄榄球"
+name english "核子橄榄球"
+description chinese "人数5V5。两队在中圈争球，带球进攻，通过传球将球投进对方球门得分。比赛结束，分数高的队伍获胜！"
+description english "人数5V5。两队在中圈争球，带球进攻，通过传球将球投进对方球门得分。比赛结束，分数高的队伍获胜！"
+buildversion default cb3 release
+ranked
+itemban all_equ riotshield_mp gre_pulseradarr5rgpneon all_kis
+minparty 1
+maxparty 5
+unlocklevelend 70
+vsrule "5V5"
+rule 1011 10
+rule 3265 10
+mp_nukearena_sh,nftbl,1

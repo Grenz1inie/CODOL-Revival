@@ -62,7 +62,7 @@ class MemorySocket:
 
 
 class LobbyTests(unittest.TestCase):
-    def test_local_lobby_serves_the_single_killhouse_entry(self):
+    def test_local_lobby_serves_the_restored_playlist(self):
         import local_server
         class AcceptedSocket(MemorySocket):
             def __enter__(self): return self
@@ -78,10 +78,9 @@ class LobbyTests(unittest.TestCase):
         aes=Cipher(algorithms.AES(keys[56:72]),modes.CBC(packet[10:26])).decryptor()
         clear=aes.update(packet[26:-8])+aes.finalize()
         payload=clear[5:5+struct.unpack_from('<I',clear)[0]]
-        playlist=payload[32:].decode('ascii')
-        self.assertIn('mp_killhouse_sh,ffa,1',playlist)
-        self.assertIn('script dm',playlist)
-        self.assertEqual(sum(line.startswith('playlist ') for line in playlist.splitlines()),1)
+        content=payload[32:]
+        self.assertEqual(content,(local_server.ROOT/'data/match-playlist.info').read_bytes())
+        self.assertIn('战术团竞6V6',content.decode('utf-8'))
 
     def test_named_publisher_content_is_returned_exactly_and_other_files_stay_empty(self):
         auth, _, keys = client_auth()
