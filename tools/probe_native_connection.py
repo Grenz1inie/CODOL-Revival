@@ -116,7 +116,7 @@ class EncryptedPeer:
             self.socket.settimeout(5)
 
 
-def probe():
+def probe(*, minimal_profile=False):
     native = NativeServer(ROOT, port=28971)
     profiles = PrivateProfileStore(ROOT/'runtime/data/private-profiles', ROOT/'runtime/backups/private-profiles')
     uid = 0xe94a180c65d3c23b
@@ -138,16 +138,20 @@ def probe():
                 f'\\qport\\{peer.socket.getsockname()[1]}\\rate\\25000\\snaps\\20')
         result['connect_response'] = peer.oob(f'connect {uid:016x} "{info}"\0'.encode(), b'connectResponse ').decode()
         result['steps'].append('challenge/connect accepted')
-        # A declared minimal fixture, not the lobby's stripped public-profile
-        # blob. The full game supplies its own stats; formal saves stay untouched.
-        schema = json.loads((ROOT/'research/evidence/live-player-schema.json').read_text())['schemas']['mp/playerdata.def']
-        public = bytearray(32768)
-        struct.pack_into('<II', public, 4, schema['header'][0], schema['header'][1])
-        for i, value in enumerate((545, 104, 0, 0, 0, 0, 0, 0, 0)):
-            struct.pack_into('<I', public, 4+schema['offsets'][577+i], value)
-        struct.pack_into('<I', public, 0, zlib.crc32(public[4:]))
+        if minimal_profile:
+            schema = json.loads((ROOT/'research/evidence/live-player-schema.json').read_text())['schemas']['mp/playerdata.def']
+            public = bytearray(32768)
+            struct.pack_into('<II', public, 4, schema['header'][0], schema['header'][1])
+            for i, value in enumerate((545, 104, 0, 0, 0, 0, 0, 0, 0)):
+                struct.pack_into('<I', public, 4+schema['offsets'][577+i], value)
+            struct.pack_into('<I', public, 0, zlib.crc32(public[4:]))
+            result['public_stats_source'] = 'minimal current-schema fixture: cha_INFbaseA + han_hands'
+        else:
+            from dw_profiles import validate_profile
+            path = ROOT/'runtime/data/public-profiles'/f'{uid:016x}.bin'
+            public = validate_profile(path.read_bytes())
+            result['public_stats_source'] = str(path)
         packed = zlib.compress(public)
-        result['public_stats_source'] = 'minimal current-schema fixture: cha_INFbaseA + han_hands'
         for index in range((len(packed)+1237)//1238):
             response = peer.oob(b'stats\0'+client.stats_fragment(packed, index), b'statResponse ')
         assert response == b'statResponse 0', response
@@ -294,4 +298,8 @@ def probe():
 
 
 if __name__ == '__main__':
-    sys.exit(probe())
+    import argparse
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--minimal-profile', action='store_true',
+                        help='use the declared base-character fixture instead of the real saved public profile')
+    sys.exit(probe(minimal_profile=parser.parse_args().minimal_profile))

@@ -35,7 +35,7 @@ class NativeCharacterTests(unittest.TestCase):
         cls.addClassCleanup(_ctypes.FreeLibrary, cls.lib._handle)
         cls.read = cls.lib.story_character_read
         cls.read.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_size_t,
-                             ctypes.c_uint32, ctypes.c_uint, ctypes.c_void_p]
+                             ctypes.c_uint32, ctypes.c_uint, ctypes.c_char_p, ctypes.c_void_p]
         cls.read.restype = ctypes.c_int
 
     def setUp(self):
@@ -43,6 +43,7 @@ class NativeCharacterTests(unittest.TestCase):
         self.profile = bytearray(32768)
         self.checksum = self.schema['header'][1]
         self.record_size = self.schema['header'][12]
+        self.schema_name = b'mp/playerdata.def'
         struct.pack_into('<II', self.profile, 4, 233, self.checksum)
         self.profile[4 + self.offsets[697]] = 11
         for i, value in enumerate([545, 104, 0, 0xffffffff, 0, 0, 0, 0, 0]):
@@ -55,7 +56,8 @@ class NativeCharacterTests(unittest.TestCase):
         profile = ctypes.create_string_buffer(bytes(self.profile))
         offsets = ctypes.create_string_buffer(struct.pack('<' + 'I' * len(self.offsets), *self.offsets))
         out = (ctypes.c_uint16 * 10)(*[0xaaaa] * 10)
-        status = self.read(profile, offsets, len(self.offsets) * 4, self.checksum, self.record_size, out)
+        status = self.read(profile, offsets, len(self.offsets) * 4, self.checksum,
+                           self.record_size, self.schema_name, out)
         if not status:
             self.assertEqual(list(out), [0xaaaa] * 10)
         return status, list(out)
@@ -65,8 +67,23 @@ class NativeCharacterTests(unittest.TestCase):
         self.assertEqual(self.result(), (1, [11, 545, 104, 0, 0, 0, 0, 0, 0, 0]))
         self.assertEqual(bytes(self.profile), before)
 
-    def test_uploaded_zero_header_is_not_a_character_record(self):
+    def test_zero_header_uses_bound_current_public_schema_without_mutating_data(self):
         self.profile[4:12] = bytes(8)
+        before = bytes(self.profile)
+        self.assertEqual(self.result(), (1, [11, 545, 104, 0, 0, 0, 0, 0, 0, 0]))
+        self.assertEqual(bytes(self.profile), before)
+
+    def test_zero_header_does_not_select_old_or_unknown_schema(self):
+        self.profile[4:12] = bytes(8)
+        self.checksum = 0x70cd4cc5
+        self.assertEqual(self.result()[0], 0)
+        self.checksum = self.schema['header'][1]
+        self.record_size -= 1
+        self.assertEqual(self.result()[0], 0)
+
+    def test_zero_header_does_not_apply_to_private_profile(self):
+        self.profile[4:12] = bytes(8)
+        self.schema_name = b'mp/playersecuredata.def'
         self.assertEqual(self.result()[0], 0)
 
     def test_mismatched_schema_header_is_rejected(self):
