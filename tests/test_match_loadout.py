@@ -9,6 +9,32 @@ HEADERS=ROOT/'research/experiments/story-native/reference-zone-assets/current-co
 
 
 class MatchLoadoutTests(unittest.TestCase):
+    def test_nuketown_bundle_requires_its_registry_and_preserves_navigation(self):
+        from export_match_loadout import export_loadout
+        from match_server.mapdata import load_map
+        from match_server.navigation import Navigation
+        base = ROOT / 'research/experiments/independent-match'
+        package = base / 'nuketown-dm-v1'
+        registration = base / 'nuketown-registration-v1'
+        zone = ROOT / 'research/experiments/story-native/zone-assets/common_mp/zone.bin'
+        waypoint = ROOT.parent / 'sh1x_dedicated/bin/home/main/waypoints/mp_nuked_wp.csv'
+        if not all(p.exists() for p in (package/'manifest.json', registration/'ncs.json', zone, waypoint)):
+            self.skipTest('local Nuketown resources unavailable')
+        with tempfile.TemporaryDirectory(dir=base) as folder:
+            with self.assertRaisesRegex(ValueError, 'selected map'):
+                export_loadout(package, Path(folder)/'wrong', zone, waypoint, base/'registration/rebuilt')
+            output = Path(folder)/'match'
+            export_loadout(package, output, zone, waypoint, registration)
+            data = load_map(output)
+            loadout = json.loads(data['files']['loadout.json'])
+            self.assertEqual(data['manifest']['map'], 'mp_nuked')
+            self.assertEqual(loadout['weapon']['name'], 'acr_mp')
+            self.assertEqual(data['files']['waypoints.csv'], waypoint.read_bytes())
+            self.assertEqual(len(Navigation.from_csv(waypoint.read_text(), None).nodes), 235)
+            self.assertEqual(loadout['provenance']['waypoint_source'], str(waypoint.resolve()))
+            self.assertFalse(data['ncs']['mounted_set_verified'])
+            self.assertEqual(data['ncs']['selected_zones'][11:13], ['mp_nuked', 'mp_nuked_const'])
+
     def test_bundle_extracts_current_header_by_its_real_name_and_keeps_sources_unchanged(self):
         from export_match_loadout import export_loadout
         from match_server.mapdata import load_map

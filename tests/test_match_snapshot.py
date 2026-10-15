@@ -13,6 +13,23 @@ class MatchSnapshotTests(unittest.TestCase):
     def setUp(self):
         self.client=ClientReader423()
 
+    def test_nuketown_defers_fx_but_keeps_all_static_baseline_entities(self):
+        from match_server.snapshot import baseline_entities, encode_snapshot
+        path=Path(__file__).resolve().parents[1]/'research/experiments/independent-match/nuketown-loadout-v2/baseline.bin'
+        if not path.exists():
+            self.skipTest('local current Nuketown fixture unavailable')
+        data=path.read_bytes()
+        entities=baseline_entities(data)
+        self.assertEqual(len(entities),94)
+        self.assertFalse({668,669,670,671}.intersection(n for n,_ in entities))
+        wire=encode_snapshot({0:1000},server_time=1000,health=100,entities=entities)
+        result=self.client.snapshot(wire,sequence=1)
+        self.assertEqual(result['entities'],94)
+        unknown=bytearray(272)
+        struct.pack_into('<II',unknown,0,900,14)  # A vehicle is not a deferred effect.
+        with self.assertRaisesRegex(ValueError,'unsupported baseline'):
+            baseline_entities(data+unknown)
+
     def test_health_weapon_ammo_and_two_players_reach_current_snapshot(self):
         from match_server.snapshot import encode_snapshot, Inventory
         state={0:1000,8:word(100),10:word(25),11:word(-50),39:7,83:0}

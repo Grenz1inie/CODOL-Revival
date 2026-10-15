@@ -44,7 +44,53 @@
 - 此前实机日志只记录29字节及 `DATA before handshake`，没有包头，不能仅凭长度认定所有失败包都是INTRO。新日志记录前6字节，供下一次人工测试区分NAT与真正的加密DATA；游戏出生仍未实测。
 - REA恢复现有快照成功；新字符串查询在300秒超时，本轮使用已有REA命令链证据与参考源码，没有把缓存恢复表述为新完成的全量分析。
 
-资源提取与地图准备仍在本项目的隔离目录内进行，原游戏与正式档案不写入。只有资源包完成当前最小物理范围后才切换运行实例。
+核弹小镇资源已导出到 `research/experiments/independent-match/nuketown-loadout-v2/`，34个文件，原游戏与正式档案未写入：
+
+- 当前签名FF423中提取本图碰撞、302个出生点记录（其中30个DM点）、98个基线实体；盒体落地检查接受27个DM点。
+- 冻结DM碰撞包含5395个世界brush、1142个地形分区、158种静态XModel、72834条模型三角形及32个真实初始姿态的内联模型。保留材质/碰撞掩码，不用包围盒冒充真实模型；55个其他模式、工具、玻璃或渲染对象明确排除，1个基线模型无碰撞几何。
+- 快照保留94个type6实体；另外4个为 `ET_FX=8` 环境特效（实体668–671，参考 `sh1x_dedicated/src/entity.h`）。本轮不发送这4个特效，原始基线仍完整保存；其他未知类型仍报错。客户端读取器消费94个地图实体及2名玩家，共96个实体。
+- CS16中心 `[1090,5791,1933]` 由实际网络实体、DM出生点、路点及零差分基准确定。远景BSP范围不参与网络位置窗口，原始碰撞仍完整保留；后续越界实体仍由编码器拒绝。
+- 本图NCS候选CRC为 **1765105316**，角色/手部/ACR编号为109/53/5。`mounted_set_verified=false`：当前客户端读取器通过不表示实际游戏的挂载集合已匹配，保留正常CRC比较。
+
+一次真实UDP加密握手、stats、gamestate及snapshot读取已通过，记录在 `research/evidence/nuketown-independent-smoke.json`。其范围是当前客户端机器码消费，未执行完整游戏渲染；不能据此声称已进图或可操作。
+
+REA快照另存为 `research/evidence/client423-nuketown-entry.rea.json`，93项工作流、184条证据，绑定同一下述客户端SHA-256。继续恢复该快照，不重复已超时的字符串扫描。
+
+### 核弹小镇资源重建
+
+以下命令在项目根执行；输出目录必须不存在。已有中间包保留，重新导出时统一换新目录名。只把最终34文件包部署到运行目录，不提交游戏资源。所有注册表输入先校验签名FF及客户端哈希。
+
+```powershell
+$env:PYTHONPATH='src;tests;tools'
+python -B tools/extract_story_resources.py --map-name mp_nuked --output research/experiments/independent-match/nuketown-inputs-v1
+python -B tools/build_match_registration.py --map-name mp_nuked --ff-directory research/experiments/independent-match/nuketown-inputs-v1/chinese --output research/experiments/independent-match/nuketown-registration-v1
+```
+
+首次地图导出使用 `export_zones` 的地图参数：
+
+```powershell
+@'
+import json
+from pathlib import Path
+from decode_story_fastfile import decode
+from export_match_map import export_zones
+base=Path('research/experiments/independent-match')
+reg=base/'nuketown-registration-v1'
+sources=json.loads((reg/'sources.json').read_text())
+ncs=json.loads((reg/'ncs.json').read_text())
+client=Path('../CODOL_Experience_V3.3.3.3_FULL.7z/codoMP_client_shipRetail.exe').read_bytes()
+records={r['name']:r for r in sources['fastfiles']}
+zones={name:decode(client,Path(records[name]['path']).read_bytes(),name)
+       for name in ncs['selected_zones']}
+export_zones(zones,base/'nuketown-dm-v1',map_name='mp_nuked',gametype='dm',
+             source_records=records,registration=ncs['registration_evidence'])
+'@ | python -B -
+python -B tools/export_match_map.py --from-package research/experiments/independent-match/nuketown-dm-v1 --model-zone research/experiments/story-native/zone-assets/common_mp/zone.bin --output research/experiments/independent-match/nuketown-dm-v2
+python -B tools/export_match_loadout.py --source research/experiments/independent-match/nuketown-dm-v2 --output research/experiments/independent-match/nuketown-loadout-v1 --common-zone research/experiments/story-native/zone-assets/common_mp/zone.bin --waypoints ../sh1x_dedicated/bin/home/main/waypoints/mp_nuked_wp.csv --registration research/experiments/independent-match/nuketown-registration-v1
+python -B tools/export_match_map.py --from-package research/experiments/independent-match/nuketown-loadout-v1 --model-zone research/experiments/story-native/zone-assets/common_mp/zone.bin --output research/experiments/independent-match/nuketown-loadout-v2
+```
+
+最后一步将包内路点纳入坐标窗口并重新生成哈希。旧路点只作为图结构输入，运行时仍须以当前地图碰撞确认可达性。动态尾部1413777字节原样保存；玻璃破坏、脚本驱动物体与复杂环境效果不属于 `dm_frozen_initial_static` 就绪范围。
 
 独立服源码位于 `src/match_server/`，已接入现有认证/大厅，资源独立保存在 `runtime/match/killhouse/`。`local_server.py` 已替换 `NativeServer`，启动时读取地图、碰撞、武器与寻路数据；查询时为当前账号建立回环UDP实例。**自动验证覆盖协议消费和服务端模拟；完整客户端开图、画面、操作及对战仍待用户验收。**
 

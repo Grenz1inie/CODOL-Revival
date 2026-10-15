@@ -1,4 +1,4 @@
-"""Rebuild frontend and Killhouse NCS sets from already extracted signed FF423.
+"""Rebuild frontend and selected-map NCS sets from already extracted signed FF423.
 
 Run from any directory; defaults point at this project's archived inputs.
 No game process, IFS mutation, baseline renumbering, or loadout export occurs.
@@ -19,15 +19,19 @@ COMMON = ('code_pre_gfx_mp', 'localized_code_pre_gfx_mp',
           'code_post_gfx_default_mp', 'code_post_gfx_mp', 'localized_code_post_gfx_mp',
           'common_mp', 'localized_common_mp',
           'common_marketplace_lite', 'localized_common_marketplace_lite')
-PHASES = {
-    'frontend': COMMON + ('ui_mp', 'localized_ui_mp'),
-    'map': COMMON + ('common_gametype_mp', 'localized_common_gametype_mp',
-                    'mp_killhouse_sh', 'mp_killhouse_sh_const', 'common_mp_reload',
-                    'mp_killhouse_sh_load', 'common_loadscreen'),
-}
+def phases_for_map(map_name):
+    return {
+        'frontend': COMMON + ('ui_mp', 'localized_ui_mp'),
+        'map': COMMON + ('common_gametype_mp', 'localized_common_gametype_mp',
+                        map_name, map_name + '_const', 'common_mp_reload',
+                        map_name + '_load', 'common_loadscreen'),
+    }
 
 
-def build(client_path, ff_directory, registration_path):
+PHASES = phases_for_map('mp_killhouse_sh')
+
+
+def build(client_path, ff_directory, registration_path, *, map_name='mp_killhouse_sh'):
     client = Path(client_path).read_bytes()
     if hashlib.sha256(client).hexdigest() != CLIENT_SHA256:
         raise ValueError('client hash mismatch')
@@ -37,7 +41,8 @@ def build(client_path, ff_directory, registration_path):
             zlib.crc32(''.join(registration['names']).encode('ascii')) != registration['checksum_seed']):
         raise ValueError('registration evidence does not match client/seed')
     decoded, sources = {}, []
-    for name in dict.fromkeys(zone for zones in PHASES.values() for zone in zones):
+    phases = phases_for_map(map_name)
+    for name in dict.fromkeys(zone for zones in phases.values() for zone in zones):
         path = Path(ff_directory) / (name + '.ff')
         wire = path.read_bytes()
         zone = decode(client, wire, name)  # Signature, name, block hashes, version.
@@ -49,7 +54,7 @@ def build(client_path, ff_directory, registration_path):
             ff_sha256=hashlib.sha256(wire).hexdigest(),
             zone_sha256=hashlib.sha256(zone).hexdigest(), signed_ff_verified=True))
     result = {}
-    for phase, zones in PHASES.items():
+    for phase, zones in phases.items():
         tables = [dict(table, zone=name) for name in zones for table in decoded[name]['tables']]
         registry = build_registry(tables, checksum_seed=registration['checksum_seed'])
         result[phase] = dict(tables=tables, unresolved=[],
@@ -71,8 +76,9 @@ def main():
     parser.add_argument('--ff-directory', type=Path, default=ROOT / 'research/experiments/story-native/startup-assets/chinese')
     parser.add_argument('--registration', type=Path, default=ROOT / 'research/evidence/live-netconst-registration423.json')
     parser.add_argument('--output', type=Path, default=ROOT / 'research/experiments/independent-match/registration/rebuilt')
+    parser.add_argument('--map-name', default='mp_killhouse_sh')
     args = parser.parse_args()
-    result = build(args.client, args.ff_directory, args.registration)
+    result = build(args.client, args.ff_directory, args.registration, map_name=args.map_name)
     args.output.mkdir(parents=True, exist_ok=True)
     for name, key in [('ncs.json', 'map'), ('frontend-ncs.json', 'frontend'), ('sources.json', 'sources')]:
         (args.output / name).write_text(json.dumps(result[key], indent=2) + '\n', encoding='utf-8')

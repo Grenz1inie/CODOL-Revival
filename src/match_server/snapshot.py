@@ -135,8 +135,13 @@ def baseline_entities(data):
     result=[]
     for start in range(8,len(data),272):
         number,kind=struct.unpack_from('<II',data,start)
-        if not 2 <= number < 2047 or kind!=6:
+        if not 2 <= number < 2047 or kind not in (6,8):
             raise ValueError('unsupported baseline entity')
+        # ET_FX (reference entity.h): Nuketown has four ambient effect emitters.
+        # Effects are deferred for the frozen DM scope; keep the raw baseline
+        # intact and omit these from snapshots, not the static mover geometry.
+        if kind==8:
+            continue
         values={offset:struct.unpack_from('<Q' if bits==-94 else '<I',data,start+offset)[0]
                 for offset,bits,_ in TABLES['entity_script_mover']}
         result.append((number,values))

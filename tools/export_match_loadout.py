@@ -26,6 +26,10 @@ def export_loadout(source, output, common_zone, waypoints, registration):
     sources_bytes=(registration/'sources.json').read_bytes()
     ncs=json.loads(ncs_bytes)
     sources=json.loads(sources_bytes)
+    map_name = package['manifest']['map']
+    required_zones = {map_name, map_name + '_const', map_name + '_load'}
+    if not required_zones.issubset(ncs['selected_zones']):
+        raise ValueError('registration does not include the selected map')
     output=Path(output).resolve()
     if output==OUTPUT_ROOT.resolve() or not output.is_relative_to(OUTPUT_ROOT.resolve()) or output.exists():
         raise ValueError('choose a new directory under independent-match')
@@ -68,7 +72,7 @@ def export_loadout(source, output, common_zone, waypoints, registration):
         provenance=dict(format_version=423,zone='common_mp',zone_sha256=zone_hash,
             asset_index=asset_index,weapon_header_sha256=hashlib.sha256(header).hexdigest(),
             waypoint_sha256=hashlib.sha256(navigation).hexdigest(),
-            waypoint_source='reference main/waypoints/mp_killhouse_sh_wp.csv',
+            waypoint_source=str(Path(waypoints).resolve()),
             waypoint_status='reference graph; every used edge requires current collision clearance'))
     files=dict(package['files'])
     files.update({'ncs.json':ncs_bytes,'registration-sources.json':sources_bytes,

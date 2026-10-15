@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
-"""Offline FF423 Killhouse export. Never executes a client or an engine.
+"""Offline FF423 map export. Never executes a client or an engine.
 
 The matching 3.3.3.3 client is an explicit, read-only decryption input. Exported
 packages contain no executable dependency. Collision section traversal follows
@@ -565,7 +565,11 @@ def classify_submodels(data, geometry):
         if not 0 < model < len(geometry['submodels']):
             raise ValueError(f'entity {index}: invalid inline model {name}')
         target = fields.get('targetname','')
-        if fields.get('script_gameobjectname'):
+        if fields.get('classname') == 'glass':
+            category,reason = 'deferred_glass','authored glass; separate glass state/effects are deferred'
+        elif fields.get('classname') == 'occlusion_override':
+            category,reason = 'visibility_override','authored renderer occlusion override, not a baseline mover'
+        elif fields.get('script_gameobjectname'):
             category,reason = 'gametype_object','script_gameobjectname='+fields['script_gameobjectname']
         elif target == 'to_delete_in_coop_4player' or 'gate' in target:
             category,reason = 'placed_world_obstacle','authored targetname='+target+'; script activation/motion not assumed'
@@ -598,14 +602,30 @@ def select_dm_submodels(report, baseline, geometry):
             by_model.setdefault(model,[]).append(row)
     instances = []
     report.update(blockers=[],baseline_sha256=hashlib.sha256(baseline).hexdigest(),
-                  scope='DM frozen initial world: placed_world_obstacle AND unique current baseline pose; other classes excluded.',
+                  scope='DM frozen initial world: stationary type6 baseline and exact MapEnts pose; mode-only, utility, glass and renderer objects explicitly excluded.',
                   baseline_contract=dict(stride=272,model_offset=0x98,origin_offset=0x18,angles_offset=0x3c,
                                          evidence='Every selected model ID and float32 pose cross-checked against current MapEnts.'))
     for placement in report['placements']:
         rows = by_model.get(placement['submodel'],[])
         placement['baseline_present'] = bool(rows)
         placement['installed'] = False
-        if placement['category'] != 'placed_world_obstacle':
+        category = placement['category']
+        fields = placement['fields']
+        if category in ('deferred_glass', 'visibility_override'):
+            if rows:
+                placement['activation'] = 'unresolved_unexpected_baseline'
+                report['blockers'].append(f"*{placement['submodel']}: deferred object unexpectedly has a mover baseline")
+            else:
+                placement['activation'] = 'excluded_' + category
+            continue
+        candidate = (category == 'placed_world_obstacle'
+                     or category == 'gametype_object' and 'dm' in fields['script_gameobjectname'].split()
+                     or category == 'script_state_unresolved' and fields.get('classname') == 'script_brushmodel')
+        if category == 'script_state_unresolved' and not candidate:
+            placement['activation'] = 'unresolved_script_state'
+            report['blockers'].append(f"*{placement['submodel']}: inline model membership is unresolved")
+            continue
+        if not candidate:
             placement['activation'] = 'excluded_from_dm_frozen_world'
             continue
         reason = None
@@ -635,9 +655,12 @@ def select_dm_submodels(report, baseline, geometry):
                     reason = 'baseline/MapEnts '+key+' mismatch'
             if reason is None:
                 model = geometry['submodels'][placement['submodel']]
-                placement.update(installed=True,activation='frozen_at_dm_baseline_pose',
+                placement.update(activation='frozen_at_dm_baseline_pose',
                     collision_contents=dict(brush=model['brush_contents'],terrain=model['terrain_contents'],
                                             source='clipMap submodel leaf; per-brush/per-material masks retained'))
+                if not model['brushes'] and not model['partitions'] and not (model['brush_contents'] or model['terrain_contents']):
+                    placement['activation'] = 'baseline_has_no_collision_geometry'
+                    continue
                 local = [v for i in model['brushes']
                          for v in product(*zip(geometry['brushes'][i]['mins'],geometry['brushes'][i]['maxs']))]
                 for partition,_ in model['partitions']:
@@ -648,6 +671,7 @@ def select_dm_submodels(report, baseline, geometry):
                 world = [[a+b for a,b in zip(transform_vector(v,axis),origin)] for v in local]
                 if not world:
                     raise ValueError(f"*{placement['submodel']}: selected obstacle has no geometry")
+                placement['installed'] = True
                 instances.append(dict(submodel=placement['submodel'],entity_number=row['entity_id'],
                                       map_entity_index=placement['entity_index'],origin=origin,angles=angles,
                                       mins=[min(v[i] for v in world) for i in range(3)],
@@ -659,7 +683,7 @@ def select_dm_submodels(report, baseline, geometry):
     return instances
 
 
-def export_zones(zones, output, *, gametype='dm', source_records=None, registration=None):
+def export_zones(zones, output, *, map_name=MAP, gametype='dm', source_records=None, registration=None):
     """Export explicitly supplied decoded FF423 zones into a new local directory.
 
     source_records carries offline FF provenance; it is not a runtime mount list.
@@ -670,18 +694,18 @@ def export_zones(zones, output, *, gametype='dm', source_records=None, registrat
         raise ValueError('output must be a new directory under research/experiments/independent-match')
     if output.exists():
         raise ValueError('output directory already exists; select a new export directory')
-    map_assets = read_assets(zones[MAP])
+    map_assets = read_assets(zones[map_name])
     collision_assets = [data for kind, data in map_assets if kind == 15]
     worlds = [data for kind, data in map_assets if kind == 21]
     if len(collision_assets) != 1 or len(worlds) != 1:
-        raise ValueError('expected exactly one Killhouse clipMap and GfxWorld')
+        raise ValueError(f'expected exactly one {map_name} clipMap and GfxWorld')
     collision_bytes = collision_assets[0]
     collision = read_collision(collision_bytes)
     entity_text = collision.pop('entity_text')
     spawns = read_spawns(entity_text)
-    filename = f'mp/constbaselines/bl_pc_{MAP}_{gametype}.bin'
+    filename = f'mp/constbaselines/bl_pc_{map_name}_{gametype}.bin'
     baseline_candidates = []
-    for kind, data in read_assets(zones[MAP + '_const']):
+    for kind, data in read_assets(zones[map_name + '_const']):
         if kind == 36:
             name, payload = read_rawfile(data)
             if name == filename:
@@ -693,7 +717,8 @@ def export_zones(zones, output, *, gametype='dm', source_records=None, registrat
     ncs = dict(tables=[], unresolved=[], empty_assets=[], registry=None, checksum_seed=None,
                client_checksum=None, mounted_set_verified=False, client_checksum_verified=False,
                status='unverified', registration_evidence=None,
-               selected_zones=list(zones), missing_candidate_zones=[n for n in ZONE_NAMES if n not in zones])
+               selected_zones=list(zones), missing_candidate_zones=[n for n in
+                   (*ZONE_NAMES[:-2], map_name, map_name + '_const') if n not in zones])
     inputs = []
     for name, zone in zones.items():
         row = dict((source_records or {}).get(name, {}))
@@ -733,7 +758,7 @@ def export_zones(zones, output, *, gametype='dm', source_records=None, registrat
         unresolved.append('No checksum seed evidence supplied; no candidate registry was built.')
     if ncs['missing_candidate_zones']:
         unresolved.append('The selected inputs omit zones from the proposed offline candidate set.')
-    manifest = dict(schema_version=1, format_version=423, map=MAP, gametype=gametype,
+    manifest = dict(schema_version=1, format_version=423, map=map_name, gametype=gametype,
         map_checksum=collision['checksum'], inputs=inputs, runtime_dependencies=[], files={},
         baseline=dict(name=filename, count=len(baseline_rows), stride=272),
         spawn_count=len(spawns), ncs_status=ncs['status'], physics_ready=False,
@@ -767,16 +792,19 @@ def export_zones(zones, output, *, gametype='dm', source_records=None, registrat
     return manifest
 
 
-def select_position(geometry, spawns):
+def select_position(geometry, spawns, *, baseline, navigation=()):
     """Choose a server center; do not claim an original authored map secret.
 
     CS16 and its reader contract are verified by test_match_snapshot's current
-    client test. Include all decoded geometry bounds, unresolved static instance
-    bounds, and spawn points; future moving entities must stay in this envelope.
+    client test. Snapshot entity positions use +24/+28/+32, not BSP vertices.
+    Include the zero delta base, current baseline origins, DM spawns and supplied
+    navigation nodes. The snapshot encoder still rejects later out-of-window movement.
     """
-    points = list(geometry['vertices']) + [s['origin'] for s in spawns]
-    for b in geometry['brushes'] + geometry['static_models'] + geometry.get('submodel_instances',[]):
-        points.extend((b['mins'],b['maxs']))
+    points = [[0,0,0]] + [s['origin'] for s in spawns if s['classname']=='mp_dm_spawn']
+    points.extend(struct.unpack_from('<3f',row['state'],24) for row in read_baselines(baseline))
+    points.extend(navigation)
+    if not all(len(p)==3 and all(math.isfinite(v) for v in p) for p in points):
+        raise ValueError('nonfinite network position')
     lo = [min(p[i] for p in points) for i in range(3)]
     hi = [max(p[i] for p in points) for i in range(3)]
     qlo = [math.floor(v+.5) for v in lo]
@@ -790,19 +818,19 @@ def select_position(geometry, spawns):
         server_selected=fits, authored_center=False, client423_verified=True,
         status='server_selected' if fits else 'unresolved_range_exceeds_codec',
         configstring_index=16, configstring_value=' '.join(map(str,base)) if fits else None,
-        selection='Integer midpoint of exported-map-bounds, including unresolved static instance bounds and spawns.',
+        selection='Integer midpoint of zero delta base, baseline entity origins (+24/+28/+32), DM spawns and navigation nodes; collision scenery is not transmitted.',
         bounds=dict(mins=lo,maxs=hi), quantized_bounds=dict(mins=qlo,maxs=qhi),
-        all_exported_bounds_encodable=fits,
+        network_positions_encodable=fits,
         verification_scope='Client CS16 parsing and entity position codec contract; not authored center or world closure.',
         evidence=dict(file='research/evidence/client-gamestate-instructions423.json',
                       configstring_call='0x46e0e1 -> 0x4f9850 with ECX=16',
                       sscanf_call='0x46e0ec', destinations=['0x78b0a78','0x78b0a7c','0x78b0a80'],
                       test='tests/test_match_snapshot.py::test_map_center_is_server_supplied_configstring_16',
                       note='Current-client emulation replaces CRT sscanf only; entity reader verifies quantization.'),
-        unresolved=[] if fits else ['Exported bounds cannot share this 16-bit position window.'])
+        unresolved=[] if fits else ['Network positions cannot share this 16-bit position window.'])
 
 
-def enrich_geometry(manifest, collision, data, world, spawns, save_json, *, model_zones=None, baseline):
+def enrich_geometry(manifest, collision, data, world, spawns, save_json, *, model_zones=None, baseline, navigation=()):
     from match_server.collision import CollisionWorld
     from match_xmodel423 import install_static_models
     inputs = {i['name']:i['zone_sha256'] for i in manifest['inputs']}
@@ -817,20 +845,23 @@ def enrich_geometry(manifest, collision, data, world, spawns, save_json, *, mode
     scope = 'dm_frozen_initial_static'
     blockers = ([f'{missing} instances still need external XModel definitions; see static-model-closure.json.'] if missing else [])
     blockers += submodels.get('blockers',['Only DM frozen-world selection is implemented.'])
-    position = select_position(geometry,spawns)
-    if not position['all_exported_bounds_encodable']:
-        blockers.append('Placed world bounds exceed the position encoding window.')
+    position = select_position(geometry,spawns,baseline=baseline,navigation=navigation)
+    if not position['network_positions_encodable']:
+        blockers.append('Network entity positions exceed the position encoding window.')
     ready = not blockers
+    total_submodels = len(geometry['submodels']) - 1
+    unresolved_submodels = sum(p['activation'].startswith('unresolved') for p in submodels['placements'])
+    excluded_submodels = sum(p['activation'].startswith('excluded') for p in submodels['placements'])
     exclusions = [
-        '38 gameplay/training/utility inline models are excluded by the declared DM frozen-mode selection.',
+        f'{excluded_submodels} mode/utility, glass or renderer inline models are explicitly excluded by the DM frozen-mode selection; see submodel-placements.json.',
         'Script-driven movement, runtime spawn_player_clip creation and dynamic/glass destruction are not simulated.',
-        'The 49744-byte dynamic tail and capsule/client physics parity are outside this static geometry contract.']
+        f"The {geometry['closure']['unparsed_tail_bytes']}-byte dynamic tail and capsule/client physics parity are outside this static geometry contract."]
     geometry['closure'].update(unresolved_static_models=missing,static_xmodels_complete=not missing,
                               submodel_placements_file='submodel-placements.json',
                               submodel_categories=submodels['counts'],installed_submodels=len(geometry['submodel_instances']),
-                              unplaced_submodels=submodels['counts'].get('placed_world_obstacle',0)-len(geometry['submodel_instances'])
-                                  if manifest['gametype']=='dm' else 116,
-                              excluded_submodels=116-submodels['counts'].get('placed_world_obstacle',0) if manifest['gametype']=='dm' else 0,
+                              unplaced_submodels=unresolved_submodels
+                                  if manifest['gametype']=='dm' else total_submodels,
+                              excluded_submodels=excluded_submodels if manifest['gametype']=='dm' else 0,
                               frozen_world_ready=ready,readiness_scope=scope,blockers=blockers,excluded=exclusions)
     geometry.update(physics_ready=ready,readiness_scope=scope)
     consumer = CollisionWorld(geometry)
@@ -844,6 +875,7 @@ def enrich_geometry(manifest, collision, data, world, spawns, save_json, *, mode
                      physics_ready=ready,readiness_scope=scope,static_model_geometry_exported=not missing,
                      installed_submodels=len(geometry['submodel_instances']))
     collision['sections']['planes']['resolved_geometry'] = 'geometry.json:planes'
+    previous_blockers = set(manifest.get('geometry',{}).get('closure',{}).get('blockers',[]))
     manifest.update(position_status=position['status'],physics_ready=ready,readiness_scope=scope,
                     excluded_from_readiness=exclusions,
                     geometry=dict(planes=len(geometry['planes']),brushes=len(geometry['brushes']),
@@ -863,8 +895,10 @@ def enrich_geometry(manifest, collision, data, world, spawns, save_json, *, mode
         'Spawn locations are authored data; clearance, grounding and occupancy have not been checked.':
             'Spawn point rays are provisional partial-world contacts; capsule clearance and occupancy remain unchecked.',
         'Map quantization center/position_base is unresolved; see position.json before entity position encoding.':
-            'CS16 center is server-selected from exported bounds; entities outside the checked window must be rejected.'
+            'CS16 center covers network entity positions; later out-of-window movement is rejected by the snapshot encoder.'
             if position['server_selected'] else 'No common position encoding window fits the exported bounds.'}
+    replacements['No common position encoding window fits the exported bounds.'] = replacements['Map quantization center/position_base is unresolved; see position.json before entity position encoding.']
+    replacements['CS16 center is server-selected from exported bounds; entities outside the checked window must be rejected.'] = replacements['Map quantization center/position_base is unresolved; see position.json before entity position encoding.']
     manifest['unresolved'] = [replacements.get(x,x) for x in manifest['unresolved']]
     # Rewrite previous package's collision caveats around the explicit frozen
     # contract. NCS uncertainty remains independent of geometry readiness.
@@ -873,7 +907,7 @@ def enrich_geometry(manifest, collision, data, world, spawns, save_json, *, mode
         'Some external static XModel definitions remain missing; see static-model-closure.json.',
         'Shared planes and brush/terrain geometry are resolved; full-world closure remains incomplete.',
         'Trailing stage/dynamic data is preserved in collision.bin but not interpreted.'}
-    manifest['unresolved'] = [x for x in manifest['unresolved'] if x not in superseded]
+    manifest['unresolved'] = [x for x in manifest['unresolved'] if x not in superseded and x not in previous_blockers]
     manifest['unresolved'].extend(blockers)
     for name,value in [('geometry.json',geometry),('spawn-grounding.json',ground),
                        ('position.json',position),('collision.json',collision),('static-model-closure.json',static_closure),
@@ -897,8 +931,12 @@ def export_geometry_package(source, output, *, model_zones=None):
         files[name] = data
         manifest['files'][name] = dict(bytes=len(data),sha256=hashlib.sha256(data).hexdigest())
 
+    navigation = []
+    if 'waypoints.csv' in files:
+        from match_server.navigation import Navigation
+        navigation = [n['position'] for n in Navigation.from_csv(files['waypoints.csv'].decode('ascii'),None).nodes]
     enrich_geometry(manifest,loaded['collision'],files['collision.bin'],files['gfxworld.bin'],loaded['spawns'],save_json,
-                    model_zones=model_zones,baseline=files['baseline.bin'])
+                    model_zones=model_zones,baseline=files['baseline.bin'],navigation=navigation)
     output.mkdir(parents=True)
     for name,data in files.items():
         (output/name).parent.mkdir(parents=True,exist_ok=True)
@@ -954,7 +992,7 @@ def main():
                           source_records=sources, registration=registration)
     print(json.dumps(dict(output=str(args.output.resolve()), files=len(report['files']),
         baseline_count=report['baseline']['count'], spawn_count=report['spawn_count'],
-        ncs_status=report['ncs_status'], physics_ready=False), indent=2))
+        ncs_status=report['ncs_status'], physics_ready=report['physics_ready']), indent=2))
 
 
 if __name__ == '__main__':

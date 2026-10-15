@@ -38,6 +38,59 @@ def zone_fixture(assets):
 
 
 class MatchMapExportTests(unittest.TestCase):
+    def test_network_position_window_ignores_scenery_but_rejects_wide_entity_positions(self):
+        from match_server.snapshot import encode_player_entity
+        state = bytearray(272)
+        struct.pack_into('<ii', state, 0, 99, 6)
+        struct.pack_into('<3f', state, 24, 100, 200, 300)
+        geometry = dict(vertices=[[-100000, 0, 0], [100000, 0, 0]], brushes=[], static_models=[])
+        spawns = [dict(classname='mp_dm_spawn', origin=[0, 0, 0]),
+                  dict(classname='mp_sd_spawn_attacker', origin=[100000, 0, 0])]
+        result = exporter.select_position(geometry, spawns, baseline=b'IWCB000\x01' + state,
+                                          navigation=[[400, 0, 0]])
+        self.assertEqual(result['position_base'], [200, 100, 150])
+        self.assertTrue(result['network_positions_encodable'])
+        value = struct.unpack('<I', struct.pack('<f', 40000))[0]
+        with self.assertRaisesRegex(ValueError, 'position outside'):
+            encode_player_entity({24: value}, position_base=result['position_base'])
+        struct.pack_into('<f', state, 24, 70000)
+        result = exporter.select_position(geometry, spawns, baseline=b'IWCB000\x01' + state)
+        self.assertFalse(result['network_positions_encodable'])
+        self.assertIsNone(result['position_base'])
+
+    def test_unclassified_inline_model_in_dm_baseline_blocks_readiness(self):
+        state = bytearray(272)
+        struct.pack_into('<ii', state, 0, 99, 6)
+        struct.pack_into('<I', state, 0x98, 1)
+        report = dict(placements=[dict(submodel=1, category='script_state_unresolved', fields={})])
+        self.assertEqual(exporter.select_dm_submodels(report, b'IWCB000\x01' + state, {}), [])
+        self.assertEqual(len(report['blockers']), 1)
+        self.assertIn('*1', report['blockers'][0])
+
+    def test_selected_map_controls_assets_baseline_and_manifest(self):
+        from unittest.mock import patch
+        name = 'mp_nuked'
+        baseline = b'IWCB000\x01' + struct.pack('<ii', 99, 6) + bytes(264)
+        filename = f'mp/constbaselines/bl_pc_{name}_dm.bin'
+        raw = struct.pack('<4I', 0xffffffff, 0, len(baseline), 0xffffffff)
+        raw += filename.encode() + b'\0' + baseline
+        zones = {name: zone_fixture([(15, b'clip'), (21, b'world')]),
+                 name + '_const': zone_fixture([(36, raw)])}
+        collision = dict(checksum=123, sections={}, entity_text=b'{\n"classname" "worldspawn"\n}\n\0')
+        with tempfile.TemporaryDirectory(dir=exporter.OUTPUT_ROOT) as folder:
+            output = Path(folder) / 'map'
+            with patch.object(exporter, 'read_collision', return_value=collision), \
+                    patch.object(exporter, 'enrich_geometry'):
+                report = exporter.export_zones(zones, output, map_name=name)
+            self.assertEqual(report['map'], name)
+            self.assertEqual(report['baseline']['name'], filename)
+            self.assertEqual((output / 'baseline.bin').read_bytes(), baseline)
+            self.assertEqual((output / 'collision.bin').read_bytes(), b'clip')
+            ncs = json.loads((output / 'ncs.json').read_text())
+            self.assertNotIn(name, ncs['missing_candidate_zones'])
+            self.assertNotIn('mp_killhouse_sh', ncs['missing_candidate_zones'])
+            self.assertFalse(ncs['mounted_set_verified'])
+
     def test_prefix_string_api_reuses_ncs_replay_and_rejects_unreplayed_pointers(self):
         table = struct.pack('<5I',0xffffffff,0,0,1,0xffffffff)+b'ncs\0'+struct.pack('<I',0xffffffff)+b'acr_mp\0'
         zone = zone_fixture([(44,table),(28,b'weapon header excluded')])
@@ -76,10 +129,10 @@ class MatchMapExportTests(unittest.TestCase):
             self.assertEqual(loaded['manifest']['runtime_dependencies'], [])
             position = loaded['position']
             self.assertEqual(position['status'], 'server_selected')
-            self.assertEqual(position['center'], [3926,-925,8440])
-            self.assertEqual(position['position_base'], [3926,-925,8440])
+            self.assertEqual(position['center'], [1859,-80,2083])
+            self.assertEqual(position['position_base'], [1859,-80,2083])
             self.assertTrue(position['client423_verified'])
-            self.assertTrue(position['all_exported_bounds_encodable'])
+            self.assertTrue(position['network_positions_encodable'])
             self.assertEqual(report['position_status'], 'server_selected')
             self.assertIn('position.json', report['files'])
             baseline = output / 'baseline.bin'

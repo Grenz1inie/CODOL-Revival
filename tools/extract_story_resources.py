@@ -16,7 +16,9 @@ def digest(path):
         return hashlib.file_digest(stream, 'sha256').hexdigest()
 
 
-def main(base=False, common=False, pvp=False):
+def main(base=False, common=False, pvp=False, *, map_name=None, output=None):
+    sidecar = map_name is not None
+    selected_map = map_name
     stage = STAGE.with_name('resources-base') if base else STAGE
     map_name = 'mp_cargoship' if base else 'coop_training_mp_cargoship'
     dll = GAME / 'IIPS/IFS2.dll'
@@ -35,6 +37,16 @@ def main(base=False, common=False, pvp=False):
         archives = [GAME / 'IIPS/IIPSDownload' / name for name in (
             'ff_init_common_gametype_mp_V26.ifs', 'ff_init_mp_killhouse_sh_V32.ifs',
             'lf_init_mp_killhouse_sh_const_V26.ifs')]
+    if sidecar:
+        from export_match_map import OUTPUT_ROOT
+        if selected_map != 'mp_nuked' or base or common or pvp or output is None:
+            raise ValueError('sidecar extraction requires mp_nuked and an explicit output')
+        stage = Path(output).resolve()
+        if stage == OUTPUT_ROOT.resolve() or not stage.is_relative_to(OUTPUT_ROOT.resolve()):
+            raise ValueError('sidecar output must be under independent-match')
+        map_name = selected_map
+        archives = [GAME / 'IIPS/IIPSDownload' / name for name in (
+            'ff_init_mp_nuked_V32.ifs', 'lf_init_mp_nuked_const_V37.ifs')]
     if not archives:
         raise FileNotFoundError('first campaign archives')
     stage.mkdir(exist_ok=False)
@@ -67,10 +79,20 @@ def main(base=False, common=False, pvp=False):
         if task.returncode or not item['source_unchanged'] or not item['copy_unchanged']:
             raise RuntimeError(f'{source.name}: extraction failed; see manifest/log')
         print(source.name, len(item['files']))
-    if pvp:
+    if pvp or sidecar:
         required = {'common_gametype_mp.ff', 'localized_common_gametype_mp.ff',
                     'mp_killhouse_sh.ff', 'mp_killhouse_sh_load.ff', 'mp_killhouse_sh_const.ff'}
         assets = STAGE.parent / 'startup-assets/chinese'
+        if sidecar:
+            from build_match_registration import phases_for_map
+            required = {map_name + suffix + '.ff' for suffix in ('', '_const', '_load')}
+            assets = stage / 'chinese'
+            assets.mkdir()
+            names = {name for zones in phases_for_map(map_name).values() for name in zones}
+            for name in sorted(names):
+                if name + '.ff' not in required:
+                    shutil.copyfile(STAGE.parent / 'startup-assets/chinese' / (name + '.ff'),
+                                    assets / (name + '.ff'))
         for archive in manifest['archives']:
             for item in archive['files']:
                 name = Path(item['name']).name
@@ -91,5 +113,7 @@ if __name__ == '__main__':
     group.add_argument('--base', action='store_true', help='extract the first campaign map\'s mp_cargoship base resources')
     group.add_argument('--common', action='store_true', help='inspect shared MP and coop dependencies for scripts')
     group.add_argument('--pvp', action='store_true', help='extract and install Killhouse/MP fastfiles in the isolated server')
+    group.add_argument('--map-name', choices=['mp_nuked'], help='extract a current-map sidecar without installing into the old server')
+    parser.add_argument('--output', type=Path, help='new independent-match sidecar extraction directory')
     args = parser.parse_args()
-    main(args.base, args.common, args.pvp)
+    main(args.base, args.common, args.pvp, map_name=args.map_name, output=args.output)

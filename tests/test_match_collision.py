@@ -23,6 +23,36 @@ def actual_geometry():
 
 
 class MatchCollisionTests(unittest.TestCase):
+    def test_nuketown_frozen_baseline_installs_dm_objects_and_retains_collision_masks(self):
+        package = PACKAGE.parent / 'nuketown-dm-v2'
+        if not (package/'geometry.json').is_file():
+            self.skipTest('local Nuketown export unavailable')
+        g = json.loads((package/'geometry.json').read_text())
+        baseline = (package/'baseline.bin').read_bytes()
+        report = exporter.classify_submodels((package/'entities.txt').read_bytes(), g)
+        instances = exporter.select_dm_submodels(report, baseline, g)
+        self.assertEqual(report['blockers'], [])
+        self.assertEqual(len(instances), 32)
+        self.assertTrue({15, 28, 65}.issubset({p['submodel'] for p in instances}))
+        self.assertEqual(next(p for p in report['placements'] if p['submodel']==17)['activation'],
+                         'baseline_has_no_collision_geometry')
+        from match_server.collision import CollisionWorld
+        ceiling = next(p for p in instances if p['submodel']==65)
+        world = CollisionWorld(dict(g, world_brushes=[], world_partitions=[], static_models=[],
+                                    submodel_instances=[ceiling]))
+        self.assertEqual(g['submodels'][65]['brush_contents'], 0x08030200)
+        hit = world.trace_point([-28, 814, 200], [-28, 814, 400], contents_mask=0x08030200)
+        self.assertEqual(hit['submodel'], 65)
+        self.assertFalse(world.trace_point([-28, 814, 200], [-28, 814, 400], contents_mask=1)['hit'])
+        for offset, value, code in ((8, 1, 'I'), (12, 1, 'I'), (24, 999, 'f')):
+            changed = bytearray(baseline)
+            row = next(i for i in range(8,len(changed),272)
+                       if struct.unpack_from('<I',changed,i+152)[0]==65)
+            struct.pack_into('<'+code,changed,row+offset,value)
+            current = exporter.classify_submodels((package/'entities.txt').read_bytes(),g)
+            exporter.select_dm_submodels(current,bytes(changed),g)
+            self.assertTrue(any('*65' in b for b in current['blockers']))
+
     def test_actual_frozen_export_is_ready_and_player_spawn_boxes_still_land(self):
         from match_server.mapdata import load_map
         from match_server.collision import CollisionWorld
@@ -333,7 +363,7 @@ class MatchCollisionTests(unittest.TestCase):
             self.assertTrue(position['client423_verified'])
             self.assertFalse(position['authored_center'])
             self.assertEqual(position['configstring_index'], 16)
-            self.assertEqual(position['position_base'], [3926,-925,8440])
+            self.assertEqual(position['position_base'], [1859,-80,2083])
             for axis in range(3):
                 lo,hi = position['quantized_bounds']['mins'][axis],position['quantized_bounds']['maxs'][axis]
                 base = position['position_base'][axis]
