@@ -4,7 +4,9 @@ import hmac
 from pathlib import Path
 import struct
 import sys
+import tempfile
 import unittest
+from unittest.mock import patch
 
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
@@ -60,6 +62,27 @@ class MemorySocket:
 
 
 class LobbyTests(unittest.TestCase):
+    def test_local_lobby_serves_the_single_killhouse_entry(self):
+        import local_server
+        class AcceptedSocket(MemorySocket):
+            def __enter__(self): return self
+            def __exit__(self, *_): pass
+            def settimeout(self, _): pass
+        auth,_,keys=client_auth()
+        parameters=b'\x10\0\x10mp_playlists_shipRetail_release.info\0\0'
+        sock=AcceptedSocket(HELLO+auth+request(keys,task=21,parameters=parameters))
+        with tempfile.TemporaryDirectory() as temp, patch.object(local_server,'RUNTIME',Path(temp)), \
+                patch.object(local_server,'record'), patch.object(local_server,'save_capture',return_value='memory'):
+            local_server.lobby_client(sock,('127.0.0.1',40000))
+        packet=sock.sent[-1]
+        aes=Cipher(algorithms.AES(keys[56:72]),modes.CBC(packet[10:26])).decryptor()
+        clear=aes.update(packet[26:-8])+aes.finalize()
+        payload=clear[5:5+struct.unpack_from('<I',clear)[0]]
+        playlist=payload[32:].decode('ascii')
+        self.assertIn('mp_killhouse_sh,ffa,1',playlist)
+        self.assertIn('script dm',playlist)
+        self.assertEqual(sum(line.startswith('playlist ') for line in playlist.splitlines()),1)
+
     def test_named_publisher_content_is_returned_exactly_and_other_files_stay_empty(self):
         auth, _, keys = client_auth()
         name = 'mp_playlists_shipRetail_release.info'

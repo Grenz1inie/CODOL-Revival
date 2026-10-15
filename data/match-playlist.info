@@ -1,0 +1,23 @@
+version 797
+
+catinfo 1 1 0 "" "Killhouse DM" "Killhouse DM"
+
+gametype ffa
+name MPUI_DEATHMATCH
+script dm
+
+playlist 1
+displayorder 1
+category 1
+name chinese "Killhouse DM"
+name english "Killhouse DM"
+description chinese "1 player + 1 AI"
+description english "1 player + 1 AI"
+buildversion default cb3 release
+unlocklevelend 70
+vsrule "1V1"
+minparty 1
+maxparty 1
+rule 1011 1
+rule 3265 2
+mp_killhouse_sh,ffa,1

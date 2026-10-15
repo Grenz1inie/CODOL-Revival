@@ -50,6 +50,24 @@ def server_result(*, port, server_id, security_id, security_key):
     return result + b'\x0a' + bytes(8) + b'\x07\0\0\0\0' * 2
 
 
+def parse_query(parameters):
+    if (len(parameters) != 21 or parameters[::5] != b'\x08\x08\x08\x07\0'
+            or struct.unpack_from('<I', parameters, 1)[0] != 1):
+        raise ValueError('unsupported server query')
+    return struct.unpack_from('<I',parameters,6)[0],struct.unpack_from('<I',parameters,11)[0]
+
+
+def parse_room_message(parameters):
+    if (len(parameters) < 20 or parameters[0] != 10 or parameters[9:11] != b'\x13\x08'
+            or parameters[-1] != 0):
+        raise ValueError('invalid direct-message envelope')
+    recipient, = struct.unpack_from('<Q', parameters, 1)
+    size, inner_size = struct.unpack_from('<II', parameters, 11)
+    if size != len(parameters)-16 or inner_size != size-4 or not 0 < inner_size < 1024:
+        raise ValueError('invalid direct-message length')
+    return recipient,parameters[19:-1].decode('ascii')
+
+
 class StoryMatchmaking:
     """One local first-map instance; no remote commands or invented candidates."""
     server_id = 0x3333000000000001
@@ -86,10 +104,7 @@ class StoryMatchmaking:
 
     def find(self, owner, parameters):
         # Observed 21/5: query ID, offset, maximum results, signed region/filter.
-        if (len(parameters) != 21 or parameters[::5] != b'\x08\x08\x08\x07\0'
-                or struct.unpack_from('<I', parameters, 1)[0] != 1):
-            raise ValueError('unsupported server query')
-        offset, maximum = struct.unpack_from('<I', parameters, 6)[0], struct.unpack_from('<I', parameters, 11)[0]
+        offset, maximum = parse_query(parameters)
         if offset or not maximum or not self.native.ready:
             return ()
         with self.lock:
@@ -101,14 +116,7 @@ class StoryMatchmaking:
 
     def message(self, owner, parameters):
         # 6/14: recipient u64, typed blob containing one untyped blob, terminator.
-        if (len(parameters) < 20 or parameters[0] != 10 or parameters[9:11] != b'\x13\x08'
-                or parameters[-1] != 0):
-            raise ValueError('invalid direct-message envelope')
-        recipient, = struct.unpack_from('<Q', parameters, 1)
-        size, inner_size = struct.unpack_from('<II', parameters, 11)
-        if size != len(parameters)-16 or inner_size != size-4 or not 0 < inner_size < 1024:
-            raise ValueError('invalid direct-message length')
-        text = parameters[19:-1].decode('ascii')
+        recipient, text = parse_room_message(parameters)
         with self.lock:
             if owner is None or owner != self.owner or recipient != self.server_id or not self.native.ready:
                 raise ValueError('no ready local reservation for this sender/recipient')
