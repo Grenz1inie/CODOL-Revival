@@ -15,6 +15,8 @@ python -m venv .venv
 
 当前电脑已有依赖，可直接用 `python` 运行测试。启动脚本优先使用 `.venv`，否则使用 PATH 中的 Python。`scripts/Start-Services.ps1 -PythonPath <解释器路径>` 可指定解释器。REA/Ghidra 是独立研究工具链，不属于游戏服务依赖；配置见 [工具链](docs/wiki/01-baseline-toolchain.md)。
 
+`python -B tools/check-startup.py` 只读检查 Python 依赖、启动文件、前端产物、游戏地址配置和本地证书，失败返回非零退出码。缺少依赖或前端产物时按输出命令补齐；证书与游戏配置的准备见 [地址重定向与 TLS](docs/wiki/03-redirection-tls-auth.md)。该检查不会安装依赖或修改配置。
+
 ## 文件归属
 
 - `src/`：协议与本地服务实现。导入模块不得启动监听器。
