@@ -8,6 +8,31 @@
 
 “模拟”指由新服接收输入、维护权威状态并产生当前客户端可消费的快照。预录快照、固定坐标、按请求返回成功或客户端自行减血都不能代替对局实现。
 
+## 核弹小镇参考评估（2026-10-15）
+
+用户提出先评估“进入核弹小镇，一名真人与一个AI移动、互射、伤害及死亡重生”，复杂地图效果后置，并指定充分参考相邻 `sh1x_dedicated/`。本次完成源码定位和索引，尚未移植、切换运行地图或进行游戏验收。
+
+- 当前菜单的核弹小镇是赛单110、地图 `mp_nuked`、玩法 `cha`（原9V9）。它不是独立服当前实现的 `mp_killhouse_sh/dm`；恢复赛单目录不会自动切换服务端地图。
+- 3.3.3.3客户端目录已有 `ff_init_mp_nuked_V32.ifs`、`lf_init_mp_nuked_const_V37.ifs` 及对应流式包。这里只确认文件存在，未声称本图碰撞、出生点、基线和资源注册表已成功导出或完整匹配。
+- 参考包 `bin/home/main/waypoints/mp_nuked_wp.csv` 实际有235个点，与首行数量一致。含站立、蹲伏、卧倒及攀爬标记；当前独立服只走站立可达路径，须将路径与新版碰撞核对，不能保证所有235点都可直接使用。
+- `bin/home/codol_rawfiles/maps/mp/mp_nuked.gsc` 是薄初始化层：调用特效、通用多人加载、小地图设置和阵营设置。最小人机对战可先后置其环境特效；墙体、地面、出生点、射线遮挡和客户端必需资源不能一并略去。
+- 参考源码README明确目标为1.1.1.13。算法、地图数据格式和调用顺序可参考；旧版内存布局、资源编号、网络字段仍以当前3.3.3.3的REA证据为准。
+
+已通过CodeGraph与GitNexus定位的复用点：
+
+| 参考位置 | 可复用内容 | 当前独立服对应位置 |
+|---|---|---|
+| `src/sv_main.c` 的 `SV_SpawnServer` → `CODOL_BotNavLoadForMap` | 每张地图加载其独立寻路数据 | `runtime.py`、`navigation.py` |
+| `src/codol/player/codol_bot_nav.c` | CSV解析、节点连接及寻路 | `navigation.py`、地图资源包 |
+| `SV_BotUserMove` → `CODOL_BotBuildCommand` | 目标选择、瞄准、移动、开火/换弹指令；AI同样通过输入驱动角色 | `world.py` 的AI、移动与武器路径 |
+| `src/codol/snapshot/codol_sv_state.c` | 地图身份、serverinfo、注册表与初始状态保持一致 | `connection.py`、`runtime.py`、`mapdata.py` |
+
+剩余工作按依赖排序：先修实际赛单轮换启动命令与连接握手（本次游戏日志仍有 `DATA before handshake`）；再导出核弹小镇的隔离资源包、去掉当前启动/连接中写死的Killhouse身份；最后接入本图出生点、可达寻路和已有最小战斗循环。地图迁移主要涉及 `tools/export_match_map.py`、`tools/export_match_loadout.py`、`src/match_server/{runtime,connection,matchmaking}.py` 和 `src/local_server.py`。模型/武器编号需随本图注册表重新解析。
+
+建议先保留完整原菜单，增加明确的“核弹小镇·1v1人机测试”入口，使用最小自由混战规则；不把这个入口标成原9V9玩法已恢复。核弹爆炸、环境事件、破坏物、连杀奖励及高级AI动作均可后置；静态碰撞与射击遮挡先保持一致。核弹小镇可作为首个样板，不必将Killhouse实机验收作为额外前置，但共同握手/出生链路仍必须完成。
+
+参考目录已建立局部索引：CodeGraph为1431文件、27510节点；GitNexus别名 `sh1x-dedicated-reference`，44534节点。范围为 `src/` 与 `tests/`，配置是参考目录的 `codegraph.json` 与 `.gitnexusignore`；GSC、寻路CSV及地图包仍直接按路径读取，不伪称已形成GSC调用图。少量旧头文件无法解析、部分跨语言/函数指针调用不完整，缺边不能推成无调用。未编译或运行旧服，未改动其原有源码。
+
 ## 当前方案与参考源码
 
 独立服源码位于 `src/match_server/`，已接入现有认证/大厅，资源独立保存在 `runtime/match/killhouse/`。`local_server.py` 已替换 `NativeServer`，启动时读取地图、碰撞、武器与寻路数据；查询时为当前账号建立回环UDP实例。**自动验证覆盖协议消费和服务端模拟；完整客户端开图、画面、操作及对战仍待用户验收。**
