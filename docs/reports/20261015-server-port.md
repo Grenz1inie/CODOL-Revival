@@ -109,3 +109,19 @@
 [失败用例](../../research/evidence/server3333-weapon-image-red.log)定位到旧版本门禁；[边界测试通过](../../research/evidence/server3333-weapon-image-green.log)，并由四种真实武器的[资源集成测试通过](../../research/evidence/server3333-weapon-image-assets.log)，耗时分别5.586秒与6.834秒。没有新增游戏内验收结论。
 
 进一步静态对照：参考包与当前`common_mp`共有154种同名武器。分别用原始/移植C读取器解析头部和动画名称，作为结构差异线索；相同值不自动等于相同字段。REA已经定位当前开火`0x4253e0`、换弹`0x4230a0/0x4232d0`、抬枪`0x423b10`、冲刺`0x4283c0/0x428490`等消费者，供后续字段转换核验。原始来源、字段候选和消费者证据保存在`research/experiments/story-native/reference-zone-assets/`及`research/evidence/client-weapon-pmove-consumers423.json`。
+
+## 最小装备与流式模型（第七批）
+
+用户将主线收紧到默认装备完成首关初始化、当前客户端连接出生、移动与射击。当前采用 `defaultweapon_mp`（真实来源含2个模型、20项非空动画、10发弹匣）；旧合作脚本列出的 `m16_basic` 在13个实际启动包中不存在。原版剧情与复杂装备后置。
+
+423武器的开火、换弹、抬枪、冲刺、弹药和伤害参数转换已接入保留引擎。动画保留3组56项并映射原生槽位；新版前置模型已无独立手臂槽，不能按旧11槽解释。俯卧限制由当前 `0x418ec0` 确认为 `+0xd88`，`+0xd87` 属于换弹分支。未实现的中间伤害曲线明确拒绝，不压平为两段。参数边界用例覆盖溢出、布尔值、NaN、截断和失败不改输出；开火时序还执行当前客户端 `0x4253e0` 核对。
+
+`python tools/prepare_native_models.py` 从原IFS的隔离副本提取并解码模型，缓存文件和来源哈希。274个无冲突模型写入隔离 `startup-assets/main/models/`；10个同名异内容条目保留证据，未猜测补丁优先级。[模型清单](../../research/evidence/server3333-model-streams.json)。材质未找到曾是五包测试集合不完整，补齐真实13包后解决；没有因此放宽材质校验。
+
+`none/defaultweapon_mp` 的真实依赖、早期/晚期失败回滚、缓存复用和退役后重建已通过，[运行时失败记录](../../research/evidence/server3333-minimal-runtime-red.log) → [通过记录](../../research/evidence/server3333-minimal-runtime-green.log)，1项11.038秒。默认武器之外的四种源数据保留测试仍在；不要求复杂装备构造全部通过才能推进出生。
+
+隔离启动工具仅运行本项目编译的 `server3333.exe`，不是旧启动器或旧客户端。它复制参考合作回调并在私有目录改为默认单武器，补上最小货轮关卡入口，避免加载PVP的整套地图脚本。`codol_clientExe` 始终指向固定哈希的3.3.3.3客户端。真实启动已通过 `G_SetupWeaponDef`、首关脚本编译和1879个导航节点构建，随后因 `mp/playeranim.script:427` 的 `movetype prone` 定义缺失而结束，见[启动日志](../../research/evidence/server3333-startup-minimal-script.log)。导航节点的可恢复 `ERROR:` 文本不再被探针误当作进程致命错误；真实 `Server crashed:` 单独判定。
+
+REA继续复用活动客户端会话；当前证据包为 `research/evidence/client423-rea-bundle.json`。会话结束时另存分析快照以复用查询记录；证据包本身不等于持久Ghidra数据库。尚未连接真实客户端、出生或完成用户操作验收。
+
+本批集中回归122项通过，87.501秒，见[日志](../../research/evidence/server3333-minimal-stage-tests.log)。审查范围为本批参数转换、资源提取与启动工具；没有将下一处动画解析错误标为完成。

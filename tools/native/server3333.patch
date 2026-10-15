@@ -28,7 +28,57 @@
      }
  }
  
-@@ -518,6 +520,24 @@
+@@ -397,19 +399,21 @@
+     {
+         codol_weapon_2697_core_t before=core;
+         codol_weapon_source_image_t invalid=*image;
+-        unsigned refs[4096]; int early=0,late=0,replaced=0;
++        unsigned refs[4096],ads=image->format_version==423?0xd76:0xc00;
++        unsigned flash=image->format_version==423?0x498:0x38c;
++        int early=0,late=0,replaced=0;
+         memcpy(refs,context->refs,sizeof(refs));
+         invalid.data=malloc(image->size);
+         invalid.names=malloc(image->name_count*sizeof(*image->names));
+         if(invalid.data && invalid.names) {
+             memcpy(invalid.data,image->data,image->size);
+             memcpy(invalid.names,image->names,image->name_count*sizeof(*image->names));
+-            invalid.data[0xc00]=2; /* Invalid ADS boolean, after tags acquired. */
++            invalid.data[ads]=2; /* Invalid ADS boolean, after tags acquired. */
+             early=!CODOL_LoadWeapon2697CoreFromImage(&invalid,&providers,&core,&stage) &&
+                 stage && !strcmp(stage,"constructor") && !memcmp(&before,&core,sizeof(core)) &&
+                 !memcmp(refs,context->refs,sizeof(refs));
+-            invalid.data[0xc00]=image->data[0xc00];
+-            for(i=0;i<invalid.name_count;++i) if(invalid.names[i].offset==0x38c)
++            invalid.data[ads]=image->data[ads];
++            for(i=0;i<invalid.name_count;++i) if(invalid.names[i].offset==flash)
+                 invalid.names[i].name="__2697_probe_missing_effect__";
+             late=!CODOL_LoadWeapon2697CoreFromImage(&invalid,&providers,&core,&stage) &&
+                 stage && !strcmp(stage,"effects") && !memcmp(&before,&core,sizeof(core)) &&
+@@ -428,7 +432,7 @@
+         printf("runtime_target_core_lifecycle name=%s variant=%s early_rollback=1 late_rollback=1 replacement=1 owned_sound_pointer=1\n",name,variant);
+     }
+     for(i=0;i<11;++i) model_count+=!!core.native.source_models[i];
+-    for(i=0;i<156;++i) anim_count+=!!core.animation_parts[i];
++    for(i=0;i<core.animations.count;++i) anim_count+=!!core.animation_parts[i];
+     printf("runtime_target_weapon_core name=%s variant=%s constructed=1 models=%u animations=%u sound_requested=%u sound_resolved=%u damage=%d clip=%d fire_ms=%d melee=%d type=%u class=%u offhand=%u fire_mode=%u move_scale=%g ads_move_scale=%g ads_rates=%g,%g projectile_model=%d explosion_fx=%d graphs=%d,%d target_extra_names_retained=1 runtime_registered=0\n",
+         name,variant,model_count,anim_count,core.sounds.requested,core.sounds.resolved,
+         core.native.definition.damage,core.native.definition.iClipSize,core.native.definition.iFireTime,
+@@ -500,9 +504,12 @@
+ }
+ static int runtime_weapons(probe_runtime_t *context)
+ {
+-    static const char *names[]={"ak104_mp","deserteagle_mp","white_phosphorus_grenade_mp","flash_grenade_mp"};
++    static const char *broad[]={"ak104_mp","deserteagle_mp","white_phosphorus_grenade_mp","flash_grenade_mp"};
++    static const char *minimal[]={"none","defaultweapon_mp"};
++    const char *const *names=getenv("CODOL_WEAPON_CORE_ONLY")?minimal:broad;
++    unsigned count=getenv("CODOL_WEAPON_CORE_ONLY")?2:4;
+     unsigned w,i; int ok=1;
+-    for(w=0;w<sizeof(names)/sizeof(names[0]);++w) {
++    for(w=0;w<count;++w) {
+         codol_mounted_weapon_t weapon={0}; codol_weapon_animation_source_t anim={0};
+         codol_weapon_effects_t fx={0}; codol_weapon_sounds_t sounds={0};
+         codol_weapon_visuals_t visuals={0}; codol_weapon_ammo_names_t ammo={0};
+@@ -518,12 +525,31 @@
          printf("runtime_weapon name=%s source=%d animations=%d effects=%d sounds=%d visuals=%d ammo=%d tail=%d tags=%d slots=%u bytes=%zu consumed=%zu\n",
              names[w],a,b,c,e,f,g,h,t,anim.count,weapon.asset.size,tail.dependency_offset);
          if(a!=1 || b!=1 || c!=1 || e!=1 || f!=1 || g!=1 || h!=1 || t!=1) { ok=0; continue; }
@@ -53,15 +103,42 @@
          {
              codol_weapon_source_image_t image={0};
              if(CODOL_BeginWeaponSourceImage(names[w],&image)!=1 ||
-@@ -596,6 +616,7 @@
+                !runtime_target_weapon_core(context,names[w],&image,"stock")) ok=0;
+             CODOL_FreeWeaponSourceImage(&image);
+         }
++        if(getenv("CODOL_WEAPON_CORE_ONLY")) continue;
+         {
+             codol_weapon_animations_t legacy={0}; codol_weapon_hide_tag_handles_t handles={{0}};
+             codol_native_weapon_core_t native,before; const XModel *models[11]={0};
+@@ -596,6 +622,27 @@
          for(unsigned array=0;array<2;++array)
              for(i=0;i<31;++i) if(!runtime_weapon_asset(context,11,sounds.arrays[array][i])) ok=0;
      }
-+    if(getenv("CODOL_WEAPON_SOURCE_ONLY")) return ok;
++    if(getenv("CODOL_WEAPON_CORE_ONLY") && ok) {
++        codol_weapon_2697_providers_t providers={runtime_physics_model,runtime_string,runtime_release,context};
++        const struct WeaponDef *defs[2]={0},*again=NULL;
++        for(i=0;i<2;++i) {
++            if(CODOL_LoadMountedWeapon2697Runtime(minimal[i],&providers,defs+i)!=1 ||
++               CODOL_LoadMountedWeapon2697Runtime(minimal[i],&providers,&again)!=1 || again!=defs[i]) {
++                printf("runtime_minimal_cache failed=%s\n",CODOL_Weapon2697RuntimeFailure());ok=0;break;
++            }
++        }
++        if(ok) {
++            again=(const struct WeaponDef *)1;
++            if(CODOL_LoadMountedWeapon2697Runtime("__missing_weapon__",&providers,&again)!=0 ||
++               again!=(const struct WeaponDef *)1) ok=0;
++            CODOL_RetireWeapons2697Runtime();
++            if(!CODOL_FindWeapon2697Runtime(defs[1]) ||
++               CODOL_LoadMountedWeapon2697Runtime(minimal[1],&providers,&again)!=1 || again==defs[1]) ok=0;
++            if(ok) printf("runtime_minimal_cache count=2 reuse=1 retired=1 rejected=1\n");
++        }
++        CODOL_ResetWeapons2697Runtime();
++    }
++    if(getenv("CODOL_WEAPON_SOURCE_ONLY") || getenv("CODOL_WEAPON_CORE_ONLY")) return ok;
      {
          {
              static const char *tables[]={"mp/coweapmodels/ak104_mp.csv","mp/coweapitems/sto.csv","mp/coweapitems/for.csv"};
-@@ -676,7 +697,7 @@
+@@ -676,7 +723,7 @@
          unsigned v;for(v=0;v<tables[i].count;++v)
              printf("runtime_ncs_input\t%s\t%u\t%s\n",tables[i].name,v,tables[i].values[v]);
      }
@@ -70,7 +147,7 @@
      for(k=0;k<CODOL2697_NCS_KINDS;++k)
          printf("runtime_netconst kind=%u base=%u count=%u capacity=%u\n",k,index.kinds[k].base,index.kinds[k].count,index.kinds[k].capacity);
      if(getenv("CODOL_NCS_TRACE"))for(k=0;k<CODOL2697_NCS_KINDS;++k)
-@@ -1027,6 +1048,15 @@
+@@ -1027,6 +1074,15 @@
      printf("runtime_collision native=%d static_models=%u materials=%u brushes=%u terrain_triangles=%u leaves=%u\n",
          ok,assets.model_count,assets.material_count,brushes.brush_count,terrain.triangle_count,leaves.leaf_count);
      ok=runtime_dynamic(map_name,&map,&runtime);
@@ -5352,6 +5429,424 @@
      }
      return 1;
  }
+--- a/src/codol/weapon/codol_weapon_2697.c
++++ b/src/codol/weapon/codol_weapon_2697.c
+@@ -22,71 +22,75 @@
+         {23,19},{22,18},{25,21},{24,20},{26,22},{27,23},{28,24}
+     };
+     unsigned i;
+-    if(!source || !out || source->format_version!=365 || source->count!=156 ||
+-       source->slots_per_hand!=52 || hand>=3) return 0;
++    if(!source || !out || hand>=3 ||
++       !((source->format_version==365 && source->count==156 && source->slots_per_hand==52) ||
++         (source->format_version==423 && source->count==168 && source->slots_per_hand==56))) return 0;
+     for(i=0;i<sizeof(slots)/sizeof(*slots);++i)
+-        out->szXAnims[slots[i][1]]=source->names[52*hand+slots[i][0]];
++        out->szXAnims[slots[i][1]]=source->names[source->slots_per_hand*hand+slots[i][0]];
+     return 1;
+ }
+ 
+ int CODOL_ApplyWeapon2697Timings(const codol_mounted_weapon_t *source,struct WeaponDef *out,
+     codol_weapon_2697_timing_extensions_t *extensions)
+ {
+-    /* Exact readers and dispatch context: weapon-phase-evidence.json.
++    /* 423: REA 4253e0 fire/hold, 4230a0/4232d0 reload, 423b10 raise,
++     * 4283c0/428490 sprint, 428550/428640 dive, 422310 spin.
++     * Old readers and dispatch context: weapon-phase-evidence.json.
+      * Do not apply a universal +30/+34 shift: bb8 adds an empty-alt-raise
+      * duration, moving the first-raise field to bd8 (not bd4). */
+-    static const struct { unsigned source; size_t target; } fields[]={
+-        {0xb9c,offsetof(struct WeaponDef,iFireTime)},
+-        {0x5cc,offsetof(struct WeaponDef,iFireDelay)},
+-        {0x5d8,offsetof(struct WeaponDef,iDetonateDelay)},
+-        {0x5e8,offsetof(struct WeaponDef,iHoldFireTime)},
+-        {0x5ec,offsetof(struct WeaponDef,iDetonateTime)},
+-        {0x9e8,offsetof(struct WeaponDef,iPositionReloadTransTime)},
+-        {0x5dc,offsetof(struct WeaponDef,iRechamberTime)},
+-        {0x5e4,offsetof(struct WeaponDef,iRechamberBoltTime)},
+-        {0x5f8,offsetof(struct WeaponDef,iReloadTime)},
+-        {0x604,offsetof(struct WeaponDef,iReloadEmptyTime)},
+-        {0x60c,offsetof(struct WeaponDef,iReloadAddTime)},
+-        {0x61c,offsetof(struct WeaponDef,iReloadStartTime)},
+-        {0x620,offsetof(struct WeaponDef,iReloadStartAddTime)},
+-        {0x624,offsetof(struct WeaponDef,iReloadEndTime)},
+-        {0x628,offsetof(struct WeaponDef,iDropTime)},
+-        {0x62c,offsetof(struct WeaponDef,iRaiseTime)},
+-        {0x630,offsetof(struct WeaponDef,iAltDropTime)},
+-        {0xbb4,offsetof(struct WeaponDef,iAltRaiseTime)},
+-        {0x634,offsetof(struct WeaponDef,quickDropTime)},
+-        {0x638,offsetof(struct WeaponDef,quickRaiseTime)},
+-        {0xbd8,offsetof(struct WeaponDef,iFirstRaiseTime)},
+-        {0x640,offsetof(struct WeaponDef,iEmptyRaiseTime)},
+-        {0x644,offsetof(struct WeaponDef,iEmptyDropTime)},
+-        {0x648,offsetof(struct WeaponDef,sprintInTime)},
+-        {0x650,offsetof(struct WeaponDef,sprintOutTime)}
++    static const struct { unsigned source,current; size_t target; } fields[]={
++        {0xb9c,0xd10,offsetof(struct WeaponDef,iFireTime)},
++        {0x5cc,0x6f0,offsetof(struct WeaponDef,iFireDelay)},
++        {0x5d8,0x6fc,offsetof(struct WeaponDef,iDetonateDelay)},
++        {0x5e8,0x70c,offsetof(struct WeaponDef,iHoldFireTime)},
++        {0x5ec,0x710,offsetof(struct WeaponDef,iDetonateTime)},
++        {0x9e8,0xb38,offsetof(struct WeaponDef,iPositionReloadTransTime)},
++        {0x5dc,0x700,offsetof(struct WeaponDef,iRechamberTime)},
++        {0x5e4,0x708,offsetof(struct WeaponDef,iRechamberBoltTime)},
++        {0x5f8,0x71c,offsetof(struct WeaponDef,iReloadTime)},
++        {0x604,0x728,offsetof(struct WeaponDef,iReloadEmptyTime)},
++        {0x60c,0x730,offsetof(struct WeaponDef,iReloadAddTime)},
++        {0x61c,0x740,offsetof(struct WeaponDef,iReloadStartTime)},
++        {0x620,0x744,offsetof(struct WeaponDef,iReloadStartAddTime)},
++        {0x624,0x748,offsetof(struct WeaponDef,iReloadEndTime)},
++        {0x628,0x74c,offsetof(struct WeaponDef,iDropTime)},
++        {0x62c,0x750,offsetof(struct WeaponDef,iRaiseTime)},
++        {0x630,0x754,offsetof(struct WeaponDef,iAltDropTime)},
++        {0xbb4,0xd28,offsetof(struct WeaponDef,iAltRaiseTime)},
++        {0x634,0x758,offsetof(struct WeaponDef,quickDropTime)},
++        {0x638,0x75c,offsetof(struct WeaponDef,quickRaiseTime)},
++        {0xbd8,0xd4c,offsetof(struct WeaponDef,iFirstRaiseTime)},
++        {0x640,0x764,offsetof(struct WeaponDef,iEmptyRaiseTime)},
++        {0x644,0x768,offsetof(struct WeaponDef,iEmptyDropTime)},
++        {0x648,0x76c,offsetof(struct WeaponDef,sprintInTime)},
++        {0x650,0x774,offsetof(struct WeaponDef,sprintOutTime)}
+     }, extra[]={
+-        {0x5e0,offsetof(codol_weapon_2697_timing_extensions_t,rechamber_variant)},
+-        {0x5fc,offsetof(codol_weapon_2697_timing_extensions_t,reload_variant)},
+-        {0x608,offsetof(codol_weapon_2697_timing_extensions_t,reload_empty_variant)},
+-        {0x610,offsetof(codol_weapon_2697_timing_extensions_t,reload_add_variant)},
+-        {0x614,offsetof(codol_weapon_2697_timing_extensions_t,reload_empty_add)},
+-        {0x618,offsetof(codol_weapon_2697_timing_extensions_t,reload_empty_add_variant)},
+-        {0x660,offsetof(codol_weapon_2697_timing_extensions_t,dive_in)},
+-        {0x668,offsetof(codol_weapon_2697_timing_extensions_t,dive_out)},
+-        {0xb70,offsetof(codol_weapon_2697_timing_extensions_t,spin_up)},
+-        {0xb74,offsetof(codol_weapon_2697_timing_extensions_t,spin_down)},
+-        {0x63c,offsetof(codol_weapon_2697_timing_extensions_t,tactical_raise)},
+-        {0xbb8,offsetof(codol_weapon_2697_timing_extensions_t,empty_alt_raise)}
++        {0x5e0,0x704,offsetof(codol_weapon_2697_timing_extensions_t,rechamber_variant)},
++        {0x5fc,0x720,offsetof(codol_weapon_2697_timing_extensions_t,reload_variant)},
++        {0x608,0x72c,offsetof(codol_weapon_2697_timing_extensions_t,reload_empty_variant)},
++        {0x610,0x734,offsetof(codol_weapon_2697_timing_extensions_t,reload_add_variant)},
++        {0x614,0x738,offsetof(codol_weapon_2697_timing_extensions_t,reload_empty_add)},
++        {0x618,0x73c,offsetof(codol_weapon_2697_timing_extensions_t,reload_empty_add_variant)},
++        {0x660,0x784,offsetof(codol_weapon_2697_timing_extensions_t,dive_in)},
++        {0x668,0x78c,offsetof(codol_weapon_2697_timing_extensions_t,dive_out)},
++        {0xb70,0xce4,offsetof(codol_weapon_2697_timing_extensions_t,spin_up)},
++        {0xb74,0xce8,offsetof(codol_weapon_2697_timing_extensions_t,spin_down)},
++        {0x63c,0x760,offsetof(codol_weapon_2697_timing_extensions_t,tactical_raise)},
++        {0xbb8,0xd2c,offsetof(codol_weapon_2697_timing_extensions_t,empty_alt_raise)}
+     };
+     struct WeaponDef result; codol_weapon_2697_timing_extensions_t ext={0};
+     unsigned i;
+     if(!source || !out || !extensions || source->asset.type!=28 ||
+-       source->asset.format_version!=365 || !source->asset.data || source->asset.size<0xc34) return 0;
++       (source->asset.format_version!=365 && source->asset.format_version!=423) || !source->asset.data ||
++       source->asset.size<(source->asset.format_version==423 ? 0xe28 : 0xc34)) return 0;
+     memcpy(&result,out,sizeof(result));
+     for(i=0;i<sizeof(fields)/sizeof(*fields);++i) {
+-        uint32_t value=word(source->asset.data+fields[i].source);
++        uint32_t value=word(source->asset.data+(source->asset.format_version==423 ? fields[i].current : fields[i].source));
+         if(value>INT_MAX) return 0;
+         memcpy((uint8_t *)&result+fields[i].target,&value,4);
+     }
+     for(i=0;i<sizeof(extra)/sizeof(*extra);++i) {
+-        uint32_t value=word(source->asset.data+extra[i].source);
++        uint32_t value=word(source->asset.data+(source->asset.format_version==423 ? extra[i].current : extra[i].source));
+         if(value>INT_MAX) return 0;
+         memcpy((uint8_t *)&ext+extra[i].target,&value,4);
+     }
+@@ -95,35 +99,37 @@
+ 
+ int CODOL_ApplyWeapon2697AmmoParameters(const codol_mounted_weapon_t *source,struct WeaponDef *out)
+ {
+-    /* Actual 365 consumers, recorded in weapon-field-evidence.json:
++    /* 423 keeps the ammo scalar group after the loaded name pointers;
++     * reload consumers 424030/424260 use 8c0 and d85/d86. Registry values
++     * remain separately assigned. Old consumers in weapon-field-evidence.json:
+      * 517353 starting ammo; 420160/4201c7 shared/max pools;
+      * 4206a0 reload transfer (clip capacity, ordinary/start additions);
+      * 48506e shot count; 41b63b/41c23d reload flags.
+      * Ammo and clip indices are runtime assignments, never copied from FF. */
+-    static const struct { unsigned source; size_t target; } ints[]={
+-        {0x58c,offsetof(struct WeaponDef,iStartAmmo)},
+-        {0x5a4,offsetof(struct WeaponDef,iMaxAmmo)},
+-        {0xb94,offsetof(struct WeaponDef,iClipSize)},
+-        {0x5a8,offsetof(struct WeaponDef,shotCount)},
+-        {0x798,offsetof(struct WeaponDef,iReloadAmmoAdd)},
+-        {0x79c,offsetof(struct WeaponDef,iReloadStartAdd)},
+-        {0x5b4,offsetof(struct WeaponDef,iSharedAmmoCap)}
++    static const struct { unsigned source,current; size_t target; } ints[]={
++        {0x58c,0x6ac,offsetof(struct WeaponDef,iStartAmmo)},
++        {0x5a4,0x6c4,offsetof(struct WeaponDef,iMaxAmmo)},
++        {0xb94,0xd08,offsetof(struct WeaponDef,iClipSize)},
++        {0x5a8,0x6c8,offsetof(struct WeaponDef,shotCount)},
++        {0x798,0x8c0,offsetof(struct WeaponDef,iReloadAmmoAdd)},
++        {0x79c,0x8c4,offsetof(struct WeaponDef,iReloadStartAdd)},
++        {0x5b4,0x6d4,offsetof(struct WeaponDef,iSharedAmmoCap)}
+     }, bools[]={
+-        {0xc05,offsetof(struct WeaponDef,bClipOnly)},
+-        {0xc10,offsetof(struct WeaponDef,bSegmentedReload)},
+-        {0xc0f,offsetof(struct WeaponDef,bNoPartialReload)}
++        {0xc05,0xd7b,offsetof(struct WeaponDef,bClipOnly)},
++        {0xc10,0xd86,offsetof(struct WeaponDef,bSegmentedReload)},
++        {0xc0f,0xd85,offsetof(struct WeaponDef,bNoPartialReload)}
+     };
+     struct WeaponDef result; unsigned i; const uint8_t *data;
+-    if(!source || !out || source->asset.type!=28 || source->asset.format_version!=365 ||
+-       !source->asset.data || source->asset.size<0xc34) return 0;
++    if(!source || !out || source->asset.type!=28 || (source->asset.format_version!=365 && source->asset.format_version!=423) ||
++       !source->asset.data || source->asset.size<(source->asset.format_version==423 ? 0xe28 : 0xc34)) return 0;
+     data=source->asset.data; memcpy(&result,out,sizeof(result));
+     for(i=0;i<sizeof(ints)/sizeof(*ints);++i) {
+-        uint32_t value=word(data+ints[i].source);
++        uint32_t value=word(data+(source->asset.format_version==423 ? ints[i].current : ints[i].source));
+         if(value>INT_MAX) return 0;
+         memcpy((uint8_t *)&result+ints[i].target,&value,4);
+     }
+     for(i=0;i<sizeof(bools)/sizeof(*bools);++i) {
+-        int value=data[bools[i].source];
++        int value=data[source->asset.format_version==423 ? bools[i].current : bools[i].source];
+         if(value>1) return 0;
+         memcpy((uint8_t *)&result+bools[i].target,&value,sizeof(value));
+     }
+@@ -139,50 +145,55 @@
+      * 41e66f, 41ee09, 537e7b: held fuse, cook-off and fuse ownership.
+      * 53657c, 538cfc, 538daa: cone, lifetime and acceleration duration.
+      * This is a field-by-field binding, not a blanket C1 offset adjustment. */
+-    static const struct { unsigned source; size_t target; int signed_value; } ints[]={
+-        {0x5b8,offsetof(struct WeaponDef,damage),0},
+-        {0x5bc,offsetof(struct WeaponDef,playerDamage),0},
+-        {0xa64,offsetof(struct WeaponDef,minDamage),0},
+-        {0xa68,offsetof(struct WeaponDef,minPlayerDamage),0},
+-        {0x684,offsetof(struct WeaponDef,fuseTime),0},
+-        {0x7c8,offsetof(struct WeaponDef,iProjectileSpeed),1},
+-        {0x7cc,offsetof(struct WeaponDef,iProjectileSpeedUp),1},
+-        {0x7d0,offsetof(struct WeaponDef,iProjectileSpeedForward),1},
+-        {0x7ac,offsetof(struct WeaponDef,iExplosionRadius),0},
+-        {0x7b0,offsetof(struct WeaponDef,iExplosionRadiusMin),0},
+-        {0x7b4,offsetof(struct WeaponDef,iExplosionInnerDamage),0},
+-        {0x7b8,offsetof(struct WeaponDef,iExplosionOuterDamage),0}
++    static const struct { unsigned source,current; size_t target; int signed_value; } ints[]={
++        {0x5b8,0x6d8,offsetof(struct WeaponDef,damage),0},
++        {0x5bc,0x6dc,offsetof(struct WeaponDef,playerDamage),0},
++        {0xa64,0xbb4,offsetof(struct WeaponDef,minDamage),0},
++        {0xa68,0xbc8,offsetof(struct WeaponDef,minPlayerDamage),0},
++        {0x684,0x7ac,offsetof(struct WeaponDef,fuseTime),0},
++        {0x7c8,0x8f4,offsetof(struct WeaponDef,iProjectileSpeed),1},
++        {0x7cc,0x8f8,offsetof(struct WeaponDef,iProjectileSpeedUp),1},
++        {0x7d0,0x8fc,offsetof(struct WeaponDef,iProjectileSpeedForward),1},
++        {0x7ac,0x8d8,offsetof(struct WeaponDef,iExplosionRadius),0},
++        {0x7b0,0x8dc,offsetof(struct WeaponDef,iExplosionRadiusMin),0},
++        {0x7b4,0x8e0,offsetof(struct WeaponDef,iExplosionInnerDamage),0},
++        {0x7b8,0x8e4,offsetof(struct WeaponDef,iExplosionOuterDamage),0}
+     };
+-    static const struct { unsigned source; size_t target; int nonnegative; } floats[]={
+-        {0xa6c,offsetof(struct WeaponDef,fMaxDamageRange),1},
+-        {0xa70,offsetof(struct WeaponDef,fMinDamageRange),1},
+-        {0x7bc,offsetof(struct WeaponDef,damageConeAngle),0},
+-        {0x7d8,offsetof(struct WeaponDef,projLifetime),0},
+-        {0x7dc,offsetof(struct WeaponDef,timeToAccelerate),0}
++    static const struct { unsigned source,current; size_t target; int nonnegative; } floats[]={
++        {0xa6c,0xbcc,offsetof(struct WeaponDef,fMaxDamageRange),1},
++        {0xa70,0xbe0,offsetof(struct WeaponDef,fMinDamageRange),1},
++        {0x7bc,0x8e8,offsetof(struct WeaponDef,damageConeAngle),0},
++        {0x7d8,0x904,offsetof(struct WeaponDef,projLifetime),0},
++        {0x7dc,0x908,offsetof(struct WeaponDef,timeToAccelerate),0}
+     };
+     struct WeaponDef result; const uint8_t *data; unsigned i; uint32_t kind;
+-    if(!source || !out || source->asset.type!=28 || source->asset.format_version!=365 ||
+-       !source->asset.data || source->asset.size<0xc34) return 0;
++    if(!source || !out || source->asset.type!=28 || (source->asset.format_version!=365 && source->asset.format_version!=423) ||
++       !source->asset.data || source->asset.size<(source->asset.format_version==423 ? 0xe28 : 0xc34)) return 0;
+     data=source->asset.data;
++    /* The retained damage reader has two endpoints. 423 adds intermediate
++     * endpoints; reject those until its multi-stage damage consumer is ported. */
++    if(source->asset.format_version==423) {
++        for(i=0;i<4;++i) if(word(data+0xbb8+4*i) || word(data+0xbd0+4*i)) return 0;
++    }
+     memcpy(&result,out,sizeof(result));
+     for(i=0;i<sizeof(ints)/sizeof(*ints);++i) {
+-        uint32_t value=word(data+ints[i].source);
++        uint32_t value=word(data+(source->asset.format_version==423 ? ints[i].current : ints[i].source));
+         if(!ints[i].signed_value && value>INT_MAX) return 0;
+         memcpy((uint8_t *)&result+ints[i].target,&value,4);
+     }
+     for(i=0;i<sizeof(floats)/sizeof(*floats);++i) {
+-        uint32_t bits=word(data+floats[i].source); float value;
++        uint32_t bits=word(data+(source->asset.format_version==423 ? floats[i].current : floats[i].source)); float value;
+         memcpy(&value,&bits,4);
+         if(!isfinite(value) || (floats[i].nonnegative && value<0)) return 0;
+         memcpy((uint8_t *)&result+floats[i].target,&value,4);
+     }
+-    if(data[0xc04]>1 || data[0xc1a]>1 || data[0xc14]>1) return 0;
+-    kind=word(data+0x7e8);
++    if(data[source->asset.format_version==423 ? 0xd7a : 0xc04]>1 || data[source->asset.format_version==423 ? 0xd91 : 0xc1a]>1 || data[source->asset.format_version==423 ? 0xd8b : 0xc14]>1) return 0;
++    kind=word(data+(source->asset.format_version==423 ? 0x914 : 0x7e8));
+     /* Same target dispatch branches: 0/6 grenade, 1 rocket, 2 flash, 5 smoke.
+      * Unknown enums must not be coerced to frag behavior. */
+     if(kind>7) return 0;
+-    result.bCookOffHold=data[0xc04]; result.timedDetonation=data[0xc1a];
+-    result.projExplosionEffectForceNormalUp=data[0xc14];
++    result.bCookOffHold=data[source->asset.format_version==423 ? 0xd7a : 0xc04]; result.timedDetonation=data[source->asset.format_version==423 ? 0xd91 : 0xc1a];
++    result.projExplosionEffectForceNormalUp=data[source->asset.format_version==423 ? 0xd8b : 0xc14];
+     result.projExplosion=(weapProjExposion_t)kind;
+     memcpy(out,&result,sizeof(result)); return 1;
+ }
+--- a/src/codol/weapon/codol_weapon_2697.h
++++ b/src/codol/weapon/codol_weapon_2697.h
+@@ -11,7 +11,7 @@
+  * Accepts format 365 only; failure preserves the entire output. */
+ int CODOL_ApplyWeapon2697CombatParameters(const codol_mounted_weapon_t *,struct WeaponDef *);
+ /* Ten verified ammo/reload fields. Runtime ammo indices and every other field
+- * are preserved. Atomic, format 365 only; does not publish a definition. */
++ * are preserved. Atomic, formats 365/423; does not publish a definition. */
+ int CODOL_ApplyWeapon2697AmmoParameters(const codol_mounted_weapon_t *,struct WeaponDef *);
+ typedef struct {
+     int rechamber_variant, reload_variant, reload_empty_variant;
+@@ -24,7 +24,7 @@
+  * outputs. This record retains target-only timing variants separately. */
+ int CODOL_ApplyWeapon2697Timings(const codol_mounted_weapon_t *,struct WeaponDef *,
+     codol_weapon_2697_timing_extensions_t *);
+-/* Bind baseline IW3 name slots from one of three target banks of 52 names.
++/* Bind baseline IW3 name slots from one of three target banks (365:52, 423:56 names).
+  * Does not implement the target dispatcher's conditional empty/dual/tactical
+  * choices. Retain the complete source alongside this view for those choices.
+  * Names borrow source lifetime; NULL/empty are preserved, not fabricated. */
+--- a/src/codol/weapon/codol_weapon_2697_core.c
++++ b/src/codol/weapon/codol_weapon_2697_core.c
+@@ -12,9 +12,53 @@
+     unsigned bank=legacy/48,slot=legacy%48;
+     return bank*52+slot+(slot>=20)+(slot>=28 ? 3 : 0);
+ }
++/* 423 loader 4915b0, current PM consumers, and paired 365/423 definitions.
++ * The old runtime does not read 365's unused 2ec..36b area. Keep it zero;
++ * all 423-only dependencies remain owned by the unprojected source image.
++ * Models dropped the leading hand slot: current 10..34 maps to old 14..38. */
++static const unsigned source423_spans[][3]={
++    {0,0,0x10},{0x14,0x10,0x28},{0x3c,0x38,0x40},
++    {0x36c,0x478,0x20},{0x38c,0x498,8},
++    {0x394,0x4a4,0x58c-0x394},{0x58c,0x6ac,0x5c8-0x58c},
++    {0x5c8,0x6ec,0x680-0x5c8},{0x680,0x7a8,0x7a0-0x680},
++    {0x7a0,0x8cc,0x808-0x7a0},{0x808,0x940,0x928-0x808},
++    {0x928,0xa70,0x95c-0x928},{0x95c,0xaa8,0x9b4-0x95c},
++    {0x9b4,0xb04,0xa64-0x9b4},{0xa64,0xbb4,4},{0xa68,0xbc8,8},
++    {0xa70,0xbe0,0xae0-0xa70},{0xae0,0xc54,0xbf4-0xae0},
++    {0xbf4,0xd68,1},{0xbf5,0xd6b,0xc11-0xbf5},{0xc11,0xd88,0xc32-0xc11}
++};
++static int source423_offset(unsigned current,unsigned *old)
++{
++    unsigned i;
++    for(i=0;i<sizeof(source423_spans)/sizeof(*source423_spans);++i) {
++        const unsigned *span=source423_spans[i];
++        if(current>=span[1] && current-span[1]<span[2]) {
++            *old=span[0]+current-span[1]; return 1;
++        }
++    }
++    return 0;
++}
++static void source423_header(const uint8_t *source,uint8_t old[0xc34])
++{
++    unsigned i,bank,slot;
++    memset(old,0,0xc34);
++    for(i=0;i<sizeof(source423_spans)/sizeof(*source423_spans);++i)
++        memcpy(old+source423_spans[i][0],source+source423_spans[i][1],source423_spans[i][2]);
++    /* Names 0..49 retain their roles; the final pair moves to 54/55.
++     * Current 56-slot bank stride is also read by PM 423b10/425db0. */
++    for(bank=0;bank<3;++bank) for(slot=0;slot<52;++slot)
++        memcpy(old+0x7c+4*(bank*52+slot),source+0x78+4*(bank*56+slot+(slot>=50?4:0)),4);
++}
+ int CODOL_ProjectWeapon2697Header(const codol_mounted_weapon_t *source,uint8_t out[0xbfc])
+ {
+-    uint8_t result[0xbfc]; unsigned i; const uint8_t *p;
++    uint8_t result[0xbfc],normalized[0xc34]; unsigned i; const uint8_t *p;
++    if(source && source->asset.format_version==423) {
++        codol_mounted_weapon_t legacy=*source;
++        if(!out || source->asset.type!=28 || !source->asset.data || source->asset.size<0xe28) return 0;
++        source423_header(source->asset.data,normalized);
++        legacy.asset.data=normalized;legacy.asset.size=sizeof(normalized);legacy.asset.format_version=365;
++        return CODOL_ProjectWeapon2697Header(&legacy,out);
++    }
+     if(!source || !out || source->asset.type!=28 || source->asset.format_version!=365 ||
+        !source->asset.data || source->asset.size<0xc34) return 0;
+     p=source->asset.data;
+@@ -56,6 +100,23 @@
+     result.dependency_offset=source->dependency_offset;
+     *out=result; *preset=extra; return 1;
+ }
++int CODOL_ProjectWeapon423Tail(const codol_weapon_tail_t *source,codol_weapon_tail_t *out,
++    codol_weapon_dependency_t *preset)
++{
++    codol_weapon_tail_t normalized={0};unsigned i;
++    if(!source || !out || !preset || source->count>72) return 0;
++    for(i=0;i<source->count;++i) {
++        codol_weapon_dependency_t entry=source->entries[i];
++        /* Additional FX/tracer/text have no retained-engine field. Their
++         * source entries remain available on core's owning 423 image. */
++        if(entry.offset==0xa60 || entry.offset==0xa64 || entry.offset==0xa68 ||
++           entry.offset==0xc50 || entry.offset==0xe08 || entry.offset==0xe18) continue;
++        if(!source423_offset(entry.offset,&entry.offset) || (entry.offset&3)) return 0;
++        normalized.entries[normalized.count++]=entry;
++    }
++    normalized.dependency_offset=source->dependency_offset;
++    return CODOL_ProjectWeapon2697Tail(&normalized,out,preset);
++}
+ void CODOL_FreeWeapon2697Core(codol_weapon_2697_core_t *out)
+ {
+     unsigned i;
+@@ -73,12 +134,19 @@
+     codol_weapon_2697_core_t result={0}; struct WeaponDef independent={0};
+     unsigned i;
+     if(!source || !models || !animations || !ammo || !tail || !tags || !out ||
+-       animations->format_version!=365 || animations->count!=156 || animations->slots_per_hand!=52 ||
++       animations->format_version!=source->asset.format_version ||
++       !((source->asset.format_version==365 && animations->count==156 && animations->slots_per_hand==52) ||
++         (source->asset.format_version==423 && animations->count==168 && animations->slots_per_hand==56)) ||
+        !CODOL_ProjectWeapon2697Header(source,header) ||
+-       !CODOL_ProjectWeapon2697Tail(tail,&projected_tail,&result.physics_preset)) return 0;
++       !(source->asset.format_version==423 ? CODOL_ProjectWeapon423Tail(tail,&projected_tail,&result.physics_preset) :
++         CODOL_ProjectWeapon2697Tail(tail,&projected_tail,&result.physics_preset))) return 0;
+     projected=*source; projected.asset.data=header; projected.asset.size=sizeof(header);
+     projected.asset.format_version=334;
+-    for(i=0;i<144;++i) names.names[i]=animations->names[target_animation_slot(i)];
++    for(i=0;i<144;++i) {
++        unsigned target=target_animation_slot(i);
++        if(source->asset.format_version==423) target=(target/52)*56+target%52+(target%52>=50?4:0);
++        names.names[i]=animations->names[target];
++    }
+     if(image) {
+         if(!CODOL_BuildNativeWeaponCoreResolved(&projected,models,&names,ammo,&projected_tail,tags,image,&result.native))return 0;
+     } else if(!CODOL_BuildNativeWeaponCore(&projected,models,&names,ammo,&projected_tail,tags,&result.native)) return 0;
+@@ -93,10 +161,9 @@
+        memcmp(&independent,&result.native.definition,sizeof(independent))) {
+         CODOL_FreeWeapon2697Core(&result); return 0;
+     }
+-    /* Target PM_CanProne 0x4140d0/0x4140e4 reads byte +0xc11.
+-     * The old +0xbd9 address is inside target firstRaiseTime (+0xbd8),
+-     * so reading the original target image with that offset blocks rifles. */
+-    result.native.definition.blocksProne=source->asset.data[0xc11]!=0;
++    /* PM_CanProne: 365 4140d0 reads c11; 423 418ec0 reads d88.
++     * Current d87 belongs to reload handling (42a410), not prone. */
++    result.native.definition.blocksProne=source->asset.data[source->asset.format_version==423 ? 0xd88 : 0xc11]!=0;
+     result.animations=*animations;
+     CODOL_FreeWeapon2697Core(out); *out=result; return 1;
+ }
+--- a/src/codol/weapon/codol_weapon_2697_core.h
++++ b/src/codol/weapon/codol_weapon_2697_core.h
+@@ -13,7 +13,7 @@
+     codol_native_weapon_core_t native;
+     codol_weapon_animation_source_t animations;
+     codol_weapon_2697_timing_extensions_t timings;
+-    const struct XAnimParts *animation_parts[156];
++    const struct XAnimParts *animation_parts[168];
+     codol_weapon_dependency_t physics_preset;
+     const struct PhysPreset *native_physics_preset;
+     codol_weapon_sound_bindings_t sounds;
+@@ -44,6 +44,8 @@
+ int CODOL_BuildWeapon2697CoreFromImage(const codol_weapon_source_image_t *,const XModel *const [11],
+     const codol_weapon_animation_source_t *,const codol_weapon_ammo_names_t *,
+     const codol_weapon_tail_t *,const codol_weapon_hide_tag_handles_t *,codol_weapon_2697_core_t *);
++int CODOL_ProjectWeapon423Tail(const codol_weapon_tail_t *,codol_weapon_tail_t *,
++    codol_weapon_dependency_t *preset);
+ void CODOL_FreeWeapon2697Core(codol_weapon_2697_core_t *);
+ /* Resolve all mounted providers and own tag references. Arrays/payloads borrow
+  * the mounted archive and image lifetime; providers/context must survive until
 --- a/src/codol/weapon/codol_weapon_2697_keys.c
 +++ b/src/codol/weapon/codol_weapon_2697_keys.c
 @@ -6,17 +6,23 @@
@@ -5384,6 +5879,75 @@
          seen|=bit;result.partners[bit==1?0:1]=d->name;
      }
      if(seen!=3)return 0;
+--- a/src/codol/weapon/codol_weapon_2697_loader.c
++++ b/src/codol/weapon/codol_weapon_2697_loader.c
+@@ -12,7 +12,7 @@
+     codol_weapon_hide_tag_handles_t tags={{0}}; codol_weapon_sound_bindings_t sounds={0};
+     codol_weapon_sounds_t sound_names={0}; codol_weapon_effects_t effects={0};
+     codol_weapon_visuals_t visuals={0}; codol_weapon_2697_core_t core={0};
+-    const XModel *models[11]={0}; unsigned i,j; int ok=0;
++    const XModel *models[11]={0}; unsigned i,j,current=image && image->format_version==423; int ok=0;
+     const char *stage="source";
+     if(!image || !providers || !providers->model || !providers->acquire || !providers->release || !out) {
+         if(failure_stage) *failure_stage="arguments";
+@@ -24,9 +24,9 @@
+        CODOL_WeaponSourceHideTags(image,&hide)!=1 || CODOL_WeaponSourceSounds(image,&sound_names)!=1 ||
+        CODOL_WeaponSourceEffects(image,&effects)!=1 || CODOL_WeaponSourceVisuals(image,&visuals)!=1) goto done;
+     stage="models";
+-    for(i=0;i<11;++i) {
++    for(i=0;i<(current ? 10u : 11u);++i) {
+         codol_weapon_model_t model={0}; int status=CODOL_WeaponSourceModel(image,i,&model);
+-        if(status<0 || (status==1 && !(models[i]=providers->model(providers->context,model.name)))) goto done;
++        if(status<0 || (status==1 && !(models[i+current]=providers->model(providers->context,model.name)))) goto done;
+     }
+     stage="tags";
+     for(i=0;i<32;++i) if(hide.names[i]) {
+@@ -44,19 +44,20 @@
+     }
+     for(i=0;i<144;++i) {
+         unsigned slot=i%48,bank=i/48;
+-        core.native.animation_parts[i]=core.animation_parts[bank*52+slot+(slot>=20)+(slot>=28?3:0)];
++        unsigned target=slot+(slot>=20)+(slot>=28?3:0);
++        core.native.animation_parts[i]=core.animation_parts[bank*(current ? 56 : 52)+target+(current && target>=50?4:0)];
+     }
+     stage="effects";
+     for(i=0;i<2;++i) {
+         const FxEffectDef *effect=NULL;
+-        if(effects.names[i] && *effects.names[i] &&
+-           (CODOL_LoadMountedNativeEffect(effects.names[i],providers->model,providers->context,&effect)!=1 || !effect)) goto done;
++        if(effects.names[i+(current ? 32 : 0)] && *effects.names[i+(current ? 32 : 0)] &&
++           (CODOL_LoadMountedNativeEffect(effects.names[i+(current ? 32 : 0)],providers->model,providers->context,&effect)!=1 || !effect)) goto done;
+         if(i) core.native.definition.worldFlashEffect=(FxEffectDef *)effect;
+         else core.native.definition.viewFlashEffect=(FxEffectDef *)effect;
+     }
+     for(i=0;i<4;++i) {
+         const FxEffectDef *effect=NULL; const codol_weapon_dependency_t *entry=NULL;
+-        for(j=0;j<14;++j) if(visuals.entries[j].offset==0x470+4*i) entry=visuals.entries+j;
++        for(j=0;j<visuals.count;++j) if(visuals.entries[j].offset==(current ? 0x580 : 0x470)+4*i) entry=visuals.entries+j;
+         if(!entry || entry->kind!=CODOL_WEAPON_DEP_ASSET || entry->asset.type!=30) goto done;
+         if(entry->name && *entry->name &&
+            (CODOL_LoadMountedNativeEffect(entry->name,providers->model,providers->context,&effect)!=1 || !effect)) goto done;
+@@ -68,17 +69,17 @@
+     for(i=0;i<tail.count;++i) {
+         const codol_weapon_dependency_t *entry=tail.entries+i;
+         if(!entry->name || !*entry->name) continue;
+-        if(entry->offset==0x7e4) {
++        if(entry->offset==(current ? 0x910 : 0x7e4)) {
+             core.native.definition.projectileModel=(XModel *)providers->model(providers->context,entry->name);
+             if(!core.native.definition.projectileModel) goto done;
+-        } else if(entry->offset==0x7ec) {
++        } else if(entry->offset==(current ? 0x918 : 0x7ec)) {
+             const FxEffectDef *effect=NULL;
+             if(CODOL_LoadMountedNativeEffect(entry->name,providers->model,providers->context,&effect)!=1 || !effect) goto done;
+             core.native.definition.projExplosionEffect=(FxEffectDef *)effect;
+         }
+     }
+     stage="sounds";
+-    if(!CODOL_ProjectWeapon2697Tail(&tail,&projected_tail,&preset) ||
++    if(!(current ? CODOL_ProjectWeapon423Tail(&tail,&projected_tail,&preset) : CODOL_ProjectWeapon2697Tail(&tail,&projected_tail,&preset)) ||
+        CODOL_BuildNativeWeaponSoundBindings(&sound_names,&projected_tail,&sounds)!=1 ||
+        !CODOL_ApplyNativeWeaponSounds(&sounds,&core.native.definition)) goto done;
+     stage="physics_preset";
 --- a/src/codol/weapon/codol_weapon_2697_registry.c
 +++ b/src/codol/weapon/codol_weapon_2697_registry.c
 @@ -3,8 +3,8 @@
@@ -5477,6 +6041,16 @@
         !CODOL_BuildWeapon2697Registry(&index,CODOL_LoadMountedWeapon2697Keys,NULL,&result,&failed)) {
          fail("target registry",failed);goto done;
      }
+@@ -248,7 +248,8 @@
+     if(!e->name){free(e);return fail("name allocation",name);}
+     stage="source";status=CODOL_BeginWeaponSourceImage(base,&e->value.image);
+     if(status!=1) {free_entry(e);return status==0 && !parsed ? 0 : fail(stage,name);}
+-    if(e->value.image.format_version!=365) {stage="source version";goto bad;}
++    if(e->value.image.format_version!=365 && e->value.image.format_version!=423)
++        {stage="source version";goto bad;}
+     if(!parsed) {
+         const char *source_name=NULL;char *owned;
+         if(CODOL_WeaponSourceName(&e->value.image,0,&source_name)!=1||!source_name||
 --- a/src/codol/weapon/codol_weapon_attachment.c
 +++ b/src/codol/weapon/codol_weapon_attachment.c
 @@ -112,6 +112,14 @@
@@ -5672,6 +6246,40 @@
          if(!image_dependency(image,result.entries+i)) return -1;
      *out=result; return 1;
  }
+--- a/src/codol/weapon/codol_weapon_loader.c
++++ b/src/codol/weapon/codol_weapon_loader.c
+@@ -11,7 +11,7 @@
+     codol_mounted_weapon_t source;int status;
+     if(!name || !*name || !out)return -1;
+     if(*name=='*') {
+-        /* Target tables exist only for 365 mounts. Do not interpret target
++        /* Target tables exist for 365/423 mounts. Do not interpret target
+          * recipes using the C1 pair/variant grammar. */
+         codol_netconst_t *tables=NULL;size_t count=0;
+         int target=CODOL_LoadMountedNetConsts(&tables,&count) && count!=0;
+@@ -19,7 +19,8 @@
+         return target ? CODOL_LoadEngineWeapon2697(name,out) : CODOL_LoadComposedWeapon(name,out);
+     }
+     status=CODOL_LoadMountedWeapon(name,&source);if(status!=1)return status;
+-    if(source.asset.format_version==365)return CODOL_LoadEngineWeapon2697(name,out);
++    if(source.asset.format_version==365 || source.asset.format_version==423)
++        return CODOL_LoadEngineWeapon2697(name,out);
+     status=CODOL_LoadMountedNullWeapon(name,out);if(status!=0)return status;
+     return CODOL_LoadMountedNativeWeapon(name,CODOL_LoadEngineWeaponCore,out);
+ }
+--- a/src/codol/weapon/codol_weapon_native.c
++++ b/src/codol/weapon/codol_weapon_native.c
+@@ -309,7 +309,9 @@
+     /* Attachment names and appended tags do not rewrite zone-local pointer
+      * words/indices. Validate presence against their resolved image slots. */
+     for(i=0;i<11;++i) {
+-        codol_weapon_model_t model; int status=CODOL_WeaponSourceModel(image,i,&model);
++        codol_weapon_model_t model; int status;
++        if(image->format_version==423 && i==0) { if(models[i])return wn_fail(__LINE__);continue; }
++        status=CODOL_WeaponSourceModel(image,image->format_version==423 ? i-1 : i,&model);
+         if(status<0 || (status==1)!=!!models[i]) return wn_fail(__LINE__);
+     }
+     for(i=0;i<32;++i) if(!!names.names[i]!=!!tags->tags[i]) return wn_fail(__LINE__);
 --- a/src/codol/weapon/codol_weapon_registry.c
 +++ b/src/codol/weapon/codol_weapon_registry.c
 @@ -4,8 +4,7 @@

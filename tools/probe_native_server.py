@@ -26,6 +26,23 @@ home=Path(tempfile.mkdtemp(prefix='source-startup-',dir=STAGE))
 shutil.copy2(exe,home/'server3333.exe')
 shutil.copytree(REFERENCE/'script-overlay2697',home/'scripts')
 shutil.copytree(REFERENCE/'scripts/coop',home/'scripts/coop',dirs_exist_ok=True)
+# Keep the supplied coop callbacks/spawn flow, but exercise one verified stock
+# weapon. The original reference scripts and player inventory remain untouched.
+loadout=home/'scripts/coop/maps/mp/gametypes/_coopmode.gsc'
+text=loadout.read_text()
+start=text.index('resolveLoadout()\n{')
+end=text.index('\ngiveStartingLoadout()', start)
+text=text[:start]+'''resolveLoadout()
+{
+    precacheItem( "defaultweapon_mp" );
+    level.coop_primary = "defaultweapon_mp";
+    level.coop_secondary = undefined;
+    level.coop_melee = undefined;
+    println( "CoDOL minimal loadout: defaultweapon_mp" );
+}
+''' + text[end:]
+loadout.write_text(text)
+shutil.copy2(ROOT/'tools/native/minimal_cargoship.gsc', home/'scripts/coop/maps/mp/mp_cargoship.gsc')
 v=json.loads((ROOT/'research/evidence/live-netconst-registration423.json').read_text(encoding='utf-8-sig'))
 assert v['exe_sha256']==hashlib.sha256(CLIENT.read_bytes()).hexdigest()
 names=v['names'];codinfo=v['codinfo_names']
@@ -57,7 +74,10 @@ with (home/'console.log').open('wb') as output:
             if 'Calculate referenced files checksums...' in text and 'actual_client_crc=1' in text:
                 ready=True;reason='map publication ready';break
             if (home/'sys_error.txt').exists():reason='sys_error';break
-            if 'CoDOL native startup archives mounted' in text and ('map mount failed' in text or 'ERROR:' in text):
+            if 'With the reason: Server crashed:' in text:reason='server crashed';break
+            # A recoverable Pathnode diagnostic also contains "ERROR:".
+            # It must not terminate the process before its real map result.
+            if 'CoDOL native startup archives mounted' in text and 'map mount failed' in text:
                 reason='map initialization failed';break
             time.sleep(.3)
     finally:

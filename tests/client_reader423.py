@@ -51,6 +51,28 @@ class ClientReader423:
             self.cpu.mem_write(address, struct.pack('<I', 0x303fe000))
         self.error = False
 
+    def weapon_fire_timing(self, *, fire, delay, hold, grenade=False, hand=0):
+        """Execute 0x4253e0; isolate only the animation-event notification."""
+        cpu = self.cpu
+        player, weapon, stack, end = 0x30001000, 0x30010000, 0x303ff000, 0x303ffff0
+        cpu.mem_write(player, bytes(0x3524))
+        cpu.mem_write(weapon, bytes(0xe28))
+        cpu.mem_write(0x17f5a44, struct.pack('<I', weapon))
+        cpu.mem_write(player+0x340, struct.pack('<I', 1))
+        cpu.mem_write(player+0x3e0+4*hand, struct.pack('<I', 1))
+        for offset, value in ((0x47c, int(grenade)), (0xd10, fire), (0x6f0, delay), (0x70c, hold)):
+            cpu.mem_write(weapon+offset, struct.pack('<I', value))
+        hook = cpu.hook_add(UC_HOOK_CODE, self._return, begin=0x4096d0, end=0x4096d0)
+        try:
+            cpu.mem_write(stack, struct.pack('<5I', end, player, 0, 0, hand))
+            cpu.reg_write(UC_X86_REG_ESP, stack)
+            cpu.emu_start(0x4253e0, end, count=10000)
+            if cpu.reg_read(UC_X86_REG_EIP) != end:
+                raise ValueError('client weapon fire phase did not finish')
+            return struct.unpack('<2I', cpu.mem_read(player+0x270+hand*0x1c, 8))
+        finally:
+            cpu.hook_del(hook)
+
     def weapon_keys(self, rows):
         """Execute stock ammo/clip registrars 0x42bfa0 and 0x42c1b0."""
         cpu=self.cpu

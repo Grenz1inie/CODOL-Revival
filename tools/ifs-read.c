@@ -16,8 +16,8 @@ typedef void (__thiscall *Close)(void *, void *, int);
 #define SLOT(obj, n, type) ((type)(*(void ***)(obj))[n])
 
 int main(int argc, char **argv) {
-    if (argc != 4) {
-        fprintf(stderr, "usage: ifs-read DLL ARCHIVE_COPY EXISTING_OUTPUT_DIR|--list\n");
+    if (argc != 4 && argc != 5) {
+        fprintf(stderr, "usage: ifs-read DLL ARCHIVE_COPY EXISTING_OUTPUT_DIR|--list [PREFIX]\n");
         return 2;
     }
     fprintf(stderr, "Loading IFS DLL\n");
@@ -54,6 +54,10 @@ int main(int argc, char **argv) {
             size > 512u * 1024u * 1024u) {
             fprintf(stderr, "Unsupported entry %u %s flags=%x\n", i, name ? name : "(null)", flags); result = 8; break;
         }
+        /* Retain the listfile as well: its original filename casing supplies
+         * the AES nonce for loose resources. Output remains numeric. */
+        if (argc == 5 && _strnicmp(name, argv[4], strlen(argv[4])) &&
+            (strlen(name) < 4 || _stricmp(name + strlen(name) - 4, ".lst"))) continue;
         if (!strcmp(argv[3], "--list")) {
             printf("%u\t%u\t%s\n", i, size, name);
             continue;

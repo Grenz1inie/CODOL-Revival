@@ -90,3 +90,23 @@ class NativeAssets423Tests(unittest.TestCase):
         self.assertIn('runtime_registry complete=1 weapons=297 engine_registered=0',result.stdout)
         self.assertRegex(result.stdout, r'runtime_map_state addon=1 bytes=174339 triggers=142 glass=1 pieces=12')
         self.assertEqual(result.returncode, 0, result.stdout[-2000:]+result.stderr[-1200:])
+
+    def test_current_weapon_core_resolves_real_dependencies(self):
+        archives = [STAGE / 'startup-assets/chinese' / (name+'.ff') for name in (
+            'code_pre_gfx_mp', 'localized_code_pre_gfx_mp', 'code_post_gfx_default_mp',
+            'code_post_gfx_mp', 'localized_code_post_gfx_mp', 'common_mp', 'localized_common_mp',
+            'common_marketplace_lite', 'localized_common_marketplace_lite',
+            'common_gametype_coop', 'localized_common_gametype_coop',
+            'mp_cargoship', 'coop_training_mp_cargoship')]
+        result = self.run_probe('--codol-runtime-probe', CLIENT, 'mp_cargoship', *archives,
+            options={'CODOL_WEAPON_PROBE': '1', 'CODOL_WEAPON_CORE_ONLY': '1',
+                     'CODOL_MODEL_ROOT': str(STAGE/'startup-assets/main/models')})
+        evidence = ROOT / 'research/evidence/server3333-weapon-core-assets.log'
+        evidence.write_text(result.stdout+result.stderr)
+        self.assertEqual(result.returncode, 0, result.stdout[-4000:]+result.stderr[-1200:])
+        for name in ('none', 'defaultweapon_mp'):
+            self.assertIn(f'runtime_target_weapon_core name={name} variant=stock constructed=1', result.stdout)
+            self.assertIn(f'runtime_target_core_lifecycle name={name} variant=stock early_rollback=1 '
+                          'late_rollback=1 replacement=1 owned_sound_pointer=1', result.stdout)
+        self.assertIn('runtime_minimal_cache count=2 reuse=1 retired=1 rejected=1', result.stdout)
+        self.assertIn('engine_started=0 network_started=0', result.stdout)
