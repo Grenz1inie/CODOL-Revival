@@ -143,6 +143,31 @@ class MatchWorldTests(unittest.TestCase):
         self.assertEqual(fields[0],1050)
         self.assertEqual(struct.unpack_from('<I',result['entities_data'][1],208)[0],5 | (5 << 16))
 
+    def test_new_acr_is_single_hand_and_remembers_first_raise_until_respawn(self):
+        from client_reader423 import ClientReader423
+        from story_wire423 import encode_snapshot as encode_baseline
+        world=self.world()
+        client=ClientReader423()
+        client.snapshot(encode_baseline({},server_time=0),sequence=0)
+        sequence=0
+        def flags():
+            nonlocal sequence
+            sequence+=1
+            data=client.snapshot(world.snapshot()[0],sequence=sequence)['player_data']
+            self.assertEqual(struct.unpack_from('<I',data,0x2a4)[0],5)
+            return data[0x2e0:0x2e5]
+        self.assertEqual(flags(),b'\0'*5)
+        world.step([dict(command(1050),weapon=0)])
+        self.assertEqual(flags(),b'\0'*5)
+        world.step([dict(command(1100),weapon=5)])
+        self.assertEqual(flags(),b'\x01\0\0\0\0')
+        world.step()
+        self.assertEqual(flags(),b'\x01\0\0\0\0')
+        world.players[0].health=0
+        world.players[0].respawn_at=world.time+50
+        world.step()
+        self.assertEqual(flags(),b'\0'*5)
+
     def test_native_prediction_gets_full_size_standing_player(self):
         from client_reader423 import ClientReader423
         from story_wire423 import encode_snapshot as encode_baseline

@@ -17,6 +17,7 @@ class Inventory:
     clip_type: int
     clip: int
     reserve: int
+    raised: bool = False
 
 
 def _float(word):
@@ -173,11 +174,13 @@ def _inventory(m, health, inventory, spawn_count):
     m.bits(inventory.clip,9)
     m.bits(0,1)
     m.bits(0,1)  # End clip list.
-    m.bits(1,1)  # Equipped weapon, slot zero with all five flags.
+    m.bits(1,1)  # Owned weapon, slot zero. Ownership is separate from its flags.
     m.bits(1,1)
     m.bits(1,1)
     m.bits(inventory.weapon,10)
-    m.bits(31,5)
+    # Used-before, dual-wield, fast-mag, and two rechamber flags. The plain
+    # single-hand ACR has only used-before after the client first selects it.
+    m.bits(int(inventory.raised),5)
     m.bits(0,14)
     m.bits(1,1)  # Reserve slot zero.
     m.bits(0,4)

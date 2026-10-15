@@ -70,6 +70,7 @@ class Player:
     deaths: int = 0
     spawn_count: int = 0
     spawn_time: int = 0
+    weapon_raised: bool = False
 
     def event(self, number, parameter=0):
         self.events[self.event_sequence%4] = number | parameter << 32
@@ -109,6 +110,7 @@ class World:
         player.command_time=self.time
         player.spawn_count=(player.spawn_count+1)&255
         player.spawn_time=self.time
+        player.weapon_raised=False
         player.next_fire=self.time
         player.reload_at=player.respawn_at=player.last_buttons=0
         player.animation=0
@@ -243,6 +245,8 @@ class World:
         player.command_time=now
         if not player.health:
             return
+        if command.get('weapon') == self.weapon.index:
+            player.weapon_raised=True
         player.yaw=_angle(command.get('yaw',0)*360/65536)
         player.pitch=max(-85,min(85,_angle(command.get('pitch',0)*360/65536)))
         while previous < now:
@@ -336,6 +340,7 @@ class World:
         entities.sort(key=lambda row:row[0])
         clients=[(p.number,{20:self.body_model}) for p in self.players]
         wire=encode_snapshot(fields,server_time=self.time,health=player.health,spawn_count=player.spawn_count,
-            inventory=Inventory(self.weapon.index,self.weapon.ammo_type,self.weapon.clip_type,player.clip,player.reserve),
+            inventory=Inventory(self.weapon.index,self.weapon.ammo_type,self.weapon.clip_type,player.clip,player.reserve,
+                                player.weapon_raised),
             entities=entities,clients=clients,position_base=self.position_base)
         return wire,fields
