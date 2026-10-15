@@ -2,7 +2,7 @@
 
 这里维护账号、大厅、背包和装备相关的 REA/Ghidra 反编译结果。后续分析从 [功能索引](INDEX.md) 查找入口，并沿 [关键调用链](CALL_CHAINS.md) 追踪下游，可直接读取本地伪代码和证据。
 
-当前共 111 个唯一函数、132 份伪代码，分为 13 个层级包；正文、来源关联和本地链接已通过 [导出校验](verification.json)。
+当前共 155 个唯一函数、200 份伪代码，分为 14 个层级包；正文、来源关联和本地链接已通过 [导出校验](verification.json)。
 
 目标：`codoMP_client_shipRetail.exe`，PE32 / x86。
 
@@ -21,6 +21,7 @@ recovered-code/
     account/profile/              公开和私有档案
     lobby/connection/             配置、协议握手与密钥派生
     lobby/onboarding/             进入大厅前的引导判断
+    lobby/tasks/                  任务提交、回调和重试调度
     inventory/assets/             登录资产包
     inventory/items/              仓库物品与刷新
     inventory/currency/           游戏币、点券及界面读取
@@ -29,10 +30,14 @@ recovered-code/
     equipment/progression/        武器经验和等级
     equipment/attachments/        配件装备与槽位
     equipment/loadout/            普通武器和指定槽位装备
+    equipment/persistence/        装备缓存校验及档案字段写入
   evidence/                       原始记录、汇编补充和本次会话
   maintenance/                    选择清单、导出和验证工具
   INDEX.md                        按功能浏览
   function-index.json             按地址、包、标签和来源检索
+  call-chains.json                 CALL 指令与局部调用者、被调用者
+  CALL_CHAINS.md                   关键业务链及回调关联
+  ROUND2.md                        本轮覆盖范围和取证结果
 ```
 
 每个函数以 `FUN_地址.c` 命名，地址固定，原始符号和伪代码语句保持。若同一地址有不同反编译结果，额外保留带内容哈希的变体；机器索引记录各自来源。中文功能名是分析标签，不会重命名伪代码内变量或函数。
@@ -50,4 +55,4 @@ recovered-code/
 
 本次没有运行客户端、修改存档或验证新的游戏行为。历史运行状态的描述请查原项目 Wiki；本目录的验证针对目标身份、导出完整性和证据可追溯性。
 
-[维护方法](MAINTENANCE.md) · [功能索引](INDEX.md) · [验证结果](verification.json)
+[维护方法](MAINTENANCE.md) · [功能索引](INDEX.md) · [本轮补全记录](ROUND2.md) · [验证结果](verification.json)

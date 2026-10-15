@@ -1,6 +1,6 @@
 # 2026-10-15 导出会话
 
-本文记录首批导出；后续分阶段扩展见 [关键调用链](CALL_CHAINS.md)。当前总量以 README、函数索引和 verification.json 为准。
+本文记录首批导出；后续分阶段扩展见 [关键调用链](CALL_CHAINS.md) 和 [本轮取证记录](ROUND2.md)。当前总量以 README、函数索引和 verification.json 为准。
 
 执行范围：只读原客户端和既有证据，在 `tools/recovered-code/` 内新增恢复资料。未执行游戏、运行时注入、存档修改或 Git 提交。
 

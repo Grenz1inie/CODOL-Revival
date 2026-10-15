@@ -1,0 +1,468 @@
+{
+  "producer": "standalone-ghidra-focused-script",
+  "ghidra_version": "12.1.4",
+  "binary_sha256": "e3823fd6afc80fb25fa84747e6e9634707b9a0b189357a5466921cda354af37b",
+  "image_base": "00400000",
+  "analysis_mode": "Explicit disassembly and function creation; whole-program auto-analysis disabled",
+  "limitations": [
+    "Not a REA Evidence record.",
+    "Weaker type and function-boundary recovery than default whole-program analysis.",
+    "Signatures and register inputs may be inaccurate; inspect retained instructions.",
+    "Direct call targets only; unresolved indirect calls are not represented."
+  ],
+  "items": [
+    {
+      "requested_address": "006f6470",
+      "address": "0x006f6470",
+      "name": "FUN_006f6470",
+      "body": "[[006f6470, 006f64b7]]",
+      "instructions": [
+        "006f6470 PUSH EBP",
+        "006f6471 MOV EBP,ESP",
+        "006f6473 PUSH ESI",
+        "006f6474 MOV ESI,EAX",
+        "006f6476 CALL 0x006f5830",
+        "006f647b CMP byte ptr [0x0783f7bc],0x0",
+        "006f6482 JZ 0x006f6495",
+        "006f6484 MOV EAX,dword ptr [ESI]",
+        "006f6486 CMP EAX,0x7a",
+        "006f6489 JZ 0x006f6495",
+        "006f648b CMP EAX,0x1b",
+        "006f648e JZ 0x006f6495",
+        "006f6490 CMP EAX,0x1a",
+        "006f6493 JNZ 0x006f64aa",
+        "006f6495 MOV EAX,dword ptr [EBP + 0x8]",
+        "006f6498 MOV ECX,dword ptr [ESI + 0x30]",
+        "006f649b PUSH EAX",
+        "006f649c PUSH ESI",
+        "006f649d MOV byte ptr [ESI + 0x6],0x1",
+        "006f64a1 CALL ECX",
+        "006f64a3 ADD ESP,0x8",
+        "006f64a6 MOV byte ptr [ESI + 0x6],0x0",
+        "006f64aa MOV dword ptr [ESI],0x1",
+        "006f64b0 CALL 0x006f59a0",
+        "006f64b5 POP ESI",
+        "006f64b6 POP EBP",
+        "006f64b7 RET"
+      ],
+      "direct_call_targets": [
+        "0x006f5830",
+        "0x006f59a0"
+      ],
+      "call_sites": [
+        {
+          "address": "0x006f6476",
+          "instruction": "CALL 0x006f5830",
+          "computed": false,
+          "targets": [
+            "0x006f5830"
+          ]
+        },
+        {
+          "address": "0x006f64a1",
+          "instruction": "CALL ECX",
+          "computed": true,
+          "targets": []
+        },
+        {
+          "address": "0x006f64b0",
+          "instruction": "CALL 0x006f59a0",
+          "computed": false,
+          "targets": [
+            "0x006f59a0"
+          ]
+        }
+      ],
+      "status": "ok",
+      "diagnostic": "",
+      "pseudocode": "\r\nvoid FUN_006f6470(void)\r\n\r\n{\r\n  int iVar1;\r\n  int *in_EAX;\r\n  \r\n  func_0x006f5830();\r\n  if ((((DAT_0783f7bc \u003d\u003d \u0027\\0\u0027) || (iVar1 \u003d *in_EAX, iVar1 \u003d\u003d 0x7a)) || (iVar1 \u003d\u003d 0x1b)) ||\r\n     (iVar1 \u003d\u003d 0x1a)) {\r\n    *(undefined1 *)((int)in_EAX + 6) \u003d 1;\r\n    (*(code *)in_EAX[0xc])();\r\n    *(undefined1 *)((int)in_EAX + 6) \u003d 0;\r\n  }\r\n  *in_EAX \u003d 1;\r\n  func_0x006f59a0();\r\n  return;\r\n}\r\n\r\n"
+    },
+    {
+      "requested_address": "006f64c0",
+      "address": "0x006f64c0",
+      "name": "FUN_006f64c0",
+      "body": "[[006f64c0, 006f656e]]",
+      "instructions": [
+        "006f64c0 PUSH ESI",
+        "006f64c1 MOV ESI,EAX",
+        "006f64c3 CMP dword ptr [ESI],0x0",
+        "006f64c6 JZ 0x006f656d",
+        "006f64cc CMP byte ptr [ESI + 0x6],0x0",
+        "006f64d0 JNZ 0x006f656d",
+        "006f64d6 CMP dword ptr [ESI + 0x10],0x0",
+        "006f64da JZ 0x006f6526",
+        "006f64dc CMP dword ptr [ESI + 0x18],0x0",
+        "006f64e0 JNZ 0x006f64ee",
+        "006f64e2 PUSH 0x0",
+        "006f64e4 CALL 0x006f6470",
+        "006f64e9 ADD ESP,0x4",
+        "006f64ec POP ESI",
+        "006f64ed RET",
+        "006f64ee CALL 0x006435e0",
+        "006f64f3 MOV ECX,dword ptr [ESI + 0x18]",
+        "006f64f6 ADD ECX,dword ptr [ESI + 0x10]",
+        "006f64f9 CMP EAX,ECX",
+        "006f64fb JL 0x006f656d",
+        "006f64fd MOV EDX,dword ptr [ESI + 0x1c]",
+        "006f6500 CMP EDX,dword ptr [ESI + 0x20]",
+        "006f6503 JC 0x006f6513",
+        "006f6505 PUSH 0x0",
+        "006f6507 MOV EAX,ESI",
+        "006f6509 CALL 0x006f6470",
+        "006f650e ADD ESP,0x4",
+        "006f6511 POP ESI",
+        "006f6512 RET",
+        "006f6513 MOV EAX,dword ptr [ESI + 0x34]",
+        "006f6516 PUSH ESI",
+        "006f6517 MOV byte ptr [ESI + 0x6],0x1",
+        "006f651b CALL EAX",
+        "006f651d ADD ESP,0x4",
+        "006f6520 MOV byte ptr [ESI + 0x6],0x0",
+        "006f6524 POP ESI",
+        "006f6525 RET",
+        "006f6526 CMP dword ptr [ESI + 0x28],0x0",
+        "006f652a JZ 0x006f6549",
+        "006f652c CMP dword ptr [0x07809c88],0x0",
+        "006f6533 JNZ 0x006f6549",
+        "006f6535 CALL 0x006f5940",
+        "006f653a MOV ECX,dword ptr [ESI + 0x28]",
+        "006f653d CALL 0x00a44cc0",
+        "006f6542 CALL 0x006f59a0",
+        "006f6547 POP ESI",
+        "006f6548 RET",
+        "006f6549 MOV ECX,dword ptr [ESI + 0x2c]",
+        "006f654c PUSH ESI",
+        "006f654d MOV byte ptr [ESI + 0x6],0x1",
+        "006f6551 CALL ECX",
+        "006f6553 ADD ESP,0x4",
+        "006f6556 MOV byte ptr [ESI + 0x6],0x0",
+        "006f655a TEST AL,AL",
+        "006f655c JZ 0x006f656d",
+        "006f655e MOVZX EDX,byte ptr [ESI + 0x4]",
+        "006f6562 PUSH EDX",
+        "006f6563 MOV EAX,ESI",
+        "006f6565 CALL 0x006f6470",
+        "006f656a ADD ESP,0x4",
+        "006f656d POP ESI",
+        "006f656e RET"
+      ],
+      "direct_call_targets": [
+        "0x006435e0",
+        "0x006f5940",
+        "0x006f59a0",
+        "0x006f6470",
+        "0x00a44cc0"
+      ],
+      "call_sites": [
+        {
+          "address": "0x006f64e4",
+          "instruction": "CALL 0x006f6470",
+          "computed": false,
+          "targets": [
+            "0x006f6470"
+          ]
+        },
+        {
+          "address": "0x006f64ee",
+          "instruction": "CALL 0x006435e0",
+          "computed": false,
+          "targets": [
+            "0x006435e0"
+          ]
+        },
+        {
+          "address": "0x006f6509",
+          "instruction": "CALL 0x006f6470",
+          "computed": false,
+          "targets": [
+            "0x006f6470"
+          ]
+        },
+        {
+          "address": "0x006f651b",
+          "instruction": "CALL EAX",
+          "computed": true,
+          "targets": []
+        },
+        {
+          "address": "0x006f6535",
+          "instruction": "CALL 0x006f5940",
+          "computed": false,
+          "targets": [
+            "0x006f5940"
+          ]
+        },
+        {
+          "address": "0x006f653d",
+          "instruction": "CALL 0x00a44cc0",
+          "computed": false,
+          "targets": [
+            "0x00a44cc0"
+          ]
+        },
+        {
+          "address": "0x006f6542",
+          "instruction": "CALL 0x006f59a0",
+          "computed": false,
+          "targets": [
+            "0x006f59a0"
+          ]
+        },
+        {
+          "address": "0x006f6551",
+          "instruction": "CALL ECX",
+          "computed": true,
+          "targets": []
+        },
+        {
+          "address": "0x006f6565",
+          "instruction": "CALL 0x006f6470",
+          "computed": false,
+          "targets": [
+            "0x006f6470"
+          ]
+        }
+      ],
+      "status": "ok",
+      "diagnostic": "",
+      "pseudocode": "\r\n/* WARNING: Globals starting with \u0027_\u0027 overlap smaller symbols at the same address */\r\n\r\nvoid FUN_006f64c0(void)\r\n\r\n{\r\n  char cVar1;\r\n  int *in_EAX;\r\n  int iVar2;\r\n  \r\n  if ((*in_EAX !\u003d 0) \u0026\u0026 (*(char *)((int)in_EAX + 6) \u003d\u003d \u0027\\0\u0027)) {\r\n    if (in_EAX[4] \u003d\u003d 0) {\r\n      if ((in_EAX[10] !\u003d 0) \u0026\u0026 (_DAT_07809c88 \u003d\u003d 0)) {\r\n        func_0x006f5940();\r\n        func_0x00a44cc0();\r\n        func_0x006f59a0();\r\n        return;\r\n      }\r\n      *(undefined1 *)((int)in_EAX + 6) \u003d 1;\r\n      cVar1 \u003d (*(code *)in_EAX[0xb])();\r\n      *(undefined1 *)((int)in_EAX + 6) \u003d 0;\r\n      if (cVar1 !\u003d \u0027\\0\u0027) {\r\n        FUN_006f6470((char)in_EAX[1]);\r\n      }\r\n    }\r\n    else {\r\n      if (in_EAX[6] \u003d\u003d 0) {\r\n        FUN_006f6470(0);\r\n        return;\r\n      }\r\n      iVar2 \u003d func_0x006435e0();\r\n      if (in_EAX[6] + in_EAX[4] \u003c\u003d iVar2) {\r\n        if ((uint)in_EAX[8] \u003c\u003d (uint)in_EAX[7]) {\r\n          FUN_006f6470(0);\r\n          return;\r\n        }\r\n        *(undefined1 *)((int)in_EAX + 6) \u003d 1;\r\n        (*(code *)in_EAX[0xd])();\r\n        *(undefined1 *)((int)in_EAX + 6) \u003d 0;\r\n        return;\r\n      }\r\n    }\r\n  }\r\n  return;\r\n}\r\n\r\n"
+    },
+    {
+      "requested_address": "00a3bf10",
+      "address": "0x00a3bf10",
+      "name": "FUN_00a3bf10",
+      "body": "[[00a3bf10, 00a3c084]]",
+      "instructions": [
+        "00a3bf10 PUSH EBP",
+        "00a3bf11 MOV EBP,ESP",
+        "00a3bf13 PUSH -0x1",
+        "00a3bf15 PUSH 0xb40b30",
+        "00a3bf1a MOV EAX,FS:[0x0]",
+        "00a3bf20 PUSH EAX",
+        "00a3bf21 PUSH ECX",
+        "00a3bf22 PUSH ESI",
+        "00a3bf23 PUSH EDI",
+        "00a3bf24 MOV EAX,[0x00cc7c80]",
+        "00a3bf29 XOR EAX,EBP",
+        "00a3bf2b PUSH EAX",
+        "00a3bf2c LEA EAX,[EBP + -0xc]",
+        "00a3bf2f MOV FS:[0x0],EAX",
+        "00a3bf35 MOV EDI,ECX",
+        "00a3bf37 MOV ESI,dword ptr [EBP + 0xc]",
+        "00a3bf3a CMP byte ptr [ESI + 0x14],0x0",
+        "00a3bf3e MOV dword ptr [EBP + -0x4],0x0",
+        "00a3bf45 MOV dword ptr [EBP + -0x10],0x5",
+        "00a3bf4c JNZ 0x00a3bf54",
+        "00a3bf4e CMP dword ptr [ESI + 0x18],0x0",
+        "00a3bf52 JZ 0x00a3bf60",
+        "00a3bf54 MOV EAX,dword ptr [ESI + 0x18]",
+        "00a3bf57 PUSH EAX",
+        "00a3bf58 CALL 0x00a53d80",
+        "00a3bf5d ADD ESP,0x4",
+        "00a3bf60 CMP byte ptr [ESI + 0x14],0x0",
+        "00a3bf64 JNZ 0x00a3c030",
+        "00a3bf6a CMP dword ptr [ESI + 0x18],0x0",
+        "00a3bf6e JNZ 0x00a3c030",
+        "00a3bf74 CMP byte ptr [ESI + 0xc],0x0",
+        "00a3bf78 JZ 0x00a3c030",
+        "00a3bf7e MOV EAX,dword ptr [ESI + 0x10]",
+        "00a3bf81 TEST EAX,EAX",
+        "00a3bf83 JZ 0x00a3c030",
+        "00a3bf89 CMP dword ptr [EAX + 0xc],0x0",
+        "00a3bf8d JZ 0x00a3c030",
+        "00a3bf93 LEA ECX,[EBP + 0xc]",
+        "00a3bf96 PUSH ECX",
+        "00a3bf97 MOV ECX,ESI",
+        "00a3bf99 CALL 0x00a3b170",
+        "00a3bf9e LEA EDX,[EBP + 0xc]",
+        "00a3bfa1 PUSH EDX",
+        "00a3bfa2 PUSH ECX",
+        "00a3bfa3 MOV ECX,dword ptr [EBP + 0x8]",
+        "00a3bfa6 MOV EAX,ESP",
+        "00a3bfa8 MOV dword ptr [EAX],ECX",
+        "00a3bfaa MOV EAX,dword ptr [EBP + 0x8]",
+        "00a3bfad MOV byte ptr [EBP + -0x4],0x1",
+        "00a3bfb1 MOV dword ptr [EBP + -0x10],ESP",
+        "00a3bfb4 TEST EAX,EAX",
+        "00a3bfb6 JZ 0x00a3bfc2",
+        "00a3bfb8 ADD EAX,0x4",
+        "00a3bfbb PUSH EAX",
+        "00a3bfbc CALL dword ptr [0x00b5b0fc]",
+        "00a3bfc2 MOV ECX,EDI",
+        "00a3bfc4 CALL 0x00a3b8a0",
+        "00a3bfc9 MOV EDI,EAX",
+        "00a3bfcb TEST EDI,EDI",
+        "00a3bfcd JNZ 0x00a3c002",
+        "00a3bfcf CMP byte ptr [ESI + 0xc],0x0",
+        "00a3bfd3 MOV EAX,dword ptr [ESI + 0x20]",
+        "00a3bfd6 MOV EDX,dword ptr [ESI + 0x24]",
+        "00a3bfd9 MOV ECX,dword ptr [ESI + 0x28]",
+        "00a3bfdc JZ 0x00a3c00b",
+        "00a3bfde TEST EAX,EAX",
+        "00a3bfe0 JNZ 0x00a3bfe6",
+        "00a3bfe2 TEST EDX,EDX",
+        "00a3bfe4 JZ 0x00a3c00b",
+        "00a3bfe6 TEST ECX,ECX",
+        "00a3bfe8 JZ 0x00a3c00b",
+        "00a3bfea PUSH ECX",
+        "00a3bfeb MOV ECX,dword ptr [EBP + 0x8]",
+        "00a3bfee TEST EAX,EAX",
+        "00a3bff0 JZ 0x00a3bffa",
+        "00a3bff2 PUSH EAX",
+        "00a3bff3 CALL 0x00a44d00",
+        "00a3bff8 JMP 0x00a3c00b",
+        "00a3bffa PUSH EDX",
+        "00a3bffb CALL 0x00a44d20",
+        "00a3c000 JMP 0x00a3c00b",
+        "00a3c002 PUSH EDI",
+        "00a3c003 CALL 0x00a53d80",
+        "00a3c008 ADD ESP,0x4",
+        "00a3c00b MOV ESI,dword ptr [EBP + 0xc]",
+        "00a3c00e MOV byte ptr [EBP + -0x4],0x0",
+        "00a3c012 TEST ESI,ESI",
+        "00a3c014 JZ 0x00a3c045",
+        "00a3c016 LEA EDX,[ESI + 0x4]",
+        "00a3c019 PUSH EDX",
+        "00a3c01a CALL dword ptr [0x00b5b100]",
+        "00a3c020 TEST EAX,EAX",
+        "00a3c022 JNZ 0x00a3c045",
+        "00a3c024 MOV EAX,dword ptr [ESI]",
+        "00a3c026 MOV EDX,dword ptr [EAX]",
+        "00a3c028 PUSH 0x1",
+        "00a3c02a MOV ECX,ESI",
+        "00a3c02c CALL EDX",
+        "00a3c02e JMP 0x00a3c045",
+        "00a3c030 MOVZX EAX,byte ptr [ESI + 0x1d]",
+        "00a3c034 MOVZX ECX,byte ptr [ESI + 0x1c]",
+        "00a3c038 PUSH EAX",
+        "00a3c039 PUSH ECX",
+        "00a3c03a CALL 0x00a53d80",
+        "00a3c03f MOV EDI,dword ptr [EBP + -0x10]",
+        "00a3c042 ADD ESP,0x8",
+        "00a3c045 MOV EAX,dword ptr [EBP + 0x8]",
+        "00a3c048 MOV dword ptr [EBP + -0x4],0xffffffff",
+        "00a3c04f TEST EAX,EAX",
+        "00a3c051 JZ 0x00a3c070",
+        "00a3c053 ADD EAX,0x4",
+        "00a3c056 PUSH EAX",
+        "00a3c057 CALL dword ptr [0x00b5b100]",
+        "00a3c05d TEST EAX,EAX",
+        "00a3c05f JNZ 0x00a3c070",
+        "00a3c061 MOV ECX,dword ptr [EBP + 0x8]",
+        "00a3c064 TEST ECX,ECX",
+        "00a3c066 JZ 0x00a3c070",
+        "00a3c068 MOV EDX,dword ptr [ECX]",
+        "00a3c06a MOV EAX,dword ptr [EDX]",
+        "00a3c06c PUSH 0x1",
+        "00a3c06e CALL EAX",
+        "00a3c070 MOV EAX,EDI",
+        "00a3c072 MOV ECX,dword ptr [EBP + -0xc]",
+        "00a3c075 MOV dword ptr FS:[0x0],ECX",
+        "00a3c07c POP ECX",
+        "00a3c07d POP EDI",
+        "00a3c07e POP ESI",
+        "00a3c07f MOV ESP,EBP",
+        "00a3c081 POP EBP",
+        "00a3c082 RET 0x8"
+      ],
+      "direct_call_targets": [
+        "0x00a3b170",
+        "0x00a3b8a0",
+        "0x00a44d00",
+        "0x00a44d20",
+        "0x00a53d80"
+      ],
+      "call_sites": [
+        {
+          "address": "0x00a3bf58",
+          "instruction": "CALL 0x00a53d80",
+          "computed": false,
+          "targets": [
+            "0x00a53d80"
+          ]
+        },
+        {
+          "address": "0x00a3bf99",
+          "instruction": "CALL 0x00a3b170",
+          "computed": false,
+          "targets": [
+            "0x00a3b170"
+          ]
+        },
+        {
+          "address": "0x00a3bfbc",
+          "instruction": "CALL dword ptr [0x00b5b0fc]",
+          "computed": true,
+          "targets": []
+        },
+        {
+          "address": "0x00a3bfc4",
+          "instruction": "CALL 0x00a3b8a0",
+          "computed": false,
+          "targets": [
+            "0x00a3b8a0"
+          ]
+        },
+        {
+          "address": "0x00a3bff3",
+          "instruction": "CALL 0x00a44d00",
+          "computed": false,
+          "targets": [
+            "0x00a44d00"
+          ]
+        },
+        {
+          "address": "0x00a3bffb",
+          "instruction": "CALL 0x00a44d20",
+          "computed": false,
+          "targets": [
+            "0x00a44d20"
+          ]
+        },
+        {
+          "address": "0x00a3c003",
+          "instruction": "CALL 0x00a53d80",
+          "computed": false,
+          "targets": [
+            "0x00a53d80"
+          ]
+        },
+        {
+          "address": "0x00a3c01a",
+          "instruction": "CALL dword ptr [0x00b5b100]",
+          "computed": true,
+          "targets": []
+        },
+        {
+          "address": "0x00a3c02c",
+          "instruction": "CALL EDX",
+          "computed": true,
+          "targets": []
+        },
+        {
+          "address": "0x00a3c03a",
+          "instruction": "CALL 0x00a53d80",
+          "computed": false,
+          "targets": [
+            "0x00a53d80"
+          ]
+        },
+        {
+          "address": "0x00a3c057",
+          "instruction": "CALL dword ptr [0x00b5b100]",
+          "computed": true,
+          "targets": []
+        },
+        {
+          "address": "0x00a3c06e",
+          "instruction": "CALL EAX",
+          "computed": true,
+          "targets": []
+        }
+      ],
+      "status": "ok",
+      "diagnostic": "",
+      "pseudocode": "\r\n/* WARNING: Globals starting with \u0027_\u0027 overlap smaller symbols at the same address */\r\n\r\nint FUN_00a3bf10(undefined4 *param_1,undefined4 *param_2)\r\n\r\n{\r\n  int iVar1;\r\n  int iVar2;\r\n  int *unaff_FS_OFFSET;\r\n  int iStack_10;\r\n  undefined *puStack_c;\r\n  uint uStack_8;\r\n  \r\n  puStack_c \u003d \u0026DAT_00b40b30;\r\n  iStack_10 \u003d *unaff_FS_OFFSET;\r\n  *unaff_FS_OFFSET \u003d (int)\u0026iStack_10;\r\n  uStack_8 \u003d 0;\r\n  if ((*(char *)(param_2 + 5) !\u003d \u0027\\0\u0027) || (param_2[6] !\u003d 0)) {\r\n    func_0x00a53d80();\r\n  }\r\n  if ((((*(char *)(param_2 + 5) \u003d\u003d \u0027\\0\u0027) \u0026\u0026 (param_2[6] \u003d\u003d 0)) \u0026\u0026 (*(char *)(param_2 + 3) !\u003d \u0027\\0\u0027))\r\n     \u0026\u0026 ((param_2[4] !\u003d 0 \u0026\u0026 (*(int *)(param_2[4] + 0xc) !\u003d 0)))) {\r\n    func_0x00a3b170();\r\n    uStack_8 \u003d CONCAT31(uStack_8._1_3_,1);\r\n    if (param_1 !\u003d (undefined4 *)0x0) {\r\n      InterlockedIncrement(param_1 + 1);\r\n    }\r\n    iVar1 \u003d func_0x00a3b8a0();\r\n    if (iVar1 \u003d\u003d 0) {\r\n      iVar2 \u003d param_2[8];\r\n      if (((*(char *)(param_2 + 3) !\u003d \u0027\\0\u0027) \u0026\u0026 ((iVar2 !\u003d 0 || (param_2[9] !\u003d 0)))) \u0026\u0026\r\n         (param_2[10] !\u003d 0)) {\r\n        if (iVar2 \u003d\u003d 0) {\r\n          func_0x00a44d20(param_2[9],param_2[10]);\r\n        }\r\n        else {\r\n          func_0x00a44d00(iVar2);\r\n        }\r\n      }\r\n    }\r\n    else {\r\n      func_0x00a53d80(iVar1);\r\n    }\r\n    uStack_8 \u003d uStack_8 \u0026 0xffffff00;\r\n    if (param_2 !\u003d (undefined4 *)0x0) {\r\n      iVar2 \u003d InterlockedDecrement(param_2 + 1);\r\n      if (iVar2 \u003d\u003d 0) {\r\n        (**(code **)*param_2)(1);\r\n      }\r\n    }\r\n  }\r\n  else {\r\n    func_0x00a53d80();\r\n    iVar1 \u003d 5;\r\n  }\r\n  uStack_8 \u003d 0xffffffff;\r\n  if (param_1 !\u003d (undefined4 *)0x0) {\r\n    iVar2 \u003d InterlockedDecrement(param_1 + 1);\r\n    if ((iVar2 \u003d\u003d 0) \u0026\u0026 (param_1 !\u003d (undefined4 *)0x0)) {\r\n      (**(code **)*param_1)(1);\r\n    }\r\n  }\r\n  *unaff_FS_OFFSET \u003d iStack_10;\r\n  return iVar1;\r\n}\r\n\r\n"
+    }
+  ]
+}

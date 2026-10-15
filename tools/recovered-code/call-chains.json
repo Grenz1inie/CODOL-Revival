@@ -4,14 +4,21 @@
   "authority": "shipped-artifact",
   "execution_observed": false,
   "coverage": {
-    "functions_with_call_sites": 43,
-    "function_observations": 43,
-    "direct_call_observations": 471,
-    "unresolved_indirect_observations": 86,
+    "functions_with_call_sites": 105,
+    "function_observations": 106,
+    "direct_call_observations": 935,
+    "unresolved_indirect_observations": 191,
     "direct_targets_outside_index": [
       "0x0049e7d0",
+      "0x004a4e70",
+      "0x004a4fd0",
+      "0x004a7940",
+      "0x004a7bf0",
+      "0x004a7d30",
+      "0x004a8020",
       "0x004a80d0",
       "0x004e6d60",
+      "0x0056dbf0",
       "0x00584470",
       "0x005904a0",
       "0x005908f0",
@@ -25,10 +32,9 @@
       "0x00590de0",
       "0x00590e30",
       "0x00590ee0",
-      "0x005926d0",
+      "0x00592470",
       "0x005927e0",
       "0x00592930",
-      "0x00592b10",
       "0x00592d70",
       "0x00592f50",
       "0x00593040",
@@ -38,25 +44,56 @@
       "0x00593500",
       "0x00593700",
       "0x00593b20",
+      "0x00594890",
+      "0x00594e90",
       "0x005957b0",
       "0x00596bf0",
       "0x00597d20",
       "0x005b53c0",
       "0x005ddee0",
       "0x00630750",
+      "0x00630940",
       "0x00637be0",
+      "0x00637c60",
+      "0x006435e0",
       "0x006819e0",
-      "0x00695c90",
+      "0x0068a0e0",
+      "0x006bfc60",
+      "0x006c1ff0",
+      "0x006c22e0",
+      "0x006c2680",
+      "0x006c2780",
+      "0x006c2e10",
+      "0x006c2eb0",
+      "0x006c2fb0",
       "0x006d82b0",
       "0x006d8940",
-      "0x006f4d60",
-      "0x006f5b70",
+      "0x006ee030",
+      "0x006f5710",
+      "0x006f5830",
+      "0x006f58d0",
+      "0x006f5940",
+      "0x006f59a0",
+      "0x006f6970",
+      "0x006fc940",
       "0x006fcc50",
       "0x006fed10",
+      "0x006fee60",
+      "0x00706700",
+      "0x00706760",
+      "0x00707480",
+      "0x00707b70",
+      "0x00707c40",
+      "0x00709480",
+      "0x00709510",
+      "0x00709570",
+      "0x007095d0",
       "0x007276b0",
       "0x0077dbd0",
       "0x007d0550",
+      "0x008e7db0",
       "0x00949cb0",
+      "0x00a36760",
       "0x00a36790",
       "0x00a367e0",
       "0x00a36b80",
@@ -72,6 +109,7 @@
       "0x00a38920",
       "0x00a389a0",
       "0x00a38a60",
+      "0x00a38e60",
       "0x00a38ea0",
       "0x00a38f30",
       "0x00a39020",
@@ -82,10 +120,23 @@
       "0x00a3a2a0",
       "0x00a3a960",
       "0x00a3a9d0",
+      "0x00a3b0a0",
+      "0x00a3b170",
       "0x00a3c8d0",
       "0x00a3c920",
       "0x00a3c990",
+      "0x00a421e0",
+      "0x00a42310",
       "0x00a44cc0",
+      "0x00a44cd0",
+      "0x00a44d20",
+      "0x00a455f0",
+      "0x00a45620",
+      "0x00a456e0",
+      "0x00a456f0",
+      "0x00a45850",
+      "0x00a45a40",
+      "0x00a4c3d0",
       "0x00a53d80",
       "0x00a59520",
       "0x00a5f140",
@@ -99,6 +150,9 @@
       "0x00a5fe70",
       "0x00a61250",
       "0x00a61400",
+      "0x00a63a60",
+      "0x00a63c50",
+      "0x00a63e20",
       "0x00a680e0",
       "0x00a801f0",
       "0x00a80210",
@@ -112,6 +166,7 @@
       "0x00af70f9",
       "0x00af7221",
       "0x00af75c0",
+      "0x00af76e4",
       "0x00af99e3",
       "0x00afd440",
       "0x00afd6f0",
@@ -5321,6 +5376,5415 @@
           "provider_targets": [
             "0x00a613c0"
           ]
+        }
+      ]
+    },
+    {
+      "function": "0x005945b0",
+      "body": "[[005945b0, 005946bf]]",
+      "record": "evidence/focused/round2-inventory-equipment-tail.json",
+      "record_sha256": "fbe596684d1df1f481842e172477a763c9f0a125b76de99a9f88d48f35b81adf",
+      "calls": []
+    },
+    {
+      "function": "0x00592b10",
+      "body": "[[00592b10, 00592d62]]",
+      "record": "evidence/focused/round2-inventory-equipment-tail.json",
+      "record_sha256": "fbe596684d1df1f481842e172477a763c9f0a125b76de99a9f88d48f35b81adf",
+      "calls": [
+        {
+          "site": "0x00592b2f",
+          "instruction": "CALL 0x006da140",
+          "kind": "direct",
+          "target": "0x006da140",
+          "provider_targets": [
+            "0x006da140"
+          ]
+        },
+        {
+          "site": "0x00592b82",
+          "instruction": "CALL 0x00637be0",
+          "kind": "direct",
+          "target": "0x00637be0",
+          "provider_targets": [
+            "0x00637be0"
+          ]
+        },
+        {
+          "site": "0x00592ba5",
+          "instruction": "CALL 0x00637be0",
+          "kind": "direct",
+          "target": "0x00637be0",
+          "provider_targets": [
+            "0x00637be0"
+          ]
+        },
+        {
+          "site": "0x00592bce",
+          "instruction": "CALL 0x006da140",
+          "kind": "direct",
+          "target": "0x006da140",
+          "provider_targets": [
+            "0x006da140"
+          ]
+        },
+        {
+          "site": "0x00592bf9",
+          "instruction": "CALL 0x00637be0",
+          "kind": "direct",
+          "target": "0x00637be0",
+          "provider_targets": [
+            "0x00637be0"
+          ]
+        },
+        {
+          "site": "0x00592c16",
+          "instruction": "CALL 0x005926d0",
+          "kind": "direct",
+          "target": "0x005926d0",
+          "provider_targets": [
+            "0x005926d0"
+          ]
+        },
+        {
+          "site": "0x00592c39",
+          "instruction": "CALL 0x00637be0",
+          "kind": "direct",
+          "target": "0x00637be0",
+          "provider_targets": [
+            "0x00637be0"
+          ]
+        },
+        {
+          "site": "0x00592c65",
+          "instruction": "CALL 0x00637be0",
+          "kind": "direct",
+          "target": "0x00637be0",
+          "provider_targets": [
+            "0x00637be0"
+          ]
+        },
+        {
+          "site": "0x00592cbb",
+          "instruction": "CALL 0x00a59520",
+          "kind": "direct",
+          "target": "0x00a59520",
+          "provider_targets": [
+            "0x00a59520"
+          ]
+        },
+        {
+          "site": "0x00592cf1",
+          "instruction": "CALL 0x006d9da0",
+          "kind": "direct",
+          "target": "0x006d9da0",
+          "provider_targets": [
+            "0x006d9da0"
+          ]
+        },
+        {
+          "site": "0x00592d1c",
+          "instruction": "CALL 0x00637be0",
+          "kind": "direct",
+          "target": "0x00637be0",
+          "provider_targets": [
+            "0x00637be0"
+          ]
+        },
+        {
+          "site": "0x00592d39",
+          "instruction": "CALL 0x005926d0",
+          "kind": "direct",
+          "target": "0x005926d0",
+          "provider_targets": [
+            "0x005926d0"
+          ]
+        },
+        {
+          "site": "0x00592d5a",
+          "instruction": "CALL 0x00af6b2f",
+          "kind": "direct",
+          "target": "0x00af6b2f",
+          "provider_targets": [
+            "0x00af6b2f"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x005926d0",
+      "body": "[[005926d0, 005927da]]",
+      "record": "evidence/focused/round2-inventory-equipment-tail.json",
+      "record_sha256": "fbe596684d1df1f481842e172477a763c9f0a125b76de99a9f88d48f35b81adf",
+      "calls": [
+        {
+          "site": "0x005926e9",
+          "instruction": "CALL 0x0049e7d0",
+          "kind": "direct",
+          "target": "0x0049e7d0",
+          "provider_targets": [
+            "0x0049e7d0"
+          ]
+        },
+        {
+          "site": "0x00592712",
+          "instruction": "CALL 0x0049e7d0",
+          "kind": "direct",
+          "target": "0x0049e7d0",
+          "provider_targets": [
+            "0x0049e7d0"
+          ]
+        },
+        {
+          "site": "0x00592739",
+          "instruction": "CALL 0x00597d20",
+          "kind": "direct",
+          "target": "0x00597d20",
+          "provider_targets": [
+            "0x00597d20"
+          ]
+        },
+        {
+          "site": "0x00592764",
+          "instruction": "CALL 0x00630940",
+          "kind": "direct",
+          "target": "0x00630940",
+          "provider_targets": [
+            "0x00630940"
+          ]
+        },
+        {
+          "site": "0x00592777",
+          "instruction": "CALL 0x00597d20",
+          "kind": "direct",
+          "target": "0x00597d20",
+          "provider_targets": [
+            "0x00597d20"
+          ]
+        },
+        {
+          "site": "0x00592791",
+          "instruction": "CALL 0x00597d20",
+          "kind": "direct",
+          "target": "0x00597d20",
+          "provider_targets": [
+            "0x00597d20"
+          ]
+        },
+        {
+          "site": "0x005927ad",
+          "instruction": "CALL 0x00592470",
+          "kind": "direct",
+          "target": "0x00592470",
+          "provider_targets": [
+            "0x00592470"
+          ]
+        },
+        {
+          "site": "0x005927cd",
+          "instruction": "CALL 0x00597d20",
+          "kind": "direct",
+          "target": "0x00597d20",
+          "provider_targets": [
+            "0x00597d20"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x006c4240",
+      "body": "[[006c4240, 006c444e]]",
+      "record": "evidence/focused/round2-inventory-equipment-tail.json",
+      "record_sha256": "fbe596684d1df1f481842e172477a763c9f0a125b76de99a9f88d48f35b81adf",
+      "calls": [
+        {
+          "site": "0x006c4263",
+          "instruction": "CALL 0x0068a0e0",
+          "kind": "direct",
+          "target": "0x0068a0e0",
+          "provider_targets": [
+            "0x0068a0e0"
+          ]
+        },
+        {
+          "site": "0x006c4285",
+          "instruction": "CALL 0x007051e0",
+          "kind": "direct",
+          "target": "0x007051e0",
+          "provider_targets": [
+            "0x007051e0"
+          ]
+        },
+        {
+          "site": "0x006c42b1",
+          "instruction": "CALL 0x005945b0",
+          "kind": "direct",
+          "target": "0x005945b0",
+          "provider_targets": [
+            "0x005945b0"
+          ]
+        },
+        {
+          "site": "0x006c42cd",
+          "instruction": "CALL 0x006bfc60",
+          "kind": "direct",
+          "target": "0x006bfc60",
+          "provider_targets": [
+            "0x006bfc60"
+          ]
+        },
+        {
+          "site": "0x006c42e0",
+          "instruction": "CALL 0x00af6b2f",
+          "kind": "direct",
+          "target": "0x00af6b2f",
+          "provider_targets": [
+            "0x00af6b2f"
+          ]
+        },
+        {
+          "site": "0x006c42ef",
+          "instruction": "CALL 0x00695bc0",
+          "kind": "direct",
+          "target": "0x00695bc0",
+          "provider_targets": [
+            "0x00695bc0"
+          ]
+        },
+        {
+          "site": "0x006c4306",
+          "instruction": "CALL 0x006c4160",
+          "kind": "direct",
+          "target": "0x006c4160",
+          "provider_targets": [
+            "0x006c4160"
+          ]
+        },
+        {
+          "site": "0x006c4317",
+          "instruction": "CALL 0x006bfc60",
+          "kind": "direct",
+          "target": "0x006bfc60",
+          "provider_targets": [
+            "0x006bfc60"
+          ]
+        },
+        {
+          "site": "0x006c432a",
+          "instruction": "CALL 0x00af6b2f",
+          "kind": "direct",
+          "target": "0x00af6b2f",
+          "provider_targets": [
+            "0x00af6b2f"
+          ]
+        },
+        {
+          "site": "0x006c43c6",
+          "instruction": "CALL 0x00695bc0",
+          "kind": "direct",
+          "target": "0x00695bc0",
+          "provider_targets": [
+            "0x00695bc0"
+          ]
+        },
+        {
+          "site": "0x006c43e5",
+          "instruction": "CALL 0x006c41c0",
+          "kind": "direct",
+          "target": "0x006c41c0",
+          "provider_targets": [
+            "0x006c41c0"
+          ]
+        },
+        {
+          "site": "0x006c441a",
+          "instruction": "CALL 0x005946c0",
+          "kind": "direct",
+          "target": "0x005946c0",
+          "provider_targets": [
+            "0x005946c0"
+          ]
+        },
+        {
+          "site": "0x006c4422",
+          "instruction": "CALL 0x00594890",
+          "kind": "direct",
+          "target": "0x00594890",
+          "provider_targets": [
+            "0x00594890"
+          ]
+        },
+        {
+          "site": "0x006c4432",
+          "instruction": "CALL 0x00af6b2f",
+          "kind": "direct",
+          "target": "0x00af6b2f",
+          "provider_targets": [
+            "0x00af6b2f"
+          ]
+        },
+        {
+          "site": "0x006c4446",
+          "instruction": "CALL 0x00af6b2f",
+          "kind": "direct",
+          "target": "0x00af6b2f",
+          "provider_targets": [
+            "0x00af6b2f"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x006c4160",
+      "body": "[[006c4160, 006c41b6]]",
+      "record": "evidence/focused/round2-inventory-equipment-tail.json",
+      "record_sha256": "fbe596684d1df1f481842e172477a763c9f0a125b76de99a9f88d48f35b81adf",
+      "calls": [
+        {
+          "site": "0x006c416f",
+          "instruction": "CALL 0x005845b0",
+          "kind": "direct",
+          "target": "0x005845b0",
+          "provider_targets": [
+            "0x005845b0"
+          ]
+        },
+        {
+          "site": "0x006c417a",
+          "instruction": "CALL 0x005845b0",
+          "kind": "direct",
+          "target": "0x005845b0",
+          "provider_targets": [
+            "0x005845b0"
+          ]
+        },
+        {
+          "site": "0x006c41a5",
+          "instruction": "CALL 0x006c2800",
+          "kind": "direct",
+          "target": "0x006c2800",
+          "provider_targets": [
+            "0x006c2800"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x006c41c0",
+      "body": "[[006c41c0, 006c4235]]",
+      "record": "evidence/focused/round2-inventory-equipment-tail.json",
+      "record_sha256": "fbe596684d1df1f481842e172477a763c9f0a125b76de99a9f88d48f35b81adf",
+      "calls": [
+        {
+          "site": "0x006c41d0",
+          "instruction": "CALL 0x005845b0",
+          "kind": "direct",
+          "target": "0x005845b0",
+          "provider_targets": [
+            "0x005845b0"
+          ]
+        },
+        {
+          "site": "0x006c41e5",
+          "instruction": "CALL 0x00709510",
+          "kind": "direct",
+          "target": "0x00709510",
+          "provider_targets": [
+            "0x00709510"
+          ]
+        },
+        {
+          "site": "0x006c41f4",
+          "instruction": "CALL 0x00709480",
+          "kind": "direct",
+          "target": "0x00709480",
+          "provider_targets": [
+            "0x00709480"
+          ]
+        },
+        {
+          "site": "0x006c4202",
+          "instruction": "CALL 0x00709570",
+          "kind": "direct",
+          "target": "0x00709570",
+          "provider_targets": [
+            "0x00709570"
+          ]
+        },
+        {
+          "site": "0x006c4213",
+          "instruction": "CALL 0x007095d0",
+          "kind": "direct",
+          "target": "0x007095d0",
+          "provider_targets": [
+            "0x007095d0"
+          ]
+        },
+        {
+          "site": "0x006c4225",
+          "instruction": "CALL 0x006c2800",
+          "kind": "direct",
+          "target": "0x006c2800",
+          "provider_targets": [
+            "0x006c2800"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x00a3c6f0",
+      "body": "[[00a3c6f0, 00a3c7b1]]",
+      "record": "evidence/focused/round2-inventory-equipment-tail.json",
+      "record_sha256": "fbe596684d1df1f481842e172477a763c9f0a125b76de99a9f88d48f35b81adf",
+      "calls": [
+        {
+          "site": "0x00a3c71d",
+          "instruction": "CALL 0x00a38020",
+          "kind": "direct",
+          "target": "0x00a38020",
+          "provider_targets": [
+            "0x00a38020"
+          ]
+        },
+        {
+          "site": "0x00a3c735",
+          "instruction": "CALL 0x00a44d90",
+          "kind": "direct",
+          "target": "0x00a44d90",
+          "provider_targets": [
+            "0x00a44d90"
+          ]
+        },
+        {
+          "site": "0x00a3c754",
+          "instruction": "CALL dword ptr [0x00b5b100]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x00a3c76a",
+          "instruction": "CALL EDX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x00a3c77c",
+          "instruction": "CALL EBX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x00a3c794",
+          "instruction": "CALL EBX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x00a3c799",
+          "instruction": "CALL 0x00a3bf10",
+          "kind": "direct",
+          "target": "0x00a3bf10",
+          "provider_targets": [
+            "0x00a3bf10"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x00a64ca0",
+      "body": "[[00a64ca0, 00a651b2]]",
+      "record": "evidence/focused/round2-inventory-equipment-tail.json",
+      "record_sha256": "fbe596684d1df1f481842e172477a763c9f0a125b76de99a9f88d48f35b81adf",
+      "calls": [
+        {
+          "site": "0x00a64cff",
+          "instruction": "CALL 0x00a456e0",
+          "kind": "direct",
+          "target": "0x00a456e0",
+          "provider_targets": [
+            "0x00a456e0"
+          ]
+        },
+        {
+          "site": "0x00a64d0c",
+          "instruction": "CALL 0x00a45630",
+          "kind": "direct",
+          "target": "0x00a45630",
+          "provider_targets": [
+            "0x00a45630"
+          ]
+        },
+        {
+          "site": "0x00a64d1b",
+          "instruction": "CALL 0x00a45620",
+          "kind": "direct",
+          "target": "0x00a45620",
+          "provider_targets": [
+            "0x00a45620"
+          ]
+        },
+        {
+          "site": "0x00a64d60",
+          "instruction": "CALL 0x00a63eb0",
+          "kind": "direct",
+          "target": "0x00a63eb0",
+          "provider_targets": [
+            "0x00a63eb0"
+          ]
+        },
+        {
+          "site": "0x00a64d71",
+          "instruction": "CALL 0x00a63e20",
+          "kind": "direct",
+          "target": "0x00a63e20",
+          "provider_targets": [
+            "0x00a63e20"
+          ]
+        },
+        {
+          "site": "0x00a64d88",
+          "instruction": "CALL EAX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x00a64da1",
+          "instruction": "CALL 0x00a38f30",
+          "kind": "direct",
+          "target": "0x00a38f30",
+          "provider_targets": [
+            "0x00a38f30"
+          ]
+        },
+        {
+          "site": "0x00a64dbb",
+          "instruction": "CALL 0x00a53d80",
+          "kind": "direct",
+          "target": "0x00a53d80",
+          "provider_targets": [
+            "0x00a53d80"
+          ]
+        },
+        {
+          "site": "0x00a64dde",
+          "instruction": "CALL EAX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x00a64df9",
+          "instruction": "CALL 0x00a38f30",
+          "kind": "direct",
+          "target": "0x00a38f30",
+          "provider_targets": [
+            "0x00a38f30"
+          ]
+        },
+        {
+          "site": "0x00a64e22",
+          "instruction": "CALL EDX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x00a64e3b",
+          "instruction": "CALL 0x00a38f30",
+          "kind": "direct",
+          "target": "0x00a38f30",
+          "provider_targets": [
+            "0x00a38f30"
+          ]
+        },
+        {
+          "site": "0x00a64e6b",
+          "instruction": "CALL EDX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x00a64e86",
+          "instruction": "CALL 0x00a38f30",
+          "kind": "direct",
+          "target": "0x00a38f30",
+          "provider_targets": [
+            "0x00a38f30"
+          ]
+        },
+        {
+          "site": "0x00a64eaf",
+          "instruction": "CALL EAX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x00a64ecb",
+          "instruction": "CALL 0x00a38e60",
+          "kind": "direct",
+          "target": "0x00a38e60",
+          "provider_targets": [
+            "0x00a38e60"
+          ]
+        },
+        {
+          "site": "0x00a64eeb",
+          "instruction": "CALL EDX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x00a64f07",
+          "instruction": "CALL 0x00a38f30",
+          "kind": "direct",
+          "target": "0x00a38f30",
+          "provider_targets": [
+            "0x00a38f30"
+          ]
+        },
+        {
+          "site": "0x00a64f2b",
+          "instruction": "CALL 0x00a455f0",
+          "kind": "direct",
+          "target": "0x00a455f0",
+          "provider_targets": [
+            "0x00a455f0"
+          ]
+        },
+        {
+          "site": "0x00a64f4f",
+          "instruction": "CALL 0x00a63e20",
+          "kind": "direct",
+          "target": "0x00a63e20",
+          "provider_targets": [
+            "0x00a63e20"
+          ]
+        },
+        {
+          "site": "0x00a64f68",
+          "instruction": "CALL EDX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x00a64f84",
+          "instruction": "CALL 0x00a38f30",
+          "kind": "direct",
+          "target": "0x00a38f30",
+          "provider_targets": [
+            "0x00a38f30"
+          ]
+        },
+        {
+          "site": "0x00a64faa",
+          "instruction": "CALL EAX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x00a64fc6",
+          "instruction": "CALL 0x00a38f30",
+          "kind": "direct",
+          "target": "0x00a38f30",
+          "provider_targets": [
+            "0x00a38f30"
+          ]
+        },
+        {
+          "site": "0x00a64ff9",
+          "instruction": "CALL 0x00a63c50",
+          "kind": "direct",
+          "target": "0x00a63c50",
+          "provider_targets": [
+            "0x00a63c50"
+          ]
+        },
+        {
+          "site": "0x00a65010",
+          "instruction": "CALL EDX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x00a6502a",
+          "instruction": "CALL 0x00a38f30",
+          "kind": "direct",
+          "target": "0x00a38f30",
+          "provider_targets": [
+            "0x00a38f30"
+          ]
+        },
+        {
+          "site": "0x00a6504a",
+          "instruction": "CALL EDX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x00a65066",
+          "instruction": "CALL 0x00a38ea0",
+          "kind": "direct",
+          "target": "0x00a38ea0",
+          "provider_targets": [
+            "0x00a38ea0"
+          ]
+        },
+        {
+          "site": "0x00a65089",
+          "instruction": "CALL EAX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x00a650ad",
+          "instruction": "CALL 0x00a38f30",
+          "kind": "direct",
+          "target": "0x00a38f30",
+          "provider_targets": [
+            "0x00a38f30"
+          ]
+        },
+        {
+          "site": "0x00a650db",
+          "instruction": "CALL EDX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x00a650f6",
+          "instruction": "CALL 0x00a38f30",
+          "kind": "direct",
+          "target": "0x00a38f30",
+          "provider_targets": [
+            "0x00a38f30"
+          ]
+        },
+        {
+          "site": "0x00a6512e",
+          "instruction": "CALL 0x00a38f30",
+          "kind": "direct",
+          "target": "0x00a38f30",
+          "provider_targets": [
+            "0x00a38f30"
+          ]
+        },
+        {
+          "site": "0x00a6515d",
+          "instruction": "CALL 0x00a53d80",
+          "kind": "direct",
+          "target": "0x00a53d80",
+          "provider_targets": [
+            "0x00a53d80"
+          ]
+        },
+        {
+          "site": "0x00a6516d",
+          "instruction": "CALL 0x00a45620",
+          "kind": "direct",
+          "target": "0x00a45620",
+          "provider_targets": [
+            "0x00a45620"
+          ]
+        },
+        {
+          "site": "0x00a65178",
+          "instruction": "CALL 0x00a45620",
+          "kind": "direct",
+          "target": "0x00a45620",
+          "provider_targets": [
+            "0x00a45620"
+          ]
+        },
+        {
+          "site": "0x00a65181",
+          "instruction": "CALL 0x00a53d80",
+          "kind": "direct",
+          "target": "0x00a53d80",
+          "provider_targets": [
+            "0x00a53d80"
+          ]
+        },
+        {
+          "site": "0x00a65190",
+          "instruction": "CALL 0x00a45620",
+          "kind": "direct",
+          "target": "0x00a45620",
+          "provider_targets": [
+            "0x00a45620"
+          ]
+        },
+        {
+          "site": "0x00a651aa",
+          "instruction": "CALL 0x00af6b2f",
+          "kind": "direct",
+          "target": "0x00af6b2f",
+          "provider_targets": [
+            "0x00af6b2f"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x00a45630",
+      "body": "[[00a45630, 00a45672]]",
+      "record": "evidence/focused/round2-inventory-equipment-tail.json",
+      "record_sha256": "fbe596684d1df1f481842e172477a763c9f0a125b76de99a9f88d48f35b81adf",
+      "calls": [
+        {
+          "site": "0x00a45644",
+          "instruction": "CALL 0x00af76e4",
+          "kind": "direct",
+          "target": "0x00af76e4",
+          "provider_targets": [
+            "0x00af76e4"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x00695c90",
+      "body": "[[00695c90, 00695cb0]]",
+      "record": "evidence/focused/round2-inventory-equipment-tail.json",
+      "record_sha256": "fbe596684d1df1f481842e172477a763c9f0a125b76de99a9f88d48f35b81adf",
+      "calls": [
+        {
+          "site": "0x00695ca1",
+          "instruction": "CALL 0x00695bc0",
+          "kind": "direct",
+          "target": "0x00695bc0",
+          "provider_targets": [
+            "0x00695bc0"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x004a5280",
+      "body": "[[004a5280, 004a5367] [004a5370, 004a564b]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x004a52b8",
+          "instruction": "CALL 0x00637c60",
+          "kind": "direct",
+          "target": "0x00637c60",
+          "provider_targets": [
+            "0x00637c60"
+          ]
+        },
+        {
+          "site": "0x004a52e4",
+          "instruction": "CALL 0x00637c60",
+          "kind": "direct",
+          "target": "0x00637c60",
+          "provider_targets": [
+            "0x00637c60"
+          ]
+        },
+        {
+          "site": "0x004a52f6",
+          "instruction": "CALL 0x00a45630",
+          "kind": "direct",
+          "target": "0x00a45630",
+          "provider_targets": [
+            "0x00a45630"
+          ]
+        },
+        {
+          "site": "0x004a5344",
+          "instruction": "CALL 0x004a7d30",
+          "kind": "direct",
+          "target": "0x004a7d30",
+          "provider_targets": [
+            "0x004a7d30"
+          ]
+        },
+        {
+          "site": "0x004a53a7",
+          "instruction": "CALL 0x00637c60",
+          "kind": "direct",
+          "target": "0x00637c60",
+          "provider_targets": [
+            "0x00637c60"
+          ]
+        },
+        {
+          "site": "0x004a53c9",
+          "instruction": "CALL 0x006ee030",
+          "kind": "direct",
+          "target": "0x006ee030",
+          "provider_targets": [
+            "0x006ee030"
+          ]
+        },
+        {
+          "site": "0x004a544b",
+          "instruction": "CALL 0x004a7940",
+          "kind": "direct",
+          "target": "0x004a7940",
+          "provider_targets": [
+            "0x004a7940"
+          ]
+        },
+        {
+          "site": "0x004a552d",
+          "instruction": "CALL 0x00637c60",
+          "kind": "direct",
+          "target": "0x00637c60",
+          "provider_targets": [
+            "0x00637c60"
+          ]
+        },
+        {
+          "site": "0x004a55ca",
+          "instruction": "CALL 0x00637c60",
+          "kind": "direct",
+          "target": "0x00637c60",
+          "provider_targets": [
+            "0x00637c60"
+          ]
+        },
+        {
+          "site": "0x004a55e2",
+          "instruction": "CALL 0x00637c60",
+          "kind": "direct",
+          "target": "0x00637c60",
+          "provider_targets": [
+            "0x00637c60"
+          ]
+        },
+        {
+          "site": "0x004a5602",
+          "instruction": "CALL 0x004a7bf0",
+          "kind": "direct",
+          "target": "0x004a7bf0",
+          "provider_targets": [
+            "0x004a7bf0"
+          ]
+        },
+        {
+          "site": "0x004a560c",
+          "instruction": "CALL 0x00a38040",
+          "kind": "direct",
+          "target": "0x00a38040",
+          "provider_targets": [
+            "0x00a38040"
+          ]
+        },
+        {
+          "site": "0x004a562a",
+          "instruction": "CALL 0x004a8020",
+          "kind": "direct",
+          "target": "0x004a8020",
+          "provider_targets": [
+            "0x004a8020"
+          ]
+        },
+        {
+          "site": "0x004a5637",
+          "instruction": "CALL 0x004a8020",
+          "kind": "direct",
+          "target": "0x004a8020",
+          "provider_targets": [
+            "0x004a8020"
+          ]
+        },
+        {
+          "site": "0x004a563d",
+          "instruction": "CALL 0x00a38040",
+          "kind": "direct",
+          "target": "0x00a38040",
+          "provider_targets": [
+            "0x00a38040"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x004a4f40",
+      "body": "[[004a4f40, 004a4fcb]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x004a4f43",
+          "instruction": "CALL 0x006fed10",
+          "kind": "direct",
+          "target": "0x006fed10",
+          "provider_targets": [
+            "0x006fed10"
+          ]
+        },
+        {
+          "site": "0x004a4f4c",
+          "instruction": "CALL 0x006fed10",
+          "kind": "direct",
+          "target": "0x006fed10",
+          "provider_targets": [
+            "0x006fed10"
+          ]
+        },
+        {
+          "site": "0x004a4f53",
+          "instruction": "CALL 0x008e7db0",
+          "kind": "direct",
+          "target": "0x008e7db0",
+          "provider_targets": [
+            "0x008e7db0"
+          ]
+        },
+        {
+          "site": "0x004a4f5c",
+          "instruction": "CALL 0x006fed10",
+          "kind": "direct",
+          "target": "0x006fed10",
+          "provider_targets": [
+            "0x006fed10"
+          ]
+        },
+        {
+          "site": "0x004a4f63",
+          "instruction": "CALL 0x008e7db0",
+          "kind": "direct",
+          "target": "0x008e7db0",
+          "provider_targets": [
+            "0x008e7db0"
+          ]
+        },
+        {
+          "site": "0x004a4f6a",
+          "instruction": "CALL 0x00a3b0a0",
+          "kind": "direct",
+          "target": "0x00a3b0a0",
+          "provider_targets": [
+            "0x00a3b0a0"
+          ]
+        },
+        {
+          "site": "0x004a4f8d",
+          "instruction": "CALL 0x004a4fd0",
+          "kind": "direct",
+          "target": "0x004a4fd0",
+          "provider_targets": [
+            "0x004a4fd0"
+          ]
+        },
+        {
+          "site": "0x004a4f9c",
+          "instruction": "CALL 0x004a4e70",
+          "kind": "direct",
+          "target": "0x004a4e70",
+          "provider_targets": [
+            "0x004a4e70"
+          ]
+        },
+        {
+          "site": "0x004a4fc2",
+          "instruction": "CALL EAX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        }
+      ]
+    },
+    {
+      "function": "0x00a46060",
+      "body": "[[00a46060, 00a460ca]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x00a4607a",
+          "instruction": "CALL 0x00a53d80",
+          "kind": "direct",
+          "target": "0x00a53d80",
+          "provider_targets": [
+            "0x00a53d80"
+          ]
+        },
+        {
+          "site": "0x00a460a8",
+          "instruction": "CALL 0x00a3c6f0",
+          "kind": "direct",
+          "target": "0x00a3c6f0",
+          "provider_targets": [
+            "0x00a3c6f0"
+          ]
+        },
+        {
+          "site": "0x00a460b2",
+          "instruction": "CALL 0x00a53d80",
+          "kind": "direct",
+          "target": "0x00a53d80",
+          "provider_targets": [
+            "0x00a53d80"
+          ]
+        },
+        {
+          "site": "0x00a460c0",
+          "instruction": "CALL 0x00a53d80",
+          "kind": "direct",
+          "target": "0x00a53d80",
+          "provider_targets": [
+            "0x00a53d80"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x00a63f20",
+      "body": "[[00a63f20, 00a64092]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x00a63f98",
+          "instruction": "CALL 0x00a53d80",
+          "kind": "direct",
+          "target": "0x00a53d80",
+          "provider_targets": [
+            "0x00a53d80"
+          ]
+        },
+        {
+          "site": "0x00a63fc3",
+          "instruction": "CALL 0x00a38020",
+          "kind": "direct",
+          "target": "0x00a38020",
+          "provider_targets": [
+            "0x00a38020"
+          ]
+        },
+        {
+          "site": "0x00a63fde",
+          "instruction": "CALL 0x00a62db0",
+          "kind": "direct",
+          "target": "0x00a62db0",
+          "provider_targets": [
+            "0x00a62db0"
+          ]
+        },
+        {
+          "site": "0x00a63ff7",
+          "instruction": "CALL dword ptr [0x00b5b100]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x00a6400d",
+          "instruction": "CALL EAX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x00a64019",
+          "instruction": "CALL dword ptr [0x00b5b0fc]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x00a64030",
+          "instruction": "CALL dword ptr [0x00b5b100]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x00a64046",
+          "instruction": "CALL EAX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x00a64054",
+          "instruction": "CALL dword ptr [0x00b5b0fc]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x00a6405f",
+          "instruction": "CALL 0x00a53d80",
+          "kind": "direct",
+          "target": "0x00a53d80",
+          "provider_targets": [
+            "0x00a53d80"
+          ]
+        },
+        {
+          "site": "0x00a64075",
+          "instruction": "CALL 0x00a3b1b0",
+          "kind": "direct",
+          "target": "0x00a3b1b0",
+          "provider_targets": [
+            "0x00a3b1b0"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x00a63d80",
+      "body": "[[00a63d80, 00a63dfe]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x00a63dc1",
+          "instruction": "CALL dword ptr [0x00b5b100]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x00a63dd8",
+          "instruction": "CALL EDX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x00a63dea",
+          "instruction": "CALL 0x00a63a60",
+          "kind": "direct",
+          "target": "0x00a63a60",
+          "provider_targets": [
+            "0x00a63a60"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x00a63eb0",
+      "body": "[[00a63eb0, 00a63f1e]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x00a63ec5",
+          "instruction": "CALL EDX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x00a63ee8",
+          "instruction": "CALL dword ptr [0x00b5b0fc]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x00a63eee",
+          "instruction": "CALL 0x00a45850",
+          "kind": "direct",
+          "target": "0x00a45850",
+          "provider_targets": [
+            "0x00a45850"
+          ]
+        },
+        {
+          "site": "0x00a63f11",
+          "instruction": "CALL 0x00a53d80",
+          "kind": "direct",
+          "target": "0x00a53d80",
+          "provider_targets": [
+            "0x00a53d80"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x00a4c0b0",
+      "body": "[[00a4c0b0, 00a4c21e]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x00a4c11e",
+          "instruction": "CALL 0x00a456e0",
+          "kind": "direct",
+          "target": "0x00a456e0",
+          "provider_targets": [
+            "0x00a456e0"
+          ]
+        },
+        {
+          "site": "0x00a4c12b",
+          "instruction": "CALL 0x00a45630",
+          "kind": "direct",
+          "target": "0x00a45630",
+          "provider_targets": [
+            "0x00a45630"
+          ]
+        },
+        {
+          "site": "0x00a4c139",
+          "instruction": "CALL 0x00a45620",
+          "kind": "direct",
+          "target": "0x00a45620",
+          "provider_targets": [
+            "0x00a45620"
+          ]
+        },
+        {
+          "site": "0x00a4c16b",
+          "instruction": "CALL 0x00a63f20",
+          "kind": "direct",
+          "target": "0x00a63f20",
+          "provider_targets": [
+            "0x00a63f20"
+          ]
+        },
+        {
+          "site": "0x00a4c1ac",
+          "instruction": "CALL 0x00a456f0",
+          "kind": "direct",
+          "target": "0x00a456f0",
+          "provider_targets": [
+            "0x00a456f0"
+          ]
+        },
+        {
+          "site": "0x00a4c1bc",
+          "instruction": "CALL 0x00a64ca0",
+          "kind": "direct",
+          "target": "0x00a64ca0",
+          "provider_targets": [
+            "0x00a64ca0"
+          ]
+        },
+        {
+          "site": "0x00a4c1d2",
+          "instruction": "CALL 0x00a3c6f0",
+          "kind": "direct",
+          "target": "0x00a3c6f0",
+          "provider_targets": [
+            "0x00a3c6f0"
+          ]
+        },
+        {
+          "site": "0x00a4c1dc",
+          "instruction": "CALL 0x00a53d80",
+          "kind": "direct",
+          "target": "0x00a53d80",
+          "provider_targets": [
+            "0x00a53d80"
+          ]
+        },
+        {
+          "site": "0x00a4c1ee",
+          "instruction": "CALL 0x00a63d80",
+          "kind": "direct",
+          "target": "0x00a63d80",
+          "provider_targets": [
+            "0x00a63d80"
+          ]
+        },
+        {
+          "site": "0x00a4c1fa",
+          "instruction": "CALL 0x00a45620",
+          "kind": "direct",
+          "target": "0x00a45620",
+          "provider_targets": [
+            "0x00a45620"
+          ]
+        },
+        {
+          "site": "0x00a4c214",
+          "instruction": "CALL 0x00af6b2f",
+          "kind": "direct",
+          "target": "0x00af6b2f",
+          "provider_targets": [
+            "0x00af6b2f"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x00a47370",
+      "body": "[[00a47370, 00a473ab]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x00a4739e",
+          "instruction": "CALL 0x00a467e0",
+          "kind": "direct",
+          "target": "0x00a467e0",
+          "provider_targets": [
+            "0x00a467e0"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x00a4c280",
+      "body": "[[00a4c280, 00a4c2bb]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x00a4c2ae",
+          "instruction": "CALL 0x00a4c220",
+          "kind": "direct",
+          "target": "0x00a4c220",
+          "provider_targets": [
+            "0x00a4c220"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x00a44cb0",
+      "body": "[[00a44cb0, 00a44cb3]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": []
+    },
+    {
+      "function": "0x006f6070",
+      "body": "[[006f6070, 006f60cb]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x006f6094",
+          "instruction": "CALL dword ptr [0x00b5b0fc]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x006f609e",
+          "instruction": "CALL 0x006f5d20",
+          "kind": "direct",
+          "target": "0x006f5d20",
+          "provider_targets": [
+            "0x006f5d20"
+          ]
+        },
+        {
+          "site": "0x006f60b1",
+          "instruction": "CALL dword ptr [0x00b5b100]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x006f60c8",
+          "instruction": "CALL EDX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        }
+      ]
+    },
+    {
+      "function": "0x006f60d0",
+      "body": "[[006f60d0, 006f612c]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x006f60f6",
+          "instruction": "CALL dword ptr [0x00b5b0fc]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x006f60ff",
+          "instruction": "CALL 0x006f6130",
+          "kind": "direct",
+          "target": "0x006f6130",
+          "provider_targets": [
+            "0x006f6130"
+          ]
+        },
+        {
+          "site": "0x006f6112",
+          "instruction": "CALL dword ptr [0x00b5b100]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x006f6129",
+          "instruction": "CALL EAX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        }
+      ]
+    },
+    {
+      "function": "0x006f5b70",
+      "body": "[[006f5b70, 006f5d16]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x006f5b7e",
+          "instruction": "CALL 0x006f59a0",
+          "kind": "direct",
+          "target": "0x006f59a0",
+          "provider_targets": [
+            "0x006f59a0"
+          ]
+        },
+        {
+          "site": "0x006f5b97",
+          "instruction": "CALL EDI",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x006f5ba2",
+          "instruction": "CALL dword ptr [0x00b5b128]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x006f5bc3",
+          "instruction": "CALL EDI",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x006f5c0e",
+          "instruction": "CALL dword ptr [0x00b5b100]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x006f5c24",
+          "instruction": "CALL EAX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x006f5c33",
+          "instruction": "CALL dword ptr [0x00b5b0fc]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x006f5ca0",
+          "instruction": "CALL dword ptr [0x00b5b0fc]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x006f5caf",
+          "instruction": "CALL 0x00a44cd0",
+          "kind": "direct",
+          "target": "0x00a44cd0",
+          "provider_targets": [
+            "0x00a44cd0"
+          ]
+        },
+        {
+          "site": "0x006f5cbc",
+          "instruction": "CALL dword ptr [0x00b5b100]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x006f5cce",
+          "instruction": "CALL EAX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x006f5ce4",
+          "instruction": "CALL 0x006f5710",
+          "kind": "direct",
+          "target": "0x006f5710",
+          "provider_targets": [
+            "0x006f5710"
+          ]
+        },
+        {
+          "site": "0x006f5cf7",
+          "instruction": "CALL dword ptr [0x00b5b100]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x006f5d0e",
+          "instruction": "CALL EDX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        }
+      ]
+    },
+    {
+      "function": "0x004a7a50",
+      "body": "[[004a7a50, 004a7aa4]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": []
+    },
+    {
+      "function": "0x00695a10",
+      "body": "[[00695a10, 00695a73]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x00695a22",
+          "instruction": "CALL 0x006da140",
+          "kind": "direct",
+          "target": "0x006da140",
+          "provider_targets": [
+            "0x006da140"
+          ]
+        },
+        {
+          "site": "0x00695a48",
+          "instruction": "CALL 0x00592930",
+          "kind": "direct",
+          "target": "0x00592930",
+          "provider_targets": [
+            "0x00592930"
+          ]
+        },
+        {
+          "site": "0x00695a61",
+          "instruction": "CALL 0x00706700",
+          "kind": "direct",
+          "target": "0x00706700",
+          "provider_targets": [
+            "0x00706700"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x005946c0",
+      "body": "[[005946c0, 00594888]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": []
+    },
+    {
+      "function": "0x005948f0",
+      "body": "[[005948f0, 0059492a] [00594930, 00594c2a]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x00594970",
+          "instruction": "CALL 0x00a59520",
+          "kind": "direct",
+          "target": "0x00a59520",
+          "provider_targets": [
+            "0x00a59520"
+          ]
+        },
+        {
+          "site": "0x005949a5",
+          "instruction": "CALL 0x006d9da0",
+          "kind": "direct",
+          "target": "0x006d9da0",
+          "provider_targets": [
+            "0x006d9da0"
+          ]
+        },
+        {
+          "site": "0x005949ca",
+          "instruction": "CALL 0x00592930",
+          "kind": "direct",
+          "target": "0x00592930",
+          "provider_targets": [
+            "0x00592930"
+          ]
+        },
+        {
+          "site": "0x00594a3a",
+          "instruction": "CALL 0x00a59520",
+          "kind": "direct",
+          "target": "0x00a59520",
+          "provider_targets": [
+            "0x00a59520"
+          ]
+        },
+        {
+          "site": "0x00594a6f",
+          "instruction": "CALL 0x006d9da0",
+          "kind": "direct",
+          "target": "0x006d9da0",
+          "provider_targets": [
+            "0x006d9da0"
+          ]
+        },
+        {
+          "site": "0x00594a94",
+          "instruction": "CALL 0x00592930",
+          "kind": "direct",
+          "target": "0x00592930",
+          "provider_targets": [
+            "0x00592930"
+          ]
+        },
+        {
+          "site": "0x00594add",
+          "instruction": "CALL 0x00a59520",
+          "kind": "direct",
+          "target": "0x00a59520",
+          "provider_targets": [
+            "0x00a59520"
+          ]
+        },
+        {
+          "site": "0x00594b12",
+          "instruction": "CALL 0x006d9da0",
+          "kind": "direct",
+          "target": "0x006d9da0",
+          "provider_targets": [
+            "0x006d9da0"
+          ]
+        },
+        {
+          "site": "0x00594b37",
+          "instruction": "CALL 0x00592930",
+          "kind": "direct",
+          "target": "0x00592930",
+          "provider_targets": [
+            "0x00592930"
+          ]
+        },
+        {
+          "site": "0x00594b93",
+          "instruction": "CALL 0x006c4240",
+          "kind": "direct",
+          "target": "0x006c4240",
+          "provider_targets": [
+            "0x006c4240"
+          ]
+        },
+        {
+          "site": "0x00594ba6",
+          "instruction": "CALL 0x00592b10",
+          "kind": "direct",
+          "target": "0x00592b10",
+          "provider_targets": [
+            "0x00592b10"
+          ]
+        },
+        {
+          "site": "0x00594bc0",
+          "instruction": "CALL 0x006da140",
+          "kind": "direct",
+          "target": "0x006da140",
+          "provider_targets": [
+            "0x006da140"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x006bf050",
+      "body": "[[006bf050, 006bf0b4]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x006bf071",
+          "instruction": "CALL 0x006c4160",
+          "kind": "direct",
+          "target": "0x006c4160",
+          "provider_targets": [
+            "0x006c4160"
+          ]
+        },
+        {
+          "site": "0x006bf096",
+          "instruction": "CALL 0x006c41c0",
+          "kind": "direct",
+          "target": "0x006c41c0",
+          "provider_targets": [
+            "0x006c41c0"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x006bf0c0",
+      "body": "[[006bf0c0, 006bf126]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x006bf0cb",
+          "instruction": "CALL 0x007051e0",
+          "kind": "direct",
+          "target": "0x007051e0",
+          "provider_targets": [
+            "0x007051e0"
+          ]
+        },
+        {
+          "site": "0x006bf11b",
+          "instruction": "CALL 0x005945b0",
+          "kind": "direct",
+          "target": "0x005945b0",
+          "provider_targets": [
+            "0x005945b0"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x006bf310",
+      "body": "[[006bf310, 006bf366]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": []
+    },
+    {
+      "function": "0x006c33c0",
+      "body": "[[006c33c0, 006c4154]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x006c33d4",
+          "instruction": "CALL 0x007051e0",
+          "kind": "direct",
+          "target": "0x007051e0",
+          "provider_targets": [
+            "0x007051e0"
+          ]
+        },
+        {
+          "site": "0x006c33eb",
+          "instruction": "CALL 0x007051e0",
+          "kind": "direct",
+          "target": "0x007051e0",
+          "provider_targets": [
+            "0x007051e0"
+          ]
+        },
+        {
+          "site": "0x006c33f5",
+          "instruction": "CALL 0x007051e0",
+          "kind": "direct",
+          "target": "0x007051e0",
+          "provider_targets": [
+            "0x007051e0"
+          ]
+        },
+        {
+          "site": "0x006c3430",
+          "instruction": "CALL 0x005945b0",
+          "kind": "direct",
+          "target": "0x005945b0",
+          "provider_targets": [
+            "0x005945b0"
+          ]
+        },
+        {
+          "site": "0x006c3450",
+          "instruction": "CALL 0x007051e0",
+          "kind": "direct",
+          "target": "0x007051e0",
+          "provider_targets": [
+            "0x007051e0"
+          ]
+        },
+        {
+          "site": "0x006c345a",
+          "instruction": "CALL 0x007051e0",
+          "kind": "direct",
+          "target": "0x007051e0",
+          "provider_targets": [
+            "0x007051e0"
+          ]
+        },
+        {
+          "site": "0x006c3497",
+          "instruction": "CALL 0x005945b0",
+          "kind": "direct",
+          "target": "0x005945b0",
+          "provider_targets": [
+            "0x005945b0"
+          ]
+        },
+        {
+          "site": "0x006c34c9",
+          "instruction": "CALL 0x007051e0",
+          "kind": "direct",
+          "target": "0x007051e0",
+          "provider_targets": [
+            "0x007051e0"
+          ]
+        },
+        {
+          "site": "0x006c34d3",
+          "instruction": "CALL 0x007051e0",
+          "kind": "direct",
+          "target": "0x007051e0",
+          "provider_targets": [
+            "0x007051e0"
+          ]
+        },
+        {
+          "site": "0x006c3510",
+          "instruction": "CALL 0x005945b0",
+          "kind": "direct",
+          "target": "0x005945b0",
+          "provider_targets": [
+            "0x005945b0"
+          ]
+        },
+        {
+          "site": "0x006c352c",
+          "instruction": "CALL 0x007051e0",
+          "kind": "direct",
+          "target": "0x007051e0",
+          "provider_targets": [
+            "0x007051e0"
+          ]
+        },
+        {
+          "site": "0x006c3536",
+          "instruction": "CALL 0x007051e0",
+          "kind": "direct",
+          "target": "0x007051e0",
+          "provider_targets": [
+            "0x007051e0"
+          ]
+        },
+        {
+          "site": "0x006c3574",
+          "instruction": "CALL 0x005945b0",
+          "kind": "direct",
+          "target": "0x005945b0",
+          "provider_targets": [
+            "0x005945b0"
+          ]
+        },
+        {
+          "site": "0x006c35e9",
+          "instruction": "CALL 0x00a59520",
+          "kind": "direct",
+          "target": "0x00a59520",
+          "provider_targets": [
+            "0x00a59520"
+          ]
+        },
+        {
+          "site": "0x006c361f",
+          "instruction": "CALL 0x006d9da0",
+          "kind": "direct",
+          "target": "0x006d9da0",
+          "provider_targets": [
+            "0x006d9da0"
+          ]
+        },
+        {
+          "site": "0x006c3644",
+          "instruction": "CALL 0x00592930",
+          "kind": "direct",
+          "target": "0x00592930",
+          "provider_targets": [
+            "0x00592930"
+          ]
+        },
+        {
+          "site": "0x006c368d",
+          "instruction": "CALL 0x00a59520",
+          "kind": "direct",
+          "target": "0x00a59520",
+          "provider_targets": [
+            "0x00a59520"
+          ]
+        },
+        {
+          "site": "0x006c36c3",
+          "instruction": "CALL 0x006d9da0",
+          "kind": "direct",
+          "target": "0x006d9da0",
+          "provider_targets": [
+            "0x006d9da0"
+          ]
+        },
+        {
+          "site": "0x006c36e8",
+          "instruction": "CALL 0x00592930",
+          "kind": "direct",
+          "target": "0x00592930",
+          "provider_targets": [
+            "0x00592930"
+          ]
+        },
+        {
+          "site": "0x006c3798",
+          "instruction": "CALL 0x00a59520",
+          "kind": "direct",
+          "target": "0x00a59520",
+          "provider_targets": [
+            "0x00a59520"
+          ]
+        },
+        {
+          "site": "0x006c37cf",
+          "instruction": "CALL 0x006d9da0",
+          "kind": "direct",
+          "target": "0x006d9da0",
+          "provider_targets": [
+            "0x006d9da0"
+          ]
+        },
+        {
+          "site": "0x006c37f4",
+          "instruction": "CALL 0x00592930",
+          "kind": "direct",
+          "target": "0x00592930",
+          "provider_targets": [
+            "0x00592930"
+          ]
+        },
+        {
+          "site": "0x006c383d",
+          "instruction": "CALL 0x00a59520",
+          "kind": "direct",
+          "target": "0x00a59520",
+          "provider_targets": [
+            "0x00a59520"
+          ]
+        },
+        {
+          "site": "0x006c3874",
+          "instruction": "CALL 0x006d9da0",
+          "kind": "direct",
+          "target": "0x006d9da0",
+          "provider_targets": [
+            "0x006d9da0"
+          ]
+        },
+        {
+          "site": "0x006c3899",
+          "instruction": "CALL 0x00592930",
+          "kind": "direct",
+          "target": "0x00592930",
+          "provider_targets": [
+            "0x00592930"
+          ]
+        },
+        {
+          "site": "0x006c396c",
+          "instruction": "CALL 0x00a59520",
+          "kind": "direct",
+          "target": "0x00a59520",
+          "provider_targets": [
+            "0x00a59520"
+          ]
+        },
+        {
+          "site": "0x006c39a3",
+          "instruction": "CALL 0x006d9da0",
+          "kind": "direct",
+          "target": "0x006d9da0",
+          "provider_targets": [
+            "0x006d9da0"
+          ]
+        },
+        {
+          "site": "0x006c39c9",
+          "instruction": "CALL 0x00592930",
+          "kind": "direct",
+          "target": "0x00592930",
+          "provider_targets": [
+            "0x00592930"
+          ]
+        },
+        {
+          "site": "0x006c3a12",
+          "instruction": "CALL 0x00a59520",
+          "kind": "direct",
+          "target": "0x00a59520",
+          "provider_targets": [
+            "0x00a59520"
+          ]
+        },
+        {
+          "site": "0x006c3a49",
+          "instruction": "CALL 0x006d9da0",
+          "kind": "direct",
+          "target": "0x006d9da0",
+          "provider_targets": [
+            "0x006d9da0"
+          ]
+        },
+        {
+          "site": "0x006c3a6a",
+          "instruction": "CALL 0x00592930",
+          "kind": "direct",
+          "target": "0x00592930",
+          "provider_targets": [
+            "0x00592930"
+          ]
+        },
+        {
+          "site": "0x006c3b2e",
+          "instruction": "CALL 0x00a59520",
+          "kind": "direct",
+          "target": "0x00a59520",
+          "provider_targets": [
+            "0x00a59520"
+          ]
+        },
+        {
+          "site": "0x006c3b65",
+          "instruction": "CALL 0x006d9da0",
+          "kind": "direct",
+          "target": "0x006d9da0",
+          "provider_targets": [
+            "0x006d9da0"
+          ]
+        },
+        {
+          "site": "0x006c3b8b",
+          "instruction": "CALL 0x00592930",
+          "kind": "direct",
+          "target": "0x00592930",
+          "provider_targets": [
+            "0x00592930"
+          ]
+        },
+        {
+          "site": "0x006c3bd4",
+          "instruction": "CALL 0x00a59520",
+          "kind": "direct",
+          "target": "0x00a59520",
+          "provider_targets": [
+            "0x00a59520"
+          ]
+        },
+        {
+          "site": "0x006c3c0b",
+          "instruction": "CALL 0x006d9da0",
+          "kind": "direct",
+          "target": "0x006d9da0",
+          "provider_targets": [
+            "0x006d9da0"
+          ]
+        },
+        {
+          "site": "0x006c3c2c",
+          "instruction": "CALL 0x00592930",
+          "kind": "direct",
+          "target": "0x00592930",
+          "provider_targets": [
+            "0x00592930"
+          ]
+        },
+        {
+          "site": "0x006c3cc5",
+          "instruction": "CALL 0x00a59520",
+          "kind": "direct",
+          "target": "0x00a59520",
+          "provider_targets": [
+            "0x00a59520"
+          ]
+        },
+        {
+          "site": "0x006c3cfc",
+          "instruction": "CALL 0x006d9da0",
+          "kind": "direct",
+          "target": "0x006d9da0",
+          "provider_targets": [
+            "0x006d9da0"
+          ]
+        },
+        {
+          "site": "0x006c3d22",
+          "instruction": "CALL 0x00592930",
+          "kind": "direct",
+          "target": "0x00592930",
+          "provider_targets": [
+            "0x00592930"
+          ]
+        },
+        {
+          "site": "0x006c3d6b",
+          "instruction": "CALL 0x00a59520",
+          "kind": "direct",
+          "target": "0x00a59520",
+          "provider_targets": [
+            "0x00a59520"
+          ]
+        },
+        {
+          "site": "0x006c3da2",
+          "instruction": "CALL 0x006d9da0",
+          "kind": "direct",
+          "target": "0x006d9da0",
+          "provider_targets": [
+            "0x006d9da0"
+          ]
+        },
+        {
+          "site": "0x006c3dc3",
+          "instruction": "CALL 0x00592930",
+          "kind": "direct",
+          "target": "0x00592930",
+          "provider_targets": [
+            "0x00592930"
+          ]
+        },
+        {
+          "site": "0x006c3e5c",
+          "instruction": "CALL 0x00a59520",
+          "kind": "direct",
+          "target": "0x00a59520",
+          "provider_targets": [
+            "0x00a59520"
+          ]
+        },
+        {
+          "site": "0x006c3e93",
+          "instruction": "CALL 0x006d9da0",
+          "kind": "direct",
+          "target": "0x006d9da0",
+          "provider_targets": [
+            "0x006d9da0"
+          ]
+        },
+        {
+          "site": "0x006c3eb9",
+          "instruction": "CALL 0x00592930",
+          "kind": "direct",
+          "target": "0x00592930",
+          "provider_targets": [
+            "0x00592930"
+          ]
+        },
+        {
+          "site": "0x006c3f02",
+          "instruction": "CALL 0x00a59520",
+          "kind": "direct",
+          "target": "0x00a59520",
+          "provider_targets": [
+            "0x00a59520"
+          ]
+        },
+        {
+          "site": "0x006c3f39",
+          "instruction": "CALL 0x006d9da0",
+          "kind": "direct",
+          "target": "0x006d9da0",
+          "provider_targets": [
+            "0x006d9da0"
+          ]
+        },
+        {
+          "site": "0x006c3f5a",
+          "instruction": "CALL 0x00592930",
+          "kind": "direct",
+          "target": "0x00592930",
+          "provider_targets": [
+            "0x00592930"
+          ]
+        },
+        {
+          "site": "0x006c3ff8",
+          "instruction": "CALL 0x00a59520",
+          "kind": "direct",
+          "target": "0x00a59520",
+          "provider_targets": [
+            "0x00a59520"
+          ]
+        },
+        {
+          "site": "0x006c402f",
+          "instruction": "CALL 0x006d9da0",
+          "kind": "direct",
+          "target": "0x006d9da0",
+          "provider_targets": [
+            "0x006d9da0"
+          ]
+        },
+        {
+          "site": "0x006c4055",
+          "instruction": "CALL 0x00592930",
+          "kind": "direct",
+          "target": "0x00592930",
+          "provider_targets": [
+            "0x00592930"
+          ]
+        },
+        {
+          "site": "0x006c409e",
+          "instruction": "CALL 0x00a59520",
+          "kind": "direct",
+          "target": "0x00a59520",
+          "provider_targets": [
+            "0x00a59520"
+          ]
+        },
+        {
+          "site": "0x006c40d5",
+          "instruction": "CALL 0x006d9da0",
+          "kind": "direct",
+          "target": "0x006d9da0",
+          "provider_targets": [
+            "0x006d9da0"
+          ]
+        },
+        {
+          "site": "0x006c40f6",
+          "instruction": "CALL 0x00592930",
+          "kind": "direct",
+          "target": "0x00592930",
+          "provider_targets": [
+            "0x00592930"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x007051e0",
+      "body": "[[007051e0, 00705265]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x00705203",
+          "instruction": "CALL 0x006da140",
+          "kind": "direct",
+          "target": "0x006da140",
+          "provider_targets": [
+            "0x006da140"
+          ]
+        },
+        {
+          "site": "0x00705229",
+          "instruction": "CALL 0x00592930",
+          "kind": "direct",
+          "target": "0x00592930",
+          "provider_targets": [
+            "0x00592930"
+          ]
+        },
+        {
+          "site": "0x00705248",
+          "instruction": "CALL 0x0068a0e0",
+          "kind": "direct",
+          "target": "0x0068a0e0",
+          "provider_targets": [
+            "0x0068a0e0"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x007096c0",
+      "body": "[[007096c0, 00709734]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x007096c5",
+          "instruction": "CALL 0x005845b0",
+          "kind": "direct",
+          "target": "0x005845b0",
+          "provider_targets": [
+            "0x005845b0"
+          ]
+        },
+        {
+          "site": "0x007096f1",
+          "instruction": "CALL 0x005845b0",
+          "kind": "direct",
+          "target": "0x005845b0",
+          "provider_targets": [
+            "0x005845b0"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x006c2800",
+      "body": "[[006c2800, 006c2844]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x006c280b",
+          "instruction": "CALL 0x007051e0",
+          "kind": "direct",
+          "target": "0x007051e0",
+          "provider_targets": [
+            "0x007051e0"
+          ]
+        },
+        {
+          "site": "0x006c2831",
+          "instruction": "CALL 0x006c2780",
+          "kind": "direct",
+          "target": "0x006c2780",
+          "provider_targets": [
+            "0x006c2780"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x006c29e0",
+      "body": "[[006c29e0, 006c2c86]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x006c29f4",
+          "instruction": "CALL 0x007051e0",
+          "kind": "direct",
+          "target": "0x007051e0",
+          "provider_targets": [
+            "0x007051e0"
+          ]
+        },
+        {
+          "site": "0x006c2a01",
+          "instruction": "CALL 0x006c2780",
+          "kind": "direct",
+          "target": "0x006c2780",
+          "provider_targets": [
+            "0x006c2780"
+          ]
+        },
+        {
+          "site": "0x006c2a1b",
+          "instruction": "CALL 0x00706760",
+          "kind": "direct",
+          "target": "0x00706760",
+          "provider_targets": [
+            "0x00706760"
+          ]
+        },
+        {
+          "site": "0x006c2a2b",
+          "instruction": "CALL 0x006c2680",
+          "kind": "direct",
+          "target": "0x006c2680",
+          "provider_targets": [
+            "0x006c2680"
+          ]
+        },
+        {
+          "site": "0x006c2a3f",
+          "instruction": "CALL 0x006c2680",
+          "kind": "direct",
+          "target": "0x006c2680",
+          "provider_targets": [
+            "0x006c2680"
+          ]
+        },
+        {
+          "site": "0x006c2a53",
+          "instruction": "CALL 0x006c2680",
+          "kind": "direct",
+          "target": "0x006c2680",
+          "provider_targets": [
+            "0x006c2680"
+          ]
+        },
+        {
+          "site": "0x006c2a69",
+          "instruction": "CALL 0x007051e0",
+          "kind": "direct",
+          "target": "0x007051e0",
+          "provider_targets": [
+            "0x007051e0"
+          ]
+        },
+        {
+          "site": "0x006c2a73",
+          "instruction": "CALL 0x007051e0",
+          "kind": "direct",
+          "target": "0x007051e0",
+          "provider_targets": [
+            "0x007051e0"
+          ]
+        },
+        {
+          "site": "0x006c2aaf",
+          "instruction": "CALL 0x005945b0",
+          "kind": "direct",
+          "target": "0x005945b0",
+          "provider_targets": [
+            "0x005945b0"
+          ]
+        },
+        {
+          "site": "0x006c2ac4",
+          "instruction": "CALL 0x00707b70",
+          "kind": "direct",
+          "target": "0x00707b70",
+          "provider_targets": [
+            "0x00707b70"
+          ]
+        },
+        {
+          "site": "0x006c2ad5",
+          "instruction": "CALL 0x006c1ff0",
+          "kind": "direct",
+          "target": "0x006c1ff0",
+          "provider_targets": [
+            "0x006c1ff0"
+          ]
+        },
+        {
+          "site": "0x006c2aeb",
+          "instruction": "CALL 0x007051e0",
+          "kind": "direct",
+          "target": "0x007051e0",
+          "provider_targets": [
+            "0x007051e0"
+          ]
+        },
+        {
+          "site": "0x006c2af5",
+          "instruction": "CALL 0x007051e0",
+          "kind": "direct",
+          "target": "0x007051e0",
+          "provider_targets": [
+            "0x007051e0"
+          ]
+        },
+        {
+          "site": "0x006c2b30",
+          "instruction": "CALL 0x005945b0",
+          "kind": "direct",
+          "target": "0x005945b0",
+          "provider_targets": [
+            "0x005945b0"
+          ]
+        },
+        {
+          "site": "0x006c2b48",
+          "instruction": "CALL 0x006c22e0",
+          "kind": "direct",
+          "target": "0x006c22e0",
+          "provider_targets": [
+            "0x006c22e0"
+          ]
+        },
+        {
+          "site": "0x006c2b61",
+          "instruction": "CALL 0x007051e0",
+          "kind": "direct",
+          "target": "0x007051e0",
+          "provider_targets": [
+            "0x007051e0"
+          ]
+        },
+        {
+          "site": "0x006c2b6b",
+          "instruction": "CALL 0x007051e0",
+          "kind": "direct",
+          "target": "0x007051e0",
+          "provider_targets": [
+            "0x007051e0"
+          ]
+        },
+        {
+          "site": "0x006c2ba7",
+          "instruction": "CALL 0x005945b0",
+          "kind": "direct",
+          "target": "0x005945b0",
+          "provider_targets": [
+            "0x005945b0"
+          ]
+        },
+        {
+          "site": "0x006c2bc0",
+          "instruction": "CALL 0x006c22e0",
+          "kind": "direct",
+          "target": "0x006c22e0",
+          "provider_targets": [
+            "0x006c22e0"
+          ]
+        },
+        {
+          "site": "0x006c2bd6",
+          "instruction": "CALL 0x006c2eb0",
+          "kind": "direct",
+          "target": "0x006c2eb0",
+          "provider_targets": [
+            "0x006c2eb0"
+          ]
+        },
+        {
+          "site": "0x006c2be1",
+          "instruction": "CALL 0x005845b0",
+          "kind": "direct",
+          "target": "0x005845b0",
+          "provider_targets": [
+            "0x005845b0"
+          ]
+        },
+        {
+          "site": "0x006c2bf5",
+          "instruction": "CALL 0x006c2e10",
+          "kind": "direct",
+          "target": "0x006c2e10",
+          "provider_targets": [
+            "0x006c2e10"
+          ]
+        },
+        {
+          "site": "0x006c2c08",
+          "instruction": "CALL 0x006c2eb0",
+          "kind": "direct",
+          "target": "0x006c2eb0",
+          "provider_targets": [
+            "0x006c2eb0"
+          ]
+        },
+        {
+          "site": "0x006c2c11",
+          "instruction": "CALL 0x005845b0",
+          "kind": "direct",
+          "target": "0x005845b0",
+          "provider_targets": [
+            "0x005845b0"
+          ]
+        },
+        {
+          "site": "0x006c2c53",
+          "instruction": "CALL 0x006c2fb0",
+          "kind": "direct",
+          "target": "0x006c2fb0",
+          "provider_targets": [
+            "0x006c2fb0"
+          ]
+        },
+        {
+          "site": "0x006c2c79",
+          "instruction": "CALL 0x00594e90",
+          "kind": "direct",
+          "target": "0x00594e90",
+          "provider_targets": [
+            "0x00594e90"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x00706740",
+      "body": "[[00706740, 0070675d]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": []
+    },
+    {
+      "function": "0x004a5120",
+      "body": "[[004a5120, 004a5277]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x004a512b",
+          "instruction": "CALL 0x006fed10",
+          "kind": "direct",
+          "target": "0x006fed10",
+          "provider_targets": [
+            "0x006fed10"
+          ]
+        },
+        {
+          "site": "0x004a5138",
+          "instruction": "CALL 0x00a3c920",
+          "kind": "direct",
+          "target": "0x00a3c920",
+          "provider_targets": [
+            "0x00a3c920"
+          ]
+        },
+        {
+          "site": "0x004a5149",
+          "instruction": "CALL 0x00a421e0",
+          "kind": "direct",
+          "target": "0x00a421e0",
+          "provider_targets": [
+            "0x00a421e0"
+          ]
+        },
+        {
+          "site": "0x004a5152",
+          "instruction": "CALL 0x006fed10",
+          "kind": "direct",
+          "target": "0x006fed10",
+          "provider_targets": [
+            "0x006fed10"
+          ]
+        },
+        {
+          "site": "0x004a515f",
+          "instruction": "CALL 0x00a3c920",
+          "kind": "direct",
+          "target": "0x00a3c920",
+          "provider_targets": [
+            "0x00a3c920"
+          ]
+        },
+        {
+          "site": "0x004a5170",
+          "instruction": "CALL 0x00a42310",
+          "kind": "direct",
+          "target": "0x00a42310",
+          "provider_targets": [
+            "0x00a42310"
+          ]
+        },
+        {
+          "site": "0x004a5192",
+          "instruction": "CALL 0x00a472b0",
+          "kind": "direct",
+          "target": "0x00a472b0",
+          "provider_targets": [
+            "0x00a472b0"
+          ]
+        },
+        {
+          "site": "0x004a51a3",
+          "instruction": "CALL 0x00a4bfc0",
+          "kind": "direct",
+          "target": "0x00a4bfc0",
+          "provider_targets": [
+            "0x00a4bfc0"
+          ]
+        },
+        {
+          "site": "0x004a51db",
+          "instruction": "CALL EBX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x004a51e4",
+          "instruction": "CALL 0x006f6070",
+          "kind": "direct",
+          "target": "0x006f6070",
+          "provider_targets": [
+            "0x006f6070"
+          ]
+        },
+        {
+          "site": "0x004a520b",
+          "instruction": "CALL EBX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x004a5213",
+          "instruction": "CALL 0x006f6070",
+          "kind": "direct",
+          "target": "0x006f6070",
+          "provider_targets": [
+            "0x006f6070"
+          ]
+        },
+        {
+          "site": "0x004a522d",
+          "instruction": "CALL dword ptr [0x00b5b100]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x004a5244",
+          "instruction": "CALL EDX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x004a5258",
+          "instruction": "CALL dword ptr [0x00b5b100]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x004a526f",
+          "instruction": "CALL EDX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        }
+      ]
+    },
+    {
+      "function": "0x00a472b0",
+      "body": "[[00a472b0, 00a4736c]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x00a47307",
+          "instruction": "CALL 0x00a63f20",
+          "kind": "direct",
+          "target": "0x00a63f20",
+          "provider_targets": [
+            "0x00a63f20"
+          ]
+        },
+        {
+          "site": "0x00a4731a",
+          "instruction": "CALL 0x00a63eb0",
+          "kind": "direct",
+          "target": "0x00a63eb0",
+          "provider_targets": [
+            "0x00a63eb0"
+          ]
+        },
+        {
+          "site": "0x00a47338",
+          "instruction": "CALL 0x00a53d80",
+          "kind": "direct",
+          "target": "0x00a53d80",
+          "provider_targets": [
+            "0x00a53d80"
+          ]
+        },
+        {
+          "site": "0x00a47347",
+          "instruction": "CALL 0x00a46060",
+          "kind": "direct",
+          "target": "0x00a46060",
+          "provider_targets": [
+            "0x00a46060"
+          ]
+        },
+        {
+          "site": "0x00a47352",
+          "instruction": "CALL 0x00a63d80",
+          "kind": "direct",
+          "target": "0x00a63d80",
+          "provider_targets": [
+            "0x00a63d80"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x004a5680",
+      "body": "[[004a5680, 004a57ce]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x004a569c",
+          "instruction": "CALL 0x00a4c3d0",
+          "kind": "direct",
+          "target": "0x00a4c3d0",
+          "provider_targets": [
+            "0x00a4c3d0"
+          ]
+        },
+        {
+          "site": "0x004a56ce",
+          "instruction": "CALL 0x00a38580",
+          "kind": "direct",
+          "target": "0x00a38580",
+          "provider_targets": [
+            "0x00a38580"
+          ]
+        },
+        {
+          "site": "0x004a56d3",
+          "instruction": "CALL 0x004a5280",
+          "kind": "direct",
+          "target": "0x004a5280",
+          "provider_targets": [
+            "0x004a5280"
+          ]
+        },
+        {
+          "site": "0x004a56eb",
+          "instruction": "CALL EAX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x004a56f3",
+          "instruction": "CALL 0x004a4f40",
+          "kind": "direct",
+          "target": "0x004a4f40",
+          "provider_targets": [
+            "0x004a4f40"
+          ]
+        },
+        {
+          "site": "0x004a5718",
+          "instruction": "CALL 0x00a4b4e0",
+          "kind": "direct",
+          "target": "0x00a4b4e0",
+          "provider_targets": [
+            "0x00a4b4e0"
+          ]
+        },
+        {
+          "site": "0x004a574d",
+          "instruction": "CALL 0x004a57d0",
+          "kind": "direct",
+          "target": "0x004a57d0",
+          "provider_targets": [
+            "0x004a57d0"
+          ]
+        },
+        {
+          "site": "0x004a5777",
+          "instruction": "CALL 0x004a6cc0",
+          "kind": "direct",
+          "target": "0x004a6cc0",
+          "provider_targets": [
+            "0x004a6cc0"
+          ]
+        },
+        {
+          "site": "0x004a57a8",
+          "instruction": "CALL EDX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x004a57c2",
+          "instruction": "CALL EDX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        }
+      ]
+    },
+    {
+      "function": "0x004a6b10",
+      "body": "[[004a6b10, 004a6c0f]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x004a6b2e",
+          "instruction": "CALL 0x006fed10",
+          "kind": "direct",
+          "target": "0x006fed10",
+          "provider_targets": [
+            "0x006fed10"
+          ]
+        },
+        {
+          "site": "0x004a6b3f",
+          "instruction": "CALL 0x00a3c920",
+          "kind": "direct",
+          "target": "0x00a3c920",
+          "provider_targets": [
+            "0x00a3c920"
+          ]
+        },
+        {
+          "site": "0x004a6b54",
+          "instruction": "CALL 0x00a421e0",
+          "kind": "direct",
+          "target": "0x00a421e0",
+          "provider_targets": [
+            "0x00a421e0"
+          ]
+        },
+        {
+          "site": "0x004a6b6a",
+          "instruction": "CALL 0x00a4b4e0",
+          "kind": "direct",
+          "target": "0x00a4b4e0",
+          "provider_targets": [
+            "0x00a4b4e0"
+          ]
+        },
+        {
+          "site": "0x004a6b97",
+          "instruction": "CALL 0x00a468c0",
+          "kind": "direct",
+          "target": "0x00a468c0",
+          "provider_targets": [
+            "0x00a468c0"
+          ]
+        },
+        {
+          "site": "0x004a6bc1",
+          "instruction": "CALL dword ptr [0x00b5b0fc]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x004a6bcd",
+          "instruction": "CALL 0x006f6070",
+          "kind": "direct",
+          "target": "0x006f6070",
+          "provider_targets": [
+            "0x006f6070"
+          ]
+        },
+        {
+          "site": "0x004a6be7",
+          "instruction": "CALL dword ptr [0x00b5b100]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x004a6bfe",
+          "instruction": "CALL EAX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        }
+      ]
+    },
+    {
+      "function": "0x00a468c0",
+      "body": "[[00a468c0, 00a46994]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x00a46920",
+          "instruction": "CALL 0x00a63f20",
+          "kind": "direct",
+          "target": "0x00a63f20",
+          "provider_targets": [
+            "0x00a63f20"
+          ]
+        },
+        {
+          "site": "0x00a46933",
+          "instruction": "CALL 0x00a63eb0",
+          "kind": "direct",
+          "target": "0x00a63eb0",
+          "provider_targets": [
+            "0x00a63eb0"
+          ]
+        },
+        {
+          "site": "0x00a4693f",
+          "instruction": "CALL 0x00a45a40",
+          "kind": "direct",
+          "target": "0x00a45a40",
+          "provider_targets": [
+            "0x00a45a40"
+          ]
+        },
+        {
+          "site": "0x00a4695e",
+          "instruction": "CALL 0x00a53d80",
+          "kind": "direct",
+          "target": "0x00a53d80",
+          "provider_targets": [
+            "0x00a53d80"
+          ]
+        },
+        {
+          "site": "0x00a4696e",
+          "instruction": "CALL 0x00a46060",
+          "kind": "direct",
+          "target": "0x00a46060",
+          "provider_targets": [
+            "0x00a46060"
+          ]
+        },
+        {
+          "site": "0x00a4697a",
+          "instruction": "CALL 0x00a63d80",
+          "kind": "direct",
+          "target": "0x00a63d80",
+          "provider_targets": [
+            "0x00a63d80"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x004a6c10",
+      "body": "[[004a6c10, 004a6cb2]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x004a6c2f",
+          "instruction": "CALL 0x004a6b10",
+          "kind": "direct",
+          "target": "0x004a6b10",
+          "provider_targets": [
+            "0x004a6b10"
+          ]
+        },
+        {
+          "site": "0x004a6c3a",
+          "instruction": "CALL 0x006fed10",
+          "kind": "direct",
+          "target": "0x006fed10",
+          "provider_targets": [
+            "0x006fed10"
+          ]
+        },
+        {
+          "site": "0x004a6c43",
+          "instruction": "CALL 0x006fed10",
+          "kind": "direct",
+          "target": "0x006fed10",
+          "provider_targets": [
+            "0x006fed10"
+          ]
+        },
+        {
+          "site": "0x004a6c4a",
+          "instruction": "CALL 0x008e7db0",
+          "kind": "direct",
+          "target": "0x008e7db0",
+          "provider_targets": [
+            "0x008e7db0"
+          ]
+        },
+        {
+          "site": "0x004a6c53",
+          "instruction": "CALL 0x006fed10",
+          "kind": "direct",
+          "target": "0x006fed10",
+          "provider_targets": [
+            "0x006fed10"
+          ]
+        },
+        {
+          "site": "0x004a6c5a",
+          "instruction": "CALL 0x008e7db0",
+          "kind": "direct",
+          "target": "0x008e7db0",
+          "provider_targets": [
+            "0x008e7db0"
+          ]
+        },
+        {
+          "site": "0x004a6c61",
+          "instruction": "CALL 0x00a3b0a0",
+          "kind": "direct",
+          "target": "0x00a3b0a0",
+          "provider_targets": [
+            "0x00a3b0a0"
+          ]
+        },
+        {
+          "site": "0x004a6c6c",
+          "instruction": "CALL 0x00a44cb0",
+          "kind": "direct",
+          "target": "0x00a44cb0",
+          "provider_targets": [
+            "0x00a44cb0"
+          ]
+        },
+        {
+          "site": "0x004a6c76",
+          "instruction": "CALL 0x004a6cc0",
+          "kind": "direct",
+          "target": "0x004a6cc0",
+          "provider_targets": [
+            "0x004a6cc0"
+          ]
+        },
+        {
+          "site": "0x004a6ca7",
+          "instruction": "CALL EAX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        }
+      ]
+    },
+    {
+      "function": "0x004a6550",
+      "body": "[[004a6550, 004a6931]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x004a656e",
+          "instruction": "CALL 0x006fed10",
+          "kind": "direct",
+          "target": "0x006fed10",
+          "provider_targets": [
+            "0x006fed10"
+          ]
+        },
+        {
+          "site": "0x004a657b",
+          "instruction": "CALL 0x00a3c920",
+          "kind": "direct",
+          "target": "0x00a3c920",
+          "provider_targets": [
+            "0x00a3c920"
+          ]
+        },
+        {
+          "site": "0x004a658c",
+          "instruction": "CALL 0x00a421e0",
+          "kind": "direct",
+          "target": "0x00a421e0",
+          "provider_targets": [
+            "0x00a421e0"
+          ]
+        },
+        {
+          "site": "0x004a659d",
+          "instruction": "CALL 0x006fed10",
+          "kind": "direct",
+          "target": "0x006fed10",
+          "provider_targets": [
+            "0x006fed10"
+          ]
+        },
+        {
+          "site": "0x004a65aa",
+          "instruction": "CALL 0x00a3c920",
+          "kind": "direct",
+          "target": "0x00a3c920",
+          "provider_targets": [
+            "0x00a3c920"
+          ]
+        },
+        {
+          "site": "0x004a65bb",
+          "instruction": "CALL 0x00a42310",
+          "kind": "direct",
+          "target": "0x00a42310",
+          "provider_targets": [
+            "0x00a42310"
+          ]
+        },
+        {
+          "site": "0x004a6600",
+          "instruction": "CALL 0x00707480",
+          "kind": "direct",
+          "target": "0x00707480",
+          "provider_targets": [
+            "0x00707480"
+          ]
+        },
+        {
+          "site": "0x004a666a",
+          "instruction": "CALL 0x00a47370",
+          "kind": "direct",
+          "target": "0x00a47370",
+          "provider_targets": [
+            "0x00a47370"
+          ]
+        },
+        {
+          "site": "0x004a6683",
+          "instruction": "CALL dword ptr [0x00b5b0fc]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x004a6697",
+          "instruction": "CALL dword ptr [0x00b5b100]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x004a66b1",
+          "instruction": "CALL EAX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x004a66c9",
+          "instruction": "CALL dword ptr [0x00b5b0fc]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x004a66d5",
+          "instruction": "CALL 0x006f5fb0",
+          "kind": "direct",
+          "target": "0x006f5fb0",
+          "provider_targets": [
+            "0x006f5fb0"
+          ]
+        },
+        {
+          "site": "0x004a66e5",
+          "instruction": "CALL dword ptr [0x00b5b100]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x004a66f7",
+          "instruction": "CALL EAX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x004a681e",
+          "instruction": "CALL 0x00a4c280",
+          "kind": "direct",
+          "target": "0x00a4c280",
+          "provider_targets": [
+            "0x00a4c280"
+          ]
+        },
+        {
+          "site": "0x004a6837",
+          "instruction": "CALL dword ptr [0x00b5b0fc]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x004a684b",
+          "instruction": "CALL dword ptr [0x00b5b100]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x004a6865",
+          "instruction": "CALL EAX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x004a687f",
+          "instruction": "CALL EBX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x004a6899",
+          "instruction": "CALL EBX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x004a689d",
+          "instruction": "CALL 0x006f5d20",
+          "kind": "direct",
+          "target": "0x006f5d20",
+          "provider_targets": [
+            "0x006f5d20"
+          ]
+        },
+        {
+          "site": "0x004a68a6",
+          "instruction": "CALL dword ptr [0x00b5b100]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x004a68b8",
+          "instruction": "CALL EAX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x004a68dc",
+          "instruction": "CALL 0x00af6b2f",
+          "kind": "direct",
+          "target": "0x00af6b2f",
+          "provider_targets": [
+            "0x00af6b2f"
+          ]
+        },
+        {
+          "site": "0x004a68f4",
+          "instruction": "CALL dword ptr [0x00b5b100]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x004a6906",
+          "instruction": "CALL EAX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x004a6916",
+          "instruction": "CALL 0x00af6b2f",
+          "kind": "direct",
+          "target": "0x00af6b2f",
+          "provider_targets": [
+            "0x00af6b2f"
+          ]
+        },
+        {
+          "site": "0x004a6929",
+          "instruction": "CALL 0x00af6b2f",
+          "kind": "direct",
+          "target": "0x00af6b2f",
+          "provider_targets": [
+            "0x00af6b2f"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x00a467e0",
+      "body": "[[00a467e0, 00a468b6]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x00a46831",
+          "instruction": "CALL 0x00a63f20",
+          "kind": "direct",
+          "target": "0x00a63f20",
+          "provider_targets": [
+            "0x00a63f20"
+          ]
+        },
+        {
+          "site": "0x00a46871",
+          "instruction": "CALL 0x00a456e0",
+          "kind": "direct",
+          "target": "0x00a456e0",
+          "provider_targets": [
+            "0x00a456e0"
+          ]
+        },
+        {
+          "site": "0x00a4687e",
+          "instruction": "CALL 0x00a45b40",
+          "kind": "direct",
+          "target": "0x00a45b40",
+          "provider_targets": [
+            "0x00a45b40"
+          ]
+        },
+        {
+          "site": "0x00a46891",
+          "instruction": "CALL 0x00a46060",
+          "kind": "direct",
+          "target": "0x00a46060",
+          "provider_targets": [
+            "0x00a46060"
+          ]
+        },
+        {
+          "site": "0x00a4689d",
+          "instruction": "CALL 0x00a63d80",
+          "kind": "direct",
+          "target": "0x00a63d80",
+          "provider_targets": [
+            "0x00a63d80"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x00a4c220",
+      "body": "[[00a4c220, 00a4c27c]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x00a4c263",
+          "instruction": "CALL 0x00a456e0",
+          "kind": "direct",
+          "target": "0x00a456e0",
+          "provider_targets": [
+            "0x00a456e0"
+          ]
+        },
+        {
+          "site": "0x00a4c26e",
+          "instruction": "CALL 0x00a4c0b0",
+          "kind": "direct",
+          "target": "0x00a4c0b0",
+          "provider_targets": [
+            "0x00a4c0b0"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x004a6940",
+      "body": "[[004a6940, 004a697b]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x004a6962",
+          "instruction": "CALL 0x00a44cf0",
+          "kind": "direct",
+          "target": "0x00a44cf0",
+          "provider_targets": [
+            "0x00a44cf0"
+          ]
+        },
+        {
+          "site": "0x004a6971",
+          "instruction": "CALL EDX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        }
+      ]
+    },
+    {
+      "function": "0x00695bc0",
+      "body": "[[00695bc0, 00695c8d]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x00695c12",
+          "instruction": "CALL 0x004a7a50",
+          "kind": "direct",
+          "target": "0x004a7a50",
+          "provider_targets": [
+            "0x004a7a50"
+          ]
+        },
+        {
+          "site": "0x00695c1b",
+          "instruction": "CALL 0x00695a10",
+          "kind": "direct",
+          "target": "0x00695a10",
+          "provider_targets": [
+            "0x00695a10"
+          ]
+        },
+        {
+          "site": "0x00695c80",
+          "instruction": "CALL 0x00695a80",
+          "kind": "direct",
+          "target": "0x00695a80",
+          "provider_targets": [
+            "0x00695a80"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x00695a80",
+      "body": "[[00695a80, 00695bbd]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x00695aca",
+          "instruction": "CALL 0x005845b0",
+          "kind": "direct",
+          "target": "0x005845b0",
+          "provider_targets": [
+            "0x005845b0"
+          ]
+        },
+        {
+          "site": "0x00695b2c",
+          "instruction": "CALL 0x005845b0",
+          "kind": "direct",
+          "target": "0x005845b0",
+          "provider_targets": [
+            "0x005845b0"
+          ]
+        },
+        {
+          "site": "0x00695b6a",
+          "instruction": "CALL 0x006fc940",
+          "kind": "direct",
+          "target": "0x006fc940",
+          "provider_targets": [
+            "0x006fc940"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x006b43c0",
+      "body": "[[006b43c0, 006b451c]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x006b43f7",
+          "instruction": "CALL 0x006c2090",
+          "kind": "direct",
+          "target": "0x006c2090",
+          "provider_targets": [
+            "0x006c2090"
+          ]
+        },
+        {
+          "site": "0x006b43ff",
+          "instruction": "CALL 0x00699de0",
+          "kind": "direct",
+          "target": "0x00699de0",
+          "provider_targets": [
+            "0x00699de0"
+          ]
+        },
+        {
+          "site": "0x006b441a",
+          "instruction": "CALL 0x005845b0",
+          "kind": "direct",
+          "target": "0x005845b0",
+          "provider_targets": [
+            "0x005845b0"
+          ]
+        },
+        {
+          "site": "0x006b444b",
+          "instruction": "CALL 0x006bf680",
+          "kind": "direct",
+          "target": "0x006bf680",
+          "provider_targets": [
+            "0x006bf680"
+          ]
+        },
+        {
+          "site": "0x006b447a",
+          "instruction": "CALL 0x005845b0",
+          "kind": "direct",
+          "target": "0x005845b0",
+          "provider_targets": [
+            "0x005845b0"
+          ]
+        },
+        {
+          "site": "0x006b44f0",
+          "instruction": "CALL 0x00699de0",
+          "kind": "direct",
+          "target": "0x00699de0",
+          "provider_targets": [
+            "0x00699de0"
+          ]
+        },
+        {
+          "site": "0x006b4510",
+          "instruction": "CALL 0x00699de0",
+          "kind": "direct",
+          "target": "0x00699de0",
+          "provider_targets": [
+            "0x00699de0"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x006c2090",
+      "body": "[[006c2090, 006c22d7]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x006c209f",
+          "instruction": "CALL 0x007051e0",
+          "kind": "direct",
+          "target": "0x007051e0",
+          "provider_targets": [
+            "0x007051e0"
+          ]
+        },
+        {
+          "site": "0x006c20ab",
+          "instruction": "CALL 0x006bf0c0",
+          "kind": "direct",
+          "target": "0x006bf0c0",
+          "provider_targets": [
+            "0x006bf0c0"
+          ]
+        },
+        {
+          "site": "0x006c20b9",
+          "instruction": "CALL 0x00695bc0",
+          "kind": "direct",
+          "target": "0x00695bc0",
+          "provider_targets": [
+            "0x00695bc0"
+          ]
+        },
+        {
+          "site": "0x006c20d8",
+          "instruction": "CALL 0x00695bc0",
+          "kind": "direct",
+          "target": "0x00695bc0",
+          "provider_targets": [
+            "0x00695bc0"
+          ]
+        },
+        {
+          "site": "0x006c20fa",
+          "instruction": "CALL 0x006c33c0",
+          "kind": "direct",
+          "target": "0x006c33c0",
+          "provider_targets": [
+            "0x006c33c0"
+          ]
+        },
+        {
+          "site": "0x006c2125",
+          "instruction": "CALL 0x006bf0c0",
+          "kind": "direct",
+          "target": "0x006bf0c0",
+          "provider_targets": [
+            "0x006bf0c0"
+          ]
+        },
+        {
+          "site": "0x006c2143",
+          "instruction": "CALL 0x006bf310",
+          "kind": "direct",
+          "target": "0x006bf310",
+          "provider_targets": [
+            "0x006bf310"
+          ]
+        },
+        {
+          "site": "0x006c2151",
+          "instruction": "CALL 0x005845b0",
+          "kind": "direct",
+          "target": "0x005845b0",
+          "provider_targets": [
+            "0x005845b0"
+          ]
+        },
+        {
+          "site": "0x006c2181",
+          "instruction": "CALL 0x005845b0",
+          "kind": "direct",
+          "target": "0x005845b0",
+          "provider_targets": [
+            "0x005845b0"
+          ]
+        },
+        {
+          "site": "0x006c21e5",
+          "instruction": "CALL 0x005845b0",
+          "kind": "direct",
+          "target": "0x005845b0",
+          "provider_targets": [
+            "0x005845b0"
+          ]
+        },
+        {
+          "site": "0x006c21f6",
+          "instruction": "CALL 0x005845b0",
+          "kind": "direct",
+          "target": "0x005845b0",
+          "provider_targets": [
+            "0x005845b0"
+          ]
+        },
+        {
+          "site": "0x006c2207",
+          "instruction": "CALL 0x005845b0",
+          "kind": "direct",
+          "target": "0x005845b0",
+          "provider_targets": [
+            "0x005845b0"
+          ]
+        },
+        {
+          "site": "0x006c2219",
+          "instruction": "CALL 0x007096c0",
+          "kind": "direct",
+          "target": "0x007096c0",
+          "provider_targets": [
+            "0x007096c0"
+          ]
+        },
+        {
+          "site": "0x006c222d",
+          "instruction": "CALL 0x005845b0",
+          "kind": "direct",
+          "target": "0x005845b0",
+          "provider_targets": [
+            "0x005845b0"
+          ]
+        },
+        {
+          "site": "0x006c223e",
+          "instruction": "CALL 0x005845b0",
+          "kind": "direct",
+          "target": "0x005845b0",
+          "provider_targets": [
+            "0x005845b0"
+          ]
+        },
+        {
+          "site": "0x006c2260",
+          "instruction": "CALL 0x006bf310",
+          "kind": "direct",
+          "target": "0x006bf310",
+          "provider_targets": [
+            "0x006bf310"
+          ]
+        },
+        {
+          "site": "0x006c2274",
+          "instruction": "CALL 0x006bf050",
+          "kind": "direct",
+          "target": "0x006bf050",
+          "provider_targets": [
+            "0x006bf050"
+          ]
+        },
+        {
+          "site": "0x006c2283",
+          "instruction": "CALL 0x007051e0",
+          "kind": "direct",
+          "target": "0x007051e0",
+          "provider_targets": [
+            "0x007051e0"
+          ]
+        },
+        {
+          "site": "0x006c22a8",
+          "instruction": "CALL 0x005946c0",
+          "kind": "direct",
+          "target": "0x005946c0",
+          "provider_targets": [
+            "0x005946c0"
+          ]
+        },
+        {
+          "site": "0x006c22b0",
+          "instruction": "CALL 0x005948f0",
+          "kind": "direct",
+          "target": "0x005948f0",
+          "provider_targets": [
+            "0x005948f0"
+          ]
+        },
+        {
+          "site": "0x006c22c9",
+          "instruction": "CALL 0x006bf310",
+          "kind": "direct",
+          "target": "0x006bf310",
+          "provider_targets": [
+            "0x006bf310"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x006bf680",
+      "body": "[[006bf680, 006bf6f7]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x006bf6a3",
+          "instruction": "CALL 0x007051e0",
+          "kind": "direct",
+          "target": "0x007051e0",
+          "provider_targets": [
+            "0x007051e0"
+          ]
+        },
+        {
+          "site": "0x006bf6a8",
+          "instruction": "CALL 0x006bf0c0",
+          "kind": "direct",
+          "target": "0x006bf0c0",
+          "provider_targets": [
+            "0x006bf0c0"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x006b4230",
+      "body": "[[006b4230, 006b42aa]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x006b4249",
+          "instruction": "CALL 0x006bf130",
+          "kind": "direct",
+          "target": "0x006bf130",
+          "provider_targets": [
+            "0x006bf130"
+          ]
+        },
+        {
+          "site": "0x006b4293",
+          "instruction": "CALL 0x006c1e70",
+          "kind": "direct",
+          "target": "0x006c1e70",
+          "provider_targets": [
+            "0x006c1e70"
+          ]
+        },
+        {
+          "site": "0x006b429b",
+          "instruction": "CALL 0x00699de0",
+          "kind": "direct",
+          "target": "0x00699de0",
+          "provider_targets": [
+            "0x00699de0"
+          ]
+        },
+        {
+          "site": "0x006b42a0",
+          "instruction": "CALL 0x0056dbf0",
+          "kind": "direct",
+          "target": "0x0056dbf0",
+          "provider_targets": [
+            "0x0056dbf0"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x006b4350",
+      "body": "[[006b4350, 006b43b9]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x006b4362",
+          "instruction": "CALL 0x006bf130",
+          "kind": "direct",
+          "target": "0x006bf130",
+          "provider_targets": [
+            "0x006bf130"
+          ]
+        },
+        {
+          "site": "0x006b43a8",
+          "instruction": "CALL 0x006c1e70",
+          "kind": "direct",
+          "target": "0x006c1e70",
+          "provider_targets": [
+            "0x006c1e70"
+          ]
+        },
+        {
+          "site": "0x006b43b0",
+          "instruction": "CALL 0x0056dbf0",
+          "kind": "direct",
+          "target": "0x0056dbf0",
+          "provider_targets": [
+            "0x0056dbf0"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x006c1e70",
+      "body": "[[006c1e70, 006c1fe4]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x006c1e89",
+          "instruction": "CALL 0x007051e0",
+          "kind": "direct",
+          "target": "0x007051e0",
+          "provider_targets": [
+            "0x007051e0"
+          ]
+        },
+        {
+          "site": "0x006c1e8e",
+          "instruction": "CALL 0x006bf0c0",
+          "kind": "direct",
+          "target": "0x006bf0c0",
+          "provider_targets": [
+            "0x006bf0c0"
+          ]
+        },
+        {
+          "site": "0x006c1e9e",
+          "instruction": "CALL 0x006c33c0",
+          "kind": "direct",
+          "target": "0x006c33c0",
+          "provider_targets": [
+            "0x006c33c0"
+          ]
+        },
+        {
+          "site": "0x006c1eaf",
+          "instruction": "CALL 0x007051e0",
+          "kind": "direct",
+          "target": "0x007051e0",
+          "provider_targets": [
+            "0x007051e0"
+          ]
+        },
+        {
+          "site": "0x006c1ebb",
+          "instruction": "CALL 0x007051e0",
+          "kind": "direct",
+          "target": "0x007051e0",
+          "provider_targets": [
+            "0x007051e0"
+          ]
+        },
+        {
+          "site": "0x006c1edd",
+          "instruction": "CALL 0x005845b0",
+          "kind": "direct",
+          "target": "0x005845b0",
+          "provider_targets": [
+            "0x005845b0"
+          ]
+        },
+        {
+          "site": "0x006c1eed",
+          "instruction": "CALL 0x005845b0",
+          "kind": "direct",
+          "target": "0x005845b0",
+          "provider_targets": [
+            "0x005845b0"
+          ]
+        },
+        {
+          "site": "0x006c1f1d",
+          "instruction": "CALL 0x006c2800",
+          "kind": "direct",
+          "target": "0x006c2800",
+          "provider_targets": [
+            "0x006c2800"
+          ]
+        },
+        {
+          "site": "0x006c1f37",
+          "instruction": "CALL 0x006c2800",
+          "kind": "direct",
+          "target": "0x006c2800",
+          "provider_targets": [
+            "0x006c2800"
+          ]
+        },
+        {
+          "site": "0x006c1f47",
+          "instruction": "CALL 0x00707c40",
+          "kind": "direct",
+          "target": "0x00707c40",
+          "provider_targets": [
+            "0x00707c40"
+          ]
+        },
+        {
+          "site": "0x006c1f8e",
+          "instruction": "CALL 0x00706740",
+          "kind": "direct",
+          "target": "0x00706740",
+          "provider_targets": [
+            "0x00706740"
+          ]
+        },
+        {
+          "site": "0x006c1f94",
+          "instruction": "CALL 0x006c29e0",
+          "kind": "direct",
+          "target": "0x006c29e0",
+          "provider_targets": [
+            "0x006c29e0"
+          ]
+        },
+        {
+          "site": "0x006c1fc3",
+          "instruction": "CALL 0x005946c0",
+          "kind": "direct",
+          "target": "0x005946c0",
+          "provider_targets": [
+            "0x005946c0"
+          ]
+        },
+        {
+          "site": "0x006c1fcb",
+          "instruction": "CALL 0x005948f0",
+          "kind": "direct",
+          "target": "0x005948f0",
+          "provider_targets": [
+            "0x005948f0"
+          ]
+        },
+        {
+          "site": "0x006c1fdc",
+          "instruction": "CALL 0x00af6b2f",
+          "kind": "direct",
+          "target": "0x00af6b2f",
+          "provider_targets": [
+            "0x00af6b2f"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x006d8a70",
+      "body": "[[006d8a70, 006d90b8]]",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "calls": [
+        {
+          "site": "0x006d8ac5",
+          "instruction": "CALL 0x00592d70",
+          "kind": "direct",
+          "target": "0x00592d70",
+          "provider_targets": [
+            "0x00592d70"
+          ]
+        },
+        {
+          "site": "0x006d8ae3",
+          "instruction": "CALL 0x00695c90",
+          "kind": "direct",
+          "target": "0x00695c90",
+          "provider_targets": [
+            "0x00695c90"
+          ]
+        },
+        {
+          "site": "0x006d8b0e",
+          "instruction": "CALL 0x00695c90",
+          "kind": "direct",
+          "target": "0x00695c90",
+          "provider_targets": [
+            "0x00695c90"
+          ]
+        },
+        {
+          "site": "0x006d8b97",
+          "instruction": "CALL 0x00592b10",
+          "kind": "direct",
+          "target": "0x00592b10",
+          "provider_targets": [
+            "0x00592b10"
+          ]
+        },
+        {
+          "site": "0x006d8bcc",
+          "instruction": "CALL 0x00592d70",
+          "kind": "direct",
+          "target": "0x00592d70",
+          "provider_targets": [
+            "0x00592d70"
+          ]
+        },
+        {
+          "site": "0x006d8be8",
+          "instruction": "CALL 0x00695c90",
+          "kind": "direct",
+          "target": "0x00695c90",
+          "provider_targets": [
+            "0x00695c90"
+          ]
+        },
+        {
+          "site": "0x006d8c11",
+          "instruction": "CALL 0x00695c90",
+          "kind": "direct",
+          "target": "0x00695c90",
+          "provider_targets": [
+            "0x00695c90"
+          ]
+        },
+        {
+          "site": "0x006d8c84",
+          "instruction": "CALL 0x00592b10",
+          "kind": "direct",
+          "target": "0x00592b10",
+          "provider_targets": [
+            "0x00592b10"
+          ]
+        },
+        {
+          "site": "0x006d8c9a",
+          "instruction": "CALL 0x00593040",
+          "kind": "direct",
+          "target": "0x00593040",
+          "provider_targets": [
+            "0x00593040"
+          ]
+        },
+        {
+          "site": "0x006d8ca9",
+          "instruction": "CALL 0x00695c90",
+          "kind": "direct",
+          "target": "0x00695c90",
+          "provider_targets": [
+            "0x00695c90"
+          ]
+        },
+        {
+          "site": "0x006d8cbd",
+          "instruction": "CALL 0x00592f50",
+          "kind": "direct",
+          "target": "0x00592f50",
+          "provider_targets": [
+            "0x00592f50"
+          ]
+        },
+        {
+          "site": "0x006d8cdc",
+          "instruction": "CALL 0x00593040",
+          "kind": "direct",
+          "target": "0x00593040",
+          "provider_targets": [
+            "0x00593040"
+          ]
+        },
+        {
+          "site": "0x006d8ceb",
+          "instruction": "CALL 0x00695c90",
+          "kind": "direct",
+          "target": "0x00695c90",
+          "provider_targets": [
+            "0x00695c90"
+          ]
+        },
+        {
+          "site": "0x006d8cff",
+          "instruction": "CALL 0x00592f50",
+          "kind": "direct",
+          "target": "0x00592f50",
+          "provider_targets": [
+            "0x00592f50"
+          ]
+        },
+        {
+          "site": "0x006d8d28",
+          "instruction": "CALL 0x006da140",
+          "kind": "direct",
+          "target": "0x006da140",
+          "provider_targets": [
+            "0x006da140"
+          ]
+        },
+        {
+          "site": "0x006d8d6b",
+          "instruction": "CALL 0x00637be0",
+          "kind": "direct",
+          "target": "0x00637be0",
+          "provider_targets": [
+            "0x00637be0"
+          ]
+        },
+        {
+          "site": "0x006d8d7d",
+          "instruction": "CALL 0x00637be0",
+          "kind": "direct",
+          "target": "0x00637be0",
+          "provider_targets": [
+            "0x00637be0"
+          ]
+        },
+        {
+          "site": "0x006d8d89",
+          "instruction": "CALL 0x00af70f9",
+          "kind": "direct",
+          "target": "0x00af70f9",
+          "provider_targets": [
+            "0x00af70f9"
+          ]
+        },
+        {
+          "site": "0x006d8da3",
+          "instruction": "CALL 0x006da140",
+          "kind": "direct",
+          "target": "0x006da140",
+          "provider_targets": [
+            "0x006da140"
+          ]
+        },
+        {
+          "site": "0x006d8dbe",
+          "instruction": "CALL 0x00592930",
+          "kind": "direct",
+          "target": "0x00592930",
+          "provider_targets": [
+            "0x00592930"
+          ]
+        },
+        {
+          "site": "0x006d8de8",
+          "instruction": "CALL 0x00695c90",
+          "kind": "direct",
+          "target": "0x00695c90",
+          "provider_targets": [
+            "0x00695c90"
+          ]
+        },
+        {
+          "site": "0x006d8e02",
+          "instruction": "CALL 0x00592f50",
+          "kind": "direct",
+          "target": "0x00592f50",
+          "provider_targets": [
+            "0x00592f50"
+          ]
+        },
+        {
+          "site": "0x006d8e38",
+          "instruction": "CALL 0x00593040",
+          "kind": "direct",
+          "target": "0x00593040",
+          "provider_targets": [
+            "0x00593040"
+          ]
+        },
+        {
+          "site": "0x006d8e47",
+          "instruction": "CALL 0x00695c90",
+          "kind": "direct",
+          "target": "0x00695c90",
+          "provider_targets": [
+            "0x00695c90"
+          ]
+        },
+        {
+          "site": "0x006d8e5b",
+          "instruction": "CALL 0x00592f50",
+          "kind": "direct",
+          "target": "0x00592f50",
+          "provider_targets": [
+            "0x00592f50"
+          ]
+        },
+        {
+          "site": "0x006d8e86",
+          "instruction": "CALL 0x00593370",
+          "kind": "direct",
+          "target": "0x00593370",
+          "provider_targets": [
+            "0x00593370"
+          ]
+        },
+        {
+          "site": "0x006d8e95",
+          "instruction": "CALL 0x00695c90",
+          "kind": "direct",
+          "target": "0x00695c90",
+          "provider_targets": [
+            "0x00695c90"
+          ]
+        },
+        {
+          "site": "0x006d8ea5",
+          "instruction": "CALL 0x00593210",
+          "kind": "direct",
+          "target": "0x00593210",
+          "provider_targets": [
+            "0x00593210"
+          ]
+        },
+        {
+          "site": "0x006d8ebb",
+          "instruction": "CALL 0x00593450",
+          "kind": "direct",
+          "target": "0x00593450",
+          "provider_targets": [
+            "0x00593450"
+          ]
+        },
+        {
+          "site": "0x006d8eca",
+          "instruction": "CALL 0x00695c90",
+          "kind": "direct",
+          "target": "0x00695c90",
+          "provider_targets": [
+            "0x00695c90"
+          ]
+        },
+        {
+          "site": "0x006d8ed9",
+          "instruction": "CALL 0x00593500",
+          "kind": "direct",
+          "target": "0x00593500",
+          "provider_targets": [
+            "0x00593500"
+          ]
+        },
+        {
+          "site": "0x006d8eee",
+          "instruction": "CALL 0x00590940",
+          "kind": "direct",
+          "target": "0x00590940",
+          "provider_targets": [
+            "0x00590940"
+          ]
+        },
+        {
+          "site": "0x006d8ef4",
+          "instruction": "CALL 0x005908f0",
+          "kind": "direct",
+          "target": "0x005908f0",
+          "provider_targets": [
+            "0x005908f0"
+          ]
+        },
+        {
+          "site": "0x006d8f0d",
+          "instruction": "CALL 0x00584470",
+          "kind": "direct",
+          "target": "0x00584470",
+          "provider_targets": [
+            "0x00584470"
+          ]
+        },
+        {
+          "site": "0x006d8f2e",
+          "instruction": "CALL 0x00590a00",
+          "kind": "direct",
+          "target": "0x00590a00",
+          "provider_targets": [
+            "0x00590a00"
+          ]
+        },
+        {
+          "site": "0x006d8f33",
+          "instruction": "CALL 0x00590a80",
+          "kind": "direct",
+          "target": "0x00590a80",
+          "provider_targets": [
+            "0x00590a80"
+          ]
+        },
+        {
+          "site": "0x006d8f39",
+          "instruction": "CALL 0x005908f0",
+          "kind": "direct",
+          "target": "0x005908f0",
+          "provider_targets": [
+            "0x005908f0"
+          ]
+        },
+        {
+          "site": "0x006d8f52",
+          "instruction": "CALL 0x00584470",
+          "kind": "direct",
+          "target": "0x00584470",
+          "provider_targets": [
+            "0x00584470"
+          ]
+        },
+        {
+          "site": "0x006d8f73",
+          "instruction": "CALL 0x00590b40",
+          "kind": "direct",
+          "target": "0x00590b40",
+          "provider_targets": [
+            "0x00590b40"
+          ]
+        },
+        {
+          "site": "0x006d8f78",
+          "instruction": "CALL 0x006da140",
+          "kind": "direct",
+          "target": "0x006da140",
+          "provider_targets": [
+            "0x006da140"
+          ]
+        },
+        {
+          "site": "0x006d8f86",
+          "instruction": "CALL 0x005957b0",
+          "kind": "direct",
+          "target": "0x005957b0",
+          "provider_targets": [
+            "0x005957b0"
+          ]
+        },
+        {
+          "site": "0x006d8fb0",
+          "instruction": "CALL 0x005908f0",
+          "kind": "direct",
+          "target": "0x005908f0",
+          "provider_targets": [
+            "0x005908f0"
+          ]
+        },
+        {
+          "site": "0x006d8fbf",
+          "instruction": "CALL 0x005908f0",
+          "kind": "direct",
+          "target": "0x005908f0",
+          "provider_targets": [
+            "0x005908f0"
+          ]
+        },
+        {
+          "site": "0x006d8fd5",
+          "instruction": "CALL 0x005908f0",
+          "kind": "direct",
+          "target": "0x005908f0",
+          "provider_targets": [
+            "0x005908f0"
+          ]
+        },
+        {
+          "site": "0x006d8fdd",
+          "instruction": "CALL 0x006da140",
+          "kind": "direct",
+          "target": "0x006da140",
+          "provider_targets": [
+            "0x006da140"
+          ]
+        },
+        {
+          "site": "0x006d8ff8",
+          "instruction": "CALL 0x005927e0",
+          "kind": "direct",
+          "target": "0x005927e0",
+          "provider_targets": [
+            "0x005927e0"
+          ]
+        },
+        {
+          "site": "0x006d8ffd",
+          "instruction": "CALL 0x00590bc0",
+          "kind": "direct",
+          "target": "0x00590bc0",
+          "provider_targets": [
+            "0x00590bc0"
+          ]
+        },
+        {
+          "site": "0x006d9003",
+          "instruction": "CALL 0x005908f0",
+          "kind": "direct",
+          "target": "0x005908f0",
+          "provider_targets": [
+            "0x005908f0"
+          ]
+        },
+        {
+          "site": "0x006d901c",
+          "instruction": "CALL 0x00584470",
+          "kind": "direct",
+          "target": "0x00584470",
+          "provider_targets": [
+            "0x00584470"
+          ]
+        },
+        {
+          "site": "0x006d903b",
+          "instruction": "CALL 0x00590c80",
+          "kind": "direct",
+          "target": "0x00590c80",
+          "provider_targets": [
+            "0x00590c80"
+          ]
+        },
+        {
+          "site": "0x006d9040",
+          "instruction": "CALL 0x00590d50",
+          "kind": "direct",
+          "target": "0x00590d50",
+          "provider_targets": [
+            "0x00590d50"
+          ]
+        },
+        {
+          "site": "0x006d9046",
+          "instruction": "CALL 0x005908f0",
+          "kind": "direct",
+          "target": "0x005908f0",
+          "provider_targets": [
+            "0x005908f0"
+          ]
+        },
+        {
+          "site": "0x006d9054",
+          "instruction": "CALL 0x00590de0",
+          "kind": "direct",
+          "target": "0x00590de0",
+          "provider_targets": [
+            "0x00590de0"
+          ]
+        },
+        {
+          "site": "0x006d905b",
+          "instruction": "CALL 0x00590e30",
+          "kind": "direct",
+          "target": "0x00590e30",
+          "provider_targets": [
+            "0x00590e30"
+          ]
+        },
+        {
+          "site": "0x006d9064",
+          "instruction": "CALL 0x005908f0",
+          "kind": "direct",
+          "target": "0x005908f0",
+          "provider_targets": [
+            "0x005908f0"
+          ]
+        },
+        {
+          "site": "0x006d9072",
+          "instruction": "CALL 0x00590ee0",
+          "kind": "direct",
+          "target": "0x00590ee0",
+          "provider_targets": [
+            "0x00590ee0"
+          ]
+        },
+        {
+          "site": "0x006d9080",
+          "instruction": "CALL 0x00593b20",
+          "kind": "direct",
+          "target": "0x00593b20",
+          "provider_targets": [
+            "0x00593b20"
+          ]
+        },
+        {
+          "site": "0x006d908e",
+          "instruction": "CALL 0x00593700",
+          "kind": "direct",
+          "target": "0x00593700",
+          "provider_targets": [
+            "0x00593700"
+          ]
+        },
+        {
+          "site": "0x006d90a1",
+          "instruction": "CALL 0x006d90c0",
+          "kind": "direct",
+          "target": "0x006d90c0",
+          "provider_targets": [
+            "0x006d90c0"
+          ]
+        },
+        {
+          "site": "0x006d90ae",
+          "instruction": "CALL 0x00af6b2f",
+          "kind": "direct",
+          "target": "0x00af6b2f",
+          "provider_targets": [
+            "0x00af6b2f"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x004a5080",
+      "body": "[[004a5080, 004a5112]]",
+      "record": "evidence/focused/round2-inventory-retry.json",
+      "record_sha256": "d128494fd7ce3fd6996e0be01e08be9908fe475eda4a2ddf81c0635a9b135188",
+      "calls": [
+        {
+          "site": "0x004a5085",
+          "instruction": "CALL 0x006fed10",
+          "kind": "direct",
+          "target": "0x006fed10",
+          "provider_targets": [
+            "0x006fed10"
+          ]
+        },
+        {
+          "site": "0x004a5092",
+          "instruction": "CALL 0x00a3c920",
+          "kind": "direct",
+          "target": "0x00a3c920",
+          "provider_targets": [
+            "0x00a3c920"
+          ]
+        },
+        {
+          "site": "0x004a50a3",
+          "instruction": "CALL 0x00a421e0",
+          "kind": "direct",
+          "target": "0x00a421e0",
+          "provider_targets": [
+            "0x00a421e0"
+          ]
+        },
+        {
+          "site": "0x004a50b7",
+          "instruction": "CALL 0x00a472b0",
+          "kind": "direct",
+          "target": "0x00a472b0",
+          "provider_targets": [
+            "0x00a472b0"
+          ]
+        },
+        {
+          "site": "0x004a50d7",
+          "instruction": "CALL dword ptr [0x00b5b0fc]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x004a50e2",
+          "instruction": "CALL 0x006f60d0",
+          "kind": "direct",
+          "target": "0x006f60d0",
+          "provider_targets": [
+            "0x006f60d0"
+          ]
+        },
+        {
+          "site": "0x004a50f5",
+          "instruction": "CALL dword ptr [0x00b5b100]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x004a510c",
+          "instruction": "CALL EDX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        }
+      ]
+    },
+    {
+      "function": "0x004a6a10",
+      "body": "[[004a6a10, 004a6b07]]",
+      "record": "evidence/focused/round2-inventory-retry.json",
+      "record_sha256": "d128494fd7ce3fd6996e0be01e08be9908fe475eda4a2ddf81c0635a9b135188",
+      "calls": [
+        {
+          "site": "0x004a6a17",
+          "instruction": "CALL 0x006fed10",
+          "kind": "direct",
+          "target": "0x006fed10",
+          "provider_targets": [
+            "0x006fed10"
+          ]
+        },
+        {
+          "site": "0x004a6a24",
+          "instruction": "CALL 0x00a3c920",
+          "kind": "direct",
+          "target": "0x00a3c920",
+          "provider_targets": [
+            "0x00a3c920"
+          ]
+        },
+        {
+          "site": "0x004a6a35",
+          "instruction": "CALL 0x00a421e0",
+          "kind": "direct",
+          "target": "0x00a421e0",
+          "provider_targets": [
+            "0x00a421e0"
+          ]
+        },
+        {
+          "site": "0x004a6a72",
+          "instruction": "CALL 0x00a4b4e0",
+          "kind": "direct",
+          "target": "0x00a4b4e0",
+          "provider_targets": [
+            "0x00a4b4e0"
+          ]
+        },
+        {
+          "site": "0x004a6a9f",
+          "instruction": "CALL 0x00a468c0",
+          "kind": "direct",
+          "target": "0x00a468c0",
+          "provider_targets": [
+            "0x00a468c0"
+          ]
+        },
+        {
+          "site": "0x004a6abc",
+          "instruction": "CALL dword ptr [0x00b5b0fc]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x004a6ac7",
+          "instruction": "CALL 0x006f60d0",
+          "kind": "direct",
+          "target": "0x006f60d0",
+          "provider_targets": [
+            "0x006f60d0"
+          ]
+        },
+        {
+          "site": "0x004a6ae8",
+          "instruction": "CALL dword ptr [0x00b5b100]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x004a6aff",
+          "instruction": "CALL EAX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        }
+      ]
+    },
+    {
+      "function": "0x006f62d0",
+      "body": "[[006f62d0, 006f6468]]",
+      "record": "evidence/focused/round2-task-callbacks.json",
+      "record_sha256": "72abdf0769e147f34ffd80741d454c4fede09f1bc0c0cdb44debcea7e20e3e85",
+      "calls": [
+        {
+          "site": "0x006f62f2",
+          "instruction": "CALL 0x00af6b2f",
+          "kind": "direct",
+          "target": "0x00af6b2f",
+          "provider_targets": [
+            "0x00af6b2f"
+          ]
+        },
+        {
+          "site": "0x006f630b",
+          "instruction": "CALL EDI",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x006f6316",
+          "instruction": "CALL dword ptr [0x00b5b128]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x006f6339",
+          "instruction": "CALL EDI",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x006f634b",
+          "instruction": "CALL EDX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x006f6353",
+          "instruction": "CALL 0x00a44cf0",
+          "kind": "direct",
+          "target": "0x00a44cf0",
+          "provider_targets": [
+            "0x00a44cf0"
+          ]
+        },
+        {
+          "site": "0x006f637a",
+          "instruction": "CALL 0x00af6b2f",
+          "kind": "direct",
+          "target": "0x00af6b2f",
+          "provider_targets": [
+            "0x00af6b2f"
+          ]
+        },
+        {
+          "site": "0x006f63ab",
+          "instruction": "CALL 0x006f6970",
+          "kind": "direct",
+          "target": "0x006f6970",
+          "provider_targets": [
+            "0x006f6970"
+          ]
+        },
+        {
+          "site": "0x006f63ba",
+          "instruction": "CALL 0x00af6b2f",
+          "kind": "direct",
+          "target": "0x00af6b2f",
+          "provider_targets": [
+            "0x00af6b2f"
+          ]
+        },
+        {
+          "site": "0x006f63c5",
+          "instruction": "CALL 0x006f58d0",
+          "kind": "direct",
+          "target": "0x006f58d0",
+          "provider_targets": [
+            "0x006f58d0"
+          ]
+        },
+        {
+          "site": "0x006f63d4",
+          "instruction": "CALL 0x00af6b2f",
+          "kind": "direct",
+          "target": "0x00af6b2f",
+          "provider_targets": [
+            "0x00af6b2f"
+          ]
+        },
+        {
+          "site": "0x006f63e6",
+          "instruction": "CALL 0x006fee60",
+          "kind": "direct",
+          "target": "0x006fee60",
+          "provider_targets": [
+            "0x006fee60"
+          ]
+        },
+        {
+          "site": "0x006f6413",
+          "instruction": "CALL 0x006f6970",
+          "kind": "direct",
+          "target": "0x006f6970",
+          "provider_targets": [
+            "0x006f6970"
+          ]
+        },
+        {
+          "site": "0x006f642f",
+          "instruction": "CALL 0x00597d20",
+          "kind": "direct",
+          "target": "0x00597d20",
+          "provider_targets": [
+            "0x00597d20"
+          ]
+        },
+        {
+          "site": "0x006f644d",
+          "instruction": "CALL 0x006f6970",
+          "kind": "direct",
+          "target": "0x006f6970",
+          "provider_targets": [
+            "0x006f6970"
+          ]
+        },
+        {
+          "site": "0x006f6460",
+          "instruction": "CALL 0x00af6b2f",
+          "kind": "direct",
+          "target": "0x00af6b2f",
+          "provider_targets": [
+            "0x00af6b2f"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x006f4d60",
+      "body": "[[006f4d60, 006f4de5]]",
+      "record": "evidence/focused/round2-task-callbacks.json",
+      "record_sha256": "72abdf0769e147f34ffd80741d454c4fede09f1bc0c0cdb44debcea7e20e3e85",
+      "calls": [
+        {
+          "site": "0x006f4d81",
+          "instruction": "CALL dword ptr [0x00b5b468]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x006f4d90",
+          "instruction": "CALL dword ptr [0x00b5b128]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x006f4db2",
+          "instruction": "CALL dword ptr [0x00b5b468]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        }
+      ]
+    },
+    {
+      "function": "0x006f6130",
+      "body": "[[006f6130, 006f62a7]]",
+      "record": "evidence/focused/round2-task-callbacks.json",
+      "record_sha256": "72abdf0769e147f34ffd80741d454c4fede09f1bc0c0cdb44debcea7e20e3e85",
+      "calls": [
+        {
+          "site": "0x006f6141",
+          "instruction": "CALL 0x00a367e0",
+          "kind": "direct",
+          "target": "0x00a367e0",
+          "provider_targets": [
+            "0x00a367e0"
+          ]
+        },
+        {
+          "site": "0x006f6155",
+          "instruction": "CALL EDI",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x006f6160",
+          "instruction": "CALL dword ptr [0x00b5b128]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x006f6182",
+          "instruction": "CALL EDI",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x006f61b2",
+          "instruction": "CALL 0x00a36760",
+          "kind": "direct",
+          "target": "0x00a36760",
+          "provider_targets": [
+            "0x00a36760"
+          ]
+        },
+        {
+          "site": "0x006f61ef",
+          "instruction": "CALL dword ptr [0x00b5b100]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x006f6205",
+          "instruction": "CALL EAX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x006f6214",
+          "instruction": "CALL EBX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x006f623d",
+          "instruction": "CALL EBX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x006f6248",
+          "instruction": "CALL 0x00a44cd0",
+          "kind": "direct",
+          "target": "0x00a44cd0",
+          "provider_targets": [
+            "0x00a44cd0"
+          ]
+        },
+        {
+          "site": "0x006f6255",
+          "instruction": "CALL dword ptr [0x00b5b100]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x006f6267",
+          "instruction": "CALL EAX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x006f6278",
+          "instruction": "CALL 0x00a53d80",
+          "kind": "direct",
+          "target": "0x00a53d80",
+          "provider_targets": [
+            "0x00a53d80"
+          ]
+        },
+        {
+          "site": "0x006f6288",
+          "instruction": "CALL dword ptr [0x00b5b100]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x006f629f",
+          "instruction": "CALL EAX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        }
+      ]
+    },
+    {
+      "function": "0x006f6470",
+      "body": "[[006f6470, 006f64b7]]",
+      "record": "evidence/focused/round2-task-dispatch.json",
+      "record_sha256": "75e541cf163eddaa5d7a29fba28700e7bcff1999c3bcf1d55fc161827d8252de",
+      "calls": [
+        {
+          "site": "0x006f6476",
+          "instruction": "CALL 0x006f5830",
+          "kind": "direct",
+          "target": "0x006f5830",
+          "provider_targets": [
+            "0x006f5830"
+          ]
+        },
+        {
+          "site": "0x006f64a1",
+          "instruction": "CALL ECX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x006f64b0",
+          "instruction": "CALL 0x006f59a0",
+          "kind": "direct",
+          "target": "0x006f59a0",
+          "provider_targets": [
+            "0x006f59a0"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x006f64c0",
+      "body": "[[006f64c0, 006f656e]]",
+      "record": "evidence/focused/round2-task-dispatch.json",
+      "record_sha256": "75e541cf163eddaa5d7a29fba28700e7bcff1999c3bcf1d55fc161827d8252de",
+      "calls": [
+        {
+          "site": "0x006f64e4",
+          "instruction": "CALL 0x006f6470",
+          "kind": "direct",
+          "target": "0x006f6470",
+          "provider_targets": [
+            "0x006f6470"
+          ]
+        },
+        {
+          "site": "0x006f64ee",
+          "instruction": "CALL 0x006435e0",
+          "kind": "direct",
+          "target": "0x006435e0",
+          "provider_targets": [
+            "0x006435e0"
+          ]
+        },
+        {
+          "site": "0x006f6509",
+          "instruction": "CALL 0x006f6470",
+          "kind": "direct",
+          "target": "0x006f6470",
+          "provider_targets": [
+            "0x006f6470"
+          ]
+        },
+        {
+          "site": "0x006f651b",
+          "instruction": "CALL EAX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x006f6535",
+          "instruction": "CALL 0x006f5940",
+          "kind": "direct",
+          "target": "0x006f5940",
+          "provider_targets": [
+            "0x006f5940"
+          ]
+        },
+        {
+          "site": "0x006f653d",
+          "instruction": "CALL 0x00a44cc0",
+          "kind": "direct",
+          "target": "0x00a44cc0",
+          "provider_targets": [
+            "0x00a44cc0"
+          ]
+        },
+        {
+          "site": "0x006f6542",
+          "instruction": "CALL 0x006f59a0",
+          "kind": "direct",
+          "target": "0x006f59a0",
+          "provider_targets": [
+            "0x006f59a0"
+          ]
+        },
+        {
+          "site": "0x006f6551",
+          "instruction": "CALL ECX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x006f6565",
+          "instruction": "CALL 0x006f6470",
+          "kind": "direct",
+          "target": "0x006f6470",
+          "provider_targets": [
+            "0x006f6470"
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x00a3bf10",
+      "body": "[[00a3bf10, 00a3c084]]",
+      "record": "evidence/focused/round2-task-dispatch.json",
+      "record_sha256": "75e541cf163eddaa5d7a29fba28700e7bcff1999c3bcf1d55fc161827d8252de",
+      "calls": [
+        {
+          "site": "0x00a3bf58",
+          "instruction": "CALL 0x00a53d80",
+          "kind": "direct",
+          "target": "0x00a53d80",
+          "provider_targets": [
+            "0x00a53d80"
+          ]
+        },
+        {
+          "site": "0x00a3bf99",
+          "instruction": "CALL 0x00a3b170",
+          "kind": "direct",
+          "target": "0x00a3b170",
+          "provider_targets": [
+            "0x00a3b170"
+          ]
+        },
+        {
+          "site": "0x00a3bfbc",
+          "instruction": "CALL dword ptr [0x00b5b0fc]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x00a3bfc4",
+          "instruction": "CALL 0x00a3b8a0",
+          "kind": "direct",
+          "target": "0x00a3b8a0",
+          "provider_targets": [
+            "0x00a3b8a0"
+          ]
+        },
+        {
+          "site": "0x00a3bff3",
+          "instruction": "CALL 0x00a44d00",
+          "kind": "direct",
+          "target": "0x00a44d00",
+          "provider_targets": [
+            "0x00a44d00"
+          ]
+        },
+        {
+          "site": "0x00a3bffb",
+          "instruction": "CALL 0x00a44d20",
+          "kind": "direct",
+          "target": "0x00a44d20",
+          "provider_targets": [
+            "0x00a44d20"
+          ]
+        },
+        {
+          "site": "0x00a3c003",
+          "instruction": "CALL 0x00a53d80",
+          "kind": "direct",
+          "target": "0x00a53d80",
+          "provider_targets": [
+            "0x00a53d80"
+          ]
+        },
+        {
+          "site": "0x00a3c01a",
+          "instruction": "CALL dword ptr [0x00b5b100]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x00a3c02c",
+          "instruction": "CALL EDX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x00a3c03a",
+          "instruction": "CALL 0x00a53d80",
+          "kind": "direct",
+          "target": "0x00a53d80",
+          "provider_targets": [
+            "0x00a53d80"
+          ]
+        },
+        {
+          "site": "0x00a3c057",
+          "instruction": "CALL dword ptr [0x00b5b100]",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
+        },
+        {
+          "site": "0x00a3c06e",
+          "instruction": "CALL EAX",
+          "kind": "unresolved-indirect",
+          "target": null,
+          "provider_targets": []
         }
       ]
     }

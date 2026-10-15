@@ -92,6 +92,10 @@
 | [0x00a64ad0](codol/client/inventory/assets/FUN_00a64ad0.c) | 继承所有者的余额条目读取 | REA 历史证据 |
 | [0x00a4bd80](codol/client/inventory/assets/FUN_00a4bd80.c) | 权益条目读取（需结合汇编） | REA 历史证据 |
 | [0x004a5680](codol/client/inventory/assets/FUN_004a5680.c) | 登录资产结果转移到余额和库存缓存 | REA 历史证据 |
+| [0x004a5280](codol/client/inventory/assets/FUN_004a5280.c) | 资产结果与已有权益和库存的对比诊断 | REA 历史证据 |
+| [0x004a4f40](codol/client/inventory/assets/FUN_004a4f40.c) | 权益刷新完成处理与监听通知 | Ghidra 定向分析 |
+| [0x00a45630](codol/client/inventory/assets/FUN_00a45630.c) | 账号标识对象的类型字段和 ID 比较 | REA 历史证据 |
+| [0x004a5080](codol/client/inventory/assets/FUN_004a5080.c) | 资产获取重试回调与远程任务替换 | REA 历史证据 |
 
 ## 仓库获取、物品结构与缓存更新
 
@@ -107,6 +111,8 @@
 | [0x004a57d0](codol/client/inventory/items/FUN_004a57d0.c) | 库存结果消费路径 | REA 历史证据 |
 | [0x004a6cc0](codol/client/inventory/items/FUN_004a6cc0.c) | 库存条目转移路径 | REA 历史证据 |
 | [0x005e2a50](codol/client/inventory/items/FUN_005e2a50.c) | 库存到物品目录的映射 | REA 历史证据 |
+| [0x004a7a50](codol/client/inventory/items/FUN_004a7a50.c) | 库存哈希表按编码物品 ID 查找 | Ghidra 定向分析 |
+| [0x004a6a10](codol/client/inventory/items/FUN_004a6a10.c) | 库存刷新重试回调与远程任务替换 | Ghidra 定向分析 |
 
 ## 游戏币、点券与大厅显示
 
@@ -134,6 +140,10 @@
 | [0x00a4c220](codol/client/inventory/purchase/FUN_00a4c220.c) | 点券购买任务 93/131 参数构造 | REA 历史证据 |
 | [0x00a45b40](codol/client/inventory/purchase/FUN_00a45b40.c) | 购买参数序列化 | REA 历史证据 |
 | [0x004a6940](codol/client/inventory/purchase/FUN_004a6940.c) | 购买完成回调分派 | REA 历史证据 |
+| [0x00a4c0b0](codol/client/inventory/purchase/FUN_00a4c0b0.c) | 点券购买任务 93/4 或 93/131 参数分支 | REA 历史证据 |
+| [0x00a47370](codol/client/inventory/purchase/FUN_00a47370.c) | 游戏币购买的默认参数包装 | REA 历史证据 |
+| [0x00a4c280](codol/client/inventory/purchase/FUN_00a4c280.c) | 点券购买的默认参数包装 | REA 历史证据 |
+| [0x00a64ca0](codol/client/inventory/purchase/FUN_00a64ca0.c) | 点券购买参数校验与序列化 | Ghidra 定向分析 |
 
 ## 商品、SKU、物品与解锁条件
 
@@ -162,6 +172,8 @@
 | [0x0046ee30](codol/client/equipment/progression/FUN_0046ee30.c) | 武器最大 rank 查询 | REA 历史证据 |
 | [0x006b5070](codol/client/equipment/progression/FUN_006b5070.c) | 武器最高等级的界面消费 | REA 历史证据 |
 | [0x005845b0](codol/client/equipment/progression/FUN_005845b0.c) | 物品描述符查询 | REA 历史证据 |
+| [0x00695a10](codol/client/equipment/progression/FUN_00695a10.c) | 引导角色或特殊物品的库存缺省判定 | Ghidra 定向分析 |
+| [0x00695c90](codol/client/equipment/progression/FUN_00695c90.c) | 物品所有权查询的布尔结果包装 | Ghidra 定向分析 |
 
 ## 武器配件装备与槽位限制
 
@@ -175,6 +187,12 @@
 | [0x006c2090](codol/client/equipment/attachments/FUN_006c2090.c) | 配件装备直接写入路径 | Ghidra 定向分析 |
 | [0x006bf680](codol/client/equipment/attachments/FUN_006bf680.c) | 配件槽位同步到编辑缓存 | Ghidra 定向分析 |
 | [0x00699de0](codol/client/equipment/attachments/FUN_00699de0.c) | 装备变更后的界面状态刷新 | Ghidra 定向分析 |
+| [0x006bf050](codol/client/equipment/attachments/FUN_006bf050.c) | 武器与六槽配件组合有效性检查 | Ghidra 定向分析 |
+| [0x006bf0c0](codol/client/equipment/attachments/FUN_006bf0c0.c) | 读取所选武器与配件到编辑缓存 | Ghidra 定向分析 |
+| [0x006bf310](codol/client/equipment/attachments/FUN_006bf310.c) | 配件编辑槽的编码值和有效标志写入 | Ghidra 定向分析 |
+| [0x007096c0](codol/client/equipment/attachments/FUN_007096c0.c) | 配件目录关系表兼容性查询 | Ghidra 定向分析 |
+| [0x006c4240](codol/client/equipment/attachments/FUN_006c4240.c) | 校验武器与六槽配件并清理无效缓存 | Ghidra 定向分析 |
+| [0x006c41c0](codol/client/equipment/attachments/FUN_006c41c0.c) | 配件兼容性子规则组合判断 | Ghidra 定向分析 |
 
 ## 武器装备与指定槽位入口
 
@@ -188,6 +206,12 @@
 | [0x006bf130](codol/client/equipment/loadout/FUN_006bf130.c) | 装备槽位上下文辅助 | Ghidra 定向分析 |
 | [0x006b7740](codol/client/equipment/loadout/FUN_006b7740.c) | WL_EquipWeapon 注册入口 | Ghidra 定向分析 |
 | [0x006b78a0](codol/client/equipment/loadout/FUN_006b78a0.c) | WL_EquipWeaponInSlot 注册入口 | Ghidra 定向分析 |
+| [0x006c33c0](codol/client/equipment/loadout/FUN_006c33c0.c) | 装备占用计数与数量限制输入 | Ghidra 定向分析 |
+| [0x007051e0](codol/client/equipment/loadout/FUN_007051e0.c) | 当前角色和套装组合索引读取 | Ghidra 定向分析 |
+| [0x006c2800](codol/client/equipment/loadout/FUN_006c2800.c) | 当前选择项分类不为 3 的判定 | Ghidra 定向分析 |
+| [0x006c29e0](codol/client/equipment/loadout/FUN_006c29e0.c) | 按类别清除冲突装备并提交变更 | Ghidra 定向分析 |
+| [0x00706740](codol/client/equipment/loadout/FUN_00706740.c) | 当前选择项编码 ID 读取 | Ghidra 定向分析 |
+| [0x006c4160](codol/client/equipment/loadout/FUN_006c4160.c) | 武器类别与装备槽位匹配判断 | Ghidra 定向分析 |
 
 ## 大厅远程任务与异步回调
 
@@ -205,4 +229,31 @@
 | [0x006f5d20](codol/client/lobby/tasks/FUN_006f5d20.c) | 客户端异步任务槽位分配及回调路径 | Ghidra 定向分析 |
 | [0x00a44d90](codol/client/lobby/tasks/FUN_00a44d90.c) | 远程任务状态对象初始化 | Ghidra 定向分析 |
 | [0x00a62c40](codol/client/lobby/tasks/FUN_00a62c40.c) | 远程任务缓冲内存和游标初始化 | Ghidra 定向分析 |
+| [0x00a46060](codol/client/lobby/tasks/FUN_00a46060.c) | 任务参数有效性检查与提交包装 | REA 历史证据 |
+| [0x00a63f20](codol/client/lobby/tasks/FUN_00a63f20.c) | 服务号和任务号参数对象构造 | Ghidra 定向分析 |
+| [0x00a63d80](codol/client/lobby/tasks/FUN_00a63d80.c) | 任务参数对象引用清理 | Ghidra 定向分析 |
+| [0x00a63eb0](codol/client/lobby/tasks/FUN_00a63eb0.c) | 任务参数追加账号字段的有效性检查 | Ghidra 定向分析 |
+| [0x00a44cb0](codol/client/lobby/tasks/FUN_00a44cb0.c) | 远程任务返回结果数量读取 | Ghidra 定向分析 |
+| [0x006f6070](codol/client/lobby/tasks/FUN_006f6070.c) | 带上下文的客户端异步任务登记包装 | Ghidra 定向分析 |
+| [0x006f60d0](codol/client/lobby/tasks/FUN_006f60d0.c) | 按任务类型转发远程任务引用 | Ghidra 定向分析 |
+| [0x006f5b70](codol/client/lobby/tasks/FUN_006f5b70.c) | 任务槽位初始化并保存完成回调 | Ghidra 定向分析 |
+| [0x00a3c6f0](codol/client/lobby/tasks/FUN_00a3c6f0.c) | 参数对象绑定远程任务并进入提交包装 | Ghidra 定向分析 |
+| [0x006f62d0](codol/client/lobby/tasks/FUN_006f62d0.c) | 远程任务状态轮询和完成标志设置 | Ghidra 定向分析 |
+| [0x006f4d60](codol/client/lobby/tasks/FUN_006f4d60.c) | 异步任务计数和耗时统计 | Ghidra 定向分析 |
+| [0x006f6130](codol/client/lobby/tasks/FUN_006f6130.c) | 重试任务引用更新和退避间隔递增 | Ghidra 定向分析 |
+| [0x006f6470](codol/client/lobby/tasks/FUN_006f6470.c) | 异步任务完成回调调用与槽位回收 | Ghidra 定向分析 |
+| [0x006f64c0](codol/client/lobby/tasks/FUN_006f64c0.c) | 异步任务轮询、重试和完成分支调度 | Ghidra 定向分析 |
+| [0x00a3bf10](codol/client/lobby/tasks/FUN_00a3bf10.c) | 远程任务缓冲区准备及最终提交包装 | Ghidra 定向分析 |
+
+## 装备缓存与档案写入
+
+包：`codol.client.equipment.persistence`
+
+| 地址 | 功能标签 | 来源 |
+|---|---|---|
+| [0x005946c0](codol/client/equipment/persistence/FUN_005946c0.c) | 武器与六槽配件写入编码缓存并标脏 | Ghidra 定向分析 |
+| [0x005948f0](codol/client/equipment/persistence/FUN_005948f0.c) | 遍历脏装备缓存并触发档案字段同步 | Ghidra 定向分析 |
+| [0x005945b0](codol/client/equipment/persistence/FUN_005945b0.c) | 读取编码缓存中的武器与六个配件槽 | Ghidra 定向分析 |
+| [0x00592b10](codol/client/equipment/persistence/FUN_00592b10.c) | 武器与配件缓存按 weaponClasses 路径写入档案 | Ghidra 定向分析 |
+| [0x005926d0](codol/client/equipment/persistence/FUN_005926d0.c) | DDL 资源边界和字段路径检查及写入包装 | Ghidra 定向分析 |
 

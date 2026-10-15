@@ -1,0 +1,324 @@
+{
+  "producer": "standalone-ghidra-focused-script",
+  "ghidra_version": "12.1.4",
+  "binary_sha256": "e3823fd6afc80fb25fa84747e6e9634707b9a0b189357a5466921cda354af37b",
+  "image_base": "00400000",
+  "analysis_mode": "Explicit disassembly and function creation; whole-program auto-analysis disabled",
+  "limitations": [
+    "Not a REA Evidence record.",
+    "Weaker type and function-boundary recovery than default whole-program analysis.",
+    "Signatures and register inputs may be inaccurate; inspect retained instructions.",
+    "Direct call targets only; unresolved indirect calls are not represented."
+  ],
+  "items": [
+    {
+      "requested_address": "004a5080",
+      "address": "0x004a5080",
+      "name": "FUN_004a5080",
+      "body": "[[004a5080, 004a5112]]",
+      "instructions": [
+        "004a5080 PUSH EBP",
+        "004a5081 MOV EBP,ESP",
+        "004a5083 PUSH ECX",
+        "004a5084 PUSH ESI",
+        "004a5085 CALL 0x006fed10",
+        "004a508a MOV ESI,EAX",
+        "004a508c TEST ESI,ESI",
+        "004a508e JZ 0x004a510e",
+        "004a5090 MOV ECX,ESI",
+        "004a5092 CALL 0x00a3c920",
+        "004a5097 CMP EAX,0x2",
+        "004a509a JNZ 0x004a510e",
+        "004a509c PUSH 0xc4e869",
+        "004a50a1 MOV ECX,ESI",
+        "004a50a3 CALL 0x00a421e0",
+        "004a50a8 TEST EAX,EAX",
+        "004a50aa JZ 0x004a510e",
+        "004a50ac PUSH 0x7bdc6f8",
+        "004a50b1 LEA ECX,[EBP + -0x4]",
+        "004a50b4 PUSH ECX",
+        "004a50b5 MOV ECX,EAX",
+        "004a50b7 CALL 0x00a472b0",
+        "004a50bc MOV ECX,dword ptr [EBP + -0x4]",
+        "004a50bf TEST ECX,ECX",
+        "004a50c1 JZ 0x004a510e",
+        "004a50c3 MOV EDX,dword ptr [EBP + 0x8]",
+        "004a50c6 PUSH EDX",
+        "004a50c7 PUSH ECX",
+        "004a50c8 MOV EAX,ESP",
+        "004a50ca MOV dword ptr [EAX],ECX",
+        "004a50cc MOV EAX,dword ptr [EBP + -0x4]",
+        "004a50cf TEST EAX,EAX",
+        "004a50d1 JZ 0x004a50dd",
+        "004a50d3 ADD EAX,0x4",
+        "004a50d6 PUSH EAX",
+        "004a50d7 CALL dword ptr [0x00b5b0fc]",
+        "004a50dd MOV EAX,0x6b",
+        "004a50e2 CALL 0x006f60d0",
+        "004a50e7 MOV EAX,dword ptr [EBP + -0x4]",
+        "004a50ea ADD ESP,0x8",
+        "004a50ed TEST EAX,EAX",
+        "004a50ef JZ 0x004a510e",
+        "004a50f1 ADD EAX,0x4",
+        "004a50f4 PUSH EAX",
+        "004a50f5 CALL dword ptr [0x00b5b100]",
+        "004a50fb TEST EAX,EAX",
+        "004a50fd JNZ 0x004a510e",
+        "004a50ff MOV ECX,dword ptr [EBP + -0x4]",
+        "004a5102 TEST ECX,ECX",
+        "004a5104 JZ 0x004a510e",
+        "004a5106 MOV EAX,dword ptr [ECX]",
+        "004a5108 MOV EDX,dword ptr [EAX]",
+        "004a510a PUSH 0x1",
+        "004a510c CALL EDX",
+        "004a510e POP ESI",
+        "004a510f MOV ESP,EBP",
+        "004a5111 POP EBP",
+        "004a5112 RET"
+      ],
+      "direct_call_targets": [
+        "0x006f60d0",
+        "0x006fed10",
+        "0x00a3c920",
+        "0x00a421e0",
+        "0x00a472b0"
+      ],
+      "call_sites": [
+        {
+          "address": "0x004a5085",
+          "instruction": "CALL 0x006fed10",
+          "computed": false,
+          "targets": [
+            "0x006fed10"
+          ]
+        },
+        {
+          "address": "0x004a5092",
+          "instruction": "CALL 0x00a3c920",
+          "computed": false,
+          "targets": [
+            "0x00a3c920"
+          ]
+        },
+        {
+          "address": "0x004a50a3",
+          "instruction": "CALL 0x00a421e0",
+          "computed": false,
+          "targets": [
+            "0x00a421e0"
+          ]
+        },
+        {
+          "address": "0x004a50b7",
+          "instruction": "CALL 0x00a472b0",
+          "computed": false,
+          "targets": [
+            "0x00a472b0"
+          ]
+        },
+        {
+          "address": "0x004a50d7",
+          "instruction": "CALL dword ptr [0x00b5b0fc]",
+          "computed": true,
+          "targets": []
+        },
+        {
+          "address": "0x004a50e2",
+          "instruction": "CALL 0x006f60d0",
+          "computed": false,
+          "targets": [
+            "0x006f60d0"
+          ]
+        },
+        {
+          "address": "0x004a50f5",
+          "instruction": "CALL dword ptr [0x00b5b100]",
+          "computed": true,
+          "targets": []
+        },
+        {
+          "address": "0x004a510c",
+          "instruction": "CALL EDX",
+          "computed": true,
+          "targets": []
+        }
+      ],
+      "status": "ok",
+      "diagnostic": "",
+      "pseudocode": "\r\nvoid FUN_004a5080(undefined4 param_1)\r\n\r\n{\r\n  int iVar1;\r\n  undefined4 *puVar2;\r\n  undefined4 *puStack_8;\r\n  \r\n  iVar1 \u003d func_0x006fed10();\r\n  if (iVar1 !\u003d 0) {\r\n    iVar1 \u003d func_0x00a3c920();\r\n    if (iVar1 \u003d\u003d 2) {\r\n      iVar1 \u003d func_0x00a421e0(\u0026UNK_00c4e869);\r\n      if (iVar1 !\u003d 0) {\r\n        func_0x00a472b0(\u0026puStack_8,0x7bdc6f8);\r\n        if (puStack_8 !\u003d (undefined4 *)0x0) {\r\n          puVar2 \u003d puStack_8;\r\n          if (puStack_8 !\u003d (undefined4 *)0x0) {\r\n            InterlockedIncrement(puStack_8 + 1);\r\n          }\r\n          func_0x006f60d0(puVar2,param_1);\r\n          if (puStack_8 !\u003d (undefined4 *)0x0) {\r\n            iVar1 \u003d InterlockedDecrement(puStack_8 + 1);\r\n            if ((iVar1 \u003d\u003d 0) \u0026\u0026 (puStack_8 !\u003d (undefined4 *)0x0)) {\r\n              (**(code **)*puStack_8)(1);\r\n            }\r\n          }\r\n        }\r\n      }\r\n    }\r\n  }\r\n  return;\r\n}\r\n\r\n"
+    },
+    {
+      "requested_address": "004a6a10",
+      "address": "0x004a6a10",
+      "name": "FUN_004a6a10",
+      "body": "[[004a6a10, 004a6b07]]",
+      "instructions": [
+        "004a6a10 PUSH EBP",
+        "004a6a11 MOV EBP,ESP",
+        "004a6a13 PUSH ECX",
+        "004a6a14 PUSH EBX",
+        "004a6a15 PUSH ESI",
+        "004a6a16 PUSH EDI",
+        "004a6a17 CALL 0x006fed10",
+        "004a6a1c MOV ESI,EAX",
+        "004a6a1e TEST ESI,ESI",
+        "004a6a20 JZ 0x004a6a40",
+        "004a6a22 MOV ECX,ESI",
+        "004a6a24 CALL 0x00a3c920",
+        "004a6a29 CMP EAX,0x2",
+        "004a6a2c JNZ 0x004a6a40",
+        "004a6a2e PUSH 0xc4e869",
+        "004a6a33 MOV ECX,ESI",
+        "004a6a35 CALL 0x00a421e0",
+        "004a6a3a MOV EDI,EAX",
+        "004a6a3c TEST EDI,EDI",
+        "004a6a3e JNZ 0x004a6a5c",
+        "004a6a40 OR dword ptr [0x07817df8],0x1",
+        "004a6a47 MOV byte ptr [0x07817df3],0x0",
+        "004a6a4e MOV byte ptr [0x07817df2],0x0",
+        "004a6a55 POP EDI",
+        "004a6a56 POP ESI",
+        "004a6a57 POP EBX",
+        "004a6a58 MOV ESP,EBP",
+        "004a6a5a POP EBP",
+        "004a6a5b RET",
+        "004a6a5c MOV EBX,dword ptr [EBP + 0x8]",
+        "004a6a5f MOV EAX,dword ptr [EBX + 0x1c]",
+        "004a6a62 CMP EAX,dword ptr [EBX + 0x20]",
+        "004a6a65 JA 0x004a6a40",
+        "004a6a67 MOV ESI,0x7bec448",
+        "004a6a6c LEA ESP,[ESP]",
+        "004a6a70 MOV ECX,ESI",
+        "004a6a72 CALL 0x00a4b4e0",
+        "004a6a77 ADD ESI,0xa8",
+        "004a6a7d CMP ESI,0x7f20948",
+        "004a6a83 JL 0x004a6a70",
+        "004a6a85 PUSH 0x4e20",
+        "004a6a8a PUSH 0x7bec448",
+        "004a6a8f LEA ECX,[EBP + -0x4]",
+        "004a6a92 PUSH ECX",
+        "004a6a93 MOV ECX,EDI",
+        "004a6a95 MOV dword ptr [0x07817ddc],0x0",
+        "004a6a9f CALL 0x00a468c0",
+        "004a6aa4 MOV EAX,dword ptr [EBP + -0x4]",
+        "004a6aa7 TEST EAX,EAX",
+        "004a6aa9 JZ 0x004a6ad2",
+        "004a6aab PUSH EBX",
+        "004a6aac PUSH ECX",
+        "004a6aad MOV ECX,ESP",
+        "004a6aaf MOV dword ptr [ECX],EAX",
+        "004a6ab1 MOV EAX,dword ptr [EBP + -0x4]",
+        "004a6ab4 TEST EAX,EAX",
+        "004a6ab6 JZ 0x004a6ac2",
+        "004a6ab8 ADD EAX,0x4",
+        "004a6abb PUSH EAX",
+        "004a6abc CALL dword ptr [0x00b5b0fc]",
+        "004a6ac2 MOV EAX,0x58",
+        "004a6ac7 CALL 0x006f60d0",
+        "004a6acc MOV EAX,dword ptr [EBP + -0x4]",
+        "004a6acf ADD ESP,0x8",
+        "004a6ad2 MOV byte ptr [0x07817df2],0x1",
+        "004a6ad9 MOV byte ptr [0x07817df3],0x0",
+        "004a6ae0 TEST EAX,EAX",
+        "004a6ae2 JZ 0x004a6b01",
+        "004a6ae4 ADD EAX,0x4",
+        "004a6ae7 PUSH EAX",
+        "004a6ae8 CALL dword ptr [0x00b5b100]",
+        "004a6aee TEST EAX,EAX",
+        "004a6af0 JNZ 0x004a6b01",
+        "004a6af2 MOV ECX,dword ptr [EBP + -0x4]",
+        "004a6af5 TEST ECX,ECX",
+        "004a6af7 JZ 0x004a6b01",
+        "004a6af9 MOV EDX,dword ptr [ECX]",
+        "004a6afb MOV EAX,dword ptr [EDX]",
+        "004a6afd PUSH 0x1",
+        "004a6aff CALL EAX",
+        "004a6b01 POP EDI",
+        "004a6b02 POP ESI",
+        "004a6b03 POP EBX",
+        "004a6b04 MOV ESP,EBP",
+        "004a6b06 POP EBP",
+        "004a6b07 RET"
+      ],
+      "direct_call_targets": [
+        "0x006f60d0",
+        "0x006fed10",
+        "0x00a3c920",
+        "0x00a421e0",
+        "0x00a468c0",
+        "0x00a4b4e0"
+      ],
+      "call_sites": [
+        {
+          "address": "0x004a6a17",
+          "instruction": "CALL 0x006fed10",
+          "computed": false,
+          "targets": [
+            "0x006fed10"
+          ]
+        },
+        {
+          "address": "0x004a6a24",
+          "instruction": "CALL 0x00a3c920",
+          "computed": false,
+          "targets": [
+            "0x00a3c920"
+          ]
+        },
+        {
+          "address": "0x004a6a35",
+          "instruction": "CALL 0x00a421e0",
+          "computed": false,
+          "targets": [
+            "0x00a421e0"
+          ]
+        },
+        {
+          "address": "0x004a6a72",
+          "instruction": "CALL 0x00a4b4e0",
+          "computed": false,
+          "targets": [
+            "0x00a4b4e0"
+          ]
+        },
+        {
+          "address": "0x004a6a9f",
+          "instruction": "CALL 0x00a468c0",
+          "computed": false,
+          "targets": [
+            "0x00a468c0"
+          ]
+        },
+        {
+          "address": "0x004a6abc",
+          "instruction": "CALL dword ptr [0x00b5b0fc]",
+          "computed": true,
+          "targets": []
+        },
+        {
+          "address": "0x004a6ac7",
+          "instruction": "CALL 0x006f60d0",
+          "computed": false,
+          "targets": [
+            "0x006f60d0"
+          ]
+        },
+        {
+          "address": "0x004a6ae8",
+          "instruction": "CALL dword ptr [0x00b5b100]",
+          "computed": true,
+          "targets": []
+        },
+        {
+          "address": "0x004a6aff",
+          "instruction": "CALL EAX",
+          "computed": true,
+          "targets": []
+        }
+      ],
+      "status": "ok",
+      "diagnostic": "",
+      "pseudocode": "\r\n/* WARNING: Globals starting with \u0027_\u0027 overlap smaller symbols at the same address */\r\n\r\nvoid FUN_004a6a10(int param_1)\r\n\r\n{\r\n  int iVar1;\r\n  undefined4 *puVar2;\r\n  undefined4 *puStack_8;\r\n  \r\n  iVar1 \u003d func_0x006fed10();\r\n  if (iVar1 !\u003d 0) {\r\n    iVar1 \u003d func_0x00a3c920();\r\n    if (iVar1 \u003d\u003d 2) {\r\n      iVar1 \u003d func_0x00a421e0(\u0026UNK_00c4e869);\r\n      if ((iVar1 !\u003d 0) \u0026\u0026 (*(uint *)(param_1 + 0x1c) \u003c\u003d *(uint *)(param_1 + 0x20))) {\r\n        iVar1 \u003d 0x7bec448;\r\n        do {\r\n          func_0x00a4b4e0();\r\n          iVar1 \u003d iVar1 + 0xa8;\r\n        } while (iVar1 \u003c 0x7f20948);\r\n        _DAT_07817ddc \u003d 0;\r\n        func_0x00a468c0(\u0026puStack_8,0x7bec448,20000);\r\n        if (puStack_8 !\u003d (undefined4 *)0x0) {\r\n          puVar2 \u003d puStack_8;\r\n          if (puStack_8 !\u003d (undefined4 *)0x0) {\r\n            InterlockedIncrement(puStack_8 + 1);\r\n          }\r\n          func_0x006f60d0(puVar2,param_1);\r\n        }\r\n        DAT_07817df2 \u003d 1;\r\n        DAT_07817df3 \u003d 0;\r\n        if (puStack_8 !\u003d (undefined4 *)0x0) {\r\n          iVar1 \u003d InterlockedDecrement(puStack_8 + 1);\r\n          if ((iVar1 \u003d\u003d 0) \u0026\u0026 (puStack_8 !\u003d (undefined4 *)0x0)) {\r\n            (**(code **)*puStack_8)(1);\r\n          }\r\n        }\r\n        return;\r\n      }\r\n    }\r\n  }\r\n  _DAT_07817df8 \u003d _DAT_07817df8 | 1;\r\n  DAT_07817df3 \u003d 0;\r\n  DAT_07817df2 \u003d 0;\r\n  return;\r\n}\r\n\r\n"
+    }
+  ]
+}

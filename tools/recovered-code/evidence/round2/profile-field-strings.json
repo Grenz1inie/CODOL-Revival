@@ -1,0 +1,64 @@
+{
+  "producer": "read-only-pe-string-extraction",
+  "binary_sha256": "e3823fd6afc80fb25fa84747e6e9634707b9a0b189357a5466921cda354af37b",
+  "image_base": "0x00400000",
+  "entries": [
+    {
+      "va": "0x00c78d5c",
+      "file_offset": "0x00878d5c",
+      "bytes_with_terminator_hex": "6f6e626f617264436861726163746572494400",
+      "ascii": "onboardCharacterID"
+    },
+    {
+      "va": "0x00c78550",
+      "file_offset": "0x00878550",
+      "bytes_with_terminator_hex": "63757272656e74436861726163746572496e64657800",
+      "ascii": "currentCharacterIndex"
+    },
+    {
+      "va": "0x00c5d7c4",
+      "file_offset": "0x0085d7c4",
+      "bytes_with_terminator_hex": "7072696d61727900",
+      "ascii": "primary"
+    },
+    {
+      "va": "0x00c6b8ac",
+      "file_offset": "0x0086b8ac",
+      "bytes_with_terminator_hex": "7365636f6e6461727900",
+      "ascii": "secondary"
+    },
+    {
+      "va": "0x00c6c218",
+      "file_offset": "0x0086c218",
+      "bytes_with_terminator_hex": "776561706f6e436c617373657300",
+      "ascii": "weaponClasses"
+    },
+    {
+      "va": "0x00c6c228",
+      "file_offset": "0x0086c228",
+      "bytes_with_terminator_hex": "25734261736500",
+      "ascii": "%sBase"
+    },
+    {
+      "va": "0x00c6c230",
+      "file_offset": "0x0086c230",
+      "bytes_with_terminator_hex": "257341747461636800",
+      "ascii": "%sAttach"
+    },
+    {
+      "va": "0x00c604a0",
+      "file_offset": "0x008604a0",
+      "bytes_with_terminator_hex": "6d702f706c61796572646174612e64656600",
+      "ascii": "mp/playerdata.def"
+    },
+    {
+      "va": "0x00c60488",
+      "file_offset": "0x00860488",
+      "bytes_with_terminator_hex": "6d702f706c61796572736563757265646174612e64656600",
+      "ascii": "mp/playersecuredata.def"
+    }
+  ],
+  "limitations": [
+    "Exact literal bytes only; semantic labels require callers and field paths."
+  ]
+}

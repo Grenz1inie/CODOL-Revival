@@ -1,0 +1,79 @@
+{
+  "binary_sha256": "e3823fd6afc80fb25fa84747e6e9634707b9a0b189357a5466921cda354af37b",
+  "authority": "retained-static-instructions",
+  "interpretation": "Callback relationships described in CALL_CHAINS.md are analyst data-flow interpretation, not direct CALL targets or runtime observations.",
+  "observations": [
+    {
+      "function": "0x006d8560",
+      "record": "evidence/focused/round2-account-lobby.json",
+      "record_sha256": "a91143df663894cccc93c7ecf207f563246861b9f1d6869da48ed55958592149",
+      "instructions": [
+        "006d878f PUSH 0x6d83e0",
+        "006d87aa CALL 0x006f5fb0"
+      ]
+    },
+    {
+      "function": "0x004a5120",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "instructions": [
+        "004a51bf PUSH 0x4a5080",
+        "004a51c4 PUSH 0x4a5680",
+        "004a51e4 CALL 0x006f6070"
+      ]
+    },
+    {
+      "function": "0x004a6b10",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "instructions": [
+        "004a6ba3 PUSH 0x4a6a10",
+        "004a6ba8 PUSH 0x4a6c10",
+        "004a6bcd CALL 0x006f6070"
+      ]
+    },
+    {
+      "function": "0x004a6550",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "instructions": [
+        "004a66bb PUSH 0x4a6940",
+        "004a66d5 CALL 0x006f5fb0",
+        "004a688e PUSH 0x4a6940",
+        "004a689d CALL 0x006f5d20"
+      ]
+    },
+    {
+      "function": "0x006f5b70",
+      "record": "evidence/focused/round2-inventory-equipment.json",
+      "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99",
+      "instructions": [
+        "006f5c45 MOV dword ptr [ESI + 0x30],EDX",
+        "006f5c4b MOV dword ptr [ESI + 0x34],EAX",
+        "006f5c57 MOV dword ptr [ESI + 0x2c],0x6f62d0"
+      ]
+    },
+    {
+      "function": "0x006f64c0",
+      "record": "evidence/focused/round2-task-dispatch.json",
+      "record_sha256": "75e541cf163eddaa5d7a29fba28700e7bcff1999c3bcf1d55fc161827d8252de",
+      "instructions": [
+        "006f6513 MOV EAX,dword ptr [ESI + 0x34]",
+        "006f651b CALL EAX",
+        "006f6549 MOV ECX,dword ptr [ESI + 0x2c]",
+        "006f6551 CALL ECX",
+        "006f655e MOVZX EDX,byte ptr [ESI + 0x4]",
+        "006f6565 CALL 0x006f6470"
+      ]
+    },
+    {
+      "function": "0x006f6470",
+      "record": "evidence/focused/round2-task-dispatch.json",
+      "record_sha256": "75e541cf163eddaa5d7a29fba28700e7bcff1999c3bcf1d55fc161827d8252de",
+      "instructions": [
+        "006f6498 MOV ECX,dword ptr [ESI + 0x30]",
+        "006f64a1 CALL ECX"
+      ]
+    }
+  ]
+}

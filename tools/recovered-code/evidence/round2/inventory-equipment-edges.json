@@ -1,0 +1,625 @@
+{
+  "authority": "retained-static-instructions",
+  "execution_observed": false,
+  "binary_sha256": "e3823fd6afc80fb25fa84747e6e9634707b9a0b189357a5466921cda354af37b",
+  "direct_edge_checks": [
+    {
+      "caller": "0x00a472b0",
+      "callee": "0x00a46060",
+      "observations": [
+        {
+          "site": "0x00a47347",
+          "instruction": "CALL 0x00a46060",
+          "record": "evidence/focused/round2-inventory-equipment.json",
+          "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99"
+        }
+      ]
+    },
+    {
+      "caller": "0x00a46060",
+      "callee": "0x00a3c6f0",
+      "observations": [
+        {
+          "site": "0x00a460a8",
+          "instruction": "CALL 0x00a3c6f0",
+          "record": "evidence/focused/round2-inventory-equipment.json",
+          "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99"
+        }
+      ]
+    },
+    {
+      "caller": "0x00a3c6f0",
+      "callee": "0x00a3bf10",
+      "observations": [
+        {
+          "site": "0x00a3c799",
+          "instruction": "CALL 0x00a3bf10",
+          "record": "evidence/focused/round2-inventory-equipment-tail.json",
+          "record_sha256": "fbe596684d1df1f481842e172477a763c9f0a125b76de99a9f88d48f35b81adf"
+        }
+      ]
+    },
+    {
+      "caller": "0x00a3bf10",
+      "callee": "0x00a3b8a0",
+      "observations": [
+        {
+          "site": "0x00a3bfc4",
+          "instruction": "CALL 0x00a3b8a0",
+          "record": "evidence/focused/round2-task-dispatch.json",
+          "record_sha256": "75e541cf163eddaa5d7a29fba28700e7bcff1999c3bcf1d55fc161827d8252de"
+        }
+      ]
+    },
+    {
+      "caller": "0x00a63f20",
+      "callee": "0x00a62db0",
+      "observations": [
+        {
+          "site": "0x00a63fde",
+          "instruction": "CALL 0x00a62db0",
+          "record": "evidence/focused/round2-inventory-equipment.json",
+          "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99"
+        }
+      ]
+    },
+    {
+      "caller": "0x00a63f20",
+      "callee": "0x00a3b1b0",
+      "observations": [
+        {
+          "site": "0x00a64075",
+          "instruction": "CALL 0x00a3b1b0",
+          "record": "evidence/focused/round2-inventory-equipment.json",
+          "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99"
+        }
+      ]
+    },
+    {
+      "caller": "0x004a5680",
+      "callee": "0x004a4f40",
+      "observations": [
+        {
+          "site": "0x004a56f3",
+          "instruction": "CALL 0x004a4f40",
+          "record": "evidence/focused/round2-inventory-equipment.json",
+          "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99"
+        }
+      ]
+    },
+    {
+      "caller": "0x004a5680",
+      "callee": "0x004a6cc0",
+      "observations": [
+        {
+          "site": "0x004a5777",
+          "instruction": "CALL 0x004a6cc0",
+          "record": "evidence/focused/round2-inventory-equipment.json",
+          "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99"
+        }
+      ]
+    },
+    {
+      "caller": "0x004a5680",
+      "callee": "0x004a5280",
+      "observations": [
+        {
+          "site": "0x004a56d3",
+          "instruction": "CALL 0x004a5280",
+          "record": "evidence/focused/round2-inventory-equipment.json",
+          "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99"
+        }
+      ]
+    },
+    {
+      "caller": "0x004a6c10",
+      "callee": "0x00a44cb0",
+      "observations": [
+        {
+          "site": "0x004a6c6c",
+          "instruction": "CALL 0x00a44cb0",
+          "record": "evidence/focused/round2-inventory-equipment.json",
+          "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99"
+        }
+      ]
+    },
+    {
+      "caller": "0x004a6c10",
+      "callee": "0x004a6cc0",
+      "observations": [
+        {
+          "site": "0x004a6c76",
+          "instruction": "CALL 0x004a6cc0",
+          "record": "evidence/focused/round2-inventory-equipment.json",
+          "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99"
+        }
+      ]
+    },
+    {
+      "caller": "0x004a6c10",
+      "callee": "0x004a6b10",
+      "observations": [
+        {
+          "site": "0x004a6c2f",
+          "instruction": "CALL 0x004a6b10",
+          "record": "evidence/focused/round2-inventory-equipment.json",
+          "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99"
+        }
+      ]
+    },
+    {
+      "caller": "0x004a6550",
+      "callee": "0x00a47370",
+      "observations": [
+        {
+          "site": "0x004a666a",
+          "instruction": "CALL 0x00a47370",
+          "record": "evidence/focused/round2-inventory-equipment.json",
+          "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99"
+        }
+      ]
+    },
+    {
+      "caller": "0x00a47370",
+      "callee": "0x00a467e0",
+      "observations": [
+        {
+          "site": "0x00a4739e",
+          "instruction": "CALL 0x00a467e0",
+          "record": "evidence/focused/round2-inventory-equipment.json",
+          "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99"
+        }
+      ]
+    },
+    {
+      "caller": "0x00a467e0",
+      "callee": "0x00a45b40",
+      "observations": [
+        {
+          "site": "0x00a4687e",
+          "instruction": "CALL 0x00a45b40",
+          "record": "evidence/focused/round2-inventory-equipment.json",
+          "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99"
+        }
+      ]
+    },
+    {
+      "caller": "0x00a467e0",
+      "callee": "0x00a46060",
+      "observations": [
+        {
+          "site": "0x00a46891",
+          "instruction": "CALL 0x00a46060",
+          "record": "evidence/focused/round2-inventory-equipment.json",
+          "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99"
+        }
+      ]
+    },
+    {
+      "caller": "0x004a6550",
+      "callee": "0x00a4c280",
+      "observations": [
+        {
+          "site": "0x004a681e",
+          "instruction": "CALL 0x00a4c280",
+          "record": "evidence/focused/round2-inventory-equipment.json",
+          "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99"
+        }
+      ]
+    },
+    {
+      "caller": "0x00a4c280",
+      "callee": "0x00a4c220",
+      "observations": [
+        {
+          "site": "0x00a4c2ae",
+          "instruction": "CALL 0x00a4c220",
+          "record": "evidence/focused/round2-inventory-equipment.json",
+          "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99"
+        }
+      ]
+    },
+    {
+      "caller": "0x00a4c220",
+      "callee": "0x00a4c0b0",
+      "observations": [
+        {
+          "site": "0x00a4c26e",
+          "instruction": "CALL 0x00a4c0b0",
+          "record": "evidence/focused/round2-inventory-equipment.json",
+          "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99"
+        }
+      ]
+    },
+    {
+      "caller": "0x00a4c0b0",
+      "callee": "0x00a64ca0",
+      "observations": [
+        {
+          "site": "0x00a4c1bc",
+          "instruction": "CALL 0x00a64ca0",
+          "record": "evidence/focused/round2-inventory-equipment.json",
+          "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99"
+        }
+      ]
+    },
+    {
+      "caller": "0x00a4c0b0",
+      "callee": "0x00a3c6f0",
+      "observations": [
+        {
+          "site": "0x00a4c1d2",
+          "instruction": "CALL 0x00a3c6f0",
+          "record": "evidence/focused/round2-inventory-equipment.json",
+          "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99"
+        }
+      ]
+    },
+    {
+      "caller": "0x004a6940",
+      "callee": "0x00a44cf0",
+      "observations": [
+        {
+          "site": "0x004a6962",
+          "instruction": "CALL 0x00a44cf0",
+          "record": "evidence/focused/round2-inventory-equipment.json",
+          "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99"
+        }
+      ]
+    },
+    {
+      "caller": "0x00695bc0",
+      "callee": "0x004a7a50",
+      "observations": [
+        {
+          "site": "0x00695c12",
+          "instruction": "CALL 0x004a7a50",
+          "record": "evidence/focused/round2-inventory-equipment.json",
+          "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99"
+        }
+      ]
+    },
+    {
+      "caller": "0x00695bc0",
+      "callee": "0x00695a10",
+      "observations": [
+        {
+          "site": "0x00695c1b",
+          "instruction": "CALL 0x00695a10",
+          "record": "evidence/focused/round2-inventory-equipment.json",
+          "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99"
+        }
+      ]
+    },
+    {
+      "caller": "0x00695bc0",
+      "callee": "0x00695a80",
+      "observations": [
+        {
+          "site": "0x00695c80",
+          "instruction": "CALL 0x00695a80",
+          "record": "evidence/focused/round2-inventory-equipment.json",
+          "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99"
+        }
+      ]
+    },
+    {
+      "caller": "0x00695c90",
+      "callee": "0x00695bc0",
+      "observations": [
+        {
+          "site": "0x00695ca1",
+          "instruction": "CALL 0x00695bc0",
+          "record": "evidence/focused/round2-inventory-equipment-tail.json",
+          "record_sha256": "fbe596684d1df1f481842e172477a763c9f0a125b76de99a9f88d48f35b81adf"
+        }
+      ]
+    },
+    {
+      "caller": "0x006b43c0",
+      "callee": "0x006c2090",
+      "observations": [
+        {
+          "site": "0x006b43f7",
+          "instruction": "CALL 0x006c2090",
+          "record": "evidence/focused/round2-inventory-equipment.json",
+          "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99"
+        }
+      ]
+    },
+    {
+      "caller": "0x006b4230",
+      "callee": "0x006c1e70",
+      "observations": [
+        {
+          "site": "0x006b4293",
+          "instruction": "CALL 0x006c1e70",
+          "record": "evidence/focused/round2-inventory-equipment.json",
+          "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99"
+        }
+      ]
+    },
+    {
+      "caller": "0x006b4350",
+      "callee": "0x006c1e70",
+      "observations": [
+        {
+          "site": "0x006b43a8",
+          "instruction": "CALL 0x006c1e70",
+          "record": "evidence/focused/round2-inventory-equipment.json",
+          "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99"
+        }
+      ]
+    },
+    {
+      "caller": "0x006c2090",
+      "callee": "0x005946c0",
+      "observations": [
+        {
+          "site": "0x006c22a8",
+          "instruction": "CALL 0x005946c0",
+          "record": "evidence/focused/round2-inventory-equipment.json",
+          "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99"
+        }
+      ]
+    },
+    {
+      "caller": "0x006c2090",
+      "callee": "0x005948f0",
+      "observations": [
+        {
+          "site": "0x006c22b0",
+          "instruction": "CALL 0x005948f0",
+          "record": "evidence/focused/round2-inventory-equipment.json",
+          "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99"
+        }
+      ]
+    },
+    {
+      "caller": "0x006c1e70",
+      "callee": "0x005946c0",
+      "observations": [
+        {
+          "site": "0x006c1fc3",
+          "instruction": "CALL 0x005946c0",
+          "record": "evidence/focused/round2-inventory-equipment.json",
+          "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99"
+        }
+      ]
+    },
+    {
+      "caller": "0x006c1e70",
+      "callee": "0x005948f0",
+      "observations": [
+        {
+          "site": "0x006c1fcb",
+          "instruction": "CALL 0x005948f0",
+          "record": "evidence/focused/round2-inventory-equipment.json",
+          "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99"
+        }
+      ]
+    },
+    {
+      "caller": "0x006bf0c0",
+      "callee": "0x005945b0",
+      "observations": [
+        {
+          "site": "0x006bf11b",
+          "instruction": "CALL 0x005945b0",
+          "record": "evidence/focused/round2-inventory-equipment.json",
+          "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99"
+        }
+      ]
+    },
+    {
+      "caller": "0x005948f0",
+      "callee": "0x006c4240",
+      "observations": [
+        {
+          "site": "0x00594b93",
+          "instruction": "CALL 0x006c4240",
+          "record": "evidence/focused/round2-inventory-equipment.json",
+          "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99"
+        }
+      ]
+    },
+    {
+      "caller": "0x005948f0",
+      "callee": "0x00592b10",
+      "observations": [
+        {
+          "site": "0x00594ba6",
+          "instruction": "CALL 0x00592b10",
+          "record": "evidence/focused/round2-inventory-equipment.json",
+          "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99"
+        }
+      ]
+    },
+    {
+      "caller": "0x006c4240",
+      "callee": "0x006c4160",
+      "observations": [
+        {
+          "site": "0x006c4306",
+          "instruction": "CALL 0x006c4160",
+          "record": "evidence/focused/round2-inventory-equipment-tail.json",
+          "record_sha256": "fbe596684d1df1f481842e172477a763c9f0a125b76de99a9f88d48f35b81adf"
+        }
+      ]
+    },
+    {
+      "caller": "0x006c4240",
+      "callee": "0x006c41c0",
+      "observations": [
+        {
+          "site": "0x006c43e5",
+          "instruction": "CALL 0x006c41c0",
+          "record": "evidence/focused/round2-inventory-equipment-tail.json",
+          "record_sha256": "fbe596684d1df1f481842e172477a763c9f0a125b76de99a9f88d48f35b81adf"
+        }
+      ]
+    },
+    {
+      "caller": "0x006c4240",
+      "callee": "0x00695bc0",
+      "observations": [
+        {
+          "site": "0x006c42ef",
+          "instruction": "CALL 0x00695bc0",
+          "record": "evidence/focused/round2-inventory-equipment-tail.json",
+          "record_sha256": "fbe596684d1df1f481842e172477a763c9f0a125b76de99a9f88d48f35b81adf"
+        },
+        {
+          "site": "0x006c43c6",
+          "instruction": "CALL 0x00695bc0",
+          "record": "evidence/focused/round2-inventory-equipment-tail.json",
+          "record_sha256": "fbe596684d1df1f481842e172477a763c9f0a125b76de99a9f88d48f35b81adf"
+        }
+      ]
+    },
+    {
+      "caller": "0x00592b10",
+      "callee": "0x005926d0",
+      "observations": [
+        {
+          "site": "0x00592c16",
+          "instruction": "CALL 0x005926d0",
+          "record": "evidence/focused/round2-inventory-equipment-tail.json",
+          "record_sha256": "fbe596684d1df1f481842e172477a763c9f0a125b76de99a9f88d48f35b81adf"
+        },
+        {
+          "site": "0x00592d39",
+          "instruction": "CALL 0x005926d0",
+          "record": "evidence/focused/round2-inventory-equipment-tail.json",
+          "record_sha256": "fbe596684d1df1f481842e172477a763c9f0a125b76de99a9f88d48f35b81adf"
+        }
+      ]
+    },
+    {
+      "caller": "0x006f6070",
+      "callee": "0x006f5d20",
+      "observations": [
+        {
+          "site": "0x006f609e",
+          "instruction": "CALL 0x006f5d20",
+          "record": "evidence/focused/round2-inventory-equipment.json",
+          "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99"
+        }
+      ]
+    },
+    {
+      "caller": "0x006f5fb0",
+      "callee": "0x006f5d20",
+      "observations": [
+        {
+          "site": "0x006f5fdf",
+          "instruction": "CALL 0x006f5d20",
+          "record": "evidence/focused/round2-account-lobby.json",
+          "record_sha256": "a91143df663894cccc93c7ecf207f563246861b9f1d6869da48ed55958592149"
+        }
+      ]
+    },
+    {
+      "caller": "0x006f5d20",
+      "callee": "0x006f5b70",
+      "observations": [
+        {
+          "site": "0x006f5d9e",
+          "instruction": "CALL 0x006f5b70",
+          "record": "evidence/focused/round2-account-lobby-tail.json",
+          "record_sha256": "d8b1f669ab65eeed8904a138be49442086a015645f68ad8ab6a513611004e36e"
+        },
+        {
+          "site": "0x006f5e92",
+          "instruction": "CALL 0x006f5b70",
+          "record": "evidence/focused/round2-account-lobby-tail.json",
+          "record_sha256": "d8b1f669ab65eeed8904a138be49442086a015645f68ad8ab6a513611004e36e"
+        }
+      ]
+    },
+    {
+      "caller": "0x006f64c0",
+      "callee": "0x006f6470",
+      "observations": [
+        {
+          "site": "0x006f64e4",
+          "instruction": "CALL 0x006f6470",
+          "record": "evidence/focused/round2-task-dispatch.json",
+          "record_sha256": "75e541cf163eddaa5d7a29fba28700e7bcff1999c3bcf1d55fc161827d8252de"
+        },
+        {
+          "site": "0x006f6509",
+          "instruction": "CALL 0x006f6470",
+          "record": "evidence/focused/round2-task-dispatch.json",
+          "record_sha256": "75e541cf163eddaa5d7a29fba28700e7bcff1999c3bcf1d55fc161827d8252de"
+        },
+        {
+          "site": "0x006f6565",
+          "instruction": "CALL 0x006f6470",
+          "record": "evidence/focused/round2-task-dispatch.json",
+          "record_sha256": "75e541cf163eddaa5d7a29fba28700e7bcff1999c3bcf1d55fc161827d8252de"
+        }
+      ]
+    },
+    {
+      "caller": "0x006f60d0",
+      "callee": "0x006f6130",
+      "observations": [
+        {
+          "site": "0x006f60ff",
+          "instruction": "CALL 0x006f6130",
+          "record": "evidence/focused/round2-inventory-equipment.json",
+          "record_sha256": "810f4e903d7a3698b320dbfec4d8cc381408c2bc824038a12c5f84f686135f99"
+        }
+      ]
+    },
+    {
+      "caller": "0x004a5080",
+      "callee": "0x00a472b0",
+      "observations": [
+        {
+          "site": "0x004a50b7",
+          "instruction": "CALL 0x00a472b0",
+          "record": "evidence/focused/round2-inventory-retry.json",
+          "record_sha256": "d128494fd7ce3fd6996e0be01e08be9908fe475eda4a2ddf81c0635a9b135188"
+        }
+      ]
+    },
+    {
+      "caller": "0x004a5080",
+      "callee": "0x006f60d0",
+      "observations": [
+        {
+          "site": "0x004a50e2",
+          "instruction": "CALL 0x006f60d0",
+          "record": "evidence/focused/round2-inventory-retry.json",
+          "record_sha256": "d128494fd7ce3fd6996e0be01e08be9908fe475eda4a2ddf81c0635a9b135188"
+        }
+      ]
+    },
+    {
+      "caller": "0x004a6a10",
+      "callee": "0x00a468c0",
+      "observations": [
+        {
+          "site": "0x004a6a9f",
+          "instruction": "CALL 0x00a468c0",
+          "record": "evidence/focused/round2-inventory-retry.json",
+          "record_sha256": "d128494fd7ce3fd6996e0be01e08be9908fe475eda4a2ddf81c0635a9b135188"
+        }
+      ]
+    },
+    {
+      "caller": "0x004a6a10",
+      "callee": "0x006f60d0",
+      "observations": [
+        {
+          "site": "0x004a6ac7",
+          "instruction": "CALL 0x006f60d0",
+          "record": "evidence/focused/round2-inventory-retry.json",
+          "record_sha256": "d128494fd7ce3fd6996e0be01e08be9908fe475eda4a2ddf81c0635a9b135188"
+        }
+      ]
+    }
+  ]
+}
