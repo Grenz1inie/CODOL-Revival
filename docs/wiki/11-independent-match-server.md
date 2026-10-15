@@ -10,11 +10,11 @@
 
 ## 当前方案与参考源码
 
-截至这次方向调整，项目**还没有独立模拟服**。`local_server.py` 仍通过 `NativeServer` 启动旧引擎移植实验；本次没有重启现有服务或把启动入口切到未完成的新实现。
+独立服源码已开始落在 `src/match_server/`，目前完成隔离回环端口的握手、加密、准入、档案上传和地图状态发送。**尚未完成实际开图、出生和对战。** `local_server.py` 仍使用原来的 `NativeServer` 入口；开发中的独立服没有发布到大厅，也没有重启现有服务。
 
 | 对象 | 实际作用及状态 |
 |---|---|
-| `sh1x_dedicated/` | 用户新增的只读源码参考；包含原生服务器、AI、寻路和玩法脚本，不是3.3.3.3成品 |
+| `sh1x_dedicated/` | 源码/算法参考；用户已允许必要修改，相邻 `.7z` 为保留归档。本阶段未修改它，也未启动其中的服务器 |
 | `reference-source/` | 从用户提供的 `native-source.zip` 提取的另一份同源参考，保持不可变 |
 | `server3333/` + `server3333.patch` | 旧引擎源码加新版适配后重新编译的实验；尚未完成完整客户端对局验收，停止扩展 |
 | 当前客户端读取器与REA证据 | 新服可继续采用的协议验证依据；必须绑定当前EXE哈希 |
@@ -59,6 +59,26 @@ REA会话已保存为[独立服参考基线](../../research/evidence/client423-i
 3. **一名AI完整对战**：AI通过同一输入路径移动/开火，双方伤害、死亡、重生均进入快照；避免直接扣血或传送冒充交互。
 4. **用户集中验收**：完整游戏加载Killhouse、双方可见、真人与AI互射、伤害及重生。此前只报告自动验证阶段，不提前通知“已可玩”。
 
-预计涉及的新源码放在 `src/match_server/`，协议测试及真实客户端消费探针放在现有 `tests/`、`tools/`；资源与运行产物继续分别放在 `research/`、`runtime/`。接线时才替换 `local_server.py` 中旧后端，并同步服务启停与控制器状态。目录仅表示责任边界，尚未创建空框架或实现新服务器。
+新源码放在 `src/match_server/`，协议测试及真实客户端消费探针放在现有 `tests/`、`tools/`；资源与运行产物继续分别放在 `research/`、`runtime/`。接线时才替换 `local_server.py` 中旧后端，并同步服务启停与控制器状态。
+
+## 独立连接阶段（2026-10-15）
+
+- `crypto.py`、`transport.py`：Python Tiger192、P-224 握手、AES-192 CTR、DATA 的 HMAC、序号和重复包处理；不装载旧 EXE 或链接旧引擎。
+- `connection.py`：单一预订账号校验、challenge/connect、stats 分片与 CRC、可靠 userinfo 确认、当前版本 gamestate；不写正式玩家档案。
+- `server.py`：只绑定 `127.0.0.1` 的独立 UDP 收发。`tests/test_match_server.py` 经真实 socket 和加密层，把地图状态交给当前客户端读取器；确认解析出 `mp_killhouse_sh / dm`。
+- stats 的 uint16 是**压缩后总长度**，不是本分片长度；每片最多1238字节，未压缩长度32768，末尾校验CRC。只有全部合法数据齐备才允许地图状态发送。
+
+测试分别使用客户端 `0xa87020/0xa87060/0xa87110`（Tiger）、`0x6d81a0`（stats writer）、`0x5a5960/0x46bf80`（netchan/XOR）和 `0x46dea0`（gamestate）。最后一项在 `0x4651b0` 加载入口停止，**未执行渲染、资源加载或出生**；测试中的 NCS CRC 是协议夹具，不是已经核实的 Killhouse 实际注册表。
+
+REA 已恢复原快照；本轮重复反编译请求300秒超时，未取得新结果。继续使用绑定相同客户端哈希的 `client-tiger423.json`、`client-stats-writer423.json`、`client-connectionless-current423.json` 及机器码验证，不把快照恢复称为新分析完成。
+
+定向验证：
+
+```powershell
+$env:PYTHONPATH='src;tests;tools'
+python -m unittest test_match_transport test_match_connection test_match_server test_story_wire423 -q
+```
+
+下一处实际缺口是当前资源的 NCS/基线/出生点导出、完整碰撞和玩家快照；连接阶段通过不满足人工对战验收条件。
 
 **完成条件**：原版3.3.3.3客户端的上述操作由独立服维护，关掉/移走旧服安装后仍能完成同一验收。旧服协议探针通过与独立服通过分开记录。
