@@ -144,3 +144,25 @@ REA `0x409040` 确认新版在一次定义初始化后先解析 `mp/playeranim_d
 [真实隔离启动](../../research/evidence/server3333-startup-named-xanim.log)首次完成最简首关初始化：`Calculate referenced files checksums...` 后资源注册CRC为 `9eaffd84`、种子为 `cdb31851`，`publication dry encode=1 bytes=353 actual_client_crc=1`，可靠配置审计无失败。探针随后按设计停止自身服务端，结果 `ready=true`；未启动旧版启动器或客户端。
 
 这证明服务端地图初始化和资源发布检查通过。**大厅21/5仍未接入此实例，客户端连接、出生、移动与射击尚未验收。** 后续只推进真实就绪实例的预订/连接，不发布虚构候选，不扩大到原版剧情或复杂装备。
+
+## 旧连接桥接的复用边界
+
+对旧包的 `room_host2697.py`、`client_room2697.cpp` 和 `client_native_loopback.cpp` 仅作静态检查。其链路为DLL请求文件 → Python启服并回写ready → 本地包队列转发到回环28969；服务端设置 `codol_admissionRequired=0`、空安全密钥及 `codol_localChannel2697=1`。这不是原版房间预订和安全UDP已经恢复的证据，也不是新版必须采用的依赖。本阶段执行的是本项目重编的隔离服务端，没有执行旧启动器。
+
+可复用同一 `seq + map` 的请求/ready校验及资源发布完成后才允许连接的时序。当前仍须验证：21/5候选被客户端读取 → 所选服务器身份匹配 `mmbook accepted` → `mmstart` → 地址和安全材料进入服务端准入 → challenge/connect、stats、gamestate。现有初始化探针要求准入但未配置客户端安全材料，不能只改端口就接入。
+
+只有选用客户端桥接时才需要重新定位其钩子。旧send/receive地址 `0x5b1cf0/0x5b1c30` 尚未在当前版本验证；已知当前连接指针为 `*[0x1a2a538] ^ 0xd362501f`，旧地址和档案补丁不能照搬。证据见 [当前连接消费者](../../research/evidence/story-native-client-connection.json) 与 [剧情连接流程](../wiki/10-pve-story.md)。
+
+## REA快照与索引恢复
+
+本阶段在同一REA客户端会话中完成分析，收尾由 `close_binary` 保存 [分析快照](../../research/evidence/client423-native-stage.rea.json) 后关闭目标。保存结果为3039503字节、89项工作流缓存、180条证据，见 [保存记录](../../research/evidence/client423-native-stage-snapshot-save.json)。[证据包](../../research/evidence/client423-rea-bundle.json)另行保留；两者均为本地生成物，不进入Git。
+
+恢复时使用相同客户端SHA-256（见本报告开头）、`ghidra`提供方和原分析配置。在项目根运行 `node tools/rea-session.mjs`，输入以下一行JSON：
+
+```json
+{"name":"open_binary","arguments":{"path":"E:/Games/CODOL_Experience_V3.3.3.3_FULL.7z/CODOL_Experience_V3.3.3.3_FULL.7z/codoMP_client_shipRetail.exe","provider_id":"ghidra","snapshot_path":"E:/Games/CODOL_Experience_V3.3.3.3_FULL.7z/CODOL-Revival/research/evidence/client423-native-stage.rea.json"},"output":"client423-native-stage-restore.json"}
+```
+
+快照保存已成功；本阶段没有为验证恢复而重开并重扫目标。快照提供已保存查询的缓存复用，不是持久Ghidra工程；未命中的新查询仍可能触发分析。目标、提供方或配置不符时应使用匹配快照，不能忽略身份校验。
+
+主项目与客户端CodeGraph/GitNexus均已刷新。客户端索引含596份伪代码变体和4份随包代码，统计及重建命令见 [索引说明](../../research/client-code-index/README.md)。伪代码调用边仍有名称回退，不能代替机器码证据。

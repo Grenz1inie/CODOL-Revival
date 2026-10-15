@@ -10,7 +10,7 @@
 
 ## 按阶段定位
 
-剧情关卡解锁已实测：后续关卡锁消失，最后一关可选。全部 PVE 入口与“战斗开始”后的地图加载仍未恢复，见 [10 PVE 与剧情](10-pve-story.md)。
+剧情关卡解锁已实测：后续关卡锁消失，最后一关可选。2026-10-15隔离服务端已完成最简首关初始化及资源发布校验；大厅接入、客户端出生与移动/射击仍待验证，全部PVE入口和原版剧情后置。见 [10 PVE 与剧情](10-pve-story.md)。
 
 | 阶段 | 遇到什么问题时阅读 | 当前结论 |
 |---|---|---|
@@ -23,7 +23,7 @@
 | [07 会话与游戏服务器](07-session-game-server.md) | 训练/匹配繁忙、9/16 空结果、后续对局协议 | 9/16空结果仍可进入大厅；训练及对局协议未实现 |
 | [08 玩家等级、余额与商城](08-player-progression-marketplace.md) | 最高等级、转生、货币和物品所有权 | 实测 3 转生、70 级；商城等级解锁、游戏币购买扣款入库和重登保持通过 |
 | [09 点券、全物品与武器成长](09-inventory-completion.md) | 点券不显示、完整物品目录、武器等级和限时续期 | 点券购买、全物品永久发放、满级和配件/皮肤装备已人工验收；续期浏览器及数据检查通过 |
-| [10 PVE 菜单、剧情解锁与地图启动](10-pve-story.md) | 剧情锁、PVE 模式缺失、战斗开始后等待 | 剧情锁已实测解除；全部模式入口与地图启动仍在恢复 |
+| [10 PVE 菜单、剧情解锁与地图启动](10-pve-story.md) | 剧情锁、PVE 模式缺失、战斗开始后等待 | 剧情锁已实测解除；隔离服务端首关初始化通过，客户端接入未完成 |
 
 阅读顺序是阶段依赖，不是“前一步端口通了，后一步一定成功”。错误 100 曾同时覆盖“认证未完成”和“认证已通过、大厅未实现”两种状态。
 
@@ -60,6 +60,7 @@
 | 引导条件与参数 | [完成判断](../../research/evidence/onboarding-completion-checks.json)、[参数注册](../../research/evidence/onboarding-override-registration.json)、[名称原始字节](../../research/evidence/onboarding-override-names.json) |
 | profile 数据校验 | [seq44解压数据](../../research/evidence/profile-seq44-raw.bin)、[seq45解压数据](../../research/evidence/profile-seq45-raw.bin)；压缩包、CRC值和复核边界见 [06](06-onboarding-profile.md) |
 | 保存的 REA 分析包 | [认证阶段包](../../research/evidence/rea-main-evidence-20261014.json)、[引导后导出包](../../research/evidence/main-analysis-after-onboarding.rea.json)、[导出记录](../../research/evidence/main-analysis-close.json)；[大厅修复后快照](../../research/evidence/main-analysis-after-main-menu.rea.json)含32条证据记录 |
+| 原生移植阶段的REA快照 | [客户端快照](../../research/evidence/client423-native-stage.rea.json)含89项工作流缓存和180条证据；[恢复说明与限制](../reports/20261015-server-port.md#rea快照与索引恢复) |
 | 公开协议实现 | [协议研究笔记](../../research/reference-protocol/protocol-notes.md)、[仓库提交与逐文件 SHA256](../../research/reference-protocol/source-manifest.json) |
 
 研究笔记保留了早期“10/7 尚待真实验证”的历史边界；本 Wiki 的 [05](05-publisher-character-selection.md) 补充后续 CODOL 10/21 的实际运行证据，不回写旧报告。公开参考源涉及 GPL-3.0、AGPL-3.0 和 PolyForm Shield 1.0.0，具体归属见笔记与各仓库许可证。协议事实、项目实现与原始源码分别注明来源。
