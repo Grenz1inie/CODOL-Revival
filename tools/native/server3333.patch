@@ -1,3 +1,1064 @@
+--- a/src/codol/assets/codol_archive_probe.c
++++ b/src/codol/assets/codol_archive_probe.c
+@@ -130,8 +130,8 @@
+         const codol_asset_t *asset=&blocks->asset_aliases[i].asset;
+         unsigned header,offset; uint32_t ref; const char *name;
+         if(asset->type!=0 && asset->type!=5 && asset->type!=43) continue;
+-        header=asset->type==0 ? 68 : asset->type==43 ? 12 : 96;
+-        offset=asset->type==5 && asset->format_version==365 ? 8 : 0;
++        header=asset->type==0 ? 68 : asset->type==43 ? 12 : asset->format_version==423 ? 104 : 96;
++        offset=asset->type==5 ? (asset->format_version==423 ? 16 : asset->format_version==365 ? 8 : 0) : 0;
+         if(asset->size<header) continue;
+         memcpy(&ref,asset->data+offset,4);
+         name=ref==UINT32_MAX ?
+--- a/src/codol/assets/codol_asset_registry.c
++++ b/src/codol/assets/codol_asset_registry.c
+@@ -311,7 +311,7 @@
+     archive_t *entry;codol_netconst_t *result=NULL;size_t count=0,i,j;
+     if(!out || !out_count)return 0;
+     for(entry=archives;entry;entry=entry->next){
+-        if(entry->zone.format_version!=365 || !entry->prepared)goto fail;
++        if(entry->zone.format_version!=423 || !entry->prepared)goto fail;
+         for(i=entry->zone.asset_count;i;--i){
+             codol_asset_t source;const codol_asset_t *asset=&source;
+             codol_netconst_t table={0},*next;
+@@ -394,13 +394,13 @@
+             CODOL_OpenZoneFile(&entry->zone, paths[i]))) {
+             free(entry); goto fail;
+         }
+-        /* Legacy/default runtime paths cannot publish 365. The explicit
+-         * target path accepts only 365 and requires versioned consumers. */
+-        if (entry->zone.format_version==365 && !diagnostic) {
++        /* Legacy/default runtime paths cannot publish 423. The explicit
++         * target path accepts only 423 and requires versioned consumers. */
++        if (entry->zone.format_version==423 && !diagnostic) {
+             fprintf(stderr,"2.6.9.7 runtime asset publication is not enabled; use --codol-archive-probe.\n");
+             CODOL_CloseZone(&entry->zone); free(entry); goto fail;
+         }
+-        if(diagnostic==2 && entry->zone.format_version!=365) {
++        if(diagnostic==2 && entry->zone.format_version!=423) {
+             CODOL_CloseZone(&entry->zone); free(entry); goto fail;
+         }
+         if (prepare && !CODOL_ReplayZone(&entry->zone,&entry->blocks,failed_asset)) {
+@@ -447,11 +447,11 @@
+                                 unsigned group,size_t *failed_index,unsigned *failed_asset)
+ {
+     archive_t *entry;
+-    for(entry=archives;entry;entry=entry->next)if(entry->zone.format_version!=365)return 0;
++    for(entry=archives;entry;entry=entry->next)if(entry->zone.format_version!=423)return 0;
+     return mount_archives(paths,count,image,failed_index,failed_asset,1,group,2);
+ }
+ int CODOL_Target2697ArchivesActive(void)
+-{return archives && archives->zone.format_version==365;}
++{return archives && archives->zone.format_version==423;}
+ int CODOL_ReplaceRuntimeArchives(const char *const *paths,size_t count,const char *client_exe,
+                                 unsigned group,size_t *failed_index,unsigned *failed_asset)
+ {
+@@ -697,8 +697,13 @@
+     header=asset->type==0 ? 68 : asset->type==1 ? 72 : asset->type==2 ? 88 : asset->type==3 ? 48 : asset->type==4 ? 360 : asset->type==11 ? 12 : asset->type==12 ? 136 : asset->type==13 ? 48 : asset->type==16 ? 16 : asset->type==18 ? 84 : asset->type==20 ? 116 : asset->type==28 ? 0xbfc : asset->type==30 ? 32 : asset->type==39 ? 12 : asset->type==40 ? 112 : asset->type==41 ? 0x314 : asset->type==43 ? 12 : 96;
+     if (asset->size<header) return NULL;
+     if (asset->type==28 && asset->format_version==365) header=0xc34;
++    if (asset->format_version==423) {
++        if (asset->type==5) header=104;
++        if (asset->type==28) header=0xe28;
++        if (asset->type==40) header=116;
++    }
+     if (asset->size<header) return NULL;
+-    p=asset->data+(asset->type==5 && asset->format_version==365 ? 8 : 0);
++    p=asset->data+(asset->type==5 ? (asset->format_version==423 ? 16 : asset->format_version==365 ? 8 : 0) : 0);
+     ref=(uint32_t)p[0]|(uint32_t)p[1]<<8|(uint32_t)p[2]<<16|(uint32_t)p[3]<<24;
+     p=asset->data;
+     if (ref==UINT32_MAX) { p+=header; available=asset->size-header; }
+@@ -2050,7 +2055,14 @@
+         if(!status) return -1;
+         result.name=dependency_asset_name(archive,&result.asset);
+         if(!result.name || !*result.name) return -1;
+-        archive=find_dependency_definition(type,result.name[0]==',' ? result.name+1 : result.name,&result.asset);
++        {
++            codol_asset_t placeholder=result.asset;
++            archive=find_dependency_definition(type,result.name[0]==',' ? result.name+1 : result.name,&result.asset);
++            if (!archive && type==0 && placeholder.format_version==423 && placeholder.size>=70 &&
++                world_u32(placeholder.data)==UINT32_MAX && placeholder.data[68]==',' &&
++                result.name==(const char *)placeholder.data+68 && result.name[1])
++                archive=find_dependency_definition(0,"default",&result.asset);
++        }
+         if(!archive) return -1;
+         result.name=dependency_asset_name(archive,&result.asset);
+         CODOL_LoadBlockViews(&archive->blocks,result.blocks); result.blocks[0]=(codol_model_block_t){0};
+--- a/src/codol/assets/codol_asset_stream.c
++++ b/src/codol/assets/codol_asset_stream.c
+@@ -61,8 +61,8 @@
+ int CODOL_AdvanceImageStreamVersion(const uint8_t *b,size_t size,size_t *position,uint32_t version)
+ {
+     size_t p,header,def;
+-    unsigned bytes=version==365 ? 52 : 36;
+-    if (!b || !position || size>CODOL_ASSET_LIMIT || (version && version!=334 && version!=365)) return 0;
++    unsigned bytes=(version==365 || version==423) ? 52 : 36;
++    if (!b || !position || size>CODOL_ASSET_LIMIT || (version && version!=334 && version!=365 && version!=423)) return 0;
+     p=header=*position;
+     if (!take(&p,size,1,bytes)) return 0;
+     if (u32(b+header+bytes-4)==UINT32_MAX && !string(b,size,&p)) return 0;
+@@ -80,7 +80,7 @@
+     size_t p,h;
+     uint32_t m,n,ref;
+     uint64_t cells;
+-    if (!b || !position || size>CODOL_ASSET_LIMIT || (version && version!=334 && version!=365)) return 0;
++    if (!b || !position || size>CODOL_ASSET_LIMIT || (version && version!=334 && version!=365 && version!=423)) return 0;
+     p=h=*position;
+     if (!take(&p,size,1,68)) return 0;
+     m=u32(b+h+12); n=u32(b+h+16); cells=(uint64_t)m*n;
+@@ -105,8 +105,8 @@
+ {
+     size_t p,h;
+     unsigned i,j,k;
+-    unsigned pointer_offset=version==365 ? 16 : 12;
+-    if (!b || !position || size>CODOL_ASSET_LIMIT || (version && version!=334 && version!=365)) return 0;
++    unsigned pointer_offset=(version==365 || version==423) ? 16 : 12;
++    if (!b || !position || size>CODOL_ASSET_LIMIT || (version && version!=334 && version!=365 && version!=423)) return 0;
+     p=h=*position;
+     if (!take(&p,size,1,pointer_offset+48*4)) return 0;
+     if (u32(b+h)==UINT32_MAX && !string(b,size,&p)) return 0;
+@@ -144,16 +144,16 @@
+ int CODOL_AdvanceMaterialStreamVersion(const uint8_t *b,size_t size,size_t *position,uint32_t version)
+ {
+     size_t p,h,textures;
+-    unsigned i;
+-    if (!b || !position || size>CODOL_ASSET_LIMIT || (version && version!=334 && version!=365)) return 0;
+-    p=h=*position;
+-    if (!take(&p,size,1,96)) return 0;
+-    if (u32(b+h+(version==365 ? 8 : 0))==UINT32_MAX && !string(b,size,&p)) return 0;
+-    if (u32(b+h+0x50)>=UINT32_MAX-1 && !CODOL_AdvanceTechniqueSetStreamVersion(b,size,&p,version)) return 0;
+-    if (u32(b+h+0x54)==UINT32_MAX) {
++    unsigned i, shift=version==423 ? 8 : 0;
++    if (!b || !position || size>CODOL_ASSET_LIMIT || (version && version!=334 && version!=365 && version!=423)) return 0;
++    p=h=*position;
++    if (!take(&p,size,1,96+shift)) return 0;
++    if (u32(b+h+(version==423 ? 16 : version==365 ? 8 : 0))==UINT32_MAX && !string(b,size,&p)) return 0;
++    if (u32(b+h+shift+0x50)>=UINT32_MAX-1 && !CODOL_AdvanceTechniqueSetStreamVersion(b,size,&p,version)) return 0;
++    if (u32(b+h+shift+0x54)==UINT32_MAX) {
+         textures=p;
+-        if (!take(&p,size,b[h+0x48],12)) return 0;
+-        for (i=0;i<b[h+0x48];++i) {
++        if (!take(&p,size,b[h+shift+0x48],12)) return 0;
++        for (i=0;i<b[h+shift+0x48];++i) {
+             const uint8_t *texture=b+textures+12*i;
+             uint32_t ref=u32(texture+8);
+             if (texture[7]==11) {
+@@ -161,8 +161,8 @@
+             } else if (ref>=UINT32_MAX-1 && !CODOL_AdvanceImageStreamVersion(b,size,&p,version)) return 0;
+         }
+     }
+-    if (u32(b+h+0x58)==UINT32_MAX && !take(&p,size,b[h+0x49],32)) return 0;
+-    if (u32(b+h+0x5c)==UINT32_MAX && !take(&p,size,b[h+0x4a],8)) return 0;
++    if (u32(b+h+shift+0x58)==UINT32_MAX && !take(&p,size,b[h+shift+0x49],32)) return 0;
++    if (u32(b+h+shift+0x5c)==UINT32_MAX && !take(&p,size,b[h+shift+0x4a],8)) return 0;
+     *position=p; return 1;
+ }
+ /* XModelSurfs 0x4bb890, XSurface 0x4b8ff0, collision tree 0x4b8d50. */
+--- a/src/codol/assets/codol_client_crypto.c
++++ b/src/codol/assets/codol_client_crypto.c
+@@ -87,6 +87,6 @@
+      * 0x4b8590 passes padding 1. Its IWD decrypt at 0x5ab0f0 still uses 2.
+      * The DER digest above is independently identical in both local builds. */
+     if (version == 334) return decrypt_material(exe, CODOL_C1_RSA_DER_OFFSET, 0, encrypted, out, 40);
+-    if (version == 365) return decrypt_material(exe, CODOL_2697_RSA_DER_OFFSET, 1, encrypted, out, 40);
++    if (version == 423) return decrypt_material(exe, 0x859fa0u, 1, encrypted, out, 40);
+     return 0;
+ }
+--- a/src/codol/assets/codol_effects.c
++++ b/src/codol/assets/codol_effects.c
+@@ -75,6 +75,7 @@
+ {
+     codol_effect_source_t result={0}; size_t pos; unsigned i,j;
+     if(!out || !CODOL_ReadEffectPrefix(asset,blocks,&result.prefix)) return 0;
++    result.format_version=asset->format_version;
+     pos=result.prefix.dependency_offset;
+     if(result.prefix.count && !(result.elements=calloc(result.prefix.count,sizeof(*result.elements)))) return 0;
+     for(i=0;i<result.prefix.count;++i) {
+@@ -87,7 +88,7 @@
+         }
+         if(u32(r+184)) {
+             e->visual_sample_count=(unsigned)r[179]+1;
+-            if(!take(asset,&pos,e->visual_sample_count,48,&e->visual_samples)) goto fail;
++            if(!take(asset,&pos,e->visual_sample_count,asset->format_version==423 ? 64 : 48,&e->visual_samples)) goto fail;
+         }
+         if(type==13) {
+             if(u32(r+188)) {
+--- a/src/codol/assets/codol_effects.h
++++ b/src/codol/assets/codol_effects.h
+@@ -33,6 +33,7 @@
+ } codol_effect_element_t;
+ typedef struct {
+     codol_effect_prefix_t prefix;
++    uint32_t format_version;
+     codol_effect_element_t *elements;
+ } codol_effect_source_t;
+ /* Complete serialized traversal, including sample arrays, visual dependencies,
+--- a/src/codol/assets/codol_effects_native.c
++++ b/src/codol/assets/codol_effects_native.c
+@@ -85,7 +85,7 @@
+             (s->velocity_count && !s->velocity_samples) || (s->visual_sample_count && !s->visual_samples)) PACK_FAIL("sample count mismatch");
+         if(type==12 ? (b->visual_count || b->visuals) : (b->visual_count!=n || (n && !b->visuals))) PACK_FAIL("binding count mismatch");
+         if(!part(p,s->velocity_samples,(size_t)s->velocity_count*96,4,&velocity) ||
+-            !part(p,s->visual_samples,(size_t)s->visual_sample_count*48,4,&visual_samples)) return 0;
++            !part(p,s->visual_samples,(size_t)s->visual_sample_count*(source->format_version==423 ? 64 : 48),4,&visual_samples)) return 0;
+         if(n>1 && !part(p,NULL,(size_t)n*4,4,&visual_array)) return 0;
+ #ifdef CODOL_SERVER
+         if(s->extension) {
+--- a/src/codol/assets/codol_fastfile.c
++++ b/src/codol/assets/codol_fastfile.c
+@@ -69,7 +69,7 @@
+     unsigned_file = !memcmp(raw, "IWffu100", 8);
+     version = (uint32_t)raw[8] | (uint32_t)raw[9]<<8 | (uint32_t)raw[10]<<16 | (uint32_t)raw[11]<<24;
+     if ((!unsigned_file && memcmp(raw, "IWff0100", 8)) ||
+-        (version != 334 && version != 365)) goto done;
++        (version != 334 && version != 423)) goto done;
+     body_size = file_size - FF_HEADER;
+     if (!body_size || (!unsigned_file && (body_size % FF_BLOCK || body_size < 3 * FF_BLOCK))) goto done;
+     open_failure = "RSA material/version mismatch";
+--- a/src/codol/assets/codol_load_blocks.c
++++ b/src/codol/assets/codol_load_blocks.c
+@@ -240,7 +240,7 @@
+ static int replay_image(codol_load_blocks_t *s,int apply,uint32_t *reference)
+ {
+     const uint8_t *h=s->source+s->source_position,*definition;
+-    unsigned header_size=s->format_version==365 ? 52 : 36;
++    unsigned header_size=(s->format_version==365 || s->format_version==423) ? 52 : 36;
+     /* Target 0x4bbc70 reads 0x34 bytes, with name at +0x30. */
+     if (!reserve(s,0,header_size,4,1,apply,reference) || !CODOL_PushLoadBlock(s,3)) return 0;
+     if (read32(h+header_size-4)==UINT32_MAX && !replay_string(s,apply)) return 0;
+@@ -314,7 +314,7 @@
+     unsigned i,j,k;
+     /* Target 0x4bca20 reads 208 bytes; 0x4bca9a advances to +16, then
+      * 0x4bc9b0 loads the same 48 technique pointers as C1's +12 layout. */
+-    unsigned pointer_offset=s->format_version==365 ? 16 : 12;
++    unsigned pointer_offset=(s->format_version==365 || s->format_version==423) ? 16 : 12;
+     if (!reserve(s,0,pointer_offset+48*4,4,1,apply,reference) || !CODOL_PushLoadBlock(s,3)) return 0;
+     if (read32(h)==UINT32_MAX && !replay_string(s,apply)) return 0;
+     for (i=0;i<48;++i) if (read32(h+pointer_offset+4*i)==UINT32_MAX) {
+@@ -399,28 +399,59 @@
+ static int replay_asset_reference(codol_load_blocks_t *s,uint32_t reference,int apply,
+     int (*loader)(codol_load_blocks_t *,int,uint32_t *))
+ { return replay_field_asset_reference(s,reference,0,apply,loader); }
+-static int replay_material(codol_load_blocks_t *s,int apply,uint32_t *reference)
+-{
+-    const uint8_t *h=s->source+s->source_position,*textures;
+-    uint32_t ignored;
+-    unsigned i;
+-    if (!reserve(s,0,96,4,1,apply,reference) || !CODOL_PushLoadBlock(s,3)) return 0;
+-    /* Target MaterialInfo puts name at +8 (0x4bcbb7); C1 uses +0. */
+-    if (read32(h+(s->format_version==365 ? 8 : 0))==UINT32_MAX && !replay_string(s,apply)) return 0;
+-    if (!replay_asset_reference(s,read32(h+80),apply,replay_technique_set)) return 0;
+-    if (read32(h+84)==UINT32_MAX) {
+-        if (!(textures=replay_bytes(s,h[72],12,4,apply))) return 0;
+-        for (i=0;i<h[72];++i) {
+-            const uint8_t *texture=textures+12*i;
+-            uint32_t ref=read32(texture+8);
+-            if (texture[7]==11) {
+-                if (ref==UINT32_MAX && !replay_water(s,apply,&ignored)) return 0;
+-            } else if (!replay_asset_reference(s,ref,apply,replay_image)) return 0;
+-        }
+-    }
+-    if (read32(h+88)==UINT32_MAX && !replay_bytes(s,h[73],32,16,apply)) return 0;
+-    if (read32(h+92)==UINT32_MAX && !replay_bytes(s,h[74],8,4,apply)) return 0;
+-    return CODOL_PopLoadBlock(s);
++static int replay_sound_name(codol_load_blocks_t *,uint32_t,int);
++enum { STRING, MODEL, EFFECT, MATERIAL, PHYSCOLL, PHYSPRESET, TRACER, SOUND };
++static int fields(codol_load_blocks_t *ctx, int pass, const uint32_t *data, uint32_t count, int kind)
++{
++    uint32_t i;
++    int (*target)(codol_load_blocks_t *,int,uint32_t *) = NULL;
++    if (kind == MODEL) target = replay_model;
++    if (kind == EFFECT) target = replay_effect;
++    if (kind == MATERIAL) target = replay_material;
++    if (kind == PHYSCOLL) target = replay_physics_map_asset; /* 0x48-byte collision map, client 0x48a0f0. */
++    if (kind == PHYSPRESET) target = replay_preset_asset; /* 0x44-byte preset, client 0x489e60. */
++    if (kind == TRACER) target = replay_tracer;
++    for (i = 0; i < count; ++i) {
++        if (kind == STRING) {
++            if (data[i] == 0xffffffffu && !replay_string(ctx, pass)) return 0;
++        } else if (kind == SOUND) {
++            if (!replay_sound_name(ctx, data[i], pass)) return 0;
++        } else if (!replay_asset_reference(ctx, data[i], pass, target)) return 0;
++    }
++    return 1;
++}
++static int replay_material(codol_load_blocks_t *ctx, int pass, uint32_t *encoded)
++{
++    const unsigned char *h = (const unsigned char *)(ctx->source + ctx->source_position);
++    const uint32_t *textures;
++    uint32_t i, ignored, slots, ref, start, insertion;
++    if (ctx->format_version != 423 || !reserve(ctx, 0, 104, 4, 1, pass, encoded) ||
++        !CODOL_PushLoadBlock(ctx, 3)) return 0;
++    if (*(const uint32_t *)(h + 16) == 0xffffffffu && !replay_string(ctx, pass)) return 0;
++    if (!replay_asset_reference(ctx, *(const uint32_t *)(h + 88), pass, replay_technique_set)) return 0;
++    if (*(const uint32_t *)(h + 92) == 0xffffffffu) {
++        slots = 0x30000001u + ((ctx->position[3] + 3) & ~3u);
++        textures = (const uint32_t *)replay_bytes(ctx, h[80], 12, 4, pass);
++        if (!textures) return 0;
++        for (i = 0; i < h[80]; ++i) {
++            ref = textures[3 * i + 2];
++            if ((textures[3 * i + 1] >> 24) == 11) {
++                if (ref == 0xffffffffu && !replay_water(ctx, pass, &ignored)) return 0;
++                continue;
++            }
++            start = ctx->source_position;
++            insertion = 0x30000001u + ((ctx->position[3] + 3) & ~3u);
++            if (!replay_asset_reference(ctx, ref, pass, replay_image)) return 0;
++            if (ref >= 0xfffffffeu) {
++                if (!record_asset(ctx, 10, slots + 12 * i + 8, start, pass)) return 0;
++                if (ref == 0xfffffffeu &&
++                    !record_asset(ctx, 10, insertion, start, pass)) return 0;
++            }
++        }
++    }
++    if (*(const uint32_t *)(h + 96) == 0xffffffffu && !(const uint32_t *)replay_bytes(ctx, h[81], 32, 16, pass)) return 0;
++    if (*(const uint32_t *)(h + 100) == 0xffffffffu && !(const uint32_t *)replay_bytes(ctx, h[82], 8, 4, pass)) return 0;
++    return CODOL_PopLoadBlock(ctx);
+ }
+ int CODOL_ReplayMaterial(codol_load_blocks_t *stream,uint32_t *reference)
+ {
+@@ -473,7 +504,7 @@
+             uint32_t triangles=read32(surfaces+44*i);
+             /* Target 0x4be340 branches around an already pooled triangle
+              * span. Only -1 consumes inline 48-byte triangles. */
+-            if ((s->format_version==365 ? triangles==UINT32_MAX : triangles!=0) &&
++            if (((s->format_version==365 || s->format_version==423) ? triangles==UINT32_MAX : triangles!=0) &&
+                 !replay_bytes(s,read32(surfaces+44*i+4),48,4,apply)) return 0;
+         }
+     }
+@@ -582,7 +613,7 @@
+             const uint8_t *e=elements+260*(size_t)i;
+             type=e[176]; n=e[177];
+             if (read32(e+180) && !replay_bytes(s,e[178]+1,96,4,apply)) return 0;
+-            if (read32(e+184) && !replay_bytes(s,e[179]+1,48,4,apply)) return 0;
++            if (read32(e+184) && !replay_bytes(s,e[179]+1,s->format_version==423 ? 64 : 48,4,apply)) return 0;
+             if (type==13) {
+                 if (read32(e+188)) {
+                     visual_slots=0x30000001u+(uint32_t)((s->position[3]+3)&~(size_t)3);
+@@ -732,7 +763,7 @@
+     const uint8_t *h=s->source+s->source_position,*skies,*counts=NULL,*trees,*nodes,*cells,*portals;
+     uint32_t count,i,j,ignored;
+     uint64_t runtime;
+-    if (!reserve(s,0,s->format_version==365 ? 1608 : 628,4,1,apply,reference) || !CODOL_PushLoadBlock(s,3)) return 0;
++    if (!reserve(s,0,(s->format_version==365 || s->format_version==423) ? 1608 : 628,4,1,apply,reference) || !CODOL_PushLoadBlock(s,3)) return 0;
+     for (i=0;i<8;i+=4) if (read32(h+i)==UINT32_MAX && !replay_string(s,apply)) return 0;
+     count=read32(h+20);
+     if (count>INT32_MAX) return 0;
+@@ -765,7 +796,7 @@
+         }
+     }
+     if (read32(h+76)) {
+-        unsigned cell_stride=s->format_version==365 ? 48 : 40;
++        unsigned cell_stride=(s->format_version==365 || s->format_version==423) ? 48 : 40;
+         if (!(cells=replay_bytes(s,count,cell_stride,4,apply))) return 0;
+         for (i=0;i<count;++i) {
+             const uint8_t *cell=cells+(size_t)i*cell_stride;
+@@ -779,7 +810,7 @@
+             }
+             if (read32(cell+36) && !replay_bytes(s,cell[32],1,1,apply)) return 0;
+             /* 0x4c9440: second one-byte probe index list at +40/+44. */
+-            if (s->format_version==365 && read32(cell+44) && !replay_bytes(s,cell[40],1,1,apply)) return 0;
++            if ((s->format_version==365 || s->format_version==423) && read32(cell+44) && !replay_bytes(s,cell[40],1,1,apply)) return 0;
+         }
+     }
+     return 1;
+@@ -800,7 +831,7 @@
+             if (!replay_asset_reference(s,read32(images+4*i),apply,replay_image)) return 0;
+     }
+     if (read32(d+8)) {
+-        if (s->format_version==365) {
++        if ((s->format_version==365 || s->format_version==423)) {
+             const uint8_t *probes,*volumes;
+             /* 0x4c91d0 / 0x4c9100: 20-byte probes own 104-byte volumes,
+              * whose +96/+100 pair points to 16-bit index arrays. */
+@@ -817,7 +848,7 @@
+     size=(uint64_t)count*4;
+     if (read32(d+12) && (size>SIZE_MAX || !reserve(s,2,(size_t)size,4,1,apply,&ignored))) return 0;
+     if (!CODOL_PopLoadBlock(s)) return 0;
+-    if (s->format_version==365) {
++    if ((s->format_version==365 || s->format_version==423)) {
+         /* 0x4ca7bb..0x4ca86c: probe-origin records (12 bytes) and one-byte
+          * indices precede the lightmap group; subsequent fields move +12. */
+         count=read32(d+16);
+@@ -877,7 +908,7 @@
+     if (!replay_asset_reference(s,read32(h+256),apply,replay_material) ||
+         !replay_asset_reference(s,read32(h+260),apply,replay_material)) return 0;
+     /* Target sun-flare 0x4c9010 loads four material slots, C1 two. */
+-    if (s->format_version==365 &&
++    if ((s->format_version==365 || s->format_version==423) &&
+         (!replay_asset_reference(s,read32(h+264),apply,replay_material) ||
+          !replay_asset_reference(s,read32(h+268),apply,replay_material))) return 0;
+     if (!replay_asset_reference(s,read32(h+412),apply,replay_image)) return 0;
+@@ -964,7 +995,7 @@
+ }
+ static const uint8_t *world_legacy_header(const codol_load_blocks_t *s,const uint8_t *h,uint8_t result[628])
+ {
+-    if (s->format_version!=365) return h;
++    if ((s->format_version!=365 && s->format_version!=423)) return h;
+     /* Measured target 0x4caa30: draw at +80 grows 12 bytes, light-grid
+      * at +164, models +220, sun +264 grows 968 bytes, tail +1392.
+      * This temporary view translates field lookups only; original loader
+@@ -1192,11 +1223,101 @@
+ }
+ static int replay_map_entities(codol_load_blocks_t *s,int apply,uint32_t *reference)
+ {
+-    return replay_map_entities_body(s,apply,reference,0);
+-}
+-static int replay_addon_map_entities(codol_load_blocks_t *s,int apply,uint32_t *reference)
+-{
+-    return replay_map_entities_body(s,apply,reference,1);
++    return replay_map_entities_body(s,apply,reference,s->format_version==423);
++}
++static int inline_array(codol_load_blocks_t *ctx, int pass, const uint32_t *pair, uint32_t stride, uint32_t align)
++{
++    return pair[1] != 0xffffffffu ||
++           (const uint32_t *)replay_bytes(ctx, pair[0], stride, align, pass) != 0;
++}
++
++static int plane_refs(codol_load_blocks_t *ctx, int pass, const uint32_t *nodes, uint32_t count)
++{
++    uint32_t i;
++    for (i = 0; i < count; ++i)
++        if (nodes[i * 2] == 0xffffffffu && !(const uint32_t *)replay_bytes(ctx, 1, 20, 4, pass)) return 0;
++    return 1;
++}
++
++static int collision_info_body(codol_load_blocks_t *ctx, int pass, const uint32_t *info)
++{
++    const uint32_t *nodes;
++    uint32_t i, count;
++    if (!info) return 0;
++    count = info[12] & 0xffff;
++    if (!inline_array(ctx, pass, info, 20, 4)) return 0;
++    if (info[3] == 0xffffffffu) {
++        nodes = (const uint32_t *)replay_bytes(ctx, info[2], 12, 4, pass);
++        if (!nodes) return 0;
++        for (i = 0; i < info[2]; ++i)
++            if (nodes[i * 3] == 0xffffffffu && !replay_string(ctx, pass)) return 0;
++    }
++    if (info[5] == 0xffffffffu) {
++        nodes = (const uint32_t *)replay_bytes(ctx, info[4], 8, 4, pass);
++        if (!nodes || !plane_refs(ctx, pass, nodes, info[4])) return 0;
++    }
++    if (!inline_array(ctx, pass, info + 6, 1, 1)) return 0;
++    if (info[9] == 0xffffffffu) {
++        nodes = (const uint32_t *)replay_bytes(ctx, info[8], 20, 4, pass);
++        if (!nodes) return 0;
++        for (i = 0; i < info[8]; ++i) {
++            const unsigned short *node = (const unsigned short *)(nodes + i * 5);
++            if ((short)node[1] > 0 && nodes[i * 5 + 2] == 0xffffffffu &&
++                !(const uint32_t *)replay_bytes(ctx, node[1], 2, 2, pass)) return 0;
++        }
++    }
++    if (!inline_array(ctx, pass, info + 10, 2, 2)) return 0;
++    if (info[13] == 0xffffffffu) {
++        nodes = (const uint32_t *)replay_bytes(ctx, count, 36, 128, pass);
++        if (!nodes) return 0;
++        for (i = 0; i < count; ++i) {
++            if (nodes[i * 9 + 1] == 0xffffffffu) {
++                const uint32_t *side = (const uint32_t *)replay_bytes(ctx, 1, 8, 4, pass);
++                if (!side || !plane_refs(ctx, pass, side, 1)) return 0;
++            }
++            if (nodes[i * 9 + 2] == 0xffffffffu && !(const uint32_t *)replay_bytes(ctx, 1, 1, 1, pass)) return 0;
++        }
++    }
++    if (info[14] == 0xffffffffu && !(const uint32_t *)replay_bytes(ctx, count, 24, 128, pass)) return 0;
++    return info[15] != 0xffffffffu || (const uint32_t *)replay_bytes(ctx, count, 4, 4, pass) != 0;
++}
++
++static int collision_info(codol_load_blocks_t *ctx, int pass)
++{
++    const uint32_t *info = (const uint32_t *)replay_bytes(ctx, 1, 64, 4, pass);
++    return info && collision_info_body(ctx, pass, info);
++}
++
++static int collision_info_ref(codol_load_blocks_t *ctx, int pass, uint32_t pointer)
++{
++    uint32_t alias;
++    if (pointer < 0xfffffffeu) return 1;
++    if (!CODOL_PushLoadBlock(ctx, 0)) return 0;
++    if (pointer == 0xfffffffeu && !reserve(ctx, 3, 4, 4, 0, pass, &alias)) return 0;
++    if (!collision_info(ctx, pass)) return 0;
++    return CODOL_PopLoadBlock(ctx);
++}
++static int replay_addon_map_entities(codol_load_blocks_t *ctx, int pass, uint32_t *encoded)
++{
++    const uint32_t *header = (const uint32_t *)(ctx->source + ctx->source_position);
++    const uint32_t *models;
++    uint32_t i;
++    if (ctx->format_version != 0x1a7 || !reserve(ctx, 0, 52, 4, 1, pass, encoded)) return 0;
++    if (!CODOL_PushLoadBlock(ctx, 3)) return 0;
++    if (header[0] == 0xffffffffu && !replay_string(ctx, pass)) return 0;
++    if (header[1] && !(const uint32_t *)replay_bytes(ctx, header[2], 1, 1, pass)) return 0;
++    if (!inline_array(ctx, pass, header + 3, 8, 4) ||
++        !inline_array(ctx, pass, header + 5, 32, 4) ||
++        !inline_array(ctx, pass, header + 7, 20, 4)) return 0;
++    if (header[9] == 0xffffffffu && !collision_info(ctx, pass)) return 0;
++    if (header[11]) {
++        models = (const uint32_t *)replay_bytes(ctx, header[10], 72, 4, pass);
++        if (!models) return 0;
++        for (i = 0; i < header[10]; ++i)
++            if (models[i * 18 + 7] == 0xffffffffu && !collision_info(ctx, pass)) return 0;
++    }
++    if (header[12] && !(const uint32_t *)replay_bytes(ctx, header[10], 60, 4, pass)) return 0;
++    return CODOL_PopLoadBlock(ctx);
+ }
+ int CODOL_ReplayMapEntities(codol_load_blocks_t *stream,uint32_t *reference)
+ {
+@@ -1211,82 +1332,88 @@
+     }
+     *stream=plan; *reference=result; return 1;
+ }
+-static int replay_collision_planes(codol_load_blocks_t *s,uint32_t count,int apply)
+-{
+-    const uint8_t *records=replay_bytes(s,count,8,4,apply);
+-    uint32_t i;
+-    if (!records) return 0;
+-    for (i=0;i<count;++i)
+-        if (read32(records+(size_t)i*8)==UINT32_MAX && !replay_bytes(s,1,20,4,apply)) return 0;
+-    return 1;
+-}
++
+ /* C1 clipMap_t 0x4bf410. Count/pointer offsets preserve loader order,
+  * including leaf brushes before leaf-brush nodes and MapEnts after static nodes. */
+-static int replay_collision(codol_load_blocks_t *s,int apply,uint32_t *reference)
+-{
+-    static const unsigned fields[][5]={
+-        {16,20,76,4,1},{24,28,12,4,2},{32,36,8,4,3},{40,44,1,1,0},
+-        {48,52,8,4,3},{56,60,40,4,0},{72,76,2,2,0},{64,68,20,4,4},
+-        {80,84,4,4,0},{88,92,12,4,0},{96,100,6,2,0},{96,104,4,1,5},
+-        {108,112,28,4,0},{116,120,12,4,6},{124,128,32,16,0},{132,136,68,4,0},
+-        {140,144,36,128,7},{140,148,24,128,0},{140,152,4,4,0},{160,164,28,4,0}
+-    };
+-    const uint8_t *h=s->source+s->source_position,*records;
+-    uint32_t count,i,j,k;
+-    if (!reserve(s,0,256,4,1,apply,reference) || !CODOL_PushLoadBlock(s,3)) return 0;
+-    if (read32(h)==UINT32_MAX && !replay_string(s,apply)) return 0;
+-    if (read32(h+12)==UINT32_MAX && !replay_bytes(s,read32(h+8),20,4,apply)) return 0;
+-    for (i=0;i<sizeof(fields)/sizeof(fields[0]);++i) if (read32(h+fields[i][1])) {
+-        unsigned offset=fields[i][0],kind=fields[i][4];
+-        count=offset==140 || offset==160 ? read16(h+offset) : read32(h+offset);
+-        if (kind==5) count=(uint32_t)(((uint64_t)count*3+31)/32);
+-        if (!(records=replay_bytes(s,count,fields[i][2],fields[i][3],apply))) return 0;
+-        if (kind==0 || kind==5) continue;
+-        for (j=0;j<count;++j) {
+-            const uint8_t *r=records+(size_t)j*fields[i][2];
+-            if (kind==1 && !replay_asset_reference(s,read32(r),apply,replay_model)) return 0;
+-            if (kind==2 && read32(r)==UINT32_MAX && !replay_string(s,apply)) return 0;
+-            if (kind==3 && read32(r)==UINT32_MAX && !replay_bytes(s,1,20,4,apply)) return 0;
+-            if (kind==4 && read16(r+2)>0 && read16(r+2)<32768 && read32(r+8)==UINT32_MAX &&
+-                !replay_bytes(s,read16(r+2),2,2,apply)) return 0;
+-            if (kind==6 && read32(r+8)==UINT32_MAX && !replay_bytes(s,1,28,4,apply)) return 0;
+-            if (kind==7) {
+-                unsigned edges=0;
+-                if (read32(r+4)==UINT32_MAX && !replay_collision_planes(s,read16(r),apply)) return 0;
+-                for (k=30;k<36;++k) edges+=r[k];
+-                if (read32(r+8)==UINT32_MAX && !replay_bytes(s,edges,1,1,apply)) return 0;
++static int replay_collision(codol_load_blocks_t *ctx, int pass, uint32_t *encoded)
++{
++    const uint32_t *h = (const uint32_t *)(ctx->source + ctx->source_position), *rows;
++    uint32_t i, j, count, unused, base, source;
++    if (ctx->format_version != 0x1a7 || !reserve(ctx, 0, 256, 4, 1, pass, encoded)) return 0;
++    if (!CODOL_PushLoadBlock(ctx, 3) || !fields(ctx, pass, h, 1, STRING)) return 0;
++    if (!collision_info_body(ctx, pass, h + 2) || !collision_info_ref(ctx, pass, h[0x12])) return 0;
++    if (h[0x14]) {
++        rows = (const uint32_t *)replay_bytes(ctx, h[0x13], 76, 4, pass);
++        if (!rows) return 0;
++        for (i = 0; i < h[0x13]; ++i)
++            if (!fields(ctx, pass, rows + i * 19, 1, MODEL)) return 0;
++    }
++    if (h[0x16]) {
++        rows = (const uint32_t *)replay_bytes(ctx, h[0x15], 8, 4, pass);
++        if (!rows || !plane_refs(ctx, pass, rows, h[0x15])) return 0;
++    }
++#define ARRAY(index, count, stride, align) if (h[index] && !(const uint32_t *)replay_bytes(ctx, count, stride, align, pass)) return 0
++    ARRAY(0x18, h[0x17], 40, 4); ARRAY(0x1a, h[0x19], 12, 4);
++    ARRAY(0x1c, h[0x1b], 6, 2); ARRAY(0x1d, ((h[0x1b] * 3 + 31) >> 5), 4, 1);
++    ARRAY(0x1f, h[0x1e], 28, 4);
++    if (h[0x21]) {
++        rows = (const uint32_t *)replay_bytes(ctx, h[0x20], 12, 4, pass);
++        if (!rows) return 0;
++        for (i = 0; i < h[0x20]; ++i)
++            if (rows[i * 3 + 2] == 0xffffffffu && !(const uint32_t *)replay_bytes(ctx, 1, 28, 4, pass)) return 0;
++    }
++    ARRAY(0x23, h[0x22], 32, 16);
++    if (h[0x25]) {
++        rows = (const uint32_t *)replay_bytes(ctx, h[0x24], 72, 4, pass);
++        if (!rows) return 0;
++        for (i = 0; i < h[0x24]; ++i)
++            if (!collision_info_ref(ctx, pass, rows[i * 18 + 7])) return 0;
++    }
++    ARRAY(0x30, h[0x2f] & 0xffff, 28, 4);
++    if (!replay_asset_reference(ctx, h[0x26], pass, replay_map_entities)) return 0;
++    if (h[0x27]) {
++        rows = (const uint32_t *)replay_bytes(ctx, h[0x28] & 0xff, 20, 4, pass);
++        if (!rows) return 0;
++        for (i = 0; i < (h[0x28] & 0xff); ++i)
++            if (!fields(ctx, pass, rows + i * 5, 1, STRING)) return 0;
++    }
++    if (!inline_array(ctx, pass, h + 0x29, 8, 4) ||
++        !inline_array(ctx, pass, h + 0x2b, 32, 4) ||
++        !inline_array(ctx, pass, h + 0x2d, 20, 4)) return 0;
++    for (i = 0; i < 2; ++i) {
++        count = (h[0x31] >> (i * 16)) & 0xffff;
++        if (!h[0x32 + i]) continue;
++        base = 0x30000001u + ((ctx->position[3] + 3) & ~3u);
++        rows = (const uint32_t *)replay_bytes(ctx, count, 92, 4, pass);
++        if (!rows) return 0;
++        /* Reference 0x5555d8 publishes this registry after its allocation pass. */
++        if (ctx->collect_asset_aliases) {
++            if (pass) {
++                if (ctx->dynamic_record_count >= ctx->dynamic_record_capacity) return 0;
++                ctx->dynamic_records[ctx->dynamic_record_count] = (codol_dynamic_records_t){
++                    (const uint8_t *)h, (const uint8_t *)rows, i, count, base};
+             }
+-        }
+-    }
+-    if (!replay_asset_reference(s,read32(h+156),apply,replay_map_entities)) return 0;
+-    for (i=0;i<2;++i) if (read32(h+172+4*i)) {
+-        uint32_t slots=0x30000001u+(uint32_t)((s->position[3]+3)&~(size_t)3);
+-        count=read16(h+168+2*i);
+-        if (!(records=replay_bytes(s,count,92,4,apply))) return 0;
+-        if(s->collect_asset_aliases) {
+-            if(apply) {
+-                if(s->dynamic_record_count>=s->dynamic_record_capacity) return 0;
+-                s->dynamic_records[s->dynamic_record_count]=(codol_dynamic_records_t){h,records,i,count,slots};
+-            }
+-            ++s->dynamic_record_count;
+-        }
+-        for (j=0;j<count;++j) {
+-            const uint8_t *r=records+(size_t)j*92;
+-            size_t start;
+-            start=s->source_position;
+-            if (!replay_asset_reference(s,read32(r+32),apply,replay_model)) return 0;
+-            if (read32(r+32)>=UINT32_MAX-1 && !record_asset(s,4,slots+92*j+32,start,apply)) return 0;
+-            start=s->source_position;
+-            if (!replay_asset_reference(s,read32(r+40),apply,replay_effect)) return 0;
+-            if (read32(r+40)>=UINT32_MAX-1 && !record_asset(s,30,slots+92*j+40,start,apply)) return 0;
+-            start=s->source_position;
+-            if (!replay_asset_reference(s,read32(r+44),apply,replay_preset_asset)) return 0;
+-            if (read32(r+44)>=UINT32_MAX-1 && !record_asset(s,0,slots+92*j+44,start,apply)) return 0;
+-        }
+-    }
+-    for (i=0;i<3;++i) for (j=0;j<2;++j)
+-        if (!replay_world_zero(s,read32(h+180+8*i+4*j),read16(h+168+2*j),i==0 ? 32 : i==1 ? 12 : 20,4,apply)) return 0;
+-    return CODOL_PopLoadBlock(s);
++            ++ctx->dynamic_record_count;
++        }
++        for (j = 0; j < count; ++j) {
++#define DEP(field, type, kind) \
++            source = ctx->source_position; \
++            if (!fields(ctx, pass, rows + j * 23 + field, 1, kind)) return 0; \
++            if (rows[j * 23 + field] >= 0xfffffffeu && \
++                !record_asset(ctx, type, base + j * 92 + field * 4, source, pass)) return 0
++            DEP(8, 4, MODEL); DEP(10, 30, EFFECT); DEP(11, 0, PHYSPRESET);
++#undef DEP
++        }
++    }
++    for (j = 0; j < 3; ++j) {
++        for (i = 0; i < 2; ++i) {
++            count = (h[0x31] >> (i * 16)) & 0xffff;
++            if (h[0x34 + j * 2 + i] &&
++                !reserve(ctx, 2, count * (j == 0 ? 32 : j == 1 ? 12 : 20), 4, 0, pass, &unused)) return 0;
++        }
++    }
++#undef ARRAY
++    return CODOL_PopLoadBlock(ctx);
+ }
+ int CODOL_ReplayCollision(codol_load_blocks_t *stream,uint32_t *reference)
+ {
+@@ -1302,13 +1429,13 @@
+     *stream=plan; *reference=result; return 1;
+ }
+ /* C1 TracerDef 0x4c23d0: name followed by a material asset reference. */
+-static int replay_tracer(codol_load_blocks_t *s,int apply,uint32_t *reference)
+-{
+-    const uint8_t *h=s->source+s->source_position;
+-    if (!reserve(s,0,112,4,1,apply,reference) || !CODOL_PushLoadBlock(s,3)) return 0;
+-    if (read32(h)==UINT32_MAX && !replay_string(s,apply)) return 0;
+-    if (!replay_asset_reference(s,read32(h+4),apply,replay_material)) return 0;
+-    return CODOL_PopLoadBlock(s);
++static int replay_tracer(codol_load_blocks_t *ctx, int pass, uint32_t *encoded)
++{
++    const uint32_t *h = (const uint32_t *)(ctx->source + ctx->source_position);
++    if (!reserve(ctx, 0, 0x74, 4, 1, pass, encoded) || !CODOL_PushLoadBlock(ctx, 3)) return 0;
++    if (!fields(ctx, pass, h, 1, STRING) || !fields(ctx, pass, h + 1, 1, MATERIAL) ||
++        !fields(ctx, pass, h + 2, 1, EFFECT)) return 0;
++    return CODOL_PopLoadBlock(ctx);
+ }
+ /* C1 sound-name indirection 0x4b7160. This is a string pointer record,
+  * not an inline snd_alias_list_t. Runtime name lookup is separate. */
+@@ -1322,73 +1449,42 @@
+ /* C1 WeaponDef 0x4c2630. Operations retain loader order, especially the
+  * interleaved accuracy graph names and point arrays. Script-string indices
+  * remain serialized indices until the zone's runtime string pool is bound. */
+-static int replay_weapon(codol_load_blocks_t *s,int apply,uint32_t *reference)
+-{
+-    enum { STRING,MODEL,EFFECT,MATERIAL,SOUND,SOUND_ARRAY,POINTS,PHYSICS,TRACER,PRESET };
+-    static const unsigned legacy_fields[][3]={
+-        {0,4,STRING},{0x10,11,MODEL},{0x7c,144,STRING},
+-        {0x35c,2,EFFECT},{0x364,53,SOUND},{0x438,2,SOUND_ARRAY},
+-        {0x440,4,EFFECT},{0x450,2,MATERIAL},{0x52c,6,MATERIAL},
+-        {0x548,1,MATERIAL},{0x550,1,MATERIAL},
+-        {0x564,1,STRING},{0x56c,1,STRING},{0x57c,1,STRING},
+-        {0x684,4,MATERIAL},{0x758,1,PHYSICS},{0x7b0,1,MODEL},
+-        {0x7b8,2,EFFECT},{0x7c0,2,SOUND},{0x8cc,2,EFFECT},
+-        {0x8ec,1,EFFECT},{0x8f0,1,SOUND},{0x9a0,1,STRING},
+-        {0x9a8,1,POINTS},{0x9a4,1,STRING},{0x9ac,1,POINTS},
+-        {0x9fc,2,STRING},{0xa20,2,STRING},{0xaa0,2,STRING},
+-        {0xaa8,1,TRACER},{0xac4,1,SOUND},{0xac8,1,EFFECT},
+-        {0xacc,1,STRING},{0xadc,9,SOUND},{0xb00,2,SOUND},
+-        {0xb48,6,SOUND},{0xb78,1,STRING},{0xb84,2,STRING},
+-        {0xb90,3,MATERIAL},{0xbb4,2,POINTS}
+-    };
+-    /* Measured 365 Load_WeaponDef 0x4c4e20..0x4c6323: 0xc34 bytes,
+-     * three 52-string animation arrays, an added preset and later fields. */
+-    static const unsigned target_fields[][3]={
+-        {0,4,STRING},{0x10,11,MODEL},{0x7c,156,STRING},
+-        {0x38c,2,EFFECT},{0x394,53,SOUND},{0x468,2,SOUND_ARRAY},
+-        {0x470,4,EFFECT},{0x480,2,MATERIAL},{0x55c,6,MATERIAL},
+-        {0x578,1,MATERIAL},{0x580,1,MATERIAL},
+-        {0x594,1,STRING},{0x59c,1,STRING},{0x5ac,1,STRING},
+-        {0x6b4,4,MATERIAL},{0x788,1,PHYSICS},{0x78c,1,PRESET},{0x7e4,1,MODEL},
+-        {0x7ec,2,EFFECT},{0x7f4,2,SOUND},{0x900,2,EFFECT},
+-        {0x920,1,EFFECT},{0x924,1,SOUND},{0x9d4,1,STRING},
+-        {0x9dc,1,POINTS},{0x9d8,1,STRING},{0x9e0,1,POINTS},
+-        {0xa30,2,STRING},{0xa54,2,STRING},{0xad4,2,STRING},
+-        {0xadc,1,TRACER},{0xaf8,1,SOUND},{0xafc,1,EFFECT},
+-        {0xb00,1,STRING},{0xb10,9,SOUND},{0xb34,2,SOUND},
+-        {0xb7c,6,SOUND},{0xbac,1,STRING},{0xbbc,2,STRING},
+-        {0xbc8,3,MATERIAL},{0xbec,2,POINTS}
+-    };
+-    const unsigned (*fields)[3]=s->format_version==365 ? target_fields : legacy_fields;
+-    size_t field_count=s->format_version==365 ? sizeof(target_fields)/sizeof(target_fields[0]) : sizeof(legacy_fields)/sizeof(legacy_fields[0]);
+-    const uint8_t *h=s->source+s->source_position,*names;
+-    unsigned i,j,k,offset,kind;
+-    uint32_t ref;
+-    if (!reserve(s,0,s->format_version==365 ? 0xc34 : 0xbfc,4,1,apply,reference) || !CODOL_PushLoadBlock(s,3)) return 0;
+-    for (i=0;i<field_count;++i) for (j=0;j<fields[i][1];++j) {
+-        offset=fields[i][0]+4*j; kind=fields[i][2]; ref=read32(h+offset);
+-        switch (kind) {
+-        case STRING: if (ref==UINT32_MAX && !replay_string(s,apply)) return 0; break;
+-        case MODEL: if (!replay_asset_reference(s,ref,apply,replay_model)) return 0; break;
+-        case EFFECT: if (!replay_asset_reference(s,ref,apply,replay_effect)) return 0; break;
+-        case MATERIAL: if (!replay_asset_reference(s,ref,apply,replay_material)) return 0; break;
+-        case PHYSICS: if (!replay_asset_reference(s,ref,apply,replay_physics_map_asset)) return 0; break;
+-        case PRESET: if (!replay_asset_reference(s,ref,apply,replay_preset_asset)) return 0; break;
+-        case TRACER: if (!replay_asset_reference(s,ref,apply,replay_tracer)) return 0; break;
+-        case SOUND: if (!replay_sound_name(s,ref,apply)) return 0; break;
+-        case SOUND_ARRAY:
+-            if (ref!=UINT32_MAX) break;
+-            if (!(names=replay_bytes(s,31,4,4,apply))) return 0;
+-            for (k=0;k<31;++k) if (!replay_sound_name(s,read32(names+4*k),apply)) return 0;
+-            break;
+-        case POINTS:
+-            if (ref==UINT32_MAX && !replay_bytes(s,read16(h+
+-                (s->format_version==365 ? (offset==0x9dc || offset==0xbec ? 0xbe8 : 0xbea) :
+-                 (offset==0x9a8 || offset==0xbb4 ? 0xbb0 : 0xbb2))),8,4,apply)) return 0;
+-            break;
+-        }
+-    }
+-    return CODOL_PopLoadBlock(s);
++static int replay_weapon(codol_load_blocks_t *ctx, int pass, uint32_t *encoded)
++{
++    const uint32_t *h = (const uint32_t *)(ctx->source + ctx->source_position), *sounds;
++    const unsigned short *counts = (const unsigned short *)((const char *)h + 0xd5c);
++    uint32_t i;
++    if (ctx->format_version != 0x1a7 || !reserve(ctx, 0, 0xe28, 4, 1, pass, encoded)) return 0;
++    if (!CODOL_PushLoadBlock(ctx, 3)) return 0;
++#define F(index, count, kind) if (!fields(ctx, pass, h + (index), count, kind)) return 0
++#define GRAPH(index, count) if (h[index] == 0xffffffffu && !(const uint32_t *)replay_bytes(ctx, count, 8, 4, pass)) return 0
++    F(0, 4, STRING); F(4, 10, MODEL);
++    F(0x1e, 56, STRING); F(0x56, 56, STRING); F(0x8e, 56, STRING);
++    F(0xee, 16, EFFECT); F(0x106, 16, EFFECT); F(0x126, 3, EFFECT);
++    F(0x129, 53, SOUND);
++    for (i = 0x15e; i <= 0x15f; ++i) {
++        if (h[i] != 0xffffffffu) continue;
++        sounds = (const uint32_t *)replay_bytes(ctx, 31, 4, 4, pass);
++        if (!sounds || !fields(ctx, pass, sounds, 31, SOUND)) return 0;
++    }
++    F(0x160, 4, EFFECT); F(0x164, 2, MATERIAL);
++    F(0x19b, 6, MATERIAL); F(0x1a2, 1, MATERIAL); F(0x1a4, 1, MATERIAL);
++    F(0x1a7, 4, MATERIAL);
++    F(0x1ad, 1, STRING); F(0x1af, 1, STRING); F(0x1b3, 1, STRING);
++    F(0x1f7, 4, MATERIAL); F(0x22c, 1, PHYSCOLL); F(0x22d, 1, PHYSPRESET);
++    F(0x244, 1, MODEL); F(0x246, 2, EFFECT); F(0x248, 2, SOUND);
++    F(0x28e, 2, EFFECT); F(0x296, 1, EFFECT); F(0x297, 1, SOUND); F(0x298, 3, EFFECT);
++    F(0x2c9, 1, STRING); GRAPH(0x2cb, counts[0]);
++    F(0x2ca, 1, STRING); GRAPH(0x2cc, counts[1]);
++    F(0x2e0, 2, STRING); F(0x2e9, 2, STRING); F(0x311, 2, STRING);
++    F(0x313, 2, TRACER); F(0x31b, 1, SOUND); F(0x31c, 1, EFFECT);
++    F(0x31d, 1, STRING); F(0x321, 11, SOUND); F(0x33c, 6, SOUND);
++    F(0x348, 1, STRING); F(0x34c, 2, STRING); F(0x34f, 3, MATERIAL);
++    GRAPH(0x358, counts[0]); GRAPH(0x359, counts[1]);
++    F(0x382, 1, STRING); F(0x386, 1, STRING);
++#undef F
++#undef GRAPH
++    return CODOL_PopLoadBlock(ctx);
+ }
+ /* C1 menu Statement 0x4c0260, entries 0x4c00c0 and nested statement
+  * pointers 0x4c01c0. Statements stay in block 3, including recursion. */
+@@ -1486,7 +1582,7 @@
+     if (read32(h+44)==UINT32_MAX && !replay_string(s,apply)) return 0;
+     if (!replay_asset_reference(s,read32(h+160),apply,replay_material)) return 0;
+     /* 365 windowDef 0x4c30b0 adds an image pointer at +164. */
+-    return s->format_version!=365 || replay_asset_reference(s,read32(h+164),apply,replay_image);
++    return (s->format_version!=365 && s->format_version!=423) || replay_asset_reference(s,read32(h+164),apply,replay_image);
+ }
+ /* C1 itemDef 0x4c0c90 and type-specific data 0x4c0a80. */
+ static int replay_menu_item(codol_load_blocks_t *s,int apply)
+@@ -1496,8 +1592,8 @@
+     uint32_t child,count,type;
+     unsigned i;
+     /* 365 itemDef 0x4c3480: 392 bytes, larger window plus two expressions. */
+-    if (!(h=replay_bytes(s,1,s->format_version==365 ? 392 : 380,4,apply)) || !replay_menu_window(s,h,apply)) return 0;
+-    if (s->format_version==365) {
++    if (!(h=replay_bytes(s,1,(s->format_version==365 || s->format_version==423) ? 392 : 380,4,apply)) || !replay_menu_window(s,h,apply)) return 0;
++    if ((s->format_version==365 || s->format_version==423)) {
+         memcpy(normalized,h,164); memcpy(normalized+164,h+168,224); h=normalized;
+     }
+     if (read32(h+0xe4)==UINT32_MAX && !replay_string(s,apply)) return 0;
+@@ -1536,7 +1632,7 @@
+         for (i=0;i<count;++i)
+             if (read32(expressions+8*i+4)==UINT32_MAX && !replay_menu_expression(s,apply,&child,0)) return 0;
+     }
+-    for (i=0x144;i<=(s->format_version==365 ? 0x158 : 0x150);i+=4)
++    for (i=0x144;i<=((s->format_version==365 || s->format_version==423) ? 0x158 : 0x150);i+=4)
+         if (read32(h+i)==UINT32_MAX && !replay_menu_expression(s,apply,&child,0)) return 0;
+     return 1;
+ }
+@@ -1549,9 +1645,9 @@
+     uint32_t child,count;
+     unsigned i;
+     /* 365 menuDef 0x4c3b60: 404 bytes; fields after window move by four. */
+-    if (!reserve(s,0,s->format_version==365 ? 404 : 400,4,1,apply,reference) || !CODOL_PushLoadBlock(s,3)) return 0;
++    if (!reserve(s,0,(s->format_version==365 || s->format_version==423) ? 404 : 400,4,1,apply,reference) || !CODOL_PushLoadBlock(s,3)) return 0;
+     if (!replay_menu_window(s,h,apply)) return 0;
+-    if (s->format_version==365) {
++    if ((s->format_version==365 || s->format_version==423)) {
+         memcpy(normalized,h,164); memcpy(normalized+164,h+168,236); h=normalized;
+     }
+     if (read32(h+0xa4)==UINT32_MAX && !replay_string(s,apply)) return 0;
+@@ -1644,22 +1740,22 @@
+ }
+ /* C1 WeaponAttach 0x4c3dd0, field records 0x4c3d00. Types below 16
+  * (signed comparison) and type 39 carry strings; other values are scalar. */
+-static int replay_weapon_attachment(codol_load_blocks_t *s,int apply,uint32_t *reference)
+-{
+-    const uint8_t *h=s->source+s->source_position,*fields;
+-    uint32_t count,i,type;
+-    if (!reserve(s,0,12,4,1,apply,reference) || !CODOL_PushLoadBlock(s,3)) return 0;
+-    if (read32(h)==UINT32_MAX && !replay_string(s,apply)) return 0;
+-    if (read32(h+8)) {
+-        count=read32(h+4);
+-        if (count>INT32_MAX || !(fields=replay_bytes(s,count,12,4,apply))) return 0;
+-        for (i=0;i<count;++i) {
+-            type=read32(fields+12*i+4);
+-            if ((type<16 || type>INT32_MAX || type==39) &&
+-                read32(fields+12*i+8)==UINT32_MAX && !replay_string(s,apply)) return 0;
+-        }
+-    }
+-    return CODOL_PopLoadBlock(s);
++static int replay_weapon_attachment(codol_load_blocks_t *ctx, int pass, uint32_t *encoded)
++{
++    const uint32_t *h = (const uint32_t *)(ctx->source + ctx->source_position), *rows;
++    uint32_t i, kind;
++    if (!reserve(ctx, 0, 12, 4, 1, pass, encoded) || !CODOL_PushLoadBlock(ctx, 3) ||
++        !fields(ctx, pass, h, 1, STRING)) return 0;
++    if (h[2]) {
++        rows = (const uint32_t *)replay_bytes(ctx, h[1], 12, 4, pass);
++        if (!rows) return 0;
++        for (i = 0; i < h[1]; ++i) {
++            kind = rows[i * 3] & 255;
++            if (((kind < 16 && (kind < 4 || kind > 9)) || kind == 39 || kind == 42 || kind == 43) &&
++                !fields(ctx, pass, rows + i * 3 + 2, 1, STRING)) return 0;
++        }
++    }
++    return CODOL_PopLoadBlock(ctx);
+ }
+ /* C1 VehicleDef 0x4c4ec0 and embedded vehicle physics 0x4c4e10.
+  * Runtime script-string binding and vehicle simulation are separate. */
+@@ -1693,8 +1789,8 @@
+     if (!reserve(s,0,8,4,1,apply,reference) || !CODOL_PushLoadBlock(s,3)) return 0;
+     if (read32(h)==UINT32_MAX && !replay_string(s,apply)) return 0;
+     if (read32(h+4)) {
+-        if (!(effects=replay_bytes(s,16,140,4,apply))) return 0;
+-        for (i=0;i<560;++i)
++        if (!(effects=replay_bytes(s,s->format_version==423 ? 19 : 16,140,4,apply))) return 0;
++        for (i=0;i<(s->format_version==423 ? 665 : 560);++i)
+             if (!replay_asset_reference(s,read32(effects+4*i),apply,replay_effect)) return 0;
+     }
+     return CODOL_PopLoadBlock(s);
+@@ -1800,7 +1896,7 @@
+ {
+     const uint8_t *h=s->source+s->source_position,*strings;
+     uint32_t count,i;
+-    if (s->format_version!=365 || !reserve(s,0,20,4,1,apply,reference) ||
++    if ((s->format_version!=365 && s->format_version!=423) || !reserve(s,0,20,4,1,apply,reference) ||
+         !CODOL_PushLoadBlock(s,3)) return 0;
+     if (read32(h)==UINT32_MAX && !replay_string(s,apply)) return 0;
+     count=read32(h+12);
+@@ -1810,6 +1906,87 @@
+             if (read32(strings+4*i)==UINT32_MAX && !replay_string(s,apply)) return 0;
+     } else if (!read32(h+16) && count) return 0;
+     return CODOL_PopLoadBlock(s);
++}
++
++static int strings(codol_load_blocks_t *ctx, int pass, const uint32_t *p, uint32_t count)
++{
++    uint32_t i;
++    for (i = 0; i < count; ++i)
++        if (p[i] == 0xffffffffu && !replay_string(ctx, pass)) return 0;
++    return 1;
++}
++
++static int indices(codol_load_blocks_t *ctx, int pass, uint32_t pointer, uint32_t count, uint32_t stride, uint32_t align)
++{
++    return !pointer || (const uint32_t *)replay_bytes(ctx, count, stride, align, pass) != 0;
++}
++
++static int records(codol_load_blocks_t *ctx, int pass, uint32_t pointer, uint32_t count, uint32_t stride, int kind)
++{
++    const uint32_t *p, *q, *nested;
++    uint32_t i, j, n;
++    if (!pointer) return 1;
++    p = (const uint32_t *)replay_bytes(ctx, count, stride, 4, pass);
++    if (!p) return 0;
++    for (i = 0; i < count; ++i) {
++        q = (const uint32_t *)((const char *)p + i * stride);
++        if (kind == 0 && !strings(ctx, pass, q + 1, 1)) return 0; /* 0x496010 */
++        if (kind == 1) { /* 0x4961e0 */
++            if (!strings(ctx, pass, q + 3, 4) ||
++                !indices(ctx, pass, q[9], q[8] >> 16, 2, 2)) return 0;
++        }
++        if (kind == 2) { /* 0x496410 */
++            if (!indices(ctx, pass, q[3], (q[2] >> 16) & 255, 4, 4) ||
++                !indices(ctx, pass, q[5], q[4] & 255, 2, 2)) return 0;
++        }
++        if (kind == 3 && !strings(ctx, pass, q, 3)) return 0;
++        if (kind == 4 && !indices(ctx, pass, q[2], q[1] & 65535, 2, 2)) return 0;
++        if (kind == 5 && !indices(ctx, pass, q[1], q[0], 2, 2)) return 0;
++        if (kind == 6) { /* 0x496820 / 0x496760 */
++            if (!strings(ctx, pass, q + 4, 4)) return 0;
++            n = q[17] & 65535;
++            if (q[18]) {
++                nested = (const uint32_t *)replay_bytes(ctx, n, 12, 4, pass);
++                if (!nested) return 0;
++                for (j = 0; j < n; ++j)
++                    if (!strings(ctx, pass, nested + j * 3 + 1, 1)) return 0;
++            }
++        }
++        if (kind == 7) { /* 0x496930 */
++            if (!strings(ctx, pass, q + 1, 1)) return 0;
++            if (q[2]) {
++                nested = (const uint32_t *)replay_bytes(ctx, q[3], 4, 4, pass);
++                if (!nested || !strings(ctx, pass, nested, q[3])) return 0;
++            }
++        }
++        if (kind == 8 && !indices(ctx, pass, q[9], q[8], 2, 2)) return 0;
++        if (kind == 9 && !strings(ctx, pass, q + 1, 4)) return 0;
++    }
++    return 1;
++}
++
++static int replay_catalog423(codol_load_blocks_t *ctx, int pass, uint32_t *encoded)
++{
++    const uint32_t *h = (const uint32_t *)(ctx->source + ctx->source_position);
++    uint32_t i;
++    if (ctx->format_version != 423 || !reserve(ctx, 0, 0x2fa4, 4, 1, pass, encoded) ||
++        !CODOL_PushLoadBlock(ctx, 3) || !strings(ctx, pass, h, 1)) return 0;
++#define R(p, n, stride, kind) if (!records(ctx, pass, h[p], h[n], stride, kind)) return 0
++#define I(p, n, stride, align) if (!indices(ctx, pass, h[p], h[n], stride, align)) return 0
++    R(1, 2, 8, 0); I(3, 4, 2, 2); R(5, 6, 40, 1); I(7, 8, 2, 2);
++    I(0x2a, 0x2b, 2, 2);
++    R(0x9f0, 0x9f1, 24, 2); R(0x9f2, 0x9f3, 12, 3);
++    I(0x9f4, 0x9f5, 2, 2); I(0x9f6, 0x9f7, 24, 4); I(0x9f8, 0x9f9, 2, 2);
++    R(0x9fa, 0x9fb, 12, 4);
++    /* 12 inline groups of 20 index lists; their headers are already consumed. */
++    for (i = 0x9fc; i < 0xbdc; i += 2)
++        if (!indices(ctx, pass, h[i + 1], h[i], 2, 2)) return 0;
++    R(0xbdc, 0xbde, 8, 5); R(0xbdd, 0xbde, 8, 5);
++    R(0xbdf, 0xbe0, 76, 6); I(0xbe1, 0xbe2, 14, 4);
++    R(0xbe3, 0xbe4, 16, 7); R(0xbe5, 0xbe6, 40, 8); R(0xbe7, 0xbe8, 20, 9);
++#undef R
++#undef I
++    return CODOL_PopLoadBlock(ctx);
+ }
+ 
+ int CODOL_ReplayZoneAsset(const codol_zone_t *zone,unsigned index,codol_load_blocks_t *stream)
+@@ -1840,9 +2017,11 @@
+     case 11: loader=replay_sound_alias; break;
+     case 12: loader=replay_sound_curve; break;
+     case 13: loader=replay_loaded_sound; break;
+-    case 14: case 15: loader=replay_collision; break;
++    case 14: case 17: case 18:
++        if (stream->format_version==423) return extent==0 ? 1 : -1;
++        loader=type==14 ? replay_collision : replay_game_world_mp; break;
++    case 15: loader=replay_collision; break;
+     case 16: loader=replay_common_world; break;
+-    case 18: loader=replay_game_world_mp; break;
+     case 19: loader=replay_map_entities; break;
+     case 20: loader=replay_effect_world; break;
+     case 21: loader=replay_world; break;
+@@ -1873,7 +2052,19 @@
+     case 42: loader=replay_addon_map_entities; break;
+     case 43: loader=replay_weapon_attachment; break;
+     case 44: loader=replay_netconststrings; break;
++    case 45: loader=replay_catalog423; break;
+     default: return 0;
++    }
++    if (ref<UINT32_MAX-1) {
++        size_t alias;
++        if (stream->format_version!=423 || extent || !ref || (ref-1)>>28!=3) return -1;
++        /* Parents are appended after children. The registry is sorted only
++         * after the entire zone has replayed, so do not binary-search here. */
++        for (alias=0;alias<stream->asset_alias_count;++alias) {
++            const codol_asset_alias_t *row=stream->asset_aliases+alias;
++            if (row->reference==ref && row->asset.type==type && row->asset.format_version==423) return 1;
++        }
++        return -1;
+     }
+     /* Independent versioned extent traversal and block replay must agree. */
+     if (type==4) {
+@@ -1881,7 +2072,6 @@
+         size_t consumed;
+         if (!CODOL_ReadXModelExtent(&asset,&consumed) || consumed!=extent) return -1;
+     }
+-    if (ref<UINT32_MAX-1) return -1;
+     for (pass=0;pass<2;++pass) {
+         plan=*stream;
+         /* Restrict reads to this asset even when later asset bytes exist. */
+--- a/src/codol/assets/codol_material_native.c
++++ b/src/codol/assets/codol_material_native.c
+@@ -29,12 +29,12 @@
+     result.material.info.name=result.owned_name;
+     /* 365 puts the eight-byte draw key first, followed by name and flags.
+      * Surface type bits remain at +16. The dedicated renderer needs no key. */
+-    flags=source->asset.format_version==365 ? 12 : 4;
++    flags=source->asset.format_version==423 ? 20 : source->asset.format_version==365 ? 12 : 4;
+     result.material.info.gameFlags=(char)h[flags];
+     result.material.info.sortKey=(char)h[flags+1];
+     result.material.info.textureAtlasRowCount=(char)h[flags+2];
+     result.material.info.textureAtlasColumnCount=(char)h[flags+3];
+-    memcpy(&result.material.info.surfaceTypeBits,h+16,4);
++    memcpy(&result.material.info.surfaceTypeBits,h+(source->asset.format_version==423 ? 24 : 16),4);
+     memset(result.material.stateBitsEntry,255,sizeof(result.material.stateBitsEntry));
+     *out=result; return 1;
+ }
+--- a/src/codol/assets/codol_netconst.c
++++ b/src/codol/assets/codol_netconst.c
+@@ -16,8 +16,8 @@
+ {
+     codol_netconst_t result={0}; const uint8_t *refs=NULL;
+     size_t p=20,offset; uint32_t ref,i;
+-    if (!asset || !out || !blocks || asset->type!=44 || asset->format_version!=365 ||
+-        blocks->format_version!=365 || !asset->data || asset->size<p || asset->size>CODOL_ASSET_LIMIT) return 0;
++    if (!asset || !out || !blocks || asset->type!=44 || asset->format_version!=423 ||
++        blocks->format_version!=423 || !asset->data || asset->size<p || asset->size>CODOL_ASSET_LIMIT) return 0;
+     result.name=xstring(asset,blocks,&p,u32(asset->data));
+     if (!result.name) return 0;
+     result.kind=u32(asset->data+4); result.source=u32(asset->data+8); result.count=u32(asset->data+12);
 --- a/src/codol/assets/codol_netconst_index.c
 +++ b/src/codol/assets/codol_netconst_index.c
 @@ -1,13 +1,13 @@
@@ -93,6 +1154,310 @@
  } codol_netconst_kind_t;
  typedef struct {
      codol_netconst_kind_t kinds[CODOL2697_NCS_KINDS];
+--- a/src/codol/assets/codol_xmodel_collision.c
++++ b/src/codol/assets/codol_xmodel_collision.c
+@@ -61,7 +61,7 @@
+         s->triangle_count=u32(raw+4);
+         s->triangles_reference=u32(raw);
+         if (!s->triangles_reference && s->triangle_count) goto fail;
+-        if (asset->format_version==365 && s->triangles_reference &&
++        if ((asset->format_version==365 || asset->format_version==423) && s->triangles_reference &&
+             s->triangles_reference!=UINT32_MAX) {
+             if (s->triangle_count) ++result.unresolved;
+             continue;
+--- a/src/codol/collision/codol_collision_leaves.c
++++ b/src/codol/collision/codol_collision_leaves.c
+@@ -60,10 +60,10 @@
+     for (i=0;i<result.leaf_count;++i)
+         if (!leaf(asset->data+layout.sections[CODOL_COLL_LEAVES].offset+40*i,&layout,result.leaves+i)) goto fail;
+     for (i=0;i<result.submodel_count;++i) {
+-        const uint8_t *p=asset->data+layout.sections[CODOL_COLL_SUBMODELS].offset+68*i;
++        const uint8_t *p=asset->data+layout.sections[CODOL_COLL_SUBMODELS].offset+layout.sections[CODOL_COLL_SUBMODELS].stride*i;
+         codol_collision_submodel_t *m=result.submodels+i;
+         m->radius=f32(p+24);
+-        if (!isfinite(m->radius)||m->radius<0 || !bounds(p,m->mins,m->maxs) || !leaf(p+28,&layout,&m->leaf)) goto fail;
++        if (!isfinite(m->radius)||m->radius<0 || !bounds(p,m->mins,m->maxs) || !leaf(p+(asset->format_version==423 ? 32 : 28),&layout,&m->leaf)) goto fail;
+     }
+     CODOL_FreeCollisionLeaves(out); *out=result; return 1;
+ fail:
+--- a/src/codol/collision/codol_collision_map.c
++++ b/src/codol/collision/codol_collision_map.c
+@@ -30,8 +30,11 @@
+     /* C1's loader matches the IW4 clipMap layout through dynEntCollList.
+      * The following uint32 at 0xcc is checksum in IW4x's declaration.
+      * Preserve the archive value; do not substitute the configstring CRC. */
+-    map.checksum=(uint32_t)collision->data[204]|(uint32_t)collision->data[205]<<8|
+-        (uint32_t)collision->data[206]<<16|(uint32_t)collision->data[207]<<24;
++    {
++        const uint8_t *checksum=collision->data+(collision->format_version==423 ? 232 : 204);
++        map.checksum=(uint32_t)checksum[0]|(uint32_t)checksum[1]<<8|
++            (uint32_t)checksum[2]<<16|(uint32_t)checksum[3]<<24;
++    }
+     map.static_model_count=layout.sections[CODOL_COLL_STATIC_MODELS].count;
+     if (!CODOL_ReadCollisionStaticModels(collision,model_resolver,context,&map.static_models) ||
+         !CODOL_ReadWorldBrushes(collision,world,&map.brushes) ||
+--- a/src/codol/collision/codol_collision_stream.c
++++ b/src/codol/collision/codol_collision_stream.c
+@@ -1,6 +1,7 @@
+ /* CoDOL collision stream traversal, with IW3 loader ordering retained. */
+ #include "codol_assets.h"
+ #include <string.h>
++#include <stdlib.h>
+ static uint32_t u32(const uint8_t *p)
+ { return (uint32_t)p[0] | (uint32_t)p[1]<<8 | (uint32_t)p[2]<<16 | (uint32_t)p[3]<<24; }
+ static unsigned u16(const uint8_t *p) { return p[0] | (unsigned)p[1]<<8; }
+@@ -29,8 +30,147 @@
+     codol_collision_span_t *s = &layout->sections[section];
+     s->offset = offset; s->count = count; s->stride = stride; s->reference = reference;
+ }
++typedef struct { const unsigned char *data; size_t size, pos; } collision_cursor423_t;
++#define INLINE 0xffffffffu
++
++
++
++static int take423(collision_cursor423_t *c, uint32_t count, uint32_t stride)
++{
++    if (c->pos > c->size || count > (c->size - c->pos) / stride) return 0;
++    c->pos += count * stride;
++    return 1;
++}
++
++static int string423(collision_cursor423_t *c, uint32_t pointer)
++{
++    if (pointer != INLINE) return 1;
++    while (c->pos < c->size) if (!c->data[c->pos++]) return 1;
++    return 0;
++}
++
++static int section423(collision_cursor423_t *c,codol_collision_layout_t *layout,
++    uint32_t row,uint32_t count,uint32_t stride,uint32_t pointer)
++{
++    codol_collision_span_t *out=layout->sections+row;
++    out->offset=pointer==INLINE ? c->pos : SIZE_MAX;
++    out->count=count; out->stride=stride; out->reference=pointer;
++    if (!pointer && count) return 0;
++    return pointer!=INLINE || take423(c,count,stride);
++}
++
++static int planes423(collision_cursor423_t *c, uint32_t offset, uint32_t count)
++{
++    uint32_t i;
++    for (i = 0; i < count; ++i)
++        if (u32(c->data + offset + i * 8) == INLINE && !take423(c, 1, 20)) return 0;
++    return 1;
++}
++
++static int read_collision_layout423(const codol_asset_t *asset,codol_collision_layout_t *out)
++{
++    collision_cursor423_t c;
++    codol_collision_layout_t layout={0};
++    uint32_t h[64], i, j, offset, pointer, count, inline_indices = 0, shared_nodes = 0;
++    if (!asset || !out || asset->type != 15 || asset->format_version != 423 ||
++        !asset->data || asset->size < 256 || asset->size > 0x20000000) return 0;
++    c.data = (const unsigned char *)asset->data; c.size = asset->size; c.pos = 256;
++    for (i = 0; i < 64; ++i) h[i] = u32(c.data + i * 4);
++    if (!string423(&c, h[0])) return 0;
++#define SECTION(row, count, stride, pointer) if (!section423(&c, &layout, row, count, stride, pointer)) return 0
++    SECTION(0, h[2], 20, h[3]);
++    SECTION(2, h[4], 12, h[5]);
++    if (h[4] && h[5] != INLINE) return 0;
++    for (i = 0; i < h[4]; ++i)
++        if (!string423(&c, u32(c.data + layout.sections[2].offset + i * 12))) return 0;
++    SECTION(3, h[6], 8, h[7]);
++    if (h[6] && (h[7] != INLINE || !planes423(&c, layout.sections[3].offset, h[6]))) return 0;
++    SECTION(4, h[8], 1, h[9]);
++    if (h[8] && h[9] != INLINE) return 0;
++    SECTION(8, h[10], 20, h[11]);
++    if (h[10] && h[11] != INLINE) return 0;
++    for (i = 0; i < h[10]; ++i) {
++        const unsigned char *node = c.data + layout.sections[8].offset + i * 20;
++        count = (uint32_t)node[2] | ((uint32_t)node[3] << 8);
++        if (!count || count >= 0x8000) continue;
++        if (u32(node + 8) == INLINE) {
++            if (!take423(&c, count, 2)) return 0;
++            inline_indices += count;
++        } else ++shared_nodes;
++    }
++    SECTION(7, h[12], 2, h[13]);
++    if (h[12] && h[13] != INLINE) {
++        /* The observed 423 map stores every live leaf's brush list inline.
++         * h[13] aliases that storage; do not install it twice. Mixed shared
++         * leaf references need block relocation and are deliberately rejected.
++         */
++        if (shared_nodes || h[12] > inline_indices) return 0;
++        layout.sections[7].count = 0; layout.sections[7].reference = 0;
++    }
++    count = h[14] & 0xffff;
++    SECTION(17, count, 36, h[15]);
++    if (count && h[15] != INLINE) return 0;
++    for (i = 0; i < count; ++i) {
++        const unsigned char *brush = c.data + layout.sections[17].offset + i * 36;
++        if (u32(brush + 4) == INLINE) {
++            offset = c.pos;
++            if (!take423(&c, 1, 8) || !planes423(&c, offset, 1)) return 0;
++        }
++        if (u32(brush + 8) == INLINE && !take423(&c, 1, 1)) return 0;
++    }
++    SECTION(18, count, 24, h[16]); SECTION(19, count, 4, h[17]);
++    if (count && (h[16] != INLINE || h[17] != INLINE)) return 0;
++    /* The extra cinfo points back to the same already loaded geometry. */
++    if (h[18] < 0xfffffffeu) return 0;
++    offset = c.pos;
++    if (!take423(&c, 1, 64)) return 0;
++    for (i = 0; i < 16; ++i) {
++        pointer = u32(c.data + offset + i * 4);
++        if (i < 12 && !(i & 1)) {
++            if (pointer != h[i + 2]) return 0;
++        } else if (i == 12) {
++            if ((pointer & 0xffff) != count) return 0;
++        } else if (pointer >= 0xfffffffeu) return 0;
++    }
++    SECTION(1, h[19], 76, h[20]);
++    if (h[19] && h[20] != INLINE) return 0;
++    for (i = 0; i < h[19]; ++i)
++        if (u32(c.data + layout.sections[1].offset + i * 76) >= 0xfffffffeu) return 0;
++    SECTION(5, h[21], 8, h[22]);
++    if (h[21] && (h[22] != INLINE || !planes423(&c, layout.sections[5].offset, h[21]))) return 0;
++    SECTION(6, h[23], 40, h[24]);
++    if (h[23] && h[24] != INLINE) return 0;
++    SECTION(9, 0, 4, 0); /* FF423 has no global leaf-surface array. */
++    SECTION(10, h[25], 12, h[26]); SECTION(11, h[27], 6, h[28]);
++    if (h[27] > (0xffffffffu - 31) / 3) return 0;
++    SECTION(12, (h[27] * 3 + 31) >> 5, 4, h[29]);
++    SECTION(13, h[30], 28, h[31]); SECTION(14, h[32], 12, h[33]);
++    if ((h[25] && h[26] != INLINE) || (h[27] && (h[28] != INLINE || h[29] != INLINE)) ||
++        (h[30] && h[31] != INLINE) || (h[32] && h[33] != INLINE)) return 0;
++    for (i = 0; i < h[32]; ++i)
++        if (u32(c.data + layout.sections[14].offset + i * 12 + 8) == INLINE && !take423(&c, 1, 28)) return 0;
++    SECTION(15, h[34], 32, h[35]); SECTION(16, h[36], 72, h[37]);
++    if ((h[34] && h[35] != INLINE) || (h[36] && h[37] != INLINE)) return 0;
++    pointer = 0;
++    for (i = 0; i < h[36]; ++i) {
++        j = u32(c.data + layout.sections[16].offset + i * 72 + 28);
++        if (!j || j >= 0xfffffffeu || (i && j != pointer)) return 0;
++        pointer = j;
++    }
++    SECTION(20, h[47] & 0xffff, 28, h[48]);
++    if ((h[47] & 0xffff) && h[48] != INLINE) return 0;
++    layout.map_entities = c.pos; layout.name_reference = h[0];
++    if (h[38] < 0xfffffffeu || !take423(&c, 1, 36) ||
++        u32(c.data + layout.map_entities) != h[0]) return 0;
++    *out=layout; return 1;
++#undef SECTION
++}
++
++#undef INLINE
++
+ int CODOL_ReadCollisionLayout(const codol_asset_t *asset, codol_collision_layout_t *out)
+ {
++    if (asset && asset->format_version==423) return read_collision_layout423(asset,out);
+     uint32_t h[64];
+     codol_collision_layout_t layout = {0};
+     const uint8_t *b;
+@@ -123,9 +263,23 @@
+     if (!offset || !CODOL_ReadCollisionLayout(asset, &layout)) return 0;
+     *offset = layout.map_entities; return 1;
+ }
+-int CODOL_ReadCollisionMapEntities(const codol_asset_t *asset, codol_map_entities_t *out)
+-{
+-    size_t offset;
+-    return out && CODOL_LocateCollisionMapEntities(asset, &offset) &&
+-        CODOL_ReadMapEntities(asset->data+offset, asset->size-offset, out);
+-}
++int CODOL_ReadCollisionMapEntities(const codol_asset_t *asset,codol_map_entities_t *out)
++{
++    size_t offset,size;
++    uint8_t *copy;
++    int ok;
++    if (!out || !CODOL_LocateCollisionMapEntities(asset,&offset)) return 0;
++    if (asset->format_version!=423) return CODOL_ReadMapEntities(asset->data+offset,asset->size-offset,out);
++    /* 423 moves the stage pointer/count from MapEnts into clipMap (+156/+160).
++     * The native parser owns its copied strings/arrays before this view dies. */
++    size=asset->size-offset;
++    if (size<36 || size>CODOL_ASSET_LIMIT-8) return 0;
++    copy=malloc(size+8);
++    if (!copy) return 0;
++    memcpy(copy,asset->data+offset,36);
++    memcpy(copy+36,asset->data+156,4);
++    memset(copy+40,0,4); copy[40]=asset->data[160];
++    memcpy(copy+44,asset->data+offset+36,size-36);
++    ok=CODOL_ReadMapEntities(copy,size+8,out);
++    free(copy); return ok;
++}
+--- a/src/codol/collision/codol_dynents.c
++++ b/src/codol/collision/codol_dynents.c
+@@ -27,7 +27,7 @@
+         (collision->type!=14 && collision->type!=15)) return 0;
+     for(category=0;category<2;++category) {
+         codol_dynamic_records_t records;
+-        result.count[category]=u16(collision->data+168+2*category);
++        result.count[category]=u16(collision->data+(collision->format_version==423 ? 196 : 168)+2*category);
+         if(!result.count[category]) continue;
+         if(!CODOL_ResolveDynamicRecords(blocks,collision,category,&records) ||
+             records.count!=result.count[category] || !records.reference ||
+--- a/src/codol/collision/codol_map_entities.c
++++ b/src/codol/collision/codol_map_entities.c
+@@ -176,8 +176,38 @@
+ }
+ int CODOL_ReadMapEntities(const void *data, size_t size, codol_map_entities_t *out)
+ { return read_map_entities(data, size, 44, out); }
+-int CODOL_ReadAddonMapEntities(const void *data, size_t size, codol_map_entities_t *out)
+-{ return read_map_entities(data, size, 36, out); }
++int CODOL_ReadAddonMapEntities(const void *data,size_t size,codol_map_entities_t *out)
++{
++    const unsigned char *source=data;
++    const uint32_t *h = (const uint32_t *)source;
++    uint32_t pos = 52, i, count, stride;
++    if (!source || !out || size < 52 || size > 0x20000000 ||
++        h[0] != 0xffffffffu || h[10] || h[11] || h[12]) return 0;
++    while (pos < size && source[pos]) ++pos;
++    if (pos == size) return 0;
++    ++pos;
++    if (h[2] > size - pos) return 0;
++    pos += h[2];
++    for (i = 0; i < 3; ++i) {
++        count = h[3 + i * 2];
++        stride = i == 0 ? 8 : i == 1 ? 32 : 20;
++        if (count > (size - pos) / stride) return 0;
++        pos += count * stride;
++    }
++    /* First-map cinfo contains only one empty leaf node. There are no added
++     * brushes/submodels to publish. Reject any unconverted geometry rather
++     * than silently discarding it when using the legacy entity consumer. */
++    if (h[9] == 0xffffffffu) {
++        if (size - pos != 84) return 0;
++        for (i = 0; i < 84; ++i) {
++            unsigned char expected = i == 32 ? 1 : i >= 36 && i < 40 ? 255 : 0;
++            if (source[pos + i] != expected) return 0;
++        }
++    } else if (h[9] || pos != size) return 0;
++    /* h[10]==0 also means no legacy stage list. The native reader validates
++     * entity termination, trigger indices, finite bounds and owned copies. */
++    return read_map_entities(source, size, 52, out);
++}
+ 
+ /* ---- addon composition -------------------------------------------------
+  *
+--- a/src/codol/collision/codol_world_planes.c
++++ b/src/codol/collision/codol_world_planes.c
+@@ -19,7 +19,7 @@
+ }
+ const char *CODOL_WorldBaseName(const codol_asset_t *asset)
+ {
+-    size_t p=asset && asset->format_version==365 ? 1608 : 628,start;
++    size_t p=asset && (asset->format_version==365 || asset->format_version==423) ? 1608 : 628,start;
+     if (!asset || asset->type!=21 || !asset->data || asset->size<p || asset->size>CODOL_ASSET_LIMIT) return NULL;
+     if (u32(asset->data)==UINT32_MAX && !string(asset->data,asset->size,&p)) return NULL;
+     if (u32(asset->data+4)!=UINT32_MAX) return NULL;
+@@ -31,7 +31,7 @@
+ {
+     codol_world_planes_t result={0};
+     const uint8_t *b;
+-    size_t p=asset && asset->format_version==365 ? 1608 : 628,size,skies,i;
++    size_t p=asset && (asset->format_version==365 || asset->format_version==423) ? 1608 : 628,size,skies,i;
+     uint32_t count;
+     if (!asset || !out || asset->type!=21 || !asset->data ||
+         asset->size<p || asset->size>CODOL_ASSET_LIMIT) return 0;
 --- a/src/codol/net/codol_wire.h
 +++ b/src/codol/net/codol_wire.h
 @@ -7,7 +7,7 @@
