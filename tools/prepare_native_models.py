@@ -13,7 +13,7 @@ from extract_story_resources import ROOT, GAME, DLL_SHA256, digest
 STAGE = ROOT / 'research/experiments/story-native'
 
 
-def main():
+def main(pvp=False):
     dll = GAME / 'IIPS/IFS2.dll'
     if digest(dll) != DLL_SHA256:
         raise ValueError('IFS reader DLL identity changed')
@@ -23,7 +23,24 @@ def main():
     subprocess.run([str(compiler/'gcc.exe'), '-O2', '-Wall', '-static-libgcc',
                     '-o', str(reader), str(ROOT/'tools/ifs-read.c')], env=env, check=True)
     decode = runpy.run_path(str(ROOT/'research/references/codol2697/decode_loose_resources.py.txt'))['decode']
-    catalog = json.loads((ROOT/'research/evidence/story-common-loose-directory.json').read_text())
+    if pvp:
+        catalog = {'archives': []}
+        downloads = GAME/'IIPS/IIPSDownload'
+        sources = sorted({*downloads.glob('lf_init_common_gametype_mp*.ifs'),
+                          *downloads.glob('lf_init_mp_killhouse_sh_*.ifs')})
+        for source in sources:
+            source_hash = digest(source)
+            with tempfile.TemporaryDirectory(prefix='pvp-directory-', dir=STAGE) as temporary:
+                copy = Path(temporary)/source.name
+                shutil.copyfile(source, copy)
+                result = subprocess.run([str(reader), str(dll), str(copy), '--list', 'main\\models\\'],
+                                        capture_output=True, text=True, timeout=60, check=True)
+                entries = [dict(name=line.split('\t', 2)[2]) for line in result.stdout.splitlines()]
+                if digest(source) != source_hash or digest(copy) != source_hash:
+                    raise ValueError('Archive changed during listing')
+            catalog['archives'].append(dict(archive=source.name, sha256=source_hash, entries=entries))
+    else:
+        catalog = json.loads((ROOT/'research/evidence/story-common-loose-directory.json').read_text())
     output = STAGE / 'resources-models'
     output.mkdir(exist_ok=True)
     records = []
@@ -70,8 +87,9 @@ def main():
                     raise ValueError('Archive changed during extraction')
             manifest.write_text(json.dumps(rows, indent=2))
         records.extend(rows)
-    first = json.loads((STAGE/'resources/inspection.json').read_text())
-    records.extend(r for r in first['files'] if r['name'].lower().replace('\\', '/').startswith('main/models/'))
+    if not pvp:
+        first = json.loads((STAGE/'resources/inspection.json').read_text())
+        records.extend(r for r in first['files'] if r['name'].lower().replace('\\', '/').startswith('main/models/'))
     by_name = {}
     for row in records:
         by_name.setdefault(row['name'].lower().replace('\\', '/'), []).append(row)
@@ -91,9 +109,13 @@ def main():
         installed.append(dict(name=name, sha256=digest(target), sources=variants))
     report = dict(installed=installed, conflicts=conflicts, dll_sha256=DLL_SHA256,
                   reader_sha256=digest(reader), gameplay_verified=False)
-    (ROOT/'research/evidence/server3333-model-streams.json').write_text(json.dumps(report, indent=2))
+    report_name = 'server3333-pvp-model-streams.json' if pvp else 'server3333-model-streams.json'
+    (ROOT/'research/evidence'/report_name).write_text(json.dumps(report, indent=2))
     print(json.dumps(dict(installed=len(installed), conflicts=[r['name'] for r in conflicts])))
 
 
 if __name__ == '__main__':
-    main()
+    import argparse
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--pvp', action='store_true', help='stage shared MP and Killhouse models')
+    main(parser.parse_args().pvp)

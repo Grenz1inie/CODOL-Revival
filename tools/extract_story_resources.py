@@ -16,7 +16,7 @@ def digest(path):
         return hashlib.file_digest(stream, 'sha256').hexdigest()
 
 
-def main(base=False, common=False):
+def main(base=False, common=False, pvp=False):
     stage = STAGE.with_name('resources-base') if base else STAGE
     map_name = 'mp_cargoship' if base else 'coop_training_mp_cargoship'
     dll = GAME / 'IIPS/IFS2.dll'
@@ -29,6 +29,12 @@ def main(base=False, common=False):
         map_name = 'common_mp+common_gametype_coop'
         archives = [GAME / 'IIPS/IIPSDownload' / name for name in (
             'ff_init_common_mp_V43.ifs', 'ff_init_common_gametype_coop_V28.ifs')]
+    if pvp:
+        stage = STAGE.with_name('resources-pvp')
+        map_name = 'mp_killhouse_sh+common_gametype_mp'
+        archives = [GAME / 'IIPS/IIPSDownload' / name for name in (
+            'ff_init_common_gametype_mp_V26.ifs', 'ff_init_mp_killhouse_sh_V32.ifs',
+            'lf_init_mp_killhouse_sh_const_V26.ifs')]
     if not archives:
         raise FileNotFoundError('first campaign archives')
     stage.mkdir(exist_ok=False)
@@ -61,6 +67,21 @@ def main(base=False, common=False):
         if task.returncode or not item['source_unchanged'] or not item['copy_unchanged']:
             raise RuntimeError(f'{source.name}: extraction failed; see manifest/log')
         print(source.name, len(item['files']))
+    if pvp:
+        required = {'common_gametype_mp.ff', 'localized_common_gametype_mp.ff',
+                    'mp_killhouse_sh.ff', 'mp_killhouse_sh_load.ff', 'mp_killhouse_sh_const.ff'}
+        assets = STAGE.parent / 'startup-assets/chinese'
+        for archive in manifest['archives']:
+            for item in archive['files']:
+                name = Path(item['name']).name
+                if name in required:
+                    source = ROOT / item['file']
+                    if digest(source) != item['sha256']:
+                        raise ValueError('extracted fastfile hash mismatch')
+                    shutil.copyfile(source, assets / name)
+                    required.remove(name)
+        if required:
+            raise ValueError(f'missing PVP fastfiles: {sorted(required)}')
 
 
 if __name__ == '__main__':
@@ -69,5 +90,6 @@ if __name__ == '__main__':
     group = parser.add_mutually_exclusive_group()
     group.add_argument('--base', action='store_true', help='extract the first campaign map\'s mp_cargoship base resources')
     group.add_argument('--common', action='store_true', help='inspect shared MP and coop dependencies for scripts')
+    group.add_argument('--pvp', action='store_true', help='extract and install Killhouse/MP fastfiles in the isolated server')
     args = parser.parse_args()
-    main(args.base, args.common)
+    main(args.base, args.common, args.pvp)

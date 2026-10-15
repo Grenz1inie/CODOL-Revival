@@ -8,8 +8,8 @@ sys.path.insert(0, str(ROOT / 'src'))
 from native_server import NativeServer
 
 
-def main(root=ROOT):
-    server = NativeServer(root)
+def main(root=ROOT, *, mode='story'):
+    server = NativeServer(root, port=28971, mode=mode)
     ready = False
     try:
         try:
@@ -38,4 +38,7 @@ def main(root=ROOT):
 
 
 if __name__ == '__main__':
-    main()
+    import argparse
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--pvp', action='store_true')
+    main(mode='pvp' if parser.parse_args().pvp else 'story')

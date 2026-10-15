@@ -5631,6 +5631,15 @@
          k->values=calloc(target_registration.codinfo_count,sizeof(*k->values));if(!k->values)goto done;
          k->count=target_registration.codinfo_count;
          for(unsigned i=0;i<k->count;++i)k->values[i]=target_registration.codinfo_names[i];
+@@ -104,7 +104,7 @@
+              * target material bank is wider. Filling them with all 248 stock
+              * names leaves no room for the script's prestige/menu materials.
+              * Allocate compact IDs on demand, then resolve target IDs by name. */
+-            if(banks[b][0]!=4 && banks[b][0]!=8 && banks[b][0]!=1)goto done;
++            if(banks[b][0]!=4 && banks[b][0]!=8 && banks[b][0]!=1 && banks[b][0]!=11)goto done;
+             Com_Printf(CON_CHANNEL_SERVER,"CoDOL 2697 resource kind %u uses compact on-demand internal slots\n",banks[b][0]);
+             continue;
+         }
 @@ -205,7 +205,7 @@
      uint32_t crc;
  #ifdef CODOL_SERVER

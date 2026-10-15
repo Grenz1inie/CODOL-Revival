@@ -78,7 +78,7 @@ class NativeServerTests(unittest.TestCase):
     def launch(self, command, **kwargs):
         self.process.returncode = self.exit_on_launch
         self.home = kwargs['cwd']
-        (self.home / 'main').mkdir()
+        (self.home / 'main').mkdir(exist_ok=True)
         (self.home / 'main/qconsole.log').write_text(self.log)
         return self.process
 
@@ -128,6 +128,25 @@ class NativeServerTests(unittest.TestCase):
         self.process.terminate.assert_called_once()
         self.process.kill.assert_called_once()
         self.assertIsNone(idle.process)
+
+    def test_pvp_starts_killhouse_with_one_bot_and_room_for_one_human(self):
+        reference = self.root.parent / 'CODOL-2.6.9.7-Launcher/CODOL-2.6.9.7-Launcher/runtime/game/server2697'
+        waypoints = reference / 'runtime-assets/main/waypoints'
+        waypoints.mkdir(parents=True)
+        (waypoints / 'mp_killhouse_sh_wp.csv').write_text('waypoint fixture')
+        self.server = NativeServer(self.root, mode='pvp')
+        self.addCleanup(self.server.close)
+        self.server.start(**self.options)
+        command = self.popen.call_args.args[0]
+        settings = dict(zip(command[2:-3:3], command[3:-3:3]))
+        for key, value in dict(sv_maxclients='2', scr_codol_bots='1', scr_codol_botfill='0',
+                               g_gametype='dm', fs_game='', codol_zoneType='mp',
+                               codol_sessionMap='', net_ip='127.0.0.1').items():
+            self.assertEqual(settings[key], value)
+        self.assertEqual(command[-3:], ['+map', 'mp_killhouse_sh', '+codol_checktargetpublication'])
+        self.assertEqual((self.server.home / 'main/waypoints/mp_killhouse_sh_wp.csv').read_text(),
+                         'waypoint fixture')
+        self.assertTrue(self.server.ready)
 
     def test_timeout_requires_both_publication_markers_and_cleans_up(self):
         for text in ('', 'Calculate referenced files checksums...', 'actual_client_crc=1'):

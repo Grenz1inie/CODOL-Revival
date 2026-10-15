@@ -15,9 +15,14 @@ CLIENT_SHA256 = 'e3823fd6afc80fb25fa84747e6e9634707b9a0b189357a5466921cda354af37
 
 
 class NativeServer:
-    def __init__(self, root, port=28970):
+    def __init__(self, root, port=28970, *, mode='story'):
+        if mode not in ('story', 'pvp'):
+            raise ValueError('unsupported native mode')
         self.root = Path(root).resolve()
         self.port = port
+        self.mode = mode
+        self.map_name = 'mp_killhouse_sh' if mode == 'pvp' else 'mp_cargoship'
+        self.session_map = self.map_name if mode == 'pvp' else 'coop_training_mp_cargoship'
         self.home = None
         self.process = None
         self._published = False
@@ -68,6 +73,10 @@ class NativeServer:
 ''' + text[end:]
         loadout.write_text(text)
         shutil.copy2(self.root / 'tools/native/minimal_cargoship.gsc', home / 'scripts/coop/maps/mp/mp_cargoship.gsc')
+        if self.mode == 'pvp':
+            waypoints = home / 'main/waypoints'
+            waypoints.mkdir(parents=True)
+            shutil.copy2(reference / 'runtime-assets/main/waypoints/mp_killhouse_sh_wp.csv', waypoints)
         v = json.loads((self.root / 'research/evidence/live-netconst-registration423.json').read_text(encoding='utf-8-sig'))
         assert v['exe_sha256'] == hashlib.sha256(client.read_bytes()).hexdigest()
         names, codinfo = v['names'], v['codinfo_names']
@@ -88,10 +97,14 @@ class NativeServer:
             codol_profilePath=str(Path(profile_path).resolve()) if profile_path else '',
             codol_scriptPath=str(reference / 'scripts'), codol_scriptOverlay=str(reference / 'scripts'),
             codol_scriptNativeOverlay=str(home / 'scripts'))
+        if self.mode == 'pvp':
+            values.update(sv_maxclients='2', fs_game='', codol_zoneType='mp',
+                          codol_sessionMap='', g_gametype='dm',
+                          scr_codol_bots='1', sv_botDifficulty='regular')
         self.command = [str(home / 'server3333.exe')]
         for key, value in values.items():
             self.command += ['+set', key, value]
-        self.command += ['+map', 'mp_cargoship', '+codol_checktargetpublication']
+        self.command += ['+map', self.map_name, '+codol_checktargetpublication']
         env = {k: v for k, v in os.environ.items() if not k.startswith('CODOL_')}
         env['CODOL_ARCHIVE_TRACE'] = '1'
         try:
