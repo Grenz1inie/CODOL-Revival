@@ -22,9 +22,10 @@ class NativeAssets423Tests(unittest.TestCase):
             if hashlib.sha256(path.read_bytes()).hexdigest() != expected:
                 raise AssertionError('Rebuild the current port: python tools/build_native_server.py')
 
-    def run_probe(self, *arguments):
+    def run_probe(self, *arguments, options=None):
         env = {key: value for key, value in os.environ.items() if not key.startswith('CODOL_')}
         env['CODOL_ARCHIVE_TRACE'] = '1'
+        env.update(options or {})
         return subprocess.run([str(self.executable), *map(str, arguments)], cwd=STAGE,
             env=env, capture_output=True, text=True, errors='backslashreplace', timeout=45,
             creationflags=subprocess.CREATE_NO_WINDOW)
@@ -63,3 +64,17 @@ class NativeAssets423Tests(unittest.TestCase):
                 self.assertNotEqual(result.returncode, 0)
                 self.assertIn('archive_failure', result.stdout)
                 self.assertNotIn('reference_replay ok=1', result.stdout)
+
+    def test_current_weapon_dependencies_preserve_all_animation_slots(self):
+        archives = [STAGE / name for name in ('resources-common-gfx/2.bin',
+            'resources-common-gfx/5.bin', 'resources-common/ff_init_common_mp_V43/5.bin',
+            'resources-base/ff_init_mp_cargoship_V32/2.bin',
+            'resources/ff_init_coop_training_mp_cargoship_V29/2.bin')]
+        result = self.run_probe('--codol-runtime-probe', CLIENT, 'mp_cargoship', *archives,
+            options={'CODOL_WEAPON_PROBE': '1', 'CODOL_WEAPON_SOURCE_ONLY': '1'})
+        for name in ('ak104_mp', 'deserteagle_mp', 'white_phosphorus_grenade_mp', 'flash_grenade_mp'):
+            self.assertIn(f'runtime_weapon name={name} source=1 animations=1 effects=1 '
+                'sounds=1 visuals=1 ammo=1 tail=1 tags=1 slots=168', result.stdout)
+        self.assertEqual(result.returncode, 0, result.stdout[-2600:]+result.stderr[-1600:])
+        self.assertIn('runtime_complete ok=1', result.stdout)
+        self.assertIn('engine_started=0 network_started=0', result.stdout)

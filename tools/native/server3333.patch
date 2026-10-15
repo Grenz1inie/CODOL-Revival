@@ -11,6 +11,49 @@
          if(asset->size<header) continue;
          memcpy(&ref,asset->data+offset,4);
          name=ref==UINT32_MAX ?
+@@ -518,6 +518,7 @@
+         printf("runtime_weapon name=%s source=%d animations=%d effects=%d sounds=%d visuals=%d ammo=%d tail=%d tags=%d slots=%u bytes=%zu consumed=%zu\n",
+             names[w],a,b,c,e,f,g,h,t,anim.count,weapon.asset.size,tail.dependency_offset);
+         if(a!=1 || b!=1 || c!=1 || e!=1 || f!=1 || g!=1 || h!=1 || t!=1) { ok=0; continue; }
++        if(getenv("CODOL_WEAPON_SOURCE_ONLY")) continue;
+         {
+             codol_weapon_source_image_t image={0};
+             if(CODOL_BeginWeaponSourceImage(names[w],&image)!=1 ||
+@@ -596,6 +597,7 @@
+         for(unsigned array=0;array<2;++array)
+             for(i=0;i<31;++i) if(!runtime_weapon_asset(context,11,sounds.arrays[array][i])) ok=0;
+     }
++    if(getenv("CODOL_WEAPON_SOURCE_ONLY")) return ok;
+     {
+         {
+             static const char *tables[]={"mp/coweapmodels/ak104_mp.csv","mp/coweapitems/sto.csv","mp/coweapitems/for.csv"};
+--- a/src/codol/assets/codol_asset_commands.c
++++ b/src/codol/assets/codol_asset_commands.c
+@@ -474,7 +474,12 @@
+     const char *paths[8],*level,*session,*key_path,*proven;
+     cvar_t *client_exe; size_t roots,count=0,i,failed=0; unsigned asset=UINT32_MAX;
+     int n,category_changed;
+-    if(CODOL_Target2697ArchivesActive())return load_target_map(map,session_map,zone_type);
++    if(CODOL_Target2697ArchivesActive()) {
++        if (zone_type && !strcmp(zone_type,"mp")) return load_target_map(map,session_map,zone_type);
++        /* Current-version coop coverage is the measured first-map resource chain. */
++        if (!zone_type || strcmp(zone_type,"coop") || !map || strcmp(map,"mp_cargoship") ||
++            !session_map || strcmp(session_map,"coop_training_mp_cargoship")) return 0;
++    }
+     if(!map || !*map || !zone_type ||
+        (strcmp(zone_type,"mp") && strcmp(zone_type,"coop") && strcmp(zone_type,"zm"))) return 0;
+     if(session_map && !*session_map) session_map=NULL;
+@@ -551,7 +556,9 @@
+      * (every zone is opened and replayed first). */
+     Q_strncpyz(previous_zone,mounted_zone,sizeof(previous_zone));
+     category_changed=*previous_zone && strcmp(previous_zone,zone_type)!=0;
+-    if(!CODOL_ReplaceRuntimeArchives(paths,count,key_path,1,&failed,&asset)) {
++    if(!(CODOL_Target2697ArchivesActive() ?
++        CODOL_MountTarget2697Archives(paths,count,key_path,1,&failed,&asset) :
++        CODOL_ReplaceRuntimeArchives(paths,count,key_path,1,&failed,&asset))) {
+         Com_PrintError(CON_CHANNEL_SYSTEM,"CoDOL map mount failed: %s (asset %u)\n",paths[failed],asset);
+         return 0;
+     }
 --- a/src/codol/assets/codol_asset_registry.c
 +++ b/src/codol/assets/codol_asset_registry.c
 @@ -311,7 +311,7 @@
@@ -69,7 +112,178 @@
      ref=(uint32_t)p[0]|(uint32_t)p[1]<<8|(uint32_t)p[2]<<16|(uint32_t)p[3]<<24;
      p=asset->data;
      if (ref==UINT32_MAX) { p+=header; available=asset->size-header; }
-@@ -2050,7 +2055,14 @@
+@@ -1020,8 +1025,8 @@
+     size_t pos;
+     if (!name || !*name || !out) return -1;
+     archive=find_dependency_definition(28,name,&result.asset); if (!archive) return 0;
+-    if (result.asset.format_version && result.asset.format_version!=334 && result.asset.format_version!=365) return -1;
+-    pos=result.asset.format_version==365 ? 0xc34 : 0xbfc;
++    if (result.asset.format_version && result.asset.format_version!=334 && result.asset.format_version!=365 && result.asset.format_version!=423) return -1;
++    pos=result.asset.format_version==423 ? 0xe28 : result.asset.format_version==365 ? 0xc34 : 0xbfc;
+     if (result.asset.size<pos) return -1;
+     for (i=0;i<4;++i)
+         if (!weapon_string(archive,&result.asset,&pos,world_u32(result.asset.data+4*i),result.strings+i)) return -1;
+@@ -1039,7 +1044,7 @@
+     /* C1 hide-tag consumer 0x422847/0x422852 selects def+3c. Serialized
+      * script-string IDs belong to this zone, not the engine's SL table. */
+     for(i=0;i<32;++i) {
+-        const uint8_t *p=weapon.asset.data+0x3c+2*i;
++        const uint8_t *p=weapon.asset.data+(weapon.asset.format_version==423 ? 0x38 : 0x3c)+2*i;
+         unsigned index=(unsigned)p[0]|(unsigned)p[1]<<8;
+         if(!index) continue;
+         if(!archive->script_strings && !CODOL_ReadScriptStrings(&archive->zone,&archive->script_strings)) return -1;
+@@ -1353,6 +1358,7 @@
+     if (!out || index>=11) return -1;
+     status=CODOL_LoadMountedWeapon(name,&weapon); if (status!=1) return status;
+     archive=find_dependency_definition(28,name,&definition); if (!archive) return -1;
++    if(weapon.asset.format_version==423 && index==10) return 0;
+     pos=weapon.dependency_offset;
+     for (i=0;i<=index;++i) {
+         uint32_t ref=world_u32(weapon.asset.data+0x10+4*i);
+@@ -1386,7 +1392,7 @@
+     status=CODOL_LoadMountedWeapon(name,&weapon); if (status!=1) return status;
+     archive=find_dependency_definition(28,name,&definition); if (!archive) return -1;
+     pos=weapon.dependency_offset;
+-    for (i=0;i<11;++i) if (world_u32(weapon.asset.data+0x10+4*i)>=UINT32_MAX-1) {
++    for (i=0;i<(weapon.asset.format_version==423 ? 10 : 11);++i) if (world_u32(weapon.asset.data+0x10+4*i)>=UINT32_MAX-1) {
+         codol_asset_t model; size_t extent;
+         if (pos>weapon.asset.size) return -1;
+         model=(codol_asset_t){4,weapon.asset.data+pos,weapon.asset.size-pos,weapon.asset.format_version};
+@@ -1394,10 +1400,10 @@
+         pos+=extent;
+     }
+     result.format_version=weapon.asset.format_version;
+-    result.slots_per_hand=result.format_version==365 ? 52 : 48;
++    result.slots_per_hand=result.format_version==423 ? 56 : result.format_version==365 ? 52 : 48;
+     result.count=3*result.slots_per_hand;
+     for (i=0;i<result.count;++i)
+-        if (!weapon_string(archive,&weapon.asset,&pos,world_u32(weapon.asset.data+0x7c+4*i),result.names+i)) return -1;
++        if (!weapon_string(archive,&weapon.asset,&pos,world_u32(weapon.asset.data+(weapon.asset.format_version==423 ? 0x78 : 0x7c)+4*i),result.names+i)) return -1;
+     result.dependency_offset=pos; *out=result; return 1;
+ }
+ int CODOL_LoadMountedWeaponAnimations(const char *name,codol_weapon_animations_t *out)
+@@ -1419,8 +1425,11 @@
+     status=CODOL_LoadMountedWeaponAnimationSource(name,&animations); if (status!=1) return status;
+     archive=find_dependency_definition(28,name,&definition); if (!archive) return -1;
+     pos=animations.dependency_offset;
+-    for (i=0;i<2;++i) {
+-        uint32_t ref=world_u32(weapon.asset.data+(weapon.asset.format_version==365 ? 0x38c : 0x35c)+4*i);
++    /* REA 0x49190c/0x49195b/0x4919a6: two banks of 16 plus three FX.
++     * Keep all source slots; choosing the runtime flash variant is separate. */
++    result.count=weapon.asset.format_version==423 ? 35 : 2;
++    for (i=0;i<result.count;++i) {
++        uint32_t ref=world_u32(weapon.asset.data+(weapon.asset.format_version==423 ? (i<16 ? 0x3b8+4*i : i<32 ? 0x418+4*(i-16) : 0x498+4*(i-32)) : (weapon.asset.format_version==365 ? 0x38c : 0x35c)+4*i));
+         codol_asset_t effect={0}; const char *effect_name;
+         if (!ref) continue;
+         if (ref>=UINT32_MAX-1) {
+@@ -1443,7 +1452,7 @@
+              * weapon. Metadata readers must retain its name so ammo keys can
+              * register without loading an unused map vehicle's visual FX.
+              * Runtime effect providers still validate it when instantiated. */
+-            if(weapon.asset.format_version!=365 || effect_name[0]!=',' || !effect_name[1])return -1;
++            if((weapon.asset.format_version!=365 && weapon.asset.format_version!=423) || effect_name[0]!=',' || !effect_name[1])return -1;
+             result.assets[i]=effect;result.names[i]=effect_name+1;
+         } else result.names[i]=dependency_asset_name(owner,result.assets+i);
+         if (!result.names[i] || !*result.names[i]) return -1;
+@@ -1481,9 +1490,9 @@
+     archive=find_dependency_definition(28,name,&definition); if(!archive) return -1;
+     pos=effects.dependency_offset;
+     for(i=0;i<53;++i)
+-        if(!weapon_sound(archive,&weapon.asset,&pos,0,world_u32(weapon.asset.data+(weapon.asset.format_version==365 ? 0x394 : 0x364)+4*i),result.names+i)) return -1;
++        if(!weapon_sound(archive,&weapon.asset,&pos,0,world_u32(weapon.asset.data+(weapon.asset.format_version==423 ? 0x4a4 : weapon.asset.format_version==365 ? 0x394 : 0x364)+4*i),result.names+i)) return -1;
+     for(i=0;i<2;++i) {
+-        uint32_t ref=world_u32(weapon.asset.data+(weapon.asset.format_version==365 ? 0x468 : 0x438)+4*i);
++        uint32_t ref=world_u32(weapon.asset.data+(weapon.asset.format_version==423 ? 0x578 : weapon.asset.format_version==365 ? 0x468 : 0x438)+4*i);
+         codol_asset_t array=weapon.asset; size_t cursor=pos,start; unsigned j; int pooled=ref!=UINT32_MAX;
+         if(!ref) continue;
+         if(pooled) {
+@@ -1500,7 +1509,10 @@
+ }
+ int CODOL_LoadMountedWeaponVisuals(const char *name,codol_weapon_visuals_t *out)
+ {
+-    static const unsigned dependencies[][3]={{0x440,4,30},{0x450,2,5},{0x52c,6,5},{0x548,1,5},{0x550,1,5}};
++    static const unsigned legacy_dependencies[][3]={{0x440,4,30},{0x450,2,5},{0x52c,6,5},{0x548,1,5},{0x550,1,5}};
++    static const unsigned current_dependencies[][3]={{0x580,4,30},{0x590,2,5},
++        {0x66c,6,5},{0x688,1,5},{0x690,1,5},{0x69c,4,5}};
++    const unsigned (*dependencies)[3]; unsigned groups;
+     codol_mounted_weapon_t weapon; codol_weapon_sounds_t sounds;
+     codol_weapon_visuals_t result={0}; archive_t *archive; codol_asset_t definition;
+     size_t pos; unsigned i,j,index=0; int status;
+@@ -1509,7 +1521,10 @@
+     status=CODOL_LoadMountedWeaponSounds(name,&sounds); if(status!=1) return status;
+     archive=find_dependency_definition(28,name,&definition); if(!archive) return -1;
+     pos=sounds.dependency_offset;
+-    for(i=0;i<sizeof(dependencies)/sizeof(dependencies[0]);++i)
++    dependencies=weapon.asset.format_version==423 ? current_dependencies : legacy_dependencies;
++    groups=weapon.asset.format_version==423 ? 6 : 5;
++    result.count=weapon.asset.format_version==423 ? 18 : 14;
++    for(i=0;i<groups;++i)
+         for(j=0;j<dependencies[i][1];++j) {
+             codol_weapon_dependency_t *entry=result.entries+index++;
+             archive_t *owner; const char *asset_name;
+@@ -1534,7 +1549,7 @@
+             asset_name=dependency_asset_name(archive,&asset); if(!asset_name || !*asset_name) return -1;
+             owner=find_dependency_definition(dependencies[i][2],asset_name[0]==',' ? asset_name+1 : asset_name,&entry->asset);
+             if(!owner) {
+-                if(weapon.asset.format_version!=365 || asset_name[0]!=',' || !asset_name[1])return -1;
++                if((weapon.asset.format_version!=365 && weapon.asset.format_version!=423) || asset_name[0]!=',' || !asset_name[1])return -1;
+                 entry->asset=asset;entry->name=asset_name+1;
+             } else entry->name=dependency_asset_name(owner,&entry->asset);
+             if(!entry->name || !*entry->name) return -1;
+@@ -1551,7 +1566,7 @@
+     status=CODOL_LoadMountedWeaponVisuals(name,&visuals); if(status!=1) return status;
+     archive=find_dependency_definition(28,name,&definition); if(!archive) return -1;
+     pos=visuals.dependency_offset;
+-    shift=weapon.asset.format_version==365 ? 0x30 : 0;
++    shift=weapon.asset.format_version==423 ? 0x150 : weapon.asset.format_version==365 ? 0x30 : 0;
+     if(!weapon_string(archive,&weapon.asset,&pos,world_u32(weapon.asset.data+0x564+shift),&result.ammo) ||
+        !weapon_string(archive,&weapon.asset,&pos,world_u32(weapon.asset.data+0x56c+shift),&result.clip) ||
+        !weapon_string(archive,&weapon.asset,&pos,world_u32(weapon.asset.data+0x57c+shift),&result.shared_cap)) return -1;
+@@ -1582,20 +1597,31 @@
+         {0xb7c,6,N,0},{0xbac,1,S,0},{0xbbc,2,S,0},
+         {0xbc8,3,A,5},{0xbec,2,P,0xbe8}
+     };
++    /* Ordered dependency fields from current loader 0x4915b0. */
++    static const unsigned current_fields[][4]={
++        {0x7dc,4,A,5},{0x8b0,1,A,1},{0x8b4,1,A,0},{0x910,1,A,4},
++        {0x918,2,A,30},{0x920,2,N,0},{0xa38,2,A,30},
++        {0xa58,1,A,30},{0xa5c,1,N,0},{0xa60,3,A,30},
++        {0xb24,1,S,0},{0xb2c,1,P,0xd5c},{0xb28,1,S,0},{0xb30,1,P,0xd5e},
++        {0xb80,2,S,0},{0xba4,2,S,0},{0xc44,2,S,0},
++        {0xc4c,2,A,40},{0xc6c,1,N,0},{0xc70,1,A,30},{0xc74,1,S,0},
++        {0xc84,11,N,0},{0xcf0,6,N,0},{0xd20,1,S,0},{0xd30,2,S,0},
++        {0xd3c,3,A,5},{0xd60,2,P,0xd5c},{0xe08,1,S,0},{0xe18,1,S,0}
++    };
+     const unsigned (*fields)[4]; size_t field_count;
+     codol_mounted_weapon_t weapon; codol_weapon_ammo_names_t ammo;
+     codol_weapon_tail_t result={0}; codol_asset_t definition; archive_t *archive;
+     size_t pos; unsigned i,j; int status;
+     if(!out) return -1;
+     status=CODOL_LoadMountedWeapon(name,&weapon); if(status!=1) return status;
+-    fields=weapon.asset.format_version==365 ? target_fields : legacy_fields;
+-    field_count=weapon.asset.format_version==365 ? sizeof(target_fields)/sizeof(target_fields[0]) : sizeof(legacy_fields)/sizeof(legacy_fields[0]);
++    fields=weapon.asset.format_version==423 ? current_fields : weapon.asset.format_version==365 ? target_fields : legacy_fields;
++    field_count=weapon.asset.format_version==423 ? sizeof(current_fields)/sizeof(current_fields[0]) : weapon.asset.format_version==365 ? sizeof(target_fields)/sizeof(target_fields[0]) : sizeof(legacy_fields)/sizeof(legacy_fields[0]);
+     status=CODOL_LoadMountedWeaponAmmoNames(name,&ammo); if(status!=1) return status;
+     archive=find_dependency_definition(28,name,&definition); if(!archive) return -1;
+     pos=ammo.dependency_offset;
+     for(i=0;i<field_count;++i) for(j=0;j<fields[i][1];++j) {
+         codol_weapon_dependency_t *entry; uint32_t ref;
+-        if(result.count>=64) return -1;
++        if(result.count>=sizeof(result.entries)/sizeof(result.entries[0])) return -1;
+         entry=result.entries+result.count++; entry->offset=fields[i][0]+4*j; entry->kind=fields[i][2];
+         if(entry->kind==A) entry->asset.type=fields[i][3];
+         ref=world_u32(weapon.asset.data+entry->offset);
+@@ -1632,7 +1658,7 @@
+             asset_name=dependency_asset_name(archive,&original); if(!asset_name || !*asset_name) return -1;
+             owner=find_dependency_definition(fields[i][3],asset_name[0]==',' ? asset_name+1 : asset_name,&entry->asset);
+             if(!owner) {
+-                if(weapon.asset.format_version!=365 || asset_name[0]!=',' || !asset_name[1])return -1;
++                if((weapon.asset.format_version!=365 && weapon.asset.format_version!=423) || asset_name[0]!=',' || !asset_name[1])return -1;
+                 entry->asset=original;entry->name=asset_name+1;
+             } else entry->name=dependency_asset_name(owner,&entry->asset);
+             if(!entry->name || !*entry->name) return -1;
+@@ -2050,7 +2076,14 @@
          if(!status) return -1;
          result.name=dependency_asset_name(archive,&result.asset);
          if(!result.name || !*result.name) return -1;
@@ -155,6 +369,46 @@
      *position=p; return 1;
  }
  /* XModelSurfs 0x4bb890, XSurface 0x4b8ff0, collision tree 0x4b8d50. */
+--- a/src/codol/assets/codol_assets.h
++++ b/src/codol/assets/codol_assets.h
+@@ -242,14 +242,15 @@
+ /* Lossless versioned source. 334 has 3*48 slots; 365 has 3*52.
+  * Do not interpret these as the old runtime animation enum. */
+ typedef struct {
+-    const char *names[156];
++    const char *names[168];
+     unsigned count,slots_per_hand,format_version;
+     size_t dependency_offset;
+ } codol_weapon_animation_source_t;
+ int CODOL_LoadMountedWeaponAnimationSource(const char *,codol_weapon_animation_source_t *);
+ typedef struct {
+-    const char *names[2];
+-    codol_asset_t assets[2];
++    const char *names[35];
++    codol_asset_t assets[35];
++    unsigned count;
+     size_t dependency_offset; /* After leading effects, before sound names. */
+ } codol_weapon_effects_t;
+ /* Resolves source +0x35c/+0x360, including inline/pooled FX and named overrides.
+@@ -281,7 +282,8 @@
+     unsigned point_count;
+ } codol_weapon_dependency_t;
+ typedef struct {
+-    codol_weapon_dependency_t entries[14]; /* Four FX, then ten materials. */
++    codol_weapon_dependency_t entries[18]; /* 423 adds four material slots. */
++    unsigned count;
+     size_t dependency_offset;
+ } codol_weapon_visuals_t;
+ /* Resolves +0x440..+0x450 and the intervening material groups through +0x550.
+@@ -289,7 +291,7 @@
+  * advancing over inline source data. Borrowed lifetime; atomic 1/0/-1. */
+ int CODOL_LoadMountedWeaponVisuals(const char *,codol_weapon_visuals_t *);
+ typedef struct {
+-    codol_weapon_dependency_t entries[64];
++    codol_weapon_dependency_t entries[72];
+     unsigned count;
+     size_t dependency_offset;
+ } codol_weapon_tail_t;
 --- a/src/codol/assets/codol_client_crypto.c
 +++ b/src/codol/assets/codol_client_crypto.c
 @@ -87,6 +87,6 @@
@@ -4874,3 +5128,46 @@
          if(!msg||!msg->data||msg->overflowed||msg->splitData||msg->cursize<0||msg->maxsize<msg->cursize||
             !max_clients||max_clients>32||client_number>=max_clients||
             !CODOL_ServerMapIdentityMatches(map,zone_type)||!CODOL_SetServerInfo(map,gametype,max_clients,hostname)||
+--- a/src/db_load.cpp
++++ b/src/db_load.cpp
+@@ -48,6 +48,10 @@
+ #include "xassets/stringtable.h"
+ #ifdef CODOL_SERVER
+ #include "codol_assets.h"
++extern "C" {
++#include "codol_load_blocks.h"
++}
++#include "codol_script_source.h"
+ #include "codol_xanim_native.h"
+ #include "codol_xmodel_native.h"
+ #include "codol_weapon_native.h"
+@@ -3602,6 +3606,29 @@
+     } else if (type == ASSET_TYPE_RAWFILE) {
+       const codol_engine_rawfile_t *raw = NULL;
+       status = CODOL_LoadEngineRawFile(name, &raw);
++      if (!status && CODOL_Target2697ArchivesActive()) {
++        /* The current client archives omit server-only raw text (gametype
++         * lists and labels). Reuse the explicitly configured reference root. */
++        struct reference_raw { codol_engine_rawfile_t file; reference_raw *next; };
++        static reference_raw *files = NULL;
++        reference_raw *entry;
++        for (entry=files;entry;entry=entry->next) if (!strcmp(entry->file.name,name)) break;
++        if (!entry) {
++          cvar_t *root=Cvar_FindVar("codol_scriptPath");
++          char *text=NULL; size_t length=0;
++          status=root ? CODOL_ReadScriptSource(root->string,NULL,name,&text,&length) : 0;
++          if (status==1) {
++            entry=(reference_raw *)calloc(1,sizeof(*entry)+strlen(name)+1);
++            if (!entry) { free(text); status=-1; }
++            else {
++              char *owned_name=(char *)(entry+1); strcpy(owned_name,name);
++              entry->file.name=owned_name; entry->file.len=(int)length; entry->file.buffer=text;
++              entry->next=files; files=entry;
++            }
++          }
++        }
++        if (entry) { raw=&entry->file; status=1; }
++      }
+       /* C1 names the dvars in shock/*.shock by registration number; the
+        * retained BG_LoadShellShock parses them by name. Serve a translated
+        * copy, owned for the process lifetime and reused per name. */
