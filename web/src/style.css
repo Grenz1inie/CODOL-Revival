@@ -50,6 +50,8 @@ p {font-size:13px;line-height:1.65;color:var(--console-muted);margin:12px 0}
 .rt-Button {border-radius:8px;white-space:nowrap;font-weight:550;min-height:36px;box-shadow:none}
 .rt-Button:where(.rt-variant-soft):not(:disabled) {color:var(--console-text);background:var(--console-tint);box-shadow:inset 0 0 0 1px var(--console-line),inset 0 1px 0 var(--console-highlight)}
 .rt-Button:where(.rt-variant-ghost):not(:disabled) {color:var(--console-muted)}
+.game-actions {display:flex;align-items:center;gap:10px;flex-shrink:0}
+.stop-button {min-height:52px;min-width:130px}
 .launch-button {position:relative;overflow:hidden;isolation:isolate;min-width:224px;min-height:52px;gap:14px!important}
 .launch-button:not(:disabled) {color:var(--console-on-button);background:linear-gradient(115deg,#2d6ade,var(--console-button));box-shadow:inset 0 1px 0 #ffffff3b,0 4px 14px #174a9d33}
 .launch-button::before {content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(110deg,transparent 30%,#ffffff0a 50%,transparent 70%);transform:translateX(-120%)}
@@ -67,7 +69,8 @@ p {font-size:13px;line-height:1.65;color:var(--console-muted);margin:12px 0}
 .running .state-dot {background:var(--console-accent);box-shadow:0 0 0 4px var(--console-tint)}
 .edit-hint {padding:10px 14px;margin:0 0 16px;font-size:12px;background:var(--console-tint);border-left:2px solid var(--console-accent);border-radius:0 6px 6px 0}
 .control-grid {display:grid;grid-template-columns:minmax(0,2fr) minmax(300px,1fr);gap:20px;align-items:start}
-.primary-column,.secondary-column {min-width:0;display:grid;gap:18px}
+.primary-column {display:contents}
+.secondary-column {min-width:0;grid-column:2;grid-row:1}
 .panel {position:relative;isolation:isolate;min-width:0;padding:20px;background:var(--console-panel);border:1px solid var(--console-line);border-radius:12px;box-shadow:inset 0 1px 0 var(--console-highlight),var(--console-shadow)}
 .section-title {display:flex;align-items:center;gap:9px;margin-bottom:18px}
 .section-title>svg,.balance-label>svg {flex-shrink:0;color:var(--console-accent)}
@@ -90,27 +93,15 @@ p {font-size:13px;line-height:1.65;color:var(--console-muted);margin:12px 0}
 .wallet-panel>.helper {margin:10px 4px 0;font-size:11px}
 .group-heading {display:flex;align-items:center;justify-content:space-between;margin:0 2px;font-size:13px}
 .group-heading .mono {font-size:10px;color:var(--console-muted);font-weight:400;letter-spacing:1px}
-.quick-grid {display:grid;gap:12px}
-.quick-panel {display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:14px;align-items:center;padding:17px 18px}
+.quick-grid {display:grid;gap:12px;grid-column:1/-1;grid-row:2}
+.quick-panel {display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:14px;align-items:center;padding:12px 18px}
 .action-icon {display:grid;place-items:center;width:36px;height:36px;border-radius:9px;background:var(--console-tint);color:var(--console-accent)}
 .quick-copy {min-width:0}
 .quick-copy .helper {margin:6px 0 0;font-size:11px}
 .quick-panel>.rt-Button {min-width:158px;font-size:12px}
-.form-row {display:flex;align-items:center;gap:12px;font-size:11px;margin-top:6px}
-.form-row>span {color:var(--console-muted)}
-.form-row strong {font-weight:500;color:var(--console-accent)}
 .startup-panel {min-height:194px}
 .switch-row {display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 0;font-size:13px;border-top:1px solid var(--console-line);border-bottom:1px solid var(--console-line)}
 .startup-panel .helper {font-size:11px}
-.inventory-button {width:100%}
-.inventory-panel .section-title {margin-bottom:12px}
-.inventory-panel .helper {font-size:11px}
-.renewal-panel .section-title {margin-bottom:0}
-.renewal-panel .helper {font-size:11px}
-.renewal-form {display:grid;gap:12px;margin-top:14px}
-.renewal-form>div {min-width:0}
-.renewal-form select {display:block;width:100%;max-width:100%;height:36px;font-size:12px;color:var(--console-text);background:var(--console-well);border:1px solid var(--console-line);border-radius:7px;padding:0 9px;text-overflow:ellipsis}
-.empty-state {margin:12px 0 0;font-size:12px;padding-top:12px;border-top:1px solid var(--console-line)}
 .usage {display:flex;align-items:center;gap:10px;border-top:1px solid var(--console-line);margin-top:24px;padding-top:16px;color:var(--console-muted)}
 .usage>svg {flex-shrink:0;color:var(--console-accent)}
 .usage p {font-size:11px;margin:0}
@@ -156,7 +147,7 @@ button:focus-visible,a:focus-visible,summary:focus-visible,select:focus-visible 
 .wallet::before {transition:opacity .25s ease}
 .rt-Button,.navigation nav button,.text-link {transition:background .18s ease,color .18s ease,box-shadow .18s ease,transform .18s ease}
 .launch-arrow,.action-icon {transition:transform .2s ease,color .2s ease}
-.rt-TextFieldRoot,.renewal-form select {transition:box-shadow .18s ease,border-color .18s ease}
+.rt-TextFieldRoot {transition:box-shadow .18s ease,border-color .18s ease}
 .rt-Button:not(:disabled):active {transform:translateY(1px);box-shadow:inset 0 1px 4px #02081330}
 @keyframes deck-enter {from {opacity:0;transform:translateY(8px)} to {opacity:1;transform:translateY(0)}}
 @keyframes launch-sheen {to {transform:translateX(120%)}}
@@ -195,10 +186,9 @@ button:focus-visible,a:focus-visible,summary:focus-visible,select:focus-visible 
   .navigation nav {gap:16px}
   .header-tools {gap:16px}
   .control-grid {grid-template-columns:1fr}
-  .secondary-column {grid-template-columns:1fr 1fr}
+  .secondary-column {grid-column:1;grid-row:2}
+  .quick-grid {grid-row:3}
   .startup-panel {min-height:0}
-  .renewal-panel {grid-column:1/-1}
-  .renewal-form {grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)}
   .quick-panel {grid-template-columns:36px minmax(0,1fr) auto}
   .quick-panel>.rt-Button {grid-column:auto}
   .profile-strip {grid-template-columns:minmax(180px,1.5fr) .65fr .65fr 1fr;gap:12px;padding:16px}
@@ -219,13 +209,13 @@ button:focus-visible,a:focus-visible,summary:focus-visible,select:focus-visible 
   .page-heading {align-items:start;flex-wrap:wrap;gap:18px}
   .page-heading::before {inset:-14px -16px 48px 32%;opacity:.4}
   h1 {font-size:24px}
-  .launch-button {width:100%;min-height:46px;justify-content:center}
-  .launch-button .launch-arrow {position:absolute;right:18px;margin-left:0}
+  .game-actions {width:100%;display:grid;grid-template-columns:1fr 1.5fr}
+  .stop-button,.launch-button {min-width:0;min-height:46px;justify-content:center}
+  .launch-button .launch-arrow {display:none}
   .profile-strip {grid-template-columns:1.25fr 1fr;gap:12px}
   .profile-strip>div+div {border:0;padding-left:0}
   .profile-strip>div:nth-child(n+3) {border-top:1px solid var(--console-line);padding-top:12px}
-  .wallet-grid,.secondary-column,.renewal-form {grid-template-columns:1fr}
-  .renewal-panel {grid-column:auto}
+  .wallet-grid {grid-template-columns:1fr}
   .wallet .input-action {flex-wrap:nowrap}
   .wallet .input-action .rt-Button {flex:0 0 auto}
   .quick-panel {grid-template-columns:30px minmax(0,1fr)}

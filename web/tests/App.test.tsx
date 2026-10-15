@@ -7,7 +7,6 @@ const actions = ['设置最高等级', '解锁全部剧情关卡', '增加游戏
 let running: boolean;
 let profiles: typeof profile[];
 let capabilities: Record<string, {available: boolean; reason: string}>;
-let items: {item_id: number; quantity: number; expires: number; name: string}[];
 let posts: {path: string; data: unknown}[];
 let postResponse: () => Promise<{ok: boolean; json: () => Promise<unknown>}>;
 const response = (data: unknown, ok = true) => ({ok, json: async () => data});
@@ -17,7 +16,6 @@ beforeEach(() => {
   running = false;
   profiles = [profile];
   capabilities = Object.fromEntries(['progression', 'currency', 'inventory'].map(key => [key, {available: true, reason: `${key} 已就绪`}]));
-  items = [];
   posts = [];
   postResponse = async () => response({message: '操作已保存'});
   vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
@@ -28,7 +26,7 @@ beforeEach(() => {
     }
     if (path === 'status') return response({profiles, game_running: running, capabilities});
     if (path === 'settings') return response({skip_tutorial: true});
-    if (path.startsWith('inventory?')) return response({items});
+    if (path.startsWith('inventory?')) return response({items: []});
     if (path === 'docs') return response({files: [{path: 'README.md', size: 10}, {path: 'wiki/06-onboarding-profile.md', size: 20}]});
     if (path.startsWith('docs/file?')) {
       const docPath = new URLSearchParams(path.split('?')[1]).get('path');
@@ -67,36 +65,39 @@ describe('控制器原有操作契约', () => {
     const wallet = screen.getByRole('region', {name: '游戏币与商城'});
     expect(within(wallet).getByLabelText('增加数量')).toBeTruthy();
     expect(within(wallet).getByLabelText('增加点券数量')).toBeTruthy();
-    expect(screen.getByRole('region', {name: '限时物品续期'})).toBeTruthy();
+    const quickActions = screen.getByRole('region', {name: '快捷操作'});
+    expect(within(quickActions).getByRole('button', {name: '一键发放全部物品'})).toBeTruthy();
+    expect(screen.queryByRole('region', {name: '限时物品续期'})).toBeNull();
   });
 
-  it('读取档案、余额与启动选项，空库存不显示续期表单', async () => {
+  it('读取档案、余额与启动选项，未运行时禁用停止游戏', async () => {
     await ready();
     expect(screen.getByText('44,445')).toBeTruthy();
     expect(screen.getByText('99,620')).toBeTruthy();
     expect(screen.getByRole('switch').getAttribute('aria-checked')).toBe('true');
     for (const name of actions) expect(button(name).disabled).toBe(false);
     expect(button('启动游戏').disabled).toBe(false);
-    expect(screen.getByText('当前没有限时物品。')).toBeTruthy();
+    expect(button('停止游戏').disabled).toBe(true);
     expect(screen.queryByLabelText('选择物品')).toBeNull();
   });
 
   it('读取中和没有档案时禁止档案写入，保留独立启动操作', async () => {
     profiles = [];
     render(<App/>);
+    expect(button('停止游戏').disabled).toBe(true);
     for (const name of actions) expect(button(name).disabled).toBe(true);
     expect(screen.getByRole<HTMLButtonElement>('switch').disabled).toBe(true);
     await screen.findByText('未运行');
     for (const name of actions) expect(button(name).disabled).toBe(true);
     expect(button('启动游戏').disabled).toBe(false);
+    expect(button('停止游戏').disabled).toBe(true);
   });
 
   it('游戏运行中禁用档案写入和启动，启动选项仍可修改', async () => {
     running = true;
-    items = [{item_id: 7, quantity: 1, expires: 2000000000, name: '限时武器'}];
     await ready();
-    fireEvent.change(await screen.findByLabelText('选择物品'), {target: {value: '7'}});
-    for (const name of [...actions, '启动游戏', '续期']) expect(button(name).disabled).toBe(true);
+    for (const name of [...actions, '启动游戏']) expect(button(name).disabled).toBe(true);
+    expect(button('停止游戏').disabled).toBe(false);
     expect(screen.getByRole<HTMLButtonElement>('switch').disabled).toBe(false);
   });
 
@@ -136,20 +137,33 @@ describe('控制器原有操作契约', () => {
     expect(screen.queryByRole('status')).toBeNull();
   });
 
-  it('永久物品不参加续期，未选择禁用；到期物品和输入天数提交为数字', async () => {
-    items = [
-      {item_id: 7, quantity: 1, expires: 1, name: '已到期武器'},
-      {item_id: 8, quantity: 1, expires: 4294967295, name: '永久武器'},
-    ];
+  it('停止游戏期间锁定操作，成功后刷新状态并恢复档案修改', async () => {
+    running = true;
+    let finish!: (value: ReturnType<typeof response>) => void;
+    postResponse = () => new Promise(resolve => {finish = resolve;});
     await ready();
-    const select = await screen.findByLabelText('选择物品');
-    expect(within(select).queryByRole('option', {name: /永久武器/})).toBeNull();
-    expect(button('续期').disabled).toBe(true);
-    fireEvent.change(select, {target: {value: '7'}});
-    fireEvent.change(screen.getByLabelText('增加天数'), {target: {value: '90'}});
-    fireEvent.click(button('续期'));
+    fireEvent.click(button('停止游戏'));
+    for (const name of [...actions, '启动游戏', '停止游戏', '刷新状态']) expect(button(name).disabled).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>('switch').disabled).toBe(true);
+    running = false;
+    finish(response({message: '游戏已停止。'}));
     await screen.findByRole('status');
-    expect(posts).toEqual([{path: 'profile/renew', data: {user_id: 'player-one', item_id: 7, days: 90}}]);
+    await screen.findByText('未运行');
+    await waitFor(() => expect(button('增加游戏币').disabled).toBe(false));
+    expect(posts).toEqual([{path: 'game/stop', data: {}}]);
+    expect(button('停止游戏').disabled).toBe(true);
+    expect(button('启动游戏').disabled).toBe(false);
+  });
+
+  it('停止失败显示错误，游戏运行时仍锁定档案并允许重试停止', async () => {
+    running = true;
+    postResponse = async () => response({error: '停止未完成，游戏仍在运行。'}, false);
+    await ready();
+    fireEvent.click(button('停止游戏'));
+    expect((await screen.findByRole('alert')).textContent).toBe('停止未完成，游戏仍在运行。');
+    await waitFor(() => expect(button('停止游戏').disabled).toBe(false));
+    for (const name of [...actions, '启动游戏']) expect(button(name).disabled).toBe(true);
+    expect(screen.queryByRole('status')).toBeNull();
   });
 
   it('启动选项保留布尔请求', async () => {
