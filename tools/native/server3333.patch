@@ -1,3 +1,47 @@
+--- a/src/asmsource/_bg_animation_mp.asm
++++ b/src/asmsource/_bg_animation_mp.asm
+@@ -1366,7 +1366,12 @@
+ 	mov esi, ecx
+ 	mov eax, [globalFilename]
+ 	mov [esp], eax
++%ifdef CODOL_SERVER
++	extern CODOL_LoadPlayerAnimText
++	call CODOL_LoadPlayerAnimText
++%else
+ 	call Com_LoadRawTextFile
++%endif
+ 	mov [ebp-0x144], eax
+ 	test eax, eax
+ 	jz BG_AnimParseAnimScript_10
+@@ -1463,7 +1468,12 @@
+ 	call Com_EndParseSession
+ 	mov edx, [ebp-0x144]
+ 	mov [esp], edx
++%ifdef CODOL_SERVER
++	extern free
++	call free
++%else
+ 	call Com_UnloadRawTextFile
++%endif
+ 	add esp, 0x16c
+ 	pop ebx
+ 	pop esi
+@@ -6236,10 +6246,15 @@
+ %ifdef CODOL_SERVER
+ ; Keep grenade-death at native index 2; C1's meleehalberd index 2 maps to 3.
+ dd codol_anim_perk_meleehalberd, 0xffffffff
++; 423 adds these parser values at 0xce4c18. Keep native perk indices stable.
++dd codol_anim_perk_meleehold, 0xffffffff
++dd codol_anim_perk_meleecharge, 0xffffffff
+ %endif
+ dd 0x0, 0xffffffff
+ %ifdef CODOL_SERVER
+ codol_anim_perk_meleehalberd: db "meleehalberd",0
++codol_anim_perk_meleehold: db "meleehold",0
++codol_anim_perk_meleecharge: db "meleecharge",0
+ align 4
+ %endif
+ animConditionsStr: dd _cstring_playeranimtype, 0xffffffff, _cstring_weaponclass, 0xffffffff, _cstring_mounted, 0xffffffff, _cstring_movetype, 0xffffffff, _cstring_underhand, 0xffffffff, _cstring_crouching, 0xffffffff, _cstring_firing, 0xffffffff, _cstring_weapon_position, 0xffffffff, _cstring_strafing, 0xffffffff, _cstring_perk, 0xffffffff
 --- a/src/codol/assets/codol_archive_probe.c
 +++ b/src/codol/assets/codol_archive_probe.c
 @@ -2,6 +2,7 @@
@@ -8,7 +52,15 @@
  #include "codol_netconst.h"
  #include "codol_xmodel_native.h"
  #include "codol_material_native.h"
-@@ -129,15 +130,16 @@
+@@ -21,6 +22,7 @@
+ #include "codol_character_composition.h"
+ #include "codol_player_appearance.h"
+ #include "codol_sound_native.h"
++#include "codol_animation_tables.h"
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+@@ -129,15 +131,16 @@
      for(i=0;i<blocks->asset_alias_count;++i) {
          const codol_asset_t *asset=&blocks->asset_aliases[i].asset;
          unsigned header,offset; uint32_t ref; const char *name;
@@ -28,7 +80,7 @@
      }
  }
  
-@@ -397,19 +399,21 @@
+@@ -397,19 +400,21 @@
      {
          codol_weapon_2697_core_t before=core;
          codol_weapon_source_image_t invalid=*image;
@@ -54,7 +106,7 @@
                  invalid.names[i].name="__2697_probe_missing_effect__";
              late=!CODOL_LoadWeapon2697CoreFromImage(&invalid,&providers,&core,&stage) &&
                  stage && !strcmp(stage,"effects") && !memcmp(&before,&core,sizeof(core)) &&
-@@ -428,7 +432,7 @@
+@@ -428,7 +433,7 @@
          printf("runtime_target_core_lifecycle name=%s variant=%s early_rollback=1 late_rollback=1 replacement=1 owned_sound_pointer=1\n",name,variant);
      }
      for(i=0;i<11;++i) model_count+=!!core.native.source_models[i];
@@ -63,7 +115,7 @@
      printf("runtime_target_weapon_core name=%s variant=%s constructed=1 models=%u animations=%u sound_requested=%u sound_resolved=%u damage=%d clip=%d fire_ms=%d melee=%d type=%u class=%u offhand=%u fire_mode=%u move_scale=%g ads_move_scale=%g ads_rates=%g,%g projectile_model=%d explosion_fx=%d graphs=%d,%d target_extra_names_retained=1 runtime_registered=0\n",
          name,variant,model_count,anim_count,core.sounds.requested,core.sounds.resolved,
          core.native.definition.damage,core.native.definition.iClipSize,core.native.definition.iFireTime,
-@@ -500,9 +504,12 @@
+@@ -500,9 +505,12 @@
  }
  static int runtime_weapons(probe_runtime_t *context)
  {
@@ -78,7 +130,7 @@
          codol_mounted_weapon_t weapon={0}; codol_weapon_animation_source_t anim={0};
          codol_weapon_effects_t fx={0}; codol_weapon_sounds_t sounds={0};
          codol_weapon_visuals_t visuals={0}; codol_weapon_ammo_names_t ammo={0};
-@@ -518,12 +525,31 @@
+@@ -518,12 +526,31 @@
          printf("runtime_weapon name=%s source=%d animations=%d effects=%d sounds=%d visuals=%d ammo=%d tail=%d tags=%d slots=%u bytes=%zu consumed=%zu\n",
              names[w],a,b,c,e,f,g,h,t,anim.count,weapon.asset.size,tail.dependency_offset);
          if(a!=1 || b!=1 || c!=1 || e!=1 || f!=1 || g!=1 || h!=1 || t!=1) { ok=0; continue; }
@@ -110,7 +162,7 @@
          {
              codol_weapon_animations_t legacy={0}; codol_weapon_hide_tag_handles_t handles={{0}};
              codol_native_weapon_core_t native,before; const XModel *models[11]={0};
-@@ -596,6 +622,27 @@
+@@ -596,6 +623,27 @@
          for(unsigned array=0;array<2;++array)
              for(i=0;i<31;++i) if(!runtime_weapon_asset(context,11,sounds.arrays[array][i])) ok=0;
      }
@@ -138,7 +190,7 @@
      {
          {
              static const char *tables[]={"mp/coweapmodels/ak104_mp.csv","mp/coweapitems/sto.csv","mp/coweapitems/for.csv"};
-@@ -676,7 +723,7 @@
+@@ -676,7 +724,7 @@
          unsigned v;for(v=0;v<tables[i].count;++v)
              printf("runtime_ncs_input\t%s\t%u\t%s\n",tables[i].name,v,tables[i].values[v]);
      }
@@ -147,7 +199,52 @@
      for(k=0;k<CODOL2697_NCS_KINDS;++k)
          printf("runtime_netconst kind=%u base=%u count=%u capacity=%u\n",k,index.kinds[k].base,index.kinds[k].count,index.kinds[k].capacity);
      if(getenv("CODOL_NCS_TRACE"))for(k=0;k<CODOL2697_NCS_KINDS;++k)
-@@ -1027,6 +1074,15 @@
+@@ -957,6 +1005,44 @@
+         mounted,count,failed_index,failed_asset);
+     if (!mounted) goto done;
+ 
++    if(getenv("CODOL_ANIMATION_TEXT_PROBE")) {
++        typedef struct { const char *name; int hash; } anim_token_t;
++        extern anim_token_t animEventTypesStr[],animPerkStateStr[];
++        extern int BG_IndexForString(const char *,anim_token_t *,int);
++        const codol_engine_rawfile_t *defines=NULL,*main=NULL;
++        char *text=CODOL_LoadPlayerAnimText("mp/playeranim.script");
++        char *missing=CODOL_LoadPlayerAnimText("__missing_playeranim__.script");
++        ok=text && !missing && CODOL_LoadEngineRawFile("mp/playeranim_defines.script",&defines)==1 &&
++            CODOL_LoadEngineRawFile("mp/playeranim.script",&main)==1 &&
++            text!=defines->buffer && text!=main->buffer &&
++            !memcmp(text,defines->buffer,defines->len) && text[defines->len]=='\n' &&
++            !memcmp(text+defines->len+1,main->buffer,main->len+1);
++        if(ok) puts("runtime_animation_text definitions_first=1 owned_copy=1 missing_rejected=1");
++        anim_token_t *tables[]={animEventTypesStr,animPerkStateStr};
++        const char *kinds[]={"event","perk"};
++        void *owner=calloc(1,0x1a000);
++        if(!owner) ok=0;
++        else {
++            CODOL_ResetAnimMoveScripts(owner);
++            for(unsigned kind=0;kind<2;++kind) {
++                unsigned count=0;
++                for(;tables[kind][count].name;++count) {
++                    int index=BG_IndexForString(tables[kind][count].name,tables[kind],1);
++                    printf("runtime_animation_token kind=%s name=%s index=%d\n",kinds[kind],tables[kind][count].name,index);
++                    if(index!=(int)count || (!kind && !CODOL_AnimEventScript(owner,index))) ok=0;
++                }
++                if(BG_IndexForString("__unknown_animation__",tables[kind],1)!=-1)ok=0;
++                if(!kind && (CODOL_AnimEventScript(owner,-1) || CODOL_AnimEventScript(owner,count)))ok=0;
++            }
++            if(BG_IndexForString("FiReWeApOn",animEventTypesStr,1)!=2)ok=0;
++            CODOL_ResetAnimMoveScripts(NULL);
++            if(CODOL_AnimEventScript(owner,0))ok=0;
++            free(owner);
++        }
++        if(ok) puts("runtime_animation_tokens lookup=1 casefold=1 missing_rejected=1 event_bounds=1");
++        free(text);free(missing);goto done;
++    }
++
+     if(getenv("CODOL_STOCK_KEYS_TRACE")) {
+         const char *name=getenv("CODOL_STOCK_KEYS_TRACE");codol_mounted_weapon_t w={0};
+         codol_weapon_ammo_names_t a={0};codol_weapon_tail_t t={0};codol_weapon_2697_keys_source_t k={0};
+@@ -1027,6 +1113,15 @@
      printf("runtime_collision native=%d static_models=%u materials=%u brushes=%u terrain_triangles=%u leaves=%u\n",
          ok,assets.model_count,assets.material_count,brushes.brush_count,terrain.triangle_count,leaves.leaf_count);
      ok=runtime_dynamic(map_name,&map,&runtime);
@@ -468,6 +565,34 @@
          if(!archive) return -1;
          result.name=dependency_asset_name(archive,&result.asset);
          CODOL_LoadBlockViews(&archive->blocks,result.blocks); result.blocks[0]=(codol_model_block_t){0};
+@@ -2361,6 +2396,27 @@
+         }
+     }
+     return 0;
++}
++
++char *CODOL_LoadPlayerAnimText(const char *name)
++{
++    const codol_engine_rawfile_t *main=NULL,*defines=NULL;
++    size_t prefix=0,length;char *text;
++    if(CODOL_LoadEngineRawFile(name,&main)!=1 || !main || main->len<0 || !main->buffer) return NULL;
++    /* Current client 409040 initializes aliases once, then parses the two
++     * files in this order. Retain that order inside the legacy parser pass. */
++    if(archives && archives->zone.format_version==423) {
++        if(CODOL_LoadEngineRawFile("mp/playeranim_defines.script",&defines)!=1 ||
++           !defines || defines->len<=0 || !defines->buffer) return NULL;
++        prefix=(size_t)defines->len;
++        if(memchr(defines->buffer,0,prefix)) return NULL;
++    }
++    length=(size_t)main->len;
++    if(memchr(main->buffer,0,length) || prefix>SIZE_MAX-length-2) return NULL;
++    text=malloc(prefix+length+2);if(!text) return NULL;
++    if(prefix) memcpy(text,defines->buffer,prefix);
++    text[prefix]='\n';memcpy(text+prefix+1,main->buffer,length);text[prefix+length+1]=0;
++    return text;
+ }
+ 
+ int CODOL_LoadEngineStringTable(const char *name, const codol_engine_table_t **out)
 --- a/src/codol/assets/codol_asset_stream.c
 +++ b/src/codol/assets/codol_asset_stream.c
 @@ -61,8 +61,8 @@
@@ -540,7 +665,16 @@
  /* XModelSurfs 0x4bb890, XSurface 0x4b8ff0, collision tree 0x4b8d50. */
 --- a/src/codol/assets/codol_assets.h
 +++ b/src/codol/assets/codol_assets.h
-@@ -242,14 +242,15 @@
+@@ -198,6 +198,8 @@
+     const char *buffer;
+ } codol_engine_rawfile_t;
+ int CODOL_LoadEngineRawFile(const char *name, const codol_engine_rawfile_t **out);
++/* Owned parser text. 423 reads playeranim_defines before playeranim; free(). */
++char *CODOL_LoadPlayerAnimText(const char *name);
+ /* Attaches the lobby-served secure profile for a connecting client (codol_profilePath, userinfo xuid). */
+ int CODOL_AutoBindClientSecureProfile(unsigned client,const char *userinfo);
+ struct ComWorld;
+@@ -242,14 +244,15 @@
  /* Lossless versioned source. 334 has 3*48 slots; 365 has 3*52.
   * Do not interpret these as the old runtime animation enum. */
  typedef struct {
@@ -559,7 +693,7 @@
      size_t dependency_offset; /* After leading effects, before sound names. */
  } codol_weapon_effects_t;
  /* Resolves source +0x35c/+0x360, including inline/pooled FX and named overrides.
-@@ -281,7 +282,8 @@
+@@ -281,7 +284,8 @@
      unsigned point_count;
  } codol_weapon_dependency_t;
  typedef struct {
@@ -569,7 +703,7 @@
      size_t dependency_offset;
  } codol_weapon_visuals_t;
  /* Resolves +0x440..+0x450 and the intervening material groups through +0x550.
-@@ -289,7 +291,7 @@
+@@ -289,7 +293,7 @@
   * advancing over inline source data. Borrowed lifetime; atomic 1/0/-1. */
  int CODOL_LoadMountedWeaponVisuals(const char *,codol_weapon_visuals_t *);
  typedef struct {
@@ -1943,6 +2077,48 @@
  #define CODOL_MAX_FRAGMENTS 128u
  #define CODOL_MAX_MESSAGE (CODOL_FRAGMENT_SIZE * CODOL_MAX_FRAGMENTS)
  #define CODOL_SEQUENCE_MASK UINT32_C(0x1fffffff)
+--- a/src/codol/player/codol_animation_events.inc
++++ b/src/codol/player/codol_animation_events.inc
+@@ -1,9 +1,27 @@
+-; Generated from measured C1 event table; original 21 indices preserved.
++; Current 423 table at 0xce4a20; original 21 native indices preserved.
+ dd codol_anim_event_21, 0xffffffff
+ dd codol_anim_event_22, 0xffffffff
+ dd codol_anim_event_23, 0xffffffff
++dd codol_anim_event_24, 0xffffffff
++dd codol_anim_event_25, 0xffffffff
++dd codol_anim_event_26, 0xffffffff
++dd codol_anim_event_27, 0xffffffff
++dd codol_anim_event_28, 0xffffffff
++dd codol_anim_event_29, 0xffffffff
++dd codol_anim_event_30, 0xffffffff
++dd codol_anim_event_31, 0xffffffff
++dd codol_anim_event_32, 0xffffffff
+ dd 0, 0xffffffff
+ codol_anim_event_21: db "stunned",0
+ codol_anim_event_22: db "dtp_takeoff",0
+ codol_anim_event_23: db "dtp_land",0
++codol_anim_event_24: db "meleemoveattack",0
++codol_anim_event_25: db "power_transform",0
++codol_anim_event_26: db "power_concuss",0
++codol_anim_event_27: db "power_spin",0
++codol_anim_event_28: db "power_charge",0
++codol_anim_event_29: db "power_sky_slam",0
++codol_anim_event_30: db "power_leap_jump",0
++codol_anim_event_31: db "power_leap_land",0
++codol_anim_event_32: db "spawn",0
+ align 4
+--- a/src/codol/player/codol_animation_tables.h
++++ b/src/codol/player/codol_animation_tables.h
+@@ -9,7 +9,7 @@
+ #pragma pack(push, 8)
+ #define CODOL_ANIM_MOVE_COUNT 55
+ #define CODOL_ANIM_LEGACY_MOVE_COUNT 43
+-#define CODOL_ANIM_EVENT_COUNT 24
++#define CODOL_ANIM_EVENT_COUNT 33
+ #define CODOL_ANIM_LEGACY_EVENT_COUNT 21
+ #define CODOL_ANIM_RECORD_COUNT 1024
+ #define CODOL_ANIM_CONDITION_COUNT 19
 --- a/src/codol/player/codol_usercmd.c
 +++ b/src/codol/player/codol_usercmd.c
 @@ -64,6 +64,8 @@

@@ -3,9 +3,13 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
+import struct
 import subprocess
 import tempfile
 import unittest
+
+import pefile
 
 ROOT = Path(__file__).resolve().parents[1]
 STAGE = ROOT / 'research/experiments/story-native'
@@ -110,3 +114,42 @@ class NativeAssets423Tests(unittest.TestCase):
                           'late_rollback=1 replacement=1 owned_sound_pointer=1', result.stdout)
         self.assertIn('runtime_minimal_cache count=2 reuse=1 retired=1 rejected=1', result.stdout)
         self.assertIn('engine_started=0 network_started=0', result.stdout)
+
+    def test_current_animation_script_loads_definitions_before_main(self):
+        result = self.run_probe('--codol-runtime-probe', CLIENT, 'mp_cargoship',
+            STAGE/'startup-assets/chinese/code_post_gfx_default_mp.ff',
+            STAGE/'startup-assets/chinese/code_post_gfx_mp.ff',
+            STAGE/'startup-assets/chinese/common_mp.ff',
+            STAGE/'startup-assets/chinese/mp_cargoship.ff',
+            STAGE/'startup-assets/chinese/coop_training_mp_cargoship.ff',
+            options={'CODOL_ANIMATION_TEXT_PROBE':'1'})
+        self.assertEqual(result.returncode, 0, result.stdout[-2000:]+result.stderr[-1200:])
+        self.assertIn('runtime_animation_text definitions_first=1 owned_copy=1 missing_rejected=1', result.stdout)
+
+    def test_current_animation_tokens_have_native_lookup_and_event_storage(self):
+        data = CLIENT.read_bytes()
+        self.assertEqual(hashlib.sha256(data).hexdigest(),
+            'e3823fd6afc80fb25fa84747e6e9634707b9a0b189357a5466921cda354af37b')
+        pe = pefile.PE(data=data, fast_load=True)
+        result = self.run_probe('--codol-runtime-probe', CLIENT, 'mp_cargoship',
+            STAGE/'startup-assets/chinese/code_post_gfx_default_mp.ff',
+            STAGE/'startup-assets/chinese/code_post_gfx_mp.ff',
+            STAGE/'startup-assets/chinese/common_mp.ff',
+            STAGE/'startup-assets/chinese/mp_cargoship.ff',
+            STAGE/'startup-assets/chinese/coop_training_mp_cargoship.ff',
+            options={'CODOL_ANIMATION_TEXT_PROBE':'1'})
+        self.assertEqual(result.returncode, 0, result.stdout[-2000:]+result.stderr[-1200:])
+        for kind, address, count in (('event', 0xce4a20, 33), ('perk', 0xce4c18, 5)):
+            entries = {name.lower(): index for name, index in re.findall(
+                rf'runtime_animation_token kind={kind} name=(.+) index=(\d+)', result.stdout)}
+            for index in range(count):
+                pointer, = struct.unpack('<I', pe.get_data(address-pe.OPTIONAL_HEADER.ImageBase+8*index, 4))
+                name = pe.get_string_at_rva(pointer-pe.OPTIONAL_HEADER.ImageBase).decode().lower()
+                with self.subTest(kind=kind, token=name):
+                    self.assertIn(name, entries)
+            if kind == 'event':
+                self.assertEqual(list(map(int, entries.values())), list(range(count)))
+            else:
+                self.assertEqual(entries['grenadedeath'], '2')
+                self.assertEqual(entries['laststand'], '1')
+        self.assertIn('runtime_animation_tokens lookup=1 casefold=1 missing_rejected=1 event_bounds=1', result.stdout)

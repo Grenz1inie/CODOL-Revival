@@ -125,3 +125,13 @@
 REA继续复用活动客户端会话；当前证据包为 `research/evidence/client423-rea-bundle.json`。会话结束时另存分析快照以复用查询记录；证据包本身不等于持久Ghidra数据库。尚未连接真实客户端、出生或完成用户操作验收。
 
 本批集中回归122项通过，87.501秒，见[日志](../../research/evidence/server3333-minimal-stage-tests.log)。审查范围为本批参数转换、资源提取与启动工具；没有将下一处动画解析错误标为完成。
+## 当前动画脚本装载（第八批）
+
+REA `0x409040` 确认新版在一次定义初始化后先解析 `mp/playeranim_defines.script`，再解析 `mp/playeranim.script`。旧入口只加载主文件，因而无法解析 `prone` 别名。现按同一顺序构造独立文本副本，完成后释放；缺失定义和文本内嵌零字节仍拒绝，原始资源不变。
+
+当前客户端 `0xce4a20` 的33项事件和 `0xce4c18` 的Perk条件表已逐项对照。新增事件追加到原有24项之后，`meleehold/meleecharge` 追加到原生条件值表，保留旧生产者的编号，尤其 `FIREWEAPON=2`。这些修改恢复脚本解析，不代表新增能力动作已经可用。普通移动与射击不需要按55/47项移动表长度整体重排；快照传递的是动画树节点与重播位。
+
+两项集成回归通过，12.828秒：[失败记录](../../research/evidence/server3333-animation-tokens-red.log)、[通过记录](../../research/evidence/server3333-animation-tokens-green.log)。覆盖真实当前表的每个名称、大小写查询、未知名称、事件存储上下界及重置，以及定义和主文件的装载顺序。
+
+新的[隔离启动](../../research/evidence/server3333-startup-anim-tokens.log)越过上述解析错误，随后因 `pb_team_jug_spawn_kingpin` 名称查找失败而停止：13个缺失的特殊动画被旧服共用同一个 `void` 对象，未保留请求名称。下一步检查缺省动画身份与建树编号；当前仍未完成地图初始化或客户端出生。
+
