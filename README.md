@@ -14,7 +14,19 @@ Web 控制器支持引导开关、启动游戏、读取开发 Wiki、3 转生 70
 
 在本目录打开 PowerShell：
 
-Web 入口：运行 `scripts/Start-Controller.ps1` 后打开 <http://127.0.0.1:8765/>。首次构建与操作说明见 [控制器文档](docs/controller.md)。
+```powershell
+.\Start.ps1
+```
+
+[Start.ps1](Start.ps1) 先检查环境，再依次启动本地认证/大厅/STUN 服务、Web 控制器，打开 <http://127.0.0.1:8765/> 并启动游戏。游戏提权仍需确认 Windows UAC；已运行的服务和游戏会复用。首次环境准备、参数和排错见 [控制器文档](docs/controller.md)。
+
+```powershell
+.\Start.ps1 -CheckOnly            # 只检查，不启动或修改配置
+.\Start.ps1 -NoGame               # 启动服务并打开控制器，暂不进入游戏
+.\Start.ps1 -NoGame -NoBrowser    # 只启动后台服务和控制器
+```
+
+如果系统阻止执行脚本，可使用 `powershell -NoProfile -ExecutionPolicy Bypass -File .\Start.ps1`，仅对本次进程生效。单独的启停入口仍可使用：
 
 ```powershell
 .\scripts\Launch-Game.ps1
@@ -39,6 +51,7 @@ src/                         认证、大厅、档案、货币与控制器 HTTP 
 data/                        有来源哈希的商城静态目录，不参与代码索引
 web/                         控制器前端源码、构建配置与依赖锁文件
 scripts/                     游戏和服务的启动/停止入口
+Start.ps1                    一键预检查、启动服务、控制器和游戏
 tests/fixtures/               独立测试及受控样本
 tools/                       REA、证书、文档校验工具
 docs/wiki/                   按游戏流程组织的技术 Wiki

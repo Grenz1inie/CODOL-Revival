@@ -42,6 +42,7 @@
 
 | 操作 | 入口与使用边界 |
 |---|---|
+| 一键启动 / 环境检查 | [Start.ps1](../../Start.ps1)；默认启动服务、控制器、浏览器和游戏，`-CheckOnly` 只读检查，`-NoGame` 暂不启动游戏；[参数与排错](../controller.md#启动与使用) |
 | 启动 / 停止游戏 | [Launch-Game.ps1](../../scripts/Launch-Game.ps1)、[Stop-Game.ps1](../../scripts/Stop-Game.ps1)；人工确认 UAC，详见 [02](02-process-iips-admin.md)。当前启动脚本包含已进入大厅的组合命令 |
 | 启动 / 停止服务 | [Start-Services.ps1](../../scripts/Start-Services.ps1)、[Stop-Services.ps1](../../scripts/Stop-Services.ps1)；服务改源码后需重启才生效，不能把文件修改当作运行采用 |
 | 检查服务链 | [server.jsonl](../../runtime/logs/server.jsonl) 中依次找 `auth_request`、`auth_reply`、`lobby_authenticated`、`lobby_task`，结合对应抓包和界面 |

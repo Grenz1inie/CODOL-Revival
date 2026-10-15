@@ -1,3 +1,4 @@
+param([string]$PythonPath)
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path $PSScriptRoot -Parent
 $gameRoot = Join-Path (Split-Path $projectRoot -Parent) 'CODOL_Experience_V3.3.3.3_FULL.7z'
@@ -5,7 +6,7 @@ $gameExe = Join-Path $gameRoot 'codoMP_client_shipRetail.exe'
 if (Get-Process -Name 'codoMP_client_shipRetail' -ErrorAction SilentlyContinue) {
     throw 'Close the current game window before launching another test.'
 }
-& (Join-Path $PSScriptRoot 'Start-Services.ps1')
+& (Join-Path $PSScriptRoot 'Start-Services.ps1') -PythonPath $PythonPath
 # Keep one allowlisted command segment; the engine later executes its semicolon list.
 # See docs/wiki/06-onboarding-profile.md for the failed direct flags and live proof.
 $skipTutorial = $true

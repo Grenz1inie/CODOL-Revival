@@ -2,9 +2,23 @@
 
 ## 启动与使用
 
-在项目根目录运行 `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Start-Controller.ps1`，打开 <http://127.0.0.1:8765/>。
+在项目根目录运行 `powershell -NoProfile -ExecutionPolicy Bypass -File .\Start.ps1`。入口会先检查环境，再启动认证/大厅/STUN 服务和 Web 控制器，打开 <http://127.0.0.1:8765/>，最后请求管理员身份启动游戏。也可右键根目录的 `Start.ps1`，选择“使用 PowerShell 运行”；正常使用需要保留并确认游戏 UAC 提示。
 
-首次构建：在 `web/` 运行 `npm ci`、`npm run build`。控制器只监听本机回环地址，复用已有 Python 环境和游戏启动脚本。
+| 参数 | 用途 |
+|---|---|
+| `-CheckOnly` | 只读检查，失败返回非零退出码，不启动服务、浏览器或游戏 |
+| `-NoGame` | 启动服务与控制器，游戏可随后在网页中启动 |
+| `-NoBrowser` | 不自动打开浏览器，可与 `-NoGame` 合用 |
+| `-PythonPath 'C:\路径\python.exe'` | 指定 Python；默认优先项目 `.venv`，其次 PATH 中首个 Python |
+| `-StartupTimeoutSeconds 20` | 每项服务的启动等待时间，默认 20 秒 |
+
+预检查覆盖 Python 3.9+（本机验证为 3.13）、`requirements.txt` 中的锁定依赖、游戏 EXE 和本地地址配置、证书有效期/签名/私钥、游戏 CA 信任、控制器设置与前端产物。端口检查覆盖 TCP 443、TCP/UDP 3074 和 TCP 8765，并核对所属进程；其他程序占用时显示 PID 并停止本次启动。缺依赖时会给出补齐命令，不自动安装或更改游戏/系统配置。
+
+首次构建：在 `web/` 运行 `npm ci`、`npm run build`，需 Node `^20.19.0 || >=22.12.0`（当前 Vite 的要求）及 npm。已有完整 `web/dist/` 时运行不需要 Node。控制器只监听本机回环地址，复用已有 Python 环境和游戏启动脚本。
+
+入口在打开网页/游戏前等待三个游戏服务端口和控制器端口就绪，并检查控制器状态 API 与首页。重复运行会复用本项目的进程、恢复缺失或过期 PID 记录，不重启当前游戏。中途失败保留已启动的服务，错误会显示 `runtime/logs/` 路径；重点检查 `server.stderr.log`、`controller.stderr.log`。该就绪检查不代表游戏已进入大厅或关卡可玩。
+
+如需只启动控制器，原入口 `scripts/Start-Controller.ps1` 仍可使用，并支持 `-PythonPath`。
 
 - **游戏控制**：选择已保存档案、配置下一次启动是否跳过新手引导、启动游戏。引导默认跳过；开关持久化于 `runtime/data/controller.json`。
 - **开发 WIKI**：左侧按 `docs/` 的实际目录列出文件，右侧显示 Markdown 或 JSON。目录外源码及证据显示相对路径，避免误跳转为同名文档。
@@ -26,6 +40,7 @@
 |---|---|
 | `web/src/` | React 页面、主题、Wiki 阅读 |
 | `src/controller.py` | 本机 HTTP API、设置、游戏启动入口、受限 docs 读取 |
+| `Start.ps1`、`tools/check-startup.py` | 环境检查、端口归属及就绪检查、一键启动 |
 | `scripts/Start-Controller.ps1` | 隐藏运行控制器并记录 PID、日志 |
 | `runtime/data/` | 玩家数据与控制器设置 |
 | `runtime/backups/` | 修改前备份 |
@@ -34,6 +49,10 @@
 接口不允许 docs 路径越界；写入接受同源 JSON，设置对布尔值严格校验。游戏启动复用现有管理员启动流程，UAC 由用户确认。
 
 ## 测试安排
+
+启动入口的测试使用临时目录与生成的测试证书，覆盖缺依赖、缺资源、配置错误、证书错误、端口冲突、重复启动、过期 PID、Windows 虚拟环境父子进程、服务异常退出、HTTP 未就绪和取消 UAC。只替换操作系统进程/网络/浏览器边界，执行实际 PowerShell 入口与子脚本，不启动真实游戏或操作玩家档案。运行：`python -B -m unittest discover -s tests -p test_startup.py -v`。
+
+2026-10-15 启动验收：19 项启动测试通过；Windows PowerShell 5.1 的 `-CheckOnly` 通过。使用 `-NoGame -NoBrowser` 实际启动服务与控制器，再次执行时两个服务 PID 保持不变；浏览器已加载玩家档案、等级和余额。本次未实际启动游戏，游戏启动参数与 UAC 取消路径通过隔离测试验证。
 
 用户已确认三层边界：档案修改/备份/重载；HTTP 操作和 Wiki 路径；集中浏览器操作与真实游戏重启。每个功能先做失败测试再实现，不用未实现的字段假设生成测试期望。
 

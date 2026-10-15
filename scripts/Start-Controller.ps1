@@ -1,3 +1,4 @@
+param([string]$PythonPath)
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path $PSScriptRoot -Parent
 $serverFile = Join-Path $projectRoot 'src\controller.py'
@@ -14,8 +15,10 @@ if (Test-Path -LiteralPath $pidFile) {
         return
     }
 }
-$venvPython = Join-Path $projectRoot '.venv\Scripts\python.exe'
-$pythonPath = if (Test-Path -LiteralPath $venvPython) { $venvPython } else { (Get-Command python.exe).Source }
+if (!$PythonPath) {
+    $venvPython = Join-Path $projectRoot '.venv\Scripts\python.exe'
+    $PythonPath = if (Test-Path -LiteralPath $venvPython) { $venvPython } else { (Get-Command python.exe).Source }
+}
 New-Item -ItemType Directory -Path $logRoot -Force | Out-Null
 $controllerProc = Start-Process -FilePath $pythonPath -ArgumentList '-B','-u',('"' + $serverFile + '"') `
     -WorkingDirectory $projectRoot -WindowStyle Hidden `
