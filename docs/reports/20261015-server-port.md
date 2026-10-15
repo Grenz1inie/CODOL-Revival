@@ -163,6 +163,26 @@ REA `0x409040` 确认新版在一次定义初始化后先解析 `mp/playeranim_d
 {"name":"open_binary","arguments":{"path":"E:/Games/CODOL_Experience_V3.3.3.3_FULL.7z/CODOL_Experience_V3.3.3.3_FULL.7z/codoMP_client_shipRetail.exe","provider_id":"ghidra","snapshot_path":"E:/Games/CODOL_Experience_V3.3.3.3_FULL.7z/CODOL-Revival/research/evidence/client423-native-stage.rea.json"},"output":"client423-native-stage-restore.json"}
 ```
 
-快照保存已成功；本阶段没有为验证恢复而重开并重扫目标。快照提供已保存查询的缓存复用，不是持久Ghidra工程；未命中的新查询仍可能触发分析。目标、提供方或配置不符时应使用匹配快照，不能忽略身份校验。
+快照保存与后续恢复均已成功，恢复记录见 `research/evidence/client423-native-stage-restore.json`。恢复后读取服务器候选的新查询仍触发了Ghidra分析；快照提供已保存查询的缓存复用，不是持久Ghidra工程。目标、提供方或配置不符时应使用匹配快照，不能忽略身份校验。
 
 主项目与客户端CodeGraph/GitNexus均已刷新。客户端索引含596份伪代码变体和4份随包代码，统计及重建命令见 [索引说明](../../research/client-code-index/README.md)。伪代码调用边仍有名称回退，不能代替机器码证据。
+
+## 服务器候选与档案导出（第十批，连接准备）
+
+当前客户端的 `MatchMakingInfo` 为0x228字节；REA `0x701db0 / 0xa55700` 确认候选读取顺序，`0xa55530` 确认地址区37字节。新增编码器仅生成回环候选数据，尚未接入大厅21/5。3项测试直接执行固定哈希客户端的实际读取器，核对完整消费、服务器身份、8字节安全ID、16字节密钥、地址和端口，并拒绝截断及非法连接材料。见 [REA证据](../../research/evidence/client-matchmaking-result423.json) 与 [通过记录](../../research/evidence/server3333-matchmaking-green.log)。通过读取不等于已预订或连接服务器。
+
+`PrivateProfileStore.export_native` 从已校验的v19私有档案中导出原有zlib片段，写入隔离目录的 `mpdata_s.<十进制UID>`，不重压缩或修改源档案。5项Python测试覆盖字节保持、定点原子替换，以及非法UID、压缩长度、CRC、缺失档案时不改输出。实际原生读取验证受下述拦截阻塞，不能报告其通过。启动实例仍须准备匹配的安全ID、准入名册、私有档案，并核对当前客户端的预订、安全握手和公开stats流程。
+
+### 2026-10-15 原生档案探针被拦截
+
+用户截图显示火绒在北京时间12:27:35及12:28:33报告 `Trojan/Agent.cuhk!crit`。选中记录的路径为 `C:\Users\john\AppData\Local\Temp\codol-profile-native-5gc23n60\story_profile.exe`，操作进程为MinGW的 `ld.exe`、父进程为 `collect2.exe`。对应本项目 [测试构建入口](../../tests/test_story_profile.py) 的两次TDD运行，探针源码为 [story_profile.c](../../tests/native/story_profile.c)，链接现有档案读取器、资源解压代码和zlib；用途是读取测试档案并向标准输出写入32768字节。
+
+两次均未成功执行探针：第一次停在缺失导出方法，第二次5项Python测试通过，但启动探针时报 `FileNotFoundError / WinError 2`。日志归档为 `research/evidence/server3333-profile-export-red.log`、`server3333-profile-export-native-blocked.log`。已暂停该测试类的自动构建；解除拦截原因前不得把跳过项算作通过，或自动重建、恢复、改名绕过检测。没有修改杀毒设置、添加白名单或上传样本。
+
+本次只能确认构建来源，尚未判定为误报。两个已有服务端副本仍存在，SHA-256均为 `3dc6d05c39b036dffcdb69759b4463bb4acdd14a02d52a2d51109e9a649bf43f`，与构建清单一致。后续可继续独立的协议分析和Python测试；客户端出生、移动与射击仍未验收。
+
+用户随后自行将两个样本恢复至桌面。只读核对得到：`story_profile.exe` 为130384字节，SHA-256 `e66a5b94a48d1d4eaa0db15d5c2b29a977e4fc17f7a1b82a01dcb2fa11b52ea7`，PE时间12:28:33；`story_profile2.exe` 同大小，SHA-256 `afbe4438ba9e3384167d8f944356d303ddc22b76ba2919ad2a5546a4499d064f`，PE时间12:27:33。全文件仅偏移136、216、217三字节不同，分别属于编译时间和PE校验和；代码、数据及符号表完全相同。两文件均有有效PE校验和，尾部为完整COFF符号/字符串表。详见 `research/evidence/story-profile-restored-static.json`。
+
+REA静态核对恢复样本的 `_main @ 0x40148e` 与 `CODOL_ReadSecureProfile @ 0x40184a`，行为与探针源码一致：读取所选UID档案，成功后向标准输出写入32768字节。仅导入KERNEL32及MSVCRT；已检查路径未发现新增可疑行为，倾向误报，尚无杀毒厂商复核结论。未运行恢复样本；REA快照为 `research/evidence/story-profile-restored.rea.json`，分析记录为 `story-profile-restored-main-rea.json` 与 `story-profile-restored-reader-rea.json`。快照文件已落盘，随后REA清理自身临时导入副本时遇到访问拒绝；未强制清理或修改保护设置。
+
+暂停原生探针后的集中接口回归为 **13项通过、1项明确跳过，0.312秒**，见 `research/evidence/server3333-connection-preparation-tests.log`。跳过发生在测试类初始化前，不再自动生成EXE；这不替代原生消费验证。
