@@ -46,9 +46,11 @@ class ClientReader423:
         for address in (0x637c60, 0x5a6510, 0x464420, 0x59e700, 0xaf8ca9,
                         0x46de40, 0x49f930, 0x46d830, 0x46d860):
             self.cpu.hook_add(UC_HOOK_CODE, self._return, begin=address, end=address)
-        self.cpu.mem_write(0x303fe000, b'\x31\xc0\xc3')  # Return 0 for clock/thread ID.
+        # Keep imported-call stubs outside the scratch stack used by snapshots.
+        self.cpu.mem_map(0x31000000, 0x1000)
+        self.cpu.mem_write(0x31000000, b'\x31\xc0\xc3')  # Return 0 for clock/thread ID.
         for address in (0xb5b468, 0xb5b194):
-            self.cpu.mem_write(address, struct.pack('<I', 0x303fe000))
+            self.cpu.mem_write(address, struct.pack('<I', 0x31000000))
         self.error = False
 
     def weapon_fire_timing(self, *, fire, delay, hold, grenade=False, hand=0):
@@ -437,7 +439,9 @@ class ClientReader423:
             cpu.mem_write(stack, struct.pack('<I', end))
             cpu.reg_write(UC_X86_REG_ESP, stack)
             cpu.reg_write(UC_X86_REG_ECX, msg)
-            cpu.emu_start(0x46d170, end, count=2000000)
+            # A real first frame includes the player's inventory; its bounded
+            # 128 KiB message needs more instructions than tiny wire fixtures.
+            cpu.emu_start(0x46d170, end, count=32000000)
             overflow, = struct.unpack('<I', cpu.mem_read(msg, 4))
             if self.error or overflow or cpu.reg_read(UC_X86_REG_EIP) != end:
                 raise ValueError('client rejected snapshot')

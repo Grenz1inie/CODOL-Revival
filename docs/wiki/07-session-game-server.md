@@ -2,7 +2,7 @@
 
 [总览](README.md) · 上一阶段：[新手引导与角色资料](06-onboarding-profile.md)
 
-**最新状态（2026-10-15）**：大厅21/5与6/14已接入本项目隔离原生实例。加密回环探针通过握手、stats、gamestate并到达服务端出生；角色外观组装仍阻断首个可用快照，尚不能人工验收移动/射击。以下训练9/16调查保留为历史记录；本次实现详见文末。
+**最新状态（2026-10-15）**：大厅21/5与6/14已接入本项目隔离原生实例。最小外观的加密回环探针已验证出生快照、移动和射击后的弹药减少，均由当前客户端机器码读取。真实公开档案与完整游戏加载仍待接通，尚不能据此宣布可人工验收。以下训练9/16调查保留为历史记录；本次实现详见文末。
 
 ## 症状及当前能确认的事实
 
@@ -89,3 +89,17 @@ REA确认的实际消息路径：
 连接探针 [probe_native_connection.py](../../tools/probe_native_connection.py)在独立28971端口测试：当前客户端Tiger函数计算会话材料，P224/AES192CTR/HMAC-SHA1握手 → challenge/connect → 当前stats写入器上传 → 当前netchan/gamestate读取器接收首关和CRC `9eaffd84` → 可靠userinfo确认 → `CS_ACTIVE`和出生坐标`(3248,296,364)`。随后实际脚本报`codol_applyProfileCharacter could not compose/publish this player's character`，属于出生后的外观构造失败，不能把已到达出生函数当作能操作。
 
 证据：[连接结果](../../research/evidence/native-connection-latest.json)、[当前房间路由](../../research/evidence/client-room-instant-message423.json)、[事件21读取器](../../research/evidence/client-booking-push21-reader423.json)、[开始命令](../../research/evidence/client-coop-mmstart423.json)、[stats写入器](../../research/evidence/client-stats-writer423.json)、[Tiger消费者](../../research/evidence/client-tiger423.json)。目标SHA-256仍为`e3823fd6afc80fb25fa84747e6e9634707b9a0b189357a5466921cda354af37b`。探针混合真实引擎、当前客户端机器码及测试网络驱动，不替代完整游戏的渲染与操作验收。
+
+## 最小外观与移动射击的协议验证
+
+修复旧角色读取器仅接受233版旧校验值的问题：当前公开结构为233版、校验值`e32d50d6`、记录14426字节。12个角色、每个9个uint32槽位按捕获的非连续偏移读取；越界、错误结构和无效物品仍拒绝。
+
+出生实际依赖的14份流式模型来自5个`lf_init_common_marketplace*.ifs`。工具[prepare_character_streams.py](../../tools/prepare_character_streams.py)只提取指定名称，先复制IFS、检查原始名称解码并校验前后哈希，安装到隔离`startup-assets/main/models`。原游戏资源不改；来源记录在`resources-character-streams/installed.json`。测试外观为`cha_INFbaseA + han_hands`，装备仍为`defaultweapon_mp`。
+
+[保存的通过结果](../../research/evidence/native-minimal-input-pass.json)包含9个阶段：真实原生实例就绪 → 加密握手 → challenge/connect → stats → gamestate → userinfo确认 → 出生快照 → 移动 → 射击。当前客户端快照读取器完整消费975个实体、1个客户端及EOF；位置从约`(3248,296,360)`变为`(2849,271,336)`，收到`a 1`切枪命令后弹药从10减至0。切枪消费依据`0x57d560 → 0x562260`，没有用手写快照读取器代替。
+
+慢速机器码探针需要完整接收约92KB首帧；增加接收缓冲与执行预算，并将导入桩移出快照栈区。16位传输计数回绕使用完整计数派生加密材料。这些是探针修复，不是游戏性能结论。[29项集中测试](../../research/evidence/server3333-character-input-tests.log)通过，3.604秒；未重复运行完整原生构建套件。
+
+**未覆盖**：探针公开stats为明确标注的最小测试档案，私有档案来自真实只读导出。真实公开存档头部为零，与旧服按头选择结构的行为不同；正在核对当前客户端契约。完整游戏的资源加载、画面和实际输入仍待验收，`gameplay_verified=false`。
+
+REA已保存[当前阶段快照](../../research/evidence/client423-native-connection-stage.rea.json)，含91个workflow、182份evidence。新增全程序分析遇到提供器超时，缓存仍可复用；[定点补充反编译](../../research/evidence/client-stats-focused423.json)来自同一已校验EXE的独立Ghidra `-noanalysis` 作业，不冒充REA Evidence或完整程序分析。

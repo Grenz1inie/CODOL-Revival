@@ -95,6 +95,18 @@ class Configstrings423Tests(unittest.TestCase):
                          (1, 0, b'\x06'))
         self.assertIsNone(self.client.packet(packets[0], challenge=0x42))
 
+    def test_next_packet_remains_readable_after_snapshot(self):
+        self.client.reset_netchan()
+        for sequence in (1, 2):
+            wire = story_wire423.encode_snapshot({0: sequence*1000},
+                                                  server_time=sequence*1000)
+            packet, = story_wire423.encode_packets(wire, sequence=sequence,
+                                                   acknowledgement=0, challenge=0x42)
+            number, _, body = self.client.packet(packet, challenge=0x42)
+            result = self.client.snapshot(body, sequence=number)
+            self.assertEqual(result['command_time'], sequence*1000)
+            self.assertEqual(result['remaining'], b'\x06')
+
     def test_fragment_boundaries_and_out_of_order_duplicate_reassembly(self):
         for size in (1149, 1150, 2304, 2305, 0x20000 - 8):
             with self.subTest(size=size):

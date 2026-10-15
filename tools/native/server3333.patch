@@ -6711,3 +6711,17 @@
        /* C1 names the dvars in shock/*.shock by registration number; the
         * retained BG_LoadShellShock parses them by name. Serve a translated
         * copy, owned for the process lifetime and reused per name. */
+--- a/src/codol/stats/codol_profile_character.c
++++ b/src/codol/stats/codol_profile_character.c
+@@ -16,7 +16,10 @@
+     if(!CODOL_ProfileRecord(profile,size,schema,&def,&record,&capacity))return 0;
+     if(def->version==233) {
+         selector.name="currentCharacterIndex";
+-        if(def->checksum!=0x70cd4cc5 || def->layout.record_size!=9610 ||
++        /* Retail 3.3.3.3 retains version 233 with a larger layout. Resolve
++         * its character fields through the mounted offset map, as before. */
++        if(!((def->checksum==0x70cd4cc5 && def->layout.record_size==9610) ||
++             (def->checksum==0xe32d50d6 && def->layout.record_size==14426)) ||
+            !CODOL_ResolveStructuredField(def,&selector,1,&field) || field.type.kind!=1 ||
+            !CODOL_StructuredReadScalar(&def->layout,1,field.logical_index,record,capacity,&value) || value>=12)return 0;
+         next.character_index=value;next.target_format=233;path[1].index=(int32_t)value;
