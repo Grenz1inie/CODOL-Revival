@@ -239,7 +239,7 @@ class ConnectionTests(unittest.TestCase):
         self.assertEqual(self.connection.pending_commands[0]['weapon'],7)
         self.assertEqual(self.connection.pending_commands[0]['buttons'],1)
 
-    def test_score_poll_does_not_discard_bundled_move_or_break_reliable_ack(self):
+    def test_score_and_action_notifications_preserve_bundled_move_and_reliable_ack(self):
         from match_server.input import usercmd_key
         self.connect()
         self.upload()
@@ -247,10 +247,11 @@ class ConnectionTests(unittest.TestCase):
         command = f'userinfo "{self.info}"'.encode()
         move = self.client.usercmd({'time':100,'buttons':1,'weapon':5,'forward':127},
             key=usercmd_key(1,self.connection.checksum_feed),move=True,
-            reliables=((1,b's'),(2,command),(3,b's')))
+            reliables=((1,b's'),(2,command),(3,b'n 31'),(4,b'n 32'),
+                       (5,b'n 1'),(6,b'n 2'),(7,b'n 98'),(8,b's')))
         packet = self.packet(move,2,ack=1,server_id=self.connection.server_id)
         replies = self.connection.receive(packet)
-        self.assertEqual(self.connection.reliable,3)
+        self.assertEqual(self.connection.reliable,8)
         self.assertEqual(self.connection.command,b's')
         self.assertEqual(self.connection.pending_commands[0]['buttons'],1)
         self.assertEqual(self.connection.pending_commands[0]['weapon'],5)
@@ -258,14 +259,16 @@ class ConnectionTests(unittest.TestCase):
         reader = ClientReader423()
         reader.reset_netchan()
         self.assertEqual(reader.packet(replies[0],challenge=self.challenge,command=b's')[1:],
-                         (3,b'\x06'))
+                         (8,b'\x06'))
         self.assertEqual(self.connection.receive(packet),[])
 
     def test_score_poll_does_not_allow_reliable_gaps_or_unknown_commands(self):
         self.connect()
         self.upload()
         self.connection.receive(self.packet(b'\x03',1))
-        for number,command in ((2,b's'),(1,b's extra'),(1,b'give all')):
+        for number,command in ((2,b's'),(1,b's extra'),(1,b'give all'),
+                               (1,b'n 0'),(1,b'n 99'),(1,b'n 1;quit'),
+                               (1,b'n -1'),(1,b'n 1 extra')):
             packet = self.packet(b'\x1a'+struct.pack('<I',number)+command+b'\0',2,
                                  ack=1,server_id=self.connection.server_id)
             with self.assertRaisesRegex(ValueError,'reliable client command'):

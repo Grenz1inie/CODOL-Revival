@@ -211,10 +211,11 @@ class Connection:
                         raise ValueError('unsupported or missing reliable client command')
                     if candidate.startswith(b'userinfo "') and candidate.endswith(b'"'):
                         self._userinfo(candidate[10:-1].decode('ascii'))
-                    elif candidate != b's':
+                    elif candidate != b's' and not re.fullmatch(rb'n ([1-9]|[1-8][0-9]|9[0-8])',candidate):
                         raise ValueError('unsupported or missing reliable client command')
-                    # The live client polls scores with `s`. Acknowledge it so
-                    # that this packet's usercmd and later reliables can pass.
+                    # Current action table 0xce1cc0 has IDs 1..98. These `n`
+                    # notifications and score polls must not discard usercmd;
+                    # simulation remains driven by that authoritative input.
                     reliable, command = number, candidate
             elif opcode in (0,1) and not commands:
                 commands = read_move(reader,usercmd_key(ack,self.checksum_feed,server_command),self.input_bases[ack])
