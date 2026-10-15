@@ -23,6 +23,7 @@ class MatchServer:
         self.record=record or (lambda *_args,**_fields:None)
         self.last_report=0
         self.reported_health=None
+        self.last_input=None
         # Check reservation material before acquiring a socket/thread.
         Association(security_id, security_key, ('127.0.0.1', 1))
         self.association = None
@@ -110,11 +111,16 @@ class MatchServer:
         if now < self.next_tick:
             return
         # One owned clock advances both players, including while no packets arrive.
-        self.world.step(self.pending_inputs,milliseconds=50)
+        commands=self.pending_inputs
         self.pending_inputs=[]
+        if commands:
+            self.last_input={key:commands[-1][key] for key in ('time','buttons','direction','weapon')}
+            self.last_input['world_time']=self.world.time
+        self.world.step(commands,milliseconds=50)
         health=tuple(p.health for p in self.world.players)
         if health!=self.reported_health or now-self.last_report>=5:
-            self.record('match_state',server_time=self.world.time,players=[dict(number=p.number,
+            self.record('match_state',server_time=self.world.time,input=self.last_input,
+                players=[dict(number=p.number,command_time=p.command_time,
                 origin=p.origin[:],health=p.health,clip=p.clip,kills=p.kills,deaths=p.deaths)
                 for p in self.world.players])
             self.reported_health,self.last_report=health,now

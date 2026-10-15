@@ -71,6 +71,7 @@ class Player:
     spawn_count: int = 0
     spawn_time: int = 0
     weapon_raised: bool = False
+    input_time: int = 0
 
     def event(self, number, parameter=0):
         self.events[self.event_sequence%4] = number | parameter << 32
@@ -108,6 +109,7 @@ class World:
         player.health,player.ground=100,2046
         player.clip,player.reserve=self.weapon.clip_size,self.weapon.clip_size*3
         player.command_time=self.time
+        player.input_time=self.time
         player.spawn_count=(player.spawn_count+1)&255
         player.spawn_time=self.time
         player.weapon_raised=False
@@ -238,8 +240,14 @@ class World:
                 player.kills+=1
 
     def _command(self, player, command):
-        now=command['time']
-        if not player.command_time < now <= self.time+200:
+        raw_time=command['time']
+        if not player.input_time < raw_time <= self.time+20000:
+            return
+        player.input_time=raw_time
+        # ClientThink clamps ahead commands; discarding them loses valid
+        # movement/fire while the client's smoothed clock catches up.
+        now=min(raw_time,self.time+200)
+        if now <= player.command_time:
             return
         previous=max(player.command_time,now-200)
         player.command_time=now

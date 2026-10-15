@@ -42,8 +42,25 @@ class MatchWorldTests(unittest.TestCase):
         self.assertAlmostEqual(human.origin[2],0,places=4)
         position=human.origin[:]
         world.step([command(human.command_time,direction=1),
-                    command(world.time+10000,direction=1)],milliseconds=50)
+                    command(world.time+20051,direction=1)],milliseconds=50)
         self.assertEqual(human.origin,position)
+
+    def test_ahead_input_is_clamped_without_losing_fire_or_replaying_raw_time(self):
+        world=self.world()
+        player=world.players[0]
+        ahead=command(1800,direction=1,buttons=1)
+        world.step([ahead],milliseconds=50)
+        self.assertEqual(player.command_time,1250)
+        self.assertGreater(player.origin[0],0)
+        self.assertEqual(player.clip,35)
+        position=player.origin[:]
+        world.step([ahead],milliseconds=50)
+        self.assertEqual(player.origin,position)
+        self.assertEqual(player.clip,35)
+        world.step([command(1850,direction=1,buttons=1)],milliseconds=50)
+        self.assertEqual(player.command_time,1350)
+        self.assertGreater(player.origin[0],position[0])
+        self.assertEqual(player.clip,34)
 
     def test_step_and_jump_use_swept_player_volume(self):
         world=self.world(geometry=room(((60,-100,0),(90,100,12))))

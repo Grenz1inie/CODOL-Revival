@@ -69,9 +69,12 @@ def main():
         if uia.GetForegroundWindow() != args.hwnd:
             raise RuntimeError('Game lost foreground; do not send movement')
         try:
-            uia.PressKey(0x57, waitTime=0.5)
+            # DirectInput needs W's scan code, without the extended-key flag
+            # used by the generic UI Automation PressKey helper.
+            uia.keybd_event(0x57, 0x11, 0, 0)
+            time.sleep(2)
         finally:
-            uia.ReleaseKey(0x57)
+            uia.keybd_event(0x57, 0x11, 2, 0)
         if uia.GetForegroundWindow() != args.hwnd:
             raise RuntimeError('Game lost foreground; do not fire')
         point = (rectangle.right // 2, rectangle.bottom // 2)
@@ -79,7 +82,14 @@ def main():
     if point:
         uia.SetCursorPos(x, y)
         time.sleep(0.5)
-        uia.Click(x, y)
+        if args.target == 'move-fire':
+            try:
+                uia.mouse_event(2, 0, 0, 0, 0)
+                time.sleep(2)
+            finally:
+                uia.mouse_event(4, 0, 0, 0, 0)
+        else:
+            uia.Click(x, y)
     time.sleep(1)
     screenshot = ROOT / f'runtime/captures/screenshots/{stamp}-admin-{args.target}.png'
     ImageGrab.grab().save(screenshot)
