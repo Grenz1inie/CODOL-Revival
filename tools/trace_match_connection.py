@@ -15,7 +15,7 @@ from match_server.transport import Association
 
 
 def main():
-    target = ROOT / 'runtime/captures/match-connection-trace.json'
+    target = ROOT / ('runtime/captures/match-connection-trace-'+time.strftime('%Y%m%d-%H%M%S')+'.json')
     events = []
 
     def trace(method, original):

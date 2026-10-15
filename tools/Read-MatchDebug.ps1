@@ -1,10 +1,13 @@
+param([switch]$Stats)
 $ErrorActionPreference = 'Stop'
 $rootPath = Split-Path $PSScriptRoot -Parent
 $expectedExe = Join-Path (Split-Path $rootPath -Parent) 'CODOL_Experience_V3.3.3.3_FULL.7z/codoMP_client_shipRetail.exe'
 $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
 $principal = [Security.Principal.WindowsPrincipal]::new($identity)
 if (!$principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    Start-Process powershell.exe -Verb RunAs -WindowStyle Hidden -ArgumentList '-NoProfile','-File',('"'+$PSCommandPath+'"')
+    $arguments = @('-NoProfile','-File',('"'+$PSCommandPath+'"'))
+    if ($Stats) { $arguments += '-Stats' }
+    Start-Process powershell.exe -Verb RunAs -WindowStyle Hidden -ArgumentList $arguments
     return
 }
 $game = @(Get-CimInstance Win32_Process -Filter "Name='codoMP_client_shipRetail.exe'" | Where-Object {
@@ -14,5 +17,23 @@ if ($game.Count -ne 1) { throw 'Expected one verified CODOL process.' }
 if ((Get-FileHash -LiteralPath $expectedExe -Algorithm SHA256).Hash -ne 'e3823fd6afc80fb25fa84747e6e9634707b9a0b189357a5466921cda354af37b') { throw 'Client hash mismatch.' }
 $cdb = 'C:/Program Files (x86)/Windows Kits/10/Debuggers/x86/cdb.exe'
 $outputPath = Join-Path $rootPath 'runtime/logs/match-debug.txt'
+if ($Stats) {
+    # Three hardware execution breakpoints: no EXE/code-byte changes. Capture
+    # only the 32 KiB public stats buffer around CRC/preparation, then detach.
+    $capturePath = (Join-Path $rootPath ('runtime/captures/stats-' + (Get-Date -Format 'yyyyMMdd-HHmmss'))).Replace('\', '/')
+    $commands = @(
+        ('ba e 1 codoMP_client_shipRetail+0x2d81bf ".writemem ' + $capturePath + '-before.bin @edi+0x7c L8000; gc"'),
+        ('ba e 1 codoMP_client_shipRetail+0x2d81c4 ".writemem ' + $capturePath + '-crc.bin @edi+0x7c L8000; gc"'),
+        ('ba e 1 codoMP_client_shipRetail+0x2d81ca ".writemem ' + $capturePath + '-prepared.bin @edi+0x7c L8000; bc *; qd"'),
+        'g'
+    )
+    # Command file keeps debugger quoting separate from PowerShell quoting.
+    $commandPath = $capturePath + '.cdb'
+    $commands | Set-Content -LiteralPath $commandPath -Encoding Ascii
+    # If a debugger command fails, its next prompt detaches instead of leaving
+    # the game suspended. Normal completion detaches at the third breakpoint.
+    'qd' | & $cdb -G -p $game[0].ProcessId -cf $commandPath *> $outputPath
+    return
+}
 # Noninvasive, nonsuspending attach: module inventory and thread stacks only.
 & $cdb -pv -p $game[0].ProcessId -c 'lm; ~* k; q' *> $outputPath

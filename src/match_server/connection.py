@@ -44,8 +44,11 @@ class StatsTransfer:
                     raise ValueError('invalid compressed stats') from error
                 if not inflater.eof or inflater.unused_data or inflater.unconsumed_tail:
                     raise ValueError('incomplete or trailing compressed stats')
-            if len(profile) != 32768 or struct.unpack_from('<I', profile)[0] != zlib.crc32(profile[4:]):
-                raise ValueError('invalid stats size or CRC')
+            # 0x6d81bf computes CRC before 0x6d8a70 prepares the upload body.
+            # Its first word is stale on the wire; DATA HMAC authenticates this
+            # transfer. Lobby save validation has a separate CRC contract.
+            if len(profile) != 32768:
+                raise ValueError('invalid stats size')
             self.profile = profile
         self.length, self.fragments = compressed, fragments
         return missing

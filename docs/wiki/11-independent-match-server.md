@@ -27,7 +27,7 @@
 | `SV_BotUserMove` → `CODOL_BotBuildCommand` | 目标选择、瞄准、移动、开火/换弹指令；AI同样通过输入驱动角色 | `world.py` 的AI、移动与武器路径 |
 | `src/codol/snapshot/codol_sv_state.c` | 地图身份、serverinfo、注册表与初始状态保持一致 | `connection.py`、`runtime.py`、`mapdata.py` |
 
-核弹小镇隔离资源包及地图身份接入已经完成，仍待实机连接、出生和操作验证。2026-10-16抓包确认握手已到COOKIE_ACK，卡在首个DATA的认证；另有赛单网络索引及challenge文本不匹配，详见下节。加载画面不能证明这些阶段已通过。
+核弹小镇隔离资源包及地图身份接入已经完成。2026-10-16修正握手加密后，完整游戏已到 `connected`；随后定位并修正了对局stats误用存档CRC的拒收。地图状态、出生和操作仍待实机验证，详见下节。加载画面不能证明这些阶段已通过。
 
 保留完整原菜单，复用“冲锋团队竞技 → 核弹小镇”入口，使用最小自由混战规则，说明标明1真人＋1AI；不把这个入口标成原9V9玩法已恢复。核弹爆炸、环境事件、破坏物、连杀奖励及高级AI动作均可后置；静态碰撞与射击遮挡先保持一致。核弹小镇可作为首个样板，不必将Killhouse实机验收作为额外前置，但共同握手/出生链路仍必须完成。
 
@@ -48,7 +48,25 @@
 
 验证使用 `tests/client_transport423.py` 执行当前EXE的DATA封包、SHA-1、HMAC和AES-CTR机器码，仅隔离CRT内存分配。服务端输出与原生输出逐字节相同；覆盖完整32位序号跨65535、方向tag、分块载荷、错误认证、长度和重放。4项传输测试加6项UDP/探针测试通过，UDP路径继续到stats、gamestate、active及移动射击输入。旧参考服探针保留默认旧协议，独立服用例显式指定 `current=True`，避免把旧版自我往返误当新版握手证据。
 
-另用已捕获的临时服务端密钥重建COOKIE_ACK，与实抓响应完全相同；新的生产 `Association` 成功认证并解密全部30条DATA，首个真实getchallenge已由生产 `Connection` 生成challengeResponse。秘密材料仍仅在忽略目录中。以上证明该次失败的协议差异已修复；完整游戏重新连接、地图加载、出生和操作仍须实机验证，不能通知可玩验收。
+另用已捕获的临时服务端密钥重建COOKIE_ACK，与实抓响应完全相同；新的生产 `Association` 成功认证并解密全部30条DATA，首个真实getchallenge已由生产 `Connection` 生成challengeResponse。秘密材料仍仅在忽略目录中。01:18（Asia/Shanghai）完整游戏重试已到 `match_phase=connected`，随后反复被 `invalid stats size or CRC` 拒收；不再把后续等待归因于握手加密。
+
+### 对局stats与存档CRC的区别
+
+使用缓存REA `client-stats-writer423.json` 与当前EXE反汇编定位：`0x6d81bf` 调用 `0x6d7d80` 计算CRC，接着 `0x6d81c5` 调用 `0x6d8a70` 整理档案，之后 `0x6d80d0` 压缩发送。该路径没有重新计算CRC。原生CRC函数在Unicorn中算出的值与标准CRC32一致，排除了多项式和范围差异。
+
+01:50的限定CDB硬件执行断点捕获了同一次调用的三个32KiB缓冲区（状态指针 `EDI+0x7c`）：
+
+| 时点 | 头4字节 | 当前正文CRC32 |
+|---|---|---|
+| CRC调用前 | `da6e92b5` | `aca96c21` |
+| CRC调用后、整理前 | `aca96c21` | `aca96c21` |
+| 整理后、压缩前 | `aca96c21` | `da6e92b5` |
+
+值按uint32表示。整理步骤改变7452个正文中字节，头部保持旧值。此前实抓的stats同样仅头4字节与大厅保存的公开档案不同；密文HMAC认证与zlib解压均通过。参考 `sh1x_dedicated/src/codol/stats/codol_stats.c` 的对局接收器也没有套用大厅存档的整块CRC契约。
+
+因此 `StatsTransfer` 保留已认证DATA、连接身份、分片顺序/长度/重复内容检查、zlib完整性及精确32768字节边界，按原样接收对局stats，不拿其旧CRC检查整理后的正文。大厅公开/私有档案保存的CRC规则不变，也不将上传缓冲区写回正式存档。回归通过原生stats封包器覆盖压缩/未压缩及旧CRC上传；损坏zlib、尾随数据、错误尺寸仍拒绝。连接与UDP共15项通过，大厅存档5项通过。
+
+复现工具为 `tools/Read-MatchDebug.ps1 -Stats`，使用三个硬件断点，不改EXE代码字节；第三次命中后脱离。需在新启动、首次匹配前附加，后续重试会复用压缩缓存。原始缓冲区位于忽略目录 `runtime/captures/stats-20261016-014425-*.bin`，包含玩家数据，不提交。调试后客户端上报异常并退出，此次只用于取证；可玩性验证须使用不附加调试器的独立重试。
 
 ## 当前方案与参考源码
 
@@ -166,9 +184,9 @@ REA会话已保存为[独立服参考基线](../../research/evidence/client423-i
 ## 独立连接阶段（2026-10-15）
 
 - 初版 `crypto.py`、`transport.py` 沿用参考的Tiger192、P-224、AES-192 CTR与DATA HMAC。2026-10-16真实抓包证实其中密钥派生、AES位数、IV和认证范围与当前客户端不匹配；早期回环测试不能作为3.3.3.3加密兼容性证明，纠正见上节。
-- `connection.py`：单一预订账号校验、challenge/connect、stats 分片与 CRC、可靠 userinfo 确认、当前版本 gamestate；不写正式玩家档案。
+- `connection.py`：单一预订账号校验、challenge/connect、stats分片与压缩边界、可靠userinfo确认、当前版本gamestate；不写正式玩家档案。
 - `server.py`：只绑定 `127.0.0.1` 的独立 UDP 收发。`tests/test_match_server.py` 经真实 socket 和加密层，把地图状态交给当前客户端读取器；确认解析出 `mp_killhouse_sh / dm`。
-- stats 的 uint16 是**压缩后总长度**，不是本分片长度；每片最多1238字节，未压缩长度32768，末尾校验CRC。只有全部合法数据齐备才允许地图状态发送。
+- stats的uint16是**压缩后总长度**，不是本分片长度；每片最多1238字节，未压缩长度32768。首4字节是整理前的CRC，不能用于校验上传正文（2026-10-16动态证据见上节）。只有全部合法数据齐备才允许地图状态发送。
 
 测试分别使用客户端 `0xa87020/0xa87060/0xa87110`（Tiger）、`0x6d81a0`（stats writer）、`0x5a5960/0x46bf80`（netchan/XOR）和 `0x46dea0`（gamestate）。最后一项在 `0x4651b0` 加载入口停止，**未执行渲染、资源加载或出生**；测试中的 NCS CRC 是协议夹具，不是已经核实的 Killhouse 实际注册表。
 

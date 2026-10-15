@@ -18,7 +18,7 @@ class StatsTests(unittest.TestCase):
     def setUpClass(cls):
         cls.client = ClientConnection423()
 
-    def test_current_client_fragments_complete_only_after_all_crc_checked_data(self):
+    def test_current_client_fragments_complete_only_after_all_data(self):
         from match_server.connection import StatsTransfer
         profile = profile_bytes()
         for compressed in (False, True):
@@ -32,6 +32,20 @@ class StatsTests(unittest.TestCase):
                 self.assertEqual(transfer.accept(fragments[i]), missing)
                 self.assertEqual(transfer.accept(fragments[i]), missing)
                 self.assertEqual(transfer.profile, None if missing else profile)
+
+    def test_match_upload_preserves_crc_from_before_native_profile_preparation(self):
+        from match_server.connection import StatsTransfer
+        # CDB at 0x6d81c4/0x6d81ca: 0x6d8a70 changes the body after CRC.
+        # Match stats retain that word; they are not a lobby save envelope.
+        profile = bytearray(profile_bytes())
+        profile[3838] ^= 1
+        for compressed in (False, True):
+            source = zlib.compress(profile) if compressed else bytes(profile)
+            transfer = StatsTransfer()
+            for i in range((len(source)+1237)//1238):
+                missing = transfer.accept(self.client.stats_fragment(source, i, compressed=compressed))
+            self.assertEqual(missing, 0)
+            self.assertEqual(transfer.profile, bytes(profile))
 
     def test_invalid_fragments_do_not_replace_accepted_fragments(self):
         from match_server.connection import StatsTransfer
@@ -54,10 +68,12 @@ class StatsTests(unittest.TestCase):
         self.assertEqual(remaining, 0)
         self.assertEqual(transfer.profile, profile_bytes())
 
-    def test_bad_crc_or_zlib_tail_never_publishes_a_profile(self):
+    def test_bad_zlib_or_size_never_publishes_a_profile(self):
         from match_server.connection import StatsTransfer
         valid = profile_bytes()
-        for source in (zlib.compress(b'\0'*32768), zlib.compress(valid)+b'tail',
+        damaged = bytearray(zlib.compress(valid))
+        damaged[-1] ^= 1
+        for source in (bytes(damaged), zlib.compress(valid)+b'tail',
                        zlib.compress(valid[:-1]), zlib.compress(valid+b'x')):
             transfer = StatsTransfer()
             fragments = [self.client.stats_fragment(source, i)
