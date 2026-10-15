@@ -27,11 +27,24 @@
 | `SV_BotUserMove` → `CODOL_BotBuildCommand` | 目标选择、瞄准、移动、开火/换弹指令；AI同样通过输入驱动角色 | `world.py` 的AI、移动与武器路径 |
 | `src/codol/snapshot/codol_sv_state.c` | 地图身份、serverinfo、注册表与初始状态保持一致 | `connection.py`、`runtime.py`、`mapdata.py` |
 
-剩余工作按依赖排序：先修实际赛单轮换启动命令与连接握手（本次游戏日志仍有 `DATA before handshake`）；再导出核弹小镇的隔离资源包、去掉当前启动/连接中写死的Killhouse身份；最后接入本图出生点、可达寻路和已有最小战斗循环。地图迁移主要涉及 `tools/export_match_map.py`、`tools/export_match_loadout.py`、`src/match_server/{runtime,connection,matchmaking}.py` 和 `src/local_server.py`。模型/武器编号需随本图注册表重新解析。
+核弹小镇隔离资源包及地图身份接入已经完成，仍待实机连接、出生和操作验证。2026-10-16抓包确认握手已到COOKIE_ACK，卡在首个DATA的认证；另有赛单网络索引及challenge文本不匹配，详见下节。加载画面不能证明这些阶段已通过。
 
 保留完整原菜单，复用“冲锋团队竞技 → 核弹小镇”入口，使用最小自由混战规则，说明标明1真人＋1AI；不把这个入口标成原9V9玩法已恢复。核弹爆炸、环境事件、破坏物、连杀奖励及高级AI动作均可后置；静态碰撞与射击遮挡先保持一致。核弹小镇可作为首个样板，不必将Killhouse实机验收作为额外前置，但共同握手/出生链路仍必须完成。
 
 参考目录已建立局部索引：CodeGraph为1431文件、27510节点；GitNexus别名 `sh1x-dedicated-reference`，44534节点。范围为 `src/` 与 `tests/`，配置是参考目录的 `codegraph.json` 与 `.gitnexusignore`；GSC、寻路CSV及地图包仍直接按路径读取，不伪称已形成GSC调用图。少量旧头文件无法解析、部分跨语言/函数指针调用不完整，缺边不能推成无调用。未编译或运行旧服，未改动其原有源码。
+
+## 等待连接定位（2026-10-16）
+
+本轮来自用户00:04（Asia/Shanghai）的真实重试，捕获限定32条，保存在 `runtime/captures/match-connection-trace.json`。该文件含临时会话材料，保持Git排除。只读CDB模块/线程栈在 `runtime/logs/match-debug.txt`；没有设置断点、修改进程或游戏EXE。
+
+已完成的两处修复：
+
+1. **房间开始命令**：实际文本为 `playlist 25; start_map_rotate_once 0`。不是选错地图：原生 `0x613330` 将目录ID110转换为当前有效赛单中的紧凑索引25，`0x6132e0`反向得到110。此前服务端比较110并要求轮换值大于0，两项均拒绝合法请求。现在只接受对应25及非负轮换参数，仍拒绝其他赛单、地图和玩法；不执行任意控制台文本。
+2. **challenge请求**：真实客户端使用 `getchallenge 0 "玩家ID"`，格式字符串在 `0xc6119c`、调用在 `0x465d32`。服务端补齐该格式并保留旧探针格式，两者都绑定已预订账号；畸形参数不能进入connected。
+
+两处均先复现失败再修复：连接边界11项通过，赛单/菜单边界5项通过。菜单测试保留中文、分类、顺序、UI类型和地图；新测试执行原生双向索引转换，不以Python映射自测代替客户端证据。尚未将这些结果表述为实机出生成功。
+
+同时已定位、待完成的加密修复：参考服的Tiger192/AES-192组合不适用于本次客户端。当前 `0xa7af90` 将28字节P-224共享X与16字节预订密钥拼接后做SHA-1；AES使用前16字节。`0xa7f960` 的IV来自32位完整序号与16位目标tag的SHA-1前16字节，CTR按小端递增；HMAC覆盖头6字节及长度2字节和密文。实抓30条DATA的认证值均与该规则一致，首包还原为getchallenge。当前生产传输代码尚未应用此修复，不能通知可玩验收。
 
 ## 当前方案与参考源码
 
@@ -41,7 +54,7 @@
 - 版本802修复801误删 `ranked` 的回归。原客户端 `GetPlayList`（`0x6ab670`）调用 `0x613ed0`，在 `0x6ac42b` 将结果发布为UI字段 `type`。801中110仍存在于分类和地图表，但类型从1变成0；只补回 `ranked` 即恢复1，地图及1V1规则无需回退。`tests/test_client_playlist.py` 已保护冲锋分类七个赛单的名称、顺序与真实客户端UI类型，以及110的地图/规则说明、无新增入口；修复前定向用例报 `0 != 1`，修复后通过。该测试执行当前EXE机器码，未执行Flash渲染，最终显示仍由用户复审。
 - 本次对照证据为 `research/evidence/nuketown-menu-type423.json`；REA新反编译请求再次300秒超时，结论来自原EXE汇编与机器码执行，未冒称新反编译成功。23:15:33（Asia/Shanghai）服务PID52332已就绪，重登后发布802。
 - `runtime → matchmaking → MatchServer → Connection` 传递包内地图身份，连接响应、serverinfo及gamestate使用同一地图名；当前客户端机器码读取器已消费Nuketown的状态。
-- REA已保存的 `client-coop-mmstart423.json` 中 `0x6e6bf0` 证明PVP有 `playlist …; start_map_rotate_once …` 分支，不能只识别 `map`。新服接受固定赛单110或明确的 `map mp_nuked` / `g_gametype dm`；不执行客户端任意控制台文本，拒绝已撤下的240及其他赛单/地图/玩法。
+- REA已保存的 `client-coop-mmstart423.json` 中 `0x6e6bf0` 证明PVP有 `playlist …; start_map_rotate_once …` 分支，不能只识别 `map`。核弹小镇目录ID为110、实际网络索引为25（见上节纠正），也接受明确的 `map mp_nuked` / `g_gametype dm`；不执行客户端任意控制台文本。
 - 参考源码 `src/codol/net/codol_network.c:359–371` 的明文bdNAT INTRO发生在加密INIT前：29字节 `0d 02 00` 请求原样回显，仅类型改成 `0c`。已补入独立UDP入口，保留客户端MAC与地址，不提前占用预订。定向测试先复现超时，再验证回应和后续INIT_ACK。
 - 此前实机日志只记录29字节及 `DATA before handshake`，没有包头，不能仅凭长度认定所有失败包都是INTRO。新日志记录前6字节，供下一次人工测试区分NAT与真正的加密DATA；游戏出生仍未实测。
 - REA恢复现有快照成功；新字符串查询在300秒超时，本轮使用已有REA命令链证据与参考源码，没有把缓存恢复表述为新完成的全量分析。
@@ -148,7 +161,7 @@ REA会话已保存为[独立服参考基线](../../research/evidence/client423-i
 
 ## 独立连接阶段（2026-10-15）
 
-- `crypto.py`、`transport.py`：Python Tiger192、P-224 握手、AES-192 CTR、DATA 的 HMAC、序号和重复包处理；不装载旧 EXE 或链接旧引擎。
+- 初版 `crypto.py`、`transport.py` 沿用参考的Tiger192、P-224、AES-192 CTR与DATA HMAC。2026-10-16真实抓包证实其中密钥派生、AES位数、IV和认证范围与当前客户端不匹配；早期回环测试不能作为3.3.3.3加密兼容性证明，纠正见上节。
 - `connection.py`：单一预订账号校验、challenge/connect、stats 分片与 CRC、可靠 userinfo 确认、当前版本 gamestate；不写正式玩家档案。
 - `server.py`：只绑定 `127.0.0.1` 的独立 UDP 收发。`tests/test_match_server.py` 经真实 socket 和加密层，把地图状态交给当前客户端读取器；确认解析出 `mp_killhouse_sh / dm`。
 - stats 的 uint16 是**压缩后总长度**，不是本分片长度；每片最多1238字节，未压缩长度32768，末尾校验CRC。只有全部合法数据齐备才允许地图状态发送。

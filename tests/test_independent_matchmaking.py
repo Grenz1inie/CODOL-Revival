@@ -1,8 +1,10 @@
 import base64
+from pathlib import Path
 import struct
 import unittest
 
 from client_matchmaking423 import ClientMatchmaking423
+from client_playlist423 import ClientPlaylist423
 import test_match_world as fixture
 
 
@@ -18,12 +20,18 @@ class IndependentMatchmakingTests(unittest.TestCase):
                                       map_name='mp_nuked',port=0)
         try:
             service.find(1,bytes.fromhex('08010000000800000000080a000000079b1ff0d600'))
-            start='mmstart sv_resetServer; 2486 1; 3265 2; 2489 0; playlist 110; start_map_rotate_once 2'
+            reader=ClientPlaylist423()
+            content=(Path(__file__).resolve().parents[1]/'data/match-playlist.info').read_text('utf-8').encode('gbk')
+            reader.parse(content)
+            self.assertEqual(reader.wire_index(110),25)
+            # Actual 3.3.3.3 room message, not the publisher's directory ID.
+            start='mmstart sv_resetServer; 2486 1; 3265 2; 2489 0; playlist 25; start_map_rotate_once 0'
             self.assertIsNone(service.message(1,message(service.server_id,start)))
             self.assertIsNone(service.message(1,message(service.server_id,'mmstart g_gametype dm; map mp_nuked')))
-            for invalid in (start.replace('playlist 110','playlist 0'),
-                            start.replace('playlist 110','playlist 240'),
-                            start.replace('start_map_rotate_once 2','start_map_rotate_once -1'),
+            for invalid in (start.replace('playlist 25','playlist 0'),
+                            start.replace('playlist 25','playlist 110'),
+                            start.replace('playlist 25','playlist 240'),
+                            start.replace('start_map_rotate_once 0','start_map_rotate_once -1'),
                             start+'; map mp_killhouse_sh',
                             'mmstart g_gametype cha; map mp_nuked',
                             'mmstart map mp_nuked; map mp_killhouse_sh'):

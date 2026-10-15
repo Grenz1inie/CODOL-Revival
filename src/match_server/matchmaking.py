@@ -59,11 +59,12 @@ class IndependentMatchmaking:
                 rotations=[c for c in commands if c[0]=='start_map_rotate_once']
                 if playlists or rotations:
                     # 0x6e6bf0 has a playlist-rotation branch without a map command.
-                    # Existing Nuketown entry 110 now uses our single-map DM rules.
-                    if (self.map_name!='mp_nuked' or maps or playlists!=[['playlist','110']]
+                    # 0x613330 compacts published ID 110 to wire index 25 in our
+                    # catalogue. The native-parser regression protects that mapping.
+                    if (self.map_name!='mp_nuked' or maps or playlists!=[['playlist','25']]
                             or len(rotations)!=1 or len(rotations[0])!=2
-                            or not rotations[0][1].isdecimal() or not 0<int(rotations[0][1])<1<<32):
-                        raise ValueError('only the Nuketown playlist 110 can rotate')
+                            or not rotations[0][1].isdecimal() or not 0<=int(rotations[0][1])<1<<32):
+                        raise ValueError('only Nuketown wire playlist 25 can rotate')
                 elif maps != [['map',self.map_name]]:
                     raise ValueError(f'this instance only runs {self.map_name}')
                 for command in commands:

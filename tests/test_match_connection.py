@@ -166,6 +166,24 @@ class ConnectionTests(unittest.TestCase):
                 self.connection.receive(packet)
         self.assertTrue(self.connection.receive(self.packet(b'\x03', 1)))
 
+    def test_current_quoted_challenge_reaches_connect_without_relaxing_identity(self):
+        # Client 0x465d32 uses `getchallenge 0 "%s"`; confirmed by live DATA.
+        request = b'\xff'*4+f'getchallenge 0 "{self.uid:016x}"\0'.encode()
+        reply, = self.connection.receive(request)
+        self.assertEqual(reply, b'\xff'*4+f'challengeResponse {self.connection.challenge}\0'.encode())
+        self.assertEqual(self.connection.receive(request), [reply])
+        self.assertEqual(self.connection.phase, 'reserved')
+        for text in ('getchallenge 0 "0000000000000001"',
+                     f'getchallenge 1 "{self.uid:016x}"',
+                     f'getchallenge 0 "{self.uid:016x}',
+                     f'getchallenge 0 "{self.uid:016x}" trailing'):
+            with self.subTest(text=text), self.assertRaises(ValueError):
+                self.connection.receive(b'\xff'*4+text.encode())
+        self.info = f'\\xuid\\{self.uid:016x}\\challenge\\{self.connection.challenge}\\name\\VGVzdA=='
+        connected, = self.connection.receive(b'\xff'*4+f'connect {self.uid:016x} "{self.info}"\0'.encode())
+        self.assertTrue(connected.startswith(b'\xff'*4+b'connectResponse '))
+        self.assertEqual(self.connection.phase, 'connected')
+
     def test_batched_reliables_and_real_move_bits_do_not_shift_the_payload(self):
         from story_wire423 import _Message
         self.connect()

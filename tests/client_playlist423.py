@@ -4,7 +4,7 @@ import struct
 
 from client_reader423 import ClientReader423, ROOT
 from unicorn import UC_HOOK_CODE
-from unicorn.x86_const import UC_X86_REG_EAX, UC_X86_REG_ECX, UC_X86_REG_ESP, UC_X86_REG_EIP
+from unicorn.x86_const import UC_X86_REG_EAX, UC_X86_REG_ECX, UC_X86_REG_ESI, UC_X86_REG_ESP, UC_X86_REG_EIP
 
 
 class ClientPlaylist423(ClientReader423):
@@ -72,3 +72,22 @@ class ClientPlaylist423(ClientReader423):
         return dict(name=string(base,64),description=string(base+64,256),
                     maps=[(string(base+0x960+i*60,32),string(base+0x980+i*60,16))
                           for i in range(count)])
+
+    def wire_index(self, playlist_id):
+        """Directory ID -> compact mmstart index; verify the native reverse too."""
+        cpu=self.cpu
+        cpu.mem_write(0xb5e6f78,b'\x01\x00')
+        cpu.mem_write(0x1a2a570,struct.pack('<I',0x303f0200))
+        cpu.mem_write(0x303f0200,bytes(64))  # Registered playlist dvar, value 0.
+        values=[]
+        for address in (0x613330,0x6132e0):
+            cpu.mem_write(0x303ff000,struct.pack('<I',0x303ffff0))
+            cpu.reg_write(UC_X86_REG_ESP,0x303ff000)
+            cpu.reg_write(UC_X86_REG_ESI,values[0] if values else playlist_id)
+            cpu.emu_start(address,0x303ffff0,count=100000)
+            if cpu.reg_read(UC_X86_REG_EIP)!=0x303ffff0:
+                raise ValueError('current playlist index conversion did not finish')
+            values.append(cpu.reg_read(UC_X86_REG_EAX))
+        if values[1]!=playlist_id:
+            raise ValueError('playlist index does not resolve to the selected ID')
+        return values[0]

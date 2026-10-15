@@ -120,9 +120,11 @@ class Connection:
                 raise ValueError('loading update before gamestate')
             self.loading_status = int(loading[1])
             return None
-        challenge = re.fullmatch(r'getchallenge ([0-9a-fA-F]{16})', text)
+        # Current client 0x465d32 includes a zero and quotes around the XUID.
+        # Retain the older probe format at this text boundary.
+        challenge = re.fullmatch(r'getchallenge (?:0 "([0-9a-fA-F]{16})"|([0-9a-fA-F]{16}))', text)
         if challenge:
-            if int(challenge[1], 16) != self.uid:
+            if int(challenge[1] or challenge[2], 16) != self.uid:
                 raise ValueError('challenge identity does not match reservation')
             return b'\xff'*4+f'challengeResponse {self.challenge}\0'.encode()
         connect = re.fullmatch(r'connect ([0-9a-fA-F]{16}) "([^"\x00]*)"', text)
