@@ -13,6 +13,18 @@ class MatchSnapshotTests(unittest.TestCase):
     def setUp(self):
         self.client=ClientReader423()
 
+    def pin_baseline(self):
+        from story_wire423 import encode_snapshot as encode_baseline
+        self.client.snapshot(encode_baseline({},server_time=0),sequence=0)
+
+    def test_world_frames_pass_native_draw_gate_but_baseline_does_not(self):
+        from match_server.snapshot import encode_snapshot
+        self.pin_baseline()
+        self.assertFalse(self.client.snapshot_frame_ready(0))
+        wire=encode_snapshot({0:1000},server_time=1000,health=100)
+        self.client.snapshot(wire,sequence=1)
+        self.assertTrue(self.client.snapshot_frame_ready(1))
+
     def test_nuketown_defers_fx_but_keeps_all_static_baseline_entities(self):
         from match_server.snapshot import baseline_entities, encode_snapshot
         path=Path(__file__).resolve().parents[1]/'research/experiments/independent-match/nuketown-loadout-v2/baseline.bin'
@@ -23,6 +35,7 @@ class MatchSnapshotTests(unittest.TestCase):
         self.assertEqual(len(entities),94)
         self.assertFalse({668,669,670,671}.intersection(n for n,_ in entities))
         wire=encode_snapshot({0:1000},server_time=1000,health=100,entities=entities)
+        self.pin_baseline()
         result=self.client.snapshot(wire,sequence=1)
         self.assertEqual(result['entities'],94)
         unknown=bytearray(272)
@@ -38,10 +51,11 @@ class MatchSnapshotTests(unittest.TestCase):
         clients=[(0,{20:5}),(1,{20:6})]
         wire=encode_snapshot(state,server_time=1000,health=100,
                              inventory=Inventory(7,1,1,30,90),entities=players,clients=clients)
+        self.pin_baseline()
         result=self.client.snapshot(wire,sequence=1)
         self.assertEqual((result['entities'],result['clients'],result['command_time']),(2,2,1000))
         self.assertEqual(result['remaining'],b'\x06')
-        data=bytes(self.client.cpu.mem_read(0x7996128,0x3524))
+        data=result['player_data']
         self.assertEqual(struct.unpack_from('<3f',data,28),(100.,-50.,25.))
         for offset,value in ((0x190,100),(0x198,100),(0x340,7),(0x2a4,7),(0x3dc,1),(0x3e0,30),
                              (0x364,1),(0x368,90)):
@@ -65,6 +79,7 @@ class MatchSnapshotTests(unittest.TestCase):
         entities=baseline_entities(path.read_bytes())
         self.assertEqual(len(entities),156)
         wire=encode_snapshot({0:1000},server_time=1000,health=100,entities=entities)
+        self.pin_baseline()
         result=self.client.snapshot(wire,sequence=1)
         self.assertEqual(result['entities'],156)
         for (_,expected),actual in zip(entities,result['entities_data']):

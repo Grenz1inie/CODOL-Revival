@@ -125,12 +125,14 @@ class MatchWorldTests(unittest.TestCase):
 
     def test_current_client_reads_world_position_inventory_and_fire_event(self):
         from client_reader423 import ClientReader423
+        from story_wire423 import encode_snapshot as encode_baseline
         world=self.world()
         world.step([command(1050,direction=1,buttons=1)],milliseconds=50)
         wire,fields=world.snapshot()
         client=ClientReader423()
+        client.snapshot(encode_baseline({},server_time=0),sequence=0)
         result=client.snapshot(wire,sequence=1)
-        data=bytes(client.cpu.mem_read(0x7996128,0x3524))
+        data=result['player_data']
         self.assertEqual((result['entities'],result['clients']),(2,2))
         self.assertAlmostEqual(struct.unpack_from('<f',data,0x1c)[0],world.players[0].origin[0],places=3)
         self.assertEqual(struct.unpack_from('<I',data,0x190)[0],100)
@@ -143,6 +145,7 @@ class MatchWorldTests(unittest.TestCase):
 
     def test_current_death_mode_and_event_ring_survive_a_long_duel(self):
         from client_reader423 import ClientReader423
+        from story_wire423 import encode_snapshot as encode_baseline
         world=self.world()
         player=world.players[0]
         player.health=0
@@ -152,8 +155,8 @@ class MatchWorldTests(unittest.TestCase):
         self.assertEqual(fields[83],8)  # Current PM_DEAD; 7 is last stand.
         self.assertEqual(fields[1],4)
         client=ClientReader423()
-        client.snapshot(wire,sequence=1)
-        state=bytes(client.cpu.mem_read(0x7996128,0x3524))
+        client.snapshot(encode_baseline({},server_time=0),sequence=0)
+        state=client.snapshot(wire,sequence=1)['player_data']
         self.assertEqual(struct.unpack_from('<I',state,4)[0],8)
         self.assertTrue(struct.unpack_from('<I',state,0xf0)[0]&0x20000)
 

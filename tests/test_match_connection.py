@@ -249,17 +249,18 @@ class ConnectionTests(unittest.TestCase):
         reliable=self.connection.queue_command(b'a 7')
         self.connection.send(encode_snapshot(state,server_time=1000,health=100,
                                             inventory=Inventory(7,1,1,30,90)),player_fields=state)
+        snapshot_sequence=self.connection.sent
         # The game carries weapon 7 from the acknowledged snapshot, omitting
         # its unchanged value from this usercmd's delta encoding.
         native_base={'time':0,'weapon':7}
-        key=usercmd_key(2,self.connection.checksum_feed,b'a 7')
+        key=usercmd_key(snapshot_sequence,self.connection.checksum_feed,b'a 7')
         body=self.client.usercmd(native_base|{'time':1050,'buttons':1},key=key,base=native_base,move=True)
         encoded=bytearray(body)
-        xor=(self.challenge ^ self.connection.server_id ^ 2)&255
+        xor=(self.challenge ^ self.connection.server_id ^ snapshot_sequence)&255
         for i in range(len(encoded)):
             xor ^= (b'a 7'[i%3] << (i&1))&255
             encoded[i] ^= xor
-        packet=struct.pack('<IBII',2,self.connection.server_id,2,reliable)+encoded
+        packet=struct.pack('<IBII',2,self.connection.server_id,snapshot_sequence,reliable)+encoded
         self.connection.receive(packet)
         self.assertEqual(self.connection.pending_commands[0]['weapon'],7)
         self.assertEqual(self.connection.pending_commands[0]['buttons'],1)

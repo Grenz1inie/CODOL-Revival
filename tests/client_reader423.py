@@ -421,6 +421,9 @@ class ClientReader423:
         cpu.mem_write(client, bytes(0x9000))
         # One real snapshot-ring slot, no prior network history.
         for offset, value in ((0x8664, 1), (0x8668, 0), (0x8670,32), (0x8674,32),
+                              (0x866c,2048), (0x8678,32),
+                              (0x8684,0x30300000^0x4c248306),
+                              (0x8690,0x302d0000^0xdf5b8c38),
                               (0x8688,0x302b0000^0x9100d3fb),
                               (0x868c,0x302c0000^0x3613bda3),
                               (0x8680, 0x30260000 ^ 0x336f4a9b),
@@ -449,15 +452,48 @@ class ClientReader423:
             for name, offset in (('command_time', 0), ('flags', 0x3528),
                                  ('server_time', 0x352c), ('sequence', 0x3530),
                                  ('entities', 0x3540), ('clients', 0x3544), ('actors', 0x3548)):
-                result[name], = struct.unpack('<I', cpu.mem_read(0x7996128 + offset, 4))
+                result[name], = struct.unpack('<I', cpu.mem_read(0x30260000 + offset, 4))
+            result['player_data'] = bytes(cpu.mem_read(0x30260000,0x3524))
             cursor, = struct.unpack('<I', cpu.mem_read(msg + 28, 4))
             result['remaining'] = wire[cursor:]
-            for name,address,stride in (('entities',0x7999690,0x110),
+            entities = 0x7999690 if result['flags'] & 8 else 0x30300000
+            for name,address,stride in (('entities',entities,0x110),
                                          ('clients',0x302b0000,0x134),('actors',0x302c0000,0x58)):
                 if result[name]:
                     result[name+'_data']=[bytes(cpu.mem_read(address+i*stride,stride))
                                          for i in range(result[name])]
             return result
+        finally:
+            cpu.hook_del(hook)
+
+    def snapshot_frame_ready(self, sequence):
+        """Run the native CL_GetSnapshot and CG_DrawActiveFrame early gates.
+
+        This proves delivery to the draw path, not a rendered frame or gameplay.
+        """
+        cpu=self.cpu
+        cg,snapshot,stack,end=0x30010000,0x30020000,0x303ff000,0x303ffff0
+        seed=cpu.hook_add(UC_HOOK_CODE,self._return,begin=0xa6e160,end=0xa6e160)
+        try:
+            self._init_player(snapshot)
+            cpu.mem_write(stack,struct.pack('<II',end,snapshot))
+            cpu.reg_write(UC_X86_REG_ESP,stack)
+            cpu.reg_write(UC_X86_REG_EAX,sequence)
+            cpu.emu_start(0x4f8fa0,end,count=1000000)
+            if self.error or cpu.reg_read(UC_X86_REG_EIP)!=end or not cpu.reg_read(UC_X86_REG_EAX):
+                raise ValueError('native cgame did not receive snapshot')
+        finally:
+            cpu.hook_del(seed)
+        cpu.mem_write(cg+0x356c,struct.pack('<I',1))
+        cpu.mem_write(cg+0x357c,struct.pack('<I',snapshot))
+        cpu.mem_write(0x17cd282,b'\0')
+        cpu.reg_write(UC_X86_REG_ESI,cg)
+        def stop(cpu,address,size,context):
+            cpu.emu_stop()
+        hook=cpu.hook_add(UC_HOOK_CODE,stop,begin=0x541f13,end=0x541f13)
+        try:
+            cpu.emu_start(0x52639e,0x5263df,count=100)
+            return cpu.reg_read(UC_X86_REG_EIP)==0x5263df
         finally:
             cpu.hook_del(hook)
 

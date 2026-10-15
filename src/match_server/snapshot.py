@@ -200,7 +200,9 @@ def encode_snapshot(player, *, server_time, health, inventory=None, entities=(),
         if any(type(n) is not int or not 0 <= n < limit for n in numbers) or numbers != sorted(set(numbers)):
             raise ValueError('invalid or unordered snapshot players')
     m = _Message()
-    m.data.extend(b'\0'+struct.pack('<I',server_time)+b'\0\x08')
+    # Full world state against Connection's pinned empty baseline. Flag 8 is
+    # reserved for that baseline: the shipped draw path skips flags & 0x0a.
+    m.data.extend(b'\0'+struct.pack('<I',server_time)+b'\0\0')
     m.bits(0,1)
     _write_player_fields(m,player,{},server_time)
     _inventory(m,health,inventory)

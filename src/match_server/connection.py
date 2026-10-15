@@ -7,7 +7,7 @@ import zlib
 import re
 import secrets
 
-from story_wire423 import encode_gamestate, encode_packets
+from story_wire423 import encode_gamestate, encode_packets, encode_snapshot as encode_baseline
 from .input import Reader, read_move, usercmd_key, default_usercmd
 
 
@@ -77,6 +77,7 @@ class Connection:
         self.server_ack = self.published_command = 0
         self.input_bases = {0:{}}
         self.default_input = {}
+        self.world_baseline_sent = False
         rows = dict(configstrings)
         # 0x57909e consumes numeric dvar 2485, not the legacy textual key.
         rows[0] = f'\\mapname\\{map_name}\\g_gametype\\dm\\2485\\2'
@@ -153,10 +154,16 @@ class Connection:
         return sequence
 
     def send(self, payload, *, player_fields=None):
+        packets = []
+        if player_fields is not None and not self.world_baseline_sent:
+            # Flag 8 pins the zero delta base, but CG_DrawActiveFrame rejects
+            # it for rendering. Publish it once before ordinary world frames.
+            packets = self.send(encode_baseline({},server_time=0))
+            self.world_baseline_sent = True
         prefix = b''.join(b'\x01'+struct.pack('<I',n)+text+b'\0'
                           for n,text in self.server_commands.items() if n > self.server_ack)
-        packets = encode_packets(prefix+payload, sequence=self.sent+1,
-            acknowledgement=self.reliable, challenge=self.challenge, command=self.command)
+        packets.extend(encode_packets(prefix+payload, sequence=self.sent+1,
+            acknowledgement=self.reliable, challenge=self.challenge, command=self.command))
         self.sent += 1
         self.published_command = max(self.server_commands)
         if player_fields is not None:

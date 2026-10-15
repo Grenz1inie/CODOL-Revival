@@ -88,7 +88,7 @@ class MatchServerTests(unittest.TestCase):
                             cursor=end+1
                         if payload[cursor]==0:
                             result=reader.snapshot(payload[cursor:],sequence=sequence)
-                            if result['command_time']>=minimum_time:
+                            if result['command_time']>=minimum_time and reader.snapshot_frame_ready(sequence):
                                 return result
                     self.fail('no current-client snapshot')
                 # Native client reaches state 9 and reports stages 1..6 before
