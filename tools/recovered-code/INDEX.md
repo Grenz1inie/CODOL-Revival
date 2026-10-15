@@ -1,0 +1,169 @@
+# 关键功能索引
+
+按功能查找入口，再沿地址读取伪代码和证据。业务名称为分析标签；地址与原始符号保留。
+
+[使用说明](README.md) · [机器索引](function-index.json) · [维护方法](MAINTENANCE.md)
+
+## 账号认证与票据
+
+包：`codol.client.account.auth`
+
+| 地址 | 功能标签 | 来源 |
+|---|---|---|
+| [0x00a598b0](codol/client/account/auth/FUN_00a598b0.c) | 认证响应与 client_ticket 解码入口 | REA 历史证据 |
+| [0x00a678c0](codol/client/account/auth/FUN_00a678c0.c) | 128 字节认证票据字段读取 | REA 历史证据 |
+| [0x00a595c0](codol/client/account/auth/FUN_00a595c0.c) | 当前版本票据校验回调 | REA 历史证据 |
+
+## 公开和私有档案的序列化、解压与任务入口
+
+包：`codol.client.account.profile`
+
+| 地址 | 功能标签 | 来源 |
+|---|---|---|
+| [0x006d9c10](codol/client/account/profile/FUN_006d9c10.c) | 公开和私有 dwProfile 对象初始化 | REA 历史证据 |
+| [0x006d7740](codol/client/account/profile/FUN_006d7740.c) | 档案反序列化与 DDL 扩展字段读取 | REA 历史证据 |
+| [0x00a5a370](codol/client/account/profile/FUN_00a5a370.c) | 档案基类字段读取 | REA 历史证据 |
+| [0x006d7430](codol/client/account/profile/FUN_006d7430.c) | 档案解压与数据检查 | REA 历史证据 |
+| [0x006d7d80](codol/client/account/profile/FUN_006d7d80.c) | 档案 CRC 计算路径 | REA 历史证据 |
+| [0x006d7500](codol/client/account/profile/FUN_006d7500.c) | 档案序列化与扩展字段写入 | REA 历史证据 |
+| [0x006d7b20](codol/client/account/profile/FUN_006d7b20.c) | 按档案类型选择 DDL 定义 | REA 历史证据 |
+| [0x006d87d0](codol/client/account/profile/FUN_006d87d0.c) | 默认档案初始化路径 | REA 历史证据 |
+| [0x006d8560](codol/client/account/profile/FUN_006d8560.c) | 档案下载状态处理 | REA 历史证据 |
+| [0x006d83e0](codol/client/account/profile/FUN_006d83e0.c) | 档案异步任务完成处理 | REA 历史证据 |
+| [0x00a5a890](codol/client/account/profile/FUN_00a5a890.c) | 公开档案查询任务 8/1 | REA 历史证据 |
+| [0x00a5a420](codol/client/account/profile/FUN_00a5a420.c) | 公开档案保存任务 8/3 | Ghidra 定向分析 |
+| [0x006d7340](codol/client/account/profile/FUN_006d7340.c) | 档案压缩辅助 | Ghidra 定向分析 |
+| [0x00a5a9d0](codol/client/account/profile/FUN_00a5a9d0.c) | 私有档案查询任务 8/2 | REA 历史证据 |
+| [0x00a5a530](codol/client/account/profile/FUN_00a5a530.c) | 私有档案保存任务 8/6 | REA 历史证据 |
+
+## 大厅配置与握手派生
+
+包：`codol.client.lobby.connection`
+
+| 地址 | 功能标签 | 来源 |
+|---|---|---|
+| [0x00641e10](codol/client/lobby/connection/FUN_00641e10.c) | dwauth 与 STUN 配置读取 | REA 历史证据 |
+| [0x00a61980](codol/client/lobby/connection/FUN_00a61980.c) | 协议 210 握手 transcript 与密钥派生 | REA 历史证据 |
+
+## 大厅前置引导判断
+
+包：`codol.client.lobby.onboarding`
+
+| 地址 | 功能标签 | 来源 |
+|---|---|---|
+| [0x005c3670](codol/client/lobby/onboarding/FUN_005c3670.c) | un_mp_tutorial 完成判断 | REA 历史证据 |
+| [0x005c36f0](codol/client/lobby/onboarding/FUN_005c36f0.c) | onboard_complete 完成判断 | REA 历史证据 |
+| [0x005c6350](codol/client/lobby/onboarding/FUN_005c6350.c) | UI 通知定义查询 | REA 历史证据 |
+| [0x005953a0](codol/client/lobby/onboarding/FUN_005953a0.c) | UI 通知状态访问 | REA 历史证据 |
+
+## 登录资产包与所有者结构
+
+包：`codol.client.inventory.assets`
+
+| 地址 | 功能标签 | 来源 |
+|---|---|---|
+| [0x00a472b0](codol/client/inventory/assets/FUN_00a472b0.c) | 资产获取任务 80/230 | REA 历史证据 |
+| [0x004a5120](codol/client/inventory/assets/FUN_004a5120.c) | 资产请求和结果绑定 | REA 历史证据 |
+| [0x00a4a5b0](codol/client/inventory/assets/FUN_00a4a5b0.c) | 资产对象构造 | REA 历史证据 |
+| [0x00a4a6b0](codol/client/inventory/assets/FUN_00a4a6b0.c) | 余额、库存和权益复合对象读取 | REA 历史证据 |
+| [0x00a45950](codol/client/inventory/assets/FUN_00a45950.c) | 账号 ID 与账号类型读取 | REA 历史证据 |
+| [0x00a64ad0](codol/client/inventory/assets/FUN_00a64ad0.c) | 继承所有者的余额条目读取 | REA 历史证据 |
+| [0x00a4bd80](codol/client/inventory/assets/FUN_00a4bd80.c) | 权益条目读取（需结合汇编） | REA 历史证据 |
+| [0x004a5680](codol/client/inventory/assets/FUN_004a5680.c) | 登录资产结果转移到余额和库存缓存 | REA 历史证据 |
+
+## 仓库获取、物品结构与缓存更新
+
+包：`codol.client.inventory.items`
+
+| 地址 | 功能标签 | 来源 |
+|---|---|---|
+| [0x00a468c0](codol/client/inventory/items/FUN_00a468c0.c) | 库存刷新任务 80/203 | REA 历史证据 |
+| [0x004a6b10](codol/client/inventory/items/FUN_004a6b10.c) | 库存刷新请求入口 | REA 历史证据 |
+| [0x004a6c10](codol/client/inventory/items/FUN_004a6c10.c) | 库存刷新完成回调 | REA 历史证据 |
+| [0x00a4b850](codol/client/inventory/items/FUN_00a4b850.c) | 库存条目反序列化 | REA 历史证据 |
+| [0x00a4b4e0](codol/client/inventory/items/FUN_00a4b4e0.c) | 库存条目默认值初始化 | REA 历史证据 |
+| [0x004a57d0](codol/client/inventory/items/FUN_004a57d0.c) | 库存结果消费路径 | REA 历史证据 |
+| [0x004a6cc0](codol/client/inventory/items/FUN_004a6cc0.c) | 库存条目转移路径 | REA 历史证据 |
+| [0x005e2a50](codol/client/inventory/items/FUN_005e2a50.c) | 库存到物品目录的映射 | REA 历史证据 |
+
+## 游戏币、点券与大厅显示
+
+包：`codol.client.inventory.currency`
+
+| 地址 | 功能标签 | 来源 |
+|---|---|---|
+| [0x004a4930](codol/client/inventory/currency/FUN_004a4930.c) | 游戏币与点券请求路由 | REA 历史证据 |
+| [0x00a461d0](codol/client/inventory/currency/FUN_00a461d0.c) | 游戏币余额请求任务 80/130 | REA 历史证据 |
+| [0x00a4bfc0](codol/client/inventory/currency/FUN_00a4bfc0.c) | 点券余额请求任务 93/1 | REA 历史证据 |
+| [0x00a4c4a0](codol/client/inventory/currency/FUN_00a4c4a0.c) | 简单余额条目读取 | REA 历史证据 |
+| [0x004a47f0](codol/client/inventory/currency/FUN_004a47f0.c) | 游戏币结果处理入口 | REA 历史证据 |
+| [0x004a4890](codol/client/inventory/currency/FUN_004a4890.c) | 点券结果处理入口 | REA 历史证据 |
+| [0x006af9e0](codol/client/inventory/currency/FUN_006af9e0.c) | GetCP 界面回调 | REA 历史证据 |
+| [0x006af970](codol/client/inventory/currency/FUN_006af970.c) | GetCC 界面回调 | REA 历史证据 |
+
+## 购买构造与结果反馈
+
+包：`codol.client.inventory.purchase`
+
+| 地址 | 功能标签 | 来源 |
+|---|---|---|
+| [0x004a6550](codol/client/inventory/purchase/FUN_004a6550.c) | 购买任务分派 | REA 历史证据 |
+| [0x00a467e0](codol/client/inventory/purchase/FUN_00a467e0.c) | 游戏币购买任务 80/154 参数构造 | REA 历史证据 |
+| [0x00a4c220](codol/client/inventory/purchase/FUN_00a4c220.c) | 点券购买任务 93/131 参数构造 | REA 历史证据 |
+| [0x00a45b40](codol/client/inventory/purchase/FUN_00a45b40.c) | 购买参数序列化 | REA 历史证据 |
+| [0x004a6940](codol/client/inventory/purchase/FUN_004a6940.c) | 购买完成回调分派 | REA 历史证据 |
+
+## 商品、SKU、物品与解锁条件
+
+包：`codol.client.inventory.catalog`
+
+| 地址 | 功能标签 | 来源 |
+|---|---|---|
+| [0x00693160](codol/client/inventory/catalog/FUN_00693160.c) | SKU 界面对象与购买条件 | REA 历史证据 |
+| [0x004a4b10](codol/client/inventory/catalog/FUN_004a4b10.c) | 解锁条件名称到索引 | REA 历史证据 |
+| [0x004a4ca0](codol/client/inventory/catalog/FUN_004a4ca0.c) | unlockFlagsNew 条件比较 | REA 历史证据 |
+| [0x004a4c10](codol/client/inventory/catalog/FUN_004a4c10.c) | 转生和等级阈值解释 | REA 历史证据 |
+| [0x007070b0](codol/client/inventory/catalog/FUN_007070b0.c) | SKU 价格和期限读取 | REA 历史证据 |
+| [0x00706f10](codol/client/inventory/catalog/FUN_00706f10.c) | 产品内物品与数量读取 | REA 历史证据 |
+| [0x005840a0](codol/client/inventory/catalog/FUN_005840a0.c) | 目录编码值读取 | REA 历史证据 |
+
+## 武器经验、等级与界面消费
+
+包：`codol.client.equipment.progression`
+
+| 地址 | 功能标签 | 来源 |
+|---|---|---|
+| [0x006b7190](codol/client/equipment/progression/FUN_006b7190.c) | WL_GetWeaponRank 界面回调 | REA 历史证据 |
+| [0x00695bc0](codol/client/equipment/progression/FUN_00695bc0.c) | 按武器 ID 读取库存信息 | REA 历史证据 |
+| [0x00695a80](codol/client/equipment/progression/FUN_00695a80.c) | 库存信息提取（含经验） | REA 历史证据 |
+| [0x0046eb20](codol/client/equipment/progression/FUN_0046eb20.c) | 经验到武器 rank 查询 | REA 历史证据 |
+| [0x0046ee30](codol/client/equipment/progression/FUN_0046ee30.c) | 武器最大 rank 查询 | REA 历史证据 |
+| [0x006b5070](codol/client/equipment/progression/FUN_006b5070.c) | 武器最高等级的界面消费 | REA 历史证据 |
+| [0x005845b0](codol/client/equipment/progression/FUN_005845b0.c) | 物品描述符查询 | REA 历史证据 |
+
+## 武器配件装备与槽位限制
+
+包：`codol.client.equipment.attachments`
+
+| 地址 | 功能标签 | 来源 |
+|---|---|---|
+| [0x006b43c0](codol/client/equipment/attachments/FUN_006b43c0.c) | WL_EquipWeaponAttachment 配件装备回调 | Ghidra 定向分析 |
+| [0x006c1190](codol/client/equipment/attachments/FUN_006c1190.c) | 防暴盾例外与六槽位装备检查 | REA 历史证据 |
+| [0x006b7950](codol/client/equipment/attachments/FUN_006b7950.c) | WL_EquipWeaponAttachment 注册入口 | Ghidra 定向分析 |
+| [0x006c2090](codol/client/equipment/attachments/FUN_006c2090.c) | 配件装备直接写入路径 | Ghidra 定向分析 |
+| [0x006bf680](codol/client/equipment/attachments/FUN_006bf680.c) | 配件槽位同步到编辑缓存 | Ghidra 定向分析 |
+| [0x00699de0](codol/client/equipment/attachments/FUN_00699de0.c) | 装备变更后的界面状态刷新 | Ghidra 定向分析 |
+
+## 武器装备与指定槽位入口
+
+包：`codol.client.equipment.loadout`
+
+| 地址 | 功能标签 | 来源 |
+|---|---|---|
+| [0x006b4230](codol/client/equipment/loadout/FUN_006b4230.c) | WL_EquipWeapon 回调 | Ghidra 定向分析 |
+| [0x006b4350](codol/client/equipment/loadout/FUN_006b4350.c) | WL_EquipWeaponInSlot 回调 | Ghidra 定向分析 |
+| [0x006c1e70](codol/client/equipment/loadout/FUN_006c1e70.c) | 武器装备写入路径 | Ghidra 定向分析 |
+| [0x006bf130](codol/client/equipment/loadout/FUN_006bf130.c) | 装备槽位上下文辅助 | Ghidra 定向分析 |
+| [0x006b7740](codol/client/equipment/loadout/FUN_006b7740.c) | WL_EquipWeapon 注册入口 | Ghidra 定向分析 |
+| [0x006b78a0](codol/client/equipment/loadout/FUN_006b78a0.c) | WL_EquipWeaponInSlot 注册入口 | Ghidra 定向分析 |
+

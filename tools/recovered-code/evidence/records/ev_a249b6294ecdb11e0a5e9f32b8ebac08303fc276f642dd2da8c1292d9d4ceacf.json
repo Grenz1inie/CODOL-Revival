@@ -1,0 +1,153 @@
+{
+  "evidence_id": "ev_a249b6294ecdb11e0a5e9f32b8ebac08303fc276f642dd2da8c1292d9d4ceacf",
+  "subject": {
+    "name": "E:\\Games\\CODOL_Experience_V3.3.3.3_FULL.7z\\CODOL_Experience_V3.3.3.3_FULL.7z\\codoMP_client_shipRetail.exe",
+    "digest": {
+      "sha256": "e3823fd6afc80fb25fa84747e6e9634707b9a0b189357a5466921cda354af37b"
+    },
+    "format": "pe",
+    "architecture": "x86",
+    "local_path": "E:\\Games\\CODOL_Experience_V3.3.3.3_FULL.7z\\CODOL_Experience_V3.3.3.3_FULL.7z\\codoMP_client_shipRetail.exe"
+  },
+  "provider": {
+    "id": "rea-workflow",
+    "name": "REA composed investigation workflow",
+    "version": "1"
+  },
+  "analysis_profile": {
+    "provider": {
+      "id": "rea-workflow",
+      "name": "REA composed investigation workflow",
+      "version": "1"
+    },
+    "parameters": {
+      "upstream_analysis_profile": {
+        "provider": {
+          "id": "ghidra",
+          "name": "Ghidra",
+          "version": "12.1.4"
+        },
+        "parameters": {
+          "target_kind": "executable",
+          "target_format": "pe",
+          "executable_role": "application",
+          "managed": false,
+          "native_aot_metadata": {
+            "contract_revision": "rtr-9.1-x64-pe-read-only-v3",
+            "source_bytes": 134217728,
+            "work_units": 67108864,
+            "working_memory_bytes": 67108864,
+            "report_bytes": 4194304
+          },
+          "architecture": "x86",
+          "available_architectures": [
+            "x86"
+          ],
+          "import_mode": "ephemeral-source-immutable",
+          "annotation_policy": "atomic-function-entry-metadata-v1",
+          "load_image_observations": "source-mappings-entry-context-v2",
+          "function_body_evidence": "complete-inclusive-ranges-v1",
+          "function_references": "complete-body-and-entry-reference-manager-v2",
+          "string_inventory_evidence": "defined-data-coverage-v1",
+          "location_resolution": "explicit-address-exact-entry-symbol-first-v3",
+          "instruction_flow_evidence": "decoded-return-pcode-v1",
+          "function_boundary_observations": "ghidra-terminal-call-limitations-v1",
+          "no_return_repair": "disabled-windows-p0",
+          "process_launch": "official-headless-script-v1",
+          "jump_table_evidence": "typed-case-default-blocks-v1",
+          "decompiler_jump_loads": true,
+          "loader": "auto-from-header",
+          "language_id": "auto-from-header",
+          "compiler_spec_id": "auto-default",
+          "analyzer_preset": "ghidra-default"
+        },
+        "digest": "b9d116ea480a02cc8773b19372074a3caf77785cbc080b1ac7133b5110e40b17"
+      },
+      "workflow_revision": 2
+    },
+    "digest": "c3d2576361fca14bc637cfc460e3d5f1e99b096ce19af99217ea4bc71d5452cc"
+  },
+  "predicate_type": "rea.analysis",
+  "operation": "batch_decompile",
+  "parameters": {
+    "addresses": [
+      "0x46eb30",
+      "0x46ee3b",
+      "0x46ee9c",
+      "0x6a8129"
+    ]
+  },
+  "raw_result": null,
+  "normalized_result": {
+    "items": [
+      {
+        "address": "0x46eb30",
+        "procedure": {
+          "status": "resolved",
+          "address": "0x46eb20",
+          "name": "FUN_0046eb20"
+        },
+        "status": "ok",
+        "pseudocode": "\r\nvoid FUN_0046eb20(int param_1,char param_2)\r\n\r\n{\r\n  int iVar1;\r\n  int iVar2;\r\n  undefined1 *puVar3;\r\n  int iVar4;\r\n  int iVar5;\r\n  int iVar6;\r\n  char *pcVar7;\r\n  int local_8;\r\n  \r\n  if (param_2 == '\\0') {\r\n    pcVar7 = \"mp/coWeaponSecondaryRankTable.csv\";\r\n  }\r\n  else {\r\n    pcVar7 = \"mp/coWeaponPrimaryRankTable.csv\";\r\n  }\r\n  iVar2 = FUN_0049e7d0(0x25,pcVar7,1);\r\n  local_8 = *(int *)(iVar2 + 8) + -1;\r\n  iVar6 = local_8 / 2;\r\n  _param_2 = 0;\r\n  if (0 < local_8) {\r\n    do {\r\n      if ((((*(int *)(iVar2 + 4) < 2) || (*(int *)(iVar2 + 8) <= iVar6)) || (iVar6 < 0)) ||\r\n         (puVar3 = *(undefined1 **)(*(int *)(iVar2 + 0xc) + 8 + *(int *)(iVar2 + 4) * iVar6 * 8),\r\n         puVar3 == (undefined1 *)0x0)) {\r\n        puVar3 = &DAT_00c4e869;\r\n      }\r\n      iVar4 = FUN_00af6e68(puVar3);\r\n      iVar1 = iVar6 + 1;\r\n      if (((*(int *)(iVar2 + 4) < 2) || (*(int *)(iVar2 + 8) <= iVar1)) ||\r\n         ((iVar1 < 0 ||\r\n          (puVar3 = *(undefined1 **)(*(int *)(iVar2 + 0xc) + 8 + iVar1 * *(int *)(iVar2 + 4) * 8),\r\n          puVar3 == (undefined1 *)0x0)))) {\r\n        puVar3 = &DAT_00c4e869;\r\n      }\r\n      iVar5 = FUN_00af6e68(puVar3);\r\n      if (param_1 < iVar4) {\r\n        local_8 = iVar6 + -1;\r\n      }\r\n      else {\r\n        _param_2 = iVar1;\r\n        if (param_1 < iVar5) break;\r\n      }\r\n      iVar6 = (local_8 - _param_2) / 2 + _param_2;\r\n    } while (_param_2 < local_8);\r\n  }\r\n  if (((*(int *)(iVar2 + 4) < 1) || (*(int *)(iVar2 + 8) <= iVar6)) ||\r\n     ((iVar6 < 0 ||\r\n      (puVar3 = *(undefined1 **)(*(int *)(iVar2 + 0xc) + *(int *)(iVar2 + 4) * iVar6 * 8),\r\n      puVar3 == (undefined1 *)0x0)))) {\r\n    puVar3 = &DAT_00c4e869;\r\n  }\r\n  FUN_00af6e68(puVar3);\r\n  return;\r\n}\r\n\r\n"
+      },
+      {
+        "address": "0x46ee3b",
+        "procedure": {
+          "status": "resolved",
+          "address": "0x46ee30",
+          "name": "FUN_0046ee30"
+        },
+        "status": "ok",
+        "pseudocode": "\r\nvoid FUN_0046ee30(char param_1)\r\n\r\n{\r\n  int iVar1;\r\n  int iVar2;\r\n  undefined1 *puVar3;\r\n  char *pcVar4;\r\n  \r\n  if (param_1 == '\\0') {\r\n    pcVar4 = \"mp/coWeaponSecondaryRankTable.csv\";\r\n  }\r\n  else {\r\n    pcVar4 = \"mp/coWeaponPrimaryRankTable.csv\";\r\n  }\r\n  iVar2 = FUN_0049e7d0(0x25,pcVar4,1);\r\n  iVar1 = *(int *)(iVar2 + 8) + -1;\r\n  if ((((*(int *)(iVar2 + 4) < 1) || (*(int *)(iVar2 + 8) <= iVar1)) || (iVar1 < 0)) ||\r\n     (puVar3 = *(undefined1 **)(*(int *)(iVar2 + 0xc) + *(int *)(iVar2 + 4) * iVar1 * 8),\r\n     puVar3 == (undefined1 *)0x0)) {\r\n    puVar3 = &DAT_00c4e869;\r\n  }\r\n  FUN_00af6e68(puVar3);\r\n  return;\r\n}\r\n\r\n"
+      },
+      {
+        "address": "0x46ee9c",
+        "procedure": {
+          "status": "resolved",
+          "address": "0x46ee90",
+          "name": "FUN_0046ee90"
+        },
+        "status": "ok",
+        "pseudocode": "\r\nundefined4 FUN_0046ee90(undefined4 param_1,char param_2)\r\n\r\n{\r\n  int iVar1;\r\n  undefined4 uVar2;\r\n  int iVar3;\r\n  char *pcVar4;\r\n  \r\n  if (param_2 == '\\0') {\r\n    pcVar4 = \"mp/coWeaponSecondaryRankTable.csv\";\r\n  }\r\n  else {\r\n    pcVar4 = \"mp/coWeaponPrimaryRankTable.csv\";\r\n  }\r\n  iVar1 = FUN_0049e7d0(0x25,pcVar4,1);\r\n  uVar2 = FUN_00637c60(&DAT_00c5dde0,param_1);\r\n  if (iVar1 != 0) {\r\n    iVar3 = FUN_0062f6c0(iVar1,0,uVar2);\r\n    if ((((1 < *(int *)(iVar1 + 4)) && (iVar3 < *(int *)(iVar1 + 8))) && (-1 < iVar3)) &&\r\n       ((pcVar4 = *(char **)(*(int *)(iVar1 + 0xc) + 8 + *(int *)(iVar1 + 4) * iVar3 * 8),\r\n        pcVar4 != (char *)0x0 && (*pcVar4 != '\\0')))) {\r\n      uVar2 = FUN_00af6e68(pcVar4);\r\n      return uVar2;\r\n    }\r\n  }\r\n  return 0xffffffff;\r\n}\r\n\r\n"
+      },
+      {
+        "address": "0x6a8129",
+        "procedure": {
+          "status": "resolved",
+          "address": "0x6a80b0",
+          "name": "FUN_006a80b0"
+        },
+        "status": "ok",
+        "pseudocode": "\r\nvoid FUN_006a80b0(void)\r\n\r\n{\r\n  undefined4 *puVar1;\r\n  int unaff_EDI;\r\n  undefined1 local_28 [8];\r\n  int *local_20;\r\n  uint local_1c;\r\n  undefined4 local_18;\r\n  \r\n  local_20 = (int *)0x0;\r\n  local_1c = 0;\r\n  puVar1 = (undefined4 *)(**(code **)(*DAT_00cee208 + 0x28))(8,0);\r\n  if (puVar1 == (undefined4 *)0x0) {\r\n    puVar1 = (undefined4 *)0x0;\r\n  }\r\n  else {\r\n    *puVar1 = Scaleform::RefCountImplCore::vftable;\r\n    puVar1[1] = 1;\r\n    *puVar1 = WL_GetWeaponRank::vftable;\r\n  }\r\n  FUN_00719d50(local_28,puVar1,0);\r\n  if ((local_1c & 0x8f) != 0) {\r\n    (**(code **)(**(int **)(unaff_EDI + 8) + 0x14))\r\n              (*(undefined4 *)(unaff_EDI + 0x10),\"WL_GetWeaponRank\",local_28,\r\n               ((byte)*(undefined4 *)(unaff_EDI + 0xc) & 0x8f) == 10);\r\n  }\r\n  if (puVar1 != (undefined4 *)0x0) {\r\n    FUN_009724b0();\r\n  }\r\n  if ((local_1c >> 6 & 1) != 0) {\r\n    (**(code **)(*local_20 + 8))(local_28,local_18);\r\n  }\r\n  return;\r\n}\r\n\r\n"
+      }
+    ],
+    "total": 4,
+    "succeeded": 4,
+    "failed": 0
+  },
+  "confidence": "derived",
+  "authority": "shipped-artifact",
+  "environment": null,
+  "limitations": [
+    "Derived by an REA composed workflow."
+  ],
+  "locations": [
+    {
+      "kind": "address",
+      "address": "0x46eb20"
+    },
+    {
+      "kind": "address",
+      "address": "0x46ee30"
+    },
+    {
+      "kind": "address",
+      "address": "0x46ee90"
+    },
+    {
+      "kind": "address",
+      "address": "0x6a80b0"
+    }
+  ],
+  "evidence_links": []
+}

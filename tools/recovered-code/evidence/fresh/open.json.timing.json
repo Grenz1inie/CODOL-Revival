@@ -1,0 +1,12 @@
+{
+  "name": "open_binary",
+  "arguments": {
+    "path": "E:\\Games\\CODOL_Experience_V3.3.3.3_FULL.7z\\CODOL_Experience_V3.3.3.3_FULL.7z\\codoMP_client_shipRetail.exe",
+    "provider_id": "ghidra",
+    "snapshot_path": "E:\\Games\\CODOL_Experience_V3.3.3.3_FULL.7z\\CODOL-Revival\\research\\evidence\\expansion-complete.rea.json"
+  },
+  "startedAt": "2026-10-15T05:29:43.485Z",
+  "completedAt": "2026-10-15T05:29:44.219Z",
+  "output": "E:\\Games\\CODOL_Experience_V3.3.3.3_FULL.7z\\CODOL-Revival\\tools\\recovered-code\\evidence\\fresh\\open.json",
+  "isError": false
+}

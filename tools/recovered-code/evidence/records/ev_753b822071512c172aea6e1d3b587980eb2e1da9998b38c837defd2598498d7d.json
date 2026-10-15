@@ -1,0 +1,123 @@
+{
+  "analysis_profile": {
+    "digest": "c3d2576361fca14bc637cfc460e3d5f1e99b096ce19af99217ea4bc71d5452cc",
+    "parameters": {
+      "upstream_analysis_profile": {
+        "digest": "b9d116ea480a02cc8773b19372074a3caf77785cbc080b1ac7133b5110e40b17",
+        "parameters": {
+          "analyzer_preset": "ghidra-default",
+          "annotation_policy": "atomic-function-entry-metadata-v1",
+          "architecture": "x86",
+          "available_architectures": [
+            "x86"
+          ],
+          "compiler_spec_id": "auto-default",
+          "decompiler_jump_loads": true,
+          "executable_role": "application",
+          "function_body_evidence": "complete-inclusive-ranges-v1",
+          "function_boundary_observations": "ghidra-terminal-call-limitations-v1",
+          "function_references": "complete-body-and-entry-reference-manager-v2",
+          "import_mode": "ephemeral-source-immutable",
+          "instruction_flow_evidence": "decoded-return-pcode-v1",
+          "jump_table_evidence": "typed-case-default-blocks-v1",
+          "language_id": "auto-from-header",
+          "load_image_observations": "source-mappings-entry-context-v2",
+          "loader": "auto-from-header",
+          "location_resolution": "explicit-address-exact-entry-symbol-first-v3",
+          "managed": false,
+          "native_aot_metadata": {
+            "contract_revision": "rtr-9.1-x64-pe-read-only-v3",
+            "report_bytes": 4194304,
+            "source_bytes": 134217728,
+            "work_units": 67108864,
+            "working_memory_bytes": 67108864
+          },
+          "no_return_repair": "disabled-windows-p0",
+          "process_launch": "official-headless-script-v1",
+          "string_inventory_evidence": "defined-data-coverage-v1",
+          "target_format": "pe",
+          "target_kind": "executable"
+        },
+        "provider": {
+          "id": "ghidra",
+          "name": "Ghidra",
+          "version": "12.1.4"
+        }
+      },
+      "workflow_revision": 2
+    },
+    "provider": {
+      "id": "rea-workflow",
+      "name": "REA composed investigation workflow",
+      "version": "1"
+    }
+  },
+  "authority": "shipped-artifact",
+  "confidence": "derived",
+  "environment": null,
+  "evidence_id": "ev_753b822071512c172aea6e1d3b587980eb2e1da9998b38c837defd2598498d7d",
+  "evidence_links": [],
+  "limitations": [
+    "Derived by an REA composed workflow."
+  ],
+  "locations": [
+    {
+      "address": "0x4a5080",
+      "kind": "address"
+    },
+    {
+      "address": "0x4a5120",
+      "kind": "address"
+    }
+  ],
+  "normalized_result": {
+    "failed": 0,
+    "items": [
+      {
+        "address": "0x4a50b7",
+        "procedure": {
+          "address": "0x4a5080",
+          "name": "FUN_004a5080",
+          "status": "resolved"
+        },
+        "pseudocode": "\r\nvoid FUN_004a5080(undefined4 param_1)\r\n\r\n{\r\n  int iVar1;\r\n  LONG LVar2;\r\n  undefined4 *puVar3;\r\n  undefined4 *local_8;\r\n  \r\n  iVar1 = FUN_006fed10();\r\n  if (iVar1 != 0) {\r\n    iVar1 = FUN_00a3c920();\r\n    if (iVar1 == 2) {\r\n      iVar1 = FUN_00a421e0(&DAT_00c4e869);\r\n      if (iVar1 != 0) {\r\n        FUN_00a472b0(&local_8,&DAT_07bdc6f8);\r\n        if (local_8 != (undefined4 *)0x0) {\r\n          puVar3 = local_8;\r\n          if (local_8 != (undefined4 *)0x0) {\r\n            InterlockedIncrement(local_8 + 1);\r\n          }\r\n          FUN_006f60d0(puVar3,param_1);\r\n          if (local_8 != (undefined4 *)0x0) {\r\n            LVar2 = InterlockedDecrement(local_8 + 1);\r\n            if ((LVar2 == 0) && (local_8 != (undefined4 *)0x0)) {\r\n              (**(code **)*local_8)(1);\r\n            }\r\n          }\r\n        }\r\n      }\r\n    }\r\n  }\r\n  return;\r\n}\r\n\r\n",
+        "status": "ok"
+      },
+      {
+        "address": "0x4a5192",
+        "procedure": {
+          "address": "0x4a5120",
+          "name": "FUN_004a5120",
+          "status": "resolved"
+        },
+        "pseudocode": "\r\nvoid FUN_004a5120(undefined4 param_1,undefined4 param_2)\r\n\r\n{\r\n  int iVar1;\r\n  LONG LVar2;\r\n  int iVar3;\r\n  int iVar4;\r\n  undefined4 *puVar5;\r\n  code *pcVar6;\r\n  code *pcVar7;\r\n  undefined4 *local_c;\r\n  undefined4 *local_8;\r\n  \r\n  iVar4 = 0;\r\n  iVar1 = FUN_006fed10();\r\n  if ((iVar1 != 0) && (iVar1 = FUN_00a3c920(), iVar1 == 2)) {\r\n    iVar4 = FUN_00a421e0(&DAT_00c4e869);\r\n  }\r\n  iVar3 = 0;\r\n  iVar1 = FUN_006fed10();\r\n  if ((iVar1 != 0) && (iVar1 = FUN_00a3c920(), iVar1 == 2)) {\r\n    iVar3 = FUN_00a42310(&DAT_00c4e869);\r\n  }\r\n  if (iVar4 == 0) {\r\n    return;\r\n  }\r\n  if (iVar3 == 0) {\r\n    return;\r\n  }\r\n  FUN_00a472b0(&local_c,&DAT_07bdc6f8);\r\n  FUN_00a4bfc0(&local_8,param_2,1);\r\n  if (local_c != (undefined4 *)0x0) {\r\n    if (local_8 == (undefined4 *)0x0) goto LAB_004a524d;\r\n    pcVar7 = FUN_004a5080;\r\n    pcVar6 = FUN_004a5680;\r\n    puVar5 = local_c;\r\n    if (local_c != (undefined4 *)0x0) {\r\n      InterlockedIncrement(local_c + 1);\r\n    }\r\n    FUN_006f6070(0x6b,puVar5,pcVar6,pcVar7);\r\n    pcVar7 = FUN_004a4890;\r\n    pcVar6 = FUN_004a5650;\r\n    puVar5 = local_8;\r\n    if (local_8 != (undefined4 *)0x0) {\r\n      InterlockedIncrement(local_8 + 1);\r\n    }\r\n    FUN_006f6070(0x52,puVar5,pcVar6,pcVar7);\r\n    DAT_07817dd7 = 1;\r\n  }\r\n  if ((local_8 != (undefined4 *)0x0) && (LVar2 = InterlockedDecrement(local_8 + 1), LVar2 == 0)) {\r\n    if (local_8 != (undefined4 *)0x0) {\r\n      (**(code **)*local_8)(1);\r\n    }\r\n    local_8 = (undefined4 *)0x0;\r\n  }\r\nLAB_004a524d:\r\n  if (((local_c != (undefined4 *)0x0) && (LVar2 = InterlockedDecrement(local_c + 1), LVar2 == 0)) &&\r\n     (local_c != (undefined4 *)0x0)) {\r\n    (**(code **)*local_c)(1);\r\n  }\r\n  return;\r\n}\r\n\r\n",
+        "status": "ok"
+      }
+    ],
+    "succeeded": 2,
+    "total": 2
+  },
+  "operation": "batch_decompile",
+  "parameters": {
+    "addresses": [
+      "0x4a50b7",
+      "0x4a5192"
+    ]
+  },
+  "predicate_type": "rea.analysis",
+  "provider": {
+    "id": "rea-workflow",
+    "name": "REA composed investigation workflow",
+    "version": "1"
+  },
+  "raw_result": null,
+  "subject": {
+    "architecture": "x86",
+    "digest": {
+      "sha256": "e3823fd6afc80fb25fa84747e6e9634707b9a0b189357a5466921cda354af37b"
+    },
+    "format": "pe",
+    "local_path": "E:\\Games\\CODOL_Experience_V3.3.3.3_FULL.7z\\CODOL_Experience_V3.3.3.3_FULL.7z\\codoMP_client_shipRetail.exe",
+    "name": "E:\\Games\\CODOL_Experience_V3.3.3.3_FULL.7z\\CODOL_Experience_V3.3.3.3_FULL.7z\\codoMP_client_shipRetail.exe"
+  }
+}

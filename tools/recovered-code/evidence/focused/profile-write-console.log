@@ -1,0 +1,224 @@
+INFO  Using log config file: jar:file:/C:/Users/john/AppData/Local/Programs/rea/engines/ghidra_12.1.4_PUBLIC/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml (LoggingInitialization)  
+INFO  Using log file: E:\Games\CODOL_Experience_V3.3.3.3_FULL.7z\CODOL-Revival\tools\recovered-code\evidence\focused\profile-write-ghidra.log (LoggingInitialization)  
+INFO  Loading user preferences: C:\Users\john\AppData\Roaming\ghidra\ghidra_12.1.4_PUBLIC\preferences (Preferences)  
+INFO  Searching for classes... (ClassSearcher)  
+INFO  Class search complete (2744 ms) (ClassSearcher)  
+INFO  Initializing SSL Context (DefaultSSLContextInitializer)  
+INFO  Initializing Random Number Generator... (SecureRandomFactory)  
+INFO  Random Number Generator initialization complete: SHA1PRNG (SecureRandomFactory)  
+INFO  Trust manager disabled, cacerts have not been set (DefaultTrustManagerFactory)  
+INFO  Headless startup complete (13050 ms) (AnalyzeHeadless)  
+INFO  Class searcher loaded 59 extension points (20 false positives) (ClassSearcher)  
+INFO  HEADLESS Script Paths:
+    C:\Users\john\AppData\Local\Programs\rea\engines\ghidra_12.1.4_PUBLIC\Ghidra\Processors\PIC\ghidra_scripts
+    C:\Users\john\AppData\Local\Programs\rea\engines\ghidra_12.1.4_PUBLIC\Ghidra\Features\DecompilerDependent\ghidra_scripts
+    C:\Users\john\AppData\Local\Programs\rea\engines\ghidra_12.1.4_PUBLIC\Ghidra\Processors\JVM\ghidra_scripts
+    C:\Users\john\AppData\Local\Programs\rea\engines\ghidra_12.1.4_PUBLIC\Ghidra\Features\MicrosoftCodeAnalyzer\ghidra_scripts
+    C:\Users\john\AppData\Local\Programs\rea\engines\ghidra_12.1.4_PUBLIC\Ghidra\Features\BytePatterns\ghidra_scripts
+    C:\Users\john\AppData\Local\Programs\rea\engines\ghidra_12.1.4_PUBLIC\Ghidra\Debug\Debugger-rmi-trace\ghidra_scripts
+    C:\Users\john\AppData\Local\Programs\rea\engines\ghidra_12.1.4_PUBLIC\Ghidra\Features\Base\ghidra_scripts
+    C:\Users\john\AppData\Local\Programs\rea\engines\ghidra_12.1.4_PUBLIC\Ghidra\Features\BSim\ghidra_scripts
+    C:\Users\john\AppData\Local\Programs\rea\engines\ghidra_12.1.4_PUBLIC\Ghidra\Features\Decompiler\ghidra_scripts
+    C:\Users\john\AppData\Local\Programs\rea\engines\ghidra_12.1.4_PUBLIC\Ghidra\Features\VersionTracking\ghidra_scripts
+    C:\Users\john\AppData\Local\Programs\rea\engines\ghidra_12.1.4_PUBLIC\Ghidra\Debug\Debugger\ghidra_scripts
+    C:\Users\john\AppData\Local\Programs\rea\engines\ghidra_12.1.4_PUBLIC\Ghidra\Features\FunctionID\ghidra_scripts
+    E:\Games\CODOL_Experience_V3.3.3.3_FULL.7z\CODOL-Revival\tools\recovered-code\maintenance
+    C:\Users\john\AppData\Local\Programs\rea\engines\ghidra_12.1.4_PUBLIC\Ghidra\Features\PDB\ghidra_scripts
+    C:\Users\john\AppData\Local\Programs\rea\engines\ghidra_12.1.4_PUBLIC\Ghidra\Features\FileFormats\ghidra_scripts
+    C:\Users\john\AppData\Local\Programs\rea\engines\ghidra_12.1.4_PUBLIC\Ghidra\Features\SystemEmulation\ghidra_scripts
+    C:\Users\john\AppData\Local\Programs\rea\engines\ghidra_12.1.4_PUBLIC\Ghidra\Processors\DATA\ghidra_scripts
+    C:\Users\john\AppData\Local\Programs\rea\engines\ghidra_12.1.4_PUBLIC\Ghidra\Features\SwiftDemangler\ghidra_scripts
+    C:\Users\john\AppData\Local\Programs\rea\engines\ghidra_12.1.4_PUBLIC\Ghidra\Processors\Atmel\ghidra_scripts
+    C:\Users\john\AppData\Local\Programs\rea\engines\ghidra_12.1.4_PUBLIC\Ghidra\Features\GnuDemangler\ghidra_scripts
+    C:\Users\john\AppData\Local\Programs\rea\engines\ghidra_12.1.4_PUBLIC\Ghidra\Features\PyGhidra\ghidra_scripts
+    C:\Users\john\AppData\Local\Programs\rea\engines\ghidra_12.1.4_PUBLIC\Ghidra\Features\WildcardAssembler\ghidra_scripts
+    C:\Users\john\AppData\Local\Programs\rea\engines\ghidra_12.1.4_PUBLIC\Ghidra\Processors\8051\ghidra_scripts (HeadlessAnalyzer)  
+INFO  HEADLESS: execution starts (HeadlessAnalyzer)  
+INFO  Creating temporary project: E:\Games\CODOL_Experience_V3.3.3.3_FULL.7z\CODOL-Revival\tools\recovered-code\evidence\focused\focused-profile-write (HeadlessAnalyzer)  
+INFO  Creating project: E:\Games\CODOL_Experience_V3.3.3.3_FULL.7z\CODOL-Revival\tools\recovered-code\evidence\focused\focused-profile-write (DefaultProject)  
+INFO  REPORT: Processing input files:  (HeadlessAnalyzer)  
+INFO       project: E:\Games\CODOL_Experience_V3.3.3.3_FULL.7z\CODOL-Revival\tools\recovered-code\evidence\focused\focused-profile-write (HeadlessAnalyzer)  
+INFO  IMPORTING: file:///E:/Games/CODOL_Experience_V3.3.3.3_FULL.7z/CODOL_Experience_V3.3.3.3_FULL.7z/codoMP_client_shipRetail.exe (HeadlessAnalyzer)  
+INFO  Using Loader: Portable Executable (PE) (ProgramLoader)  
+INFO  Using Language/Compiler: x86:LE:32:default:windows (ProgramLoader)  
+INFO  Using Library Search Path: [., C:\WINDOWS\SysWOW64, A:\Coding\Java\jdk-21.0.11.10-hotspot\bin, C:\WINDOWS\Sun\Java\bin, C:\WINDOWS\system32, C:\WINDOWS, C:\Users\john\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell, C:\Users\john\.codex\tmp\arg0\codex-arg0F5CGHm, C:\Users\john\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\libheif\libheif\bin, C:\Users\john\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\jxrlib\jxrlib\bin, C:\Users\john\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\poppler\Library\bin, C:\Users\john\.cache\codex-runtimes\codex-primary-runtime\dependencies\bin\override, C:\WINDOWS\System32\cmd.exe, C:\Users\john\AppData\Roaming\npm, C:\Users\john\AppData\Roaming\Composer\vendor\bin, C:\Users\john\.cargo\bin, C:\Users\john\go\bin, C:\ProgramData\Oracle\Java\javapath, A:\Coding\Python3.13.7\Scripts\, A:\Coding\Python3.13.7\, C:\Perl64\site\bin, C:\Perl64\bin, A:\Coding\Python\Scripts\, A:\Coding\Python\, A:\Coding\VMware\VMware Workstation\bin\, C:\Windows\system32, C:\Windows, C:\Windows\System32\Wbem, C:\Windows\System32\WindowsPowerShell\v1.0\, C:\Windows\System32\OpenSSH\, C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common, A:\Coding\mingw64\bin, C:\Program Files\dotnet\, C:\Program Files\Microsoft SQL Server\150\Tools\Binn\, A:\Coding\Git\cmd, A:\Coding\Microsoft VS Code\bin, A:\Coding\phpStudy\Extensions\MySQL8.0.12, C:\Program Files\NVIDIA Corporation\NVIDIA App\NvDLISR, A:\Coding\微信web开发者工具\dll, A:\Coding\nodejs\, A:\Coding\apache-maven-3.9.11\bin, C:\Program Files\NVIDIA Corporation\Nsight Compute 2022.3.0\, A:\Coding\anaconda3, A:\Coding\anaconda3\Scripts, A:\Coding\anaconda3\Library\bin, E:\Codes\npm\npm-global, C:\Program Files\GitHub CLI\, E:\App\Docker\resources\bin, C:\Users\john\.local\bin, C:\Users\john\AppData\Local\Microsoft\WindowsApps, C:\Users\john\AppData\Local\GitHubDesktop\bin, C:\Users\john\.dotnet\tools, A:\Microsoft VS Code\bin, A:\Coding\PyCharm Community Edition 2024.3.5\bin, A:\Coding\JetBrains\IntelliJ IDEA 2025.1\bin, A:\Coding\JetBrains\PyCharm 2025.1\bin, A:\Coding\JetBrains\PyCharm 2025.2.1.1\bin, C:\Users\john\AppData\Local\reflex\bun\bin, E:\App\Cursor\Cursor\resources\app\bin, E:\App\ZCode\resources\tools\ripgrep, E:\App\ZCode\resources\tools\ugrep, C:\Program Files\LibreOffice\program, C:\Users\john\.cache\codex-runtimes\codex-primary-runtime\dependencies\bin\fallback, C:\Users\john\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin, C:\Users\john\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\git\cmd, C:\Users\john\AppData\Local\OpenAI\Codex\bin\77fbd4d52e601e0a, C:\Users\john\AppData\Local\OpenAI\Codex\bin\9614f1d9b40d9c4f] (ProgramLoader)  
+INFO  TLS callbacks at b60448 (TLSDirectory)  
+INFO  TLS callbacks at 10fd9abc (TLSDirectory)  
+INFO  TLS callbacks at 1000e4a4 (TLSDirectory)  
+INFO  TLS callbacks at 100057bc (TLSDirectory)  
+INFO  TLS callbacks at 10006fe4 (TLSDirectory)  
+WARN  Invalid or missing function at 1008ea38 (ExportDataDirectory)  
+INFO  TLS callbacks at 100295f8 (TLSDirectory)  
+WARN  Invalid or missing function at 105ebbac (ExportDataDirectory)  
+WARN  Invalid or missing function at 100d76bc (ExportDataDirectory)  
+WARN  Invalid or missing function at 10047fc8 (ExportDataDirectory)  
+WARN  Invalid or missing function at 52e820e8 (ExportDataDirectory)  
+INFO  Additional info:
+Loading file:///E:/Games/CODOL_Experience_V3.3.3.3_FULL.7z/CODOL_Experience_V3.3.3.3_FULL.7z/codoMP_client_shipRetail.exe?MD5=4f264cf500da3f731bee2e66bed4babe...
+[codoMP_client_shipRetail.exe]: failed to create TerminatedCString at 0ca26058: Conflicting data exists at address 0ca25c14 to 0ca27000
+[codoMP_client_shipRetail.exe]: failed to create IMAGE_BASE_RELOCATION at 0ca27000: Conflicting data exists at address 0ca25c14 to 0ca27000
+------------------------------------------------
+
+Searching 52 paths for library ADVAPI32.DLL...
+Loading file:///C:/Windows/SysWOW64/advapi32.dll?MD5=bd14154cf16da806a109b60c14e4b712...
+Using existing exports file: C:\Users\john\AppData\Roaming\ghidra\ghidra_12.1.4_PUBLIC\symbols\win32\advapi32.exports
+Library not saved to project.
+------------------------------------------------
+
+Searching 52 paths for library AWESOMIUM.DLL...
+Loading file:///E:/Games/CODOL_Experience_V3.3.3.3_FULL.7z/CODOL_Experience_V3.3.3.3_FULL.7z/awesomium.dll?MD5=1acc23de75a61143b76fab2d437b144b...
+[awesomium.dll]: failed to create TerminatedCString at 1131d3a4: Failed to resolve data length for TerminatedCString
+Created exports file: C:\Users\john\AppData\Roaming\ghidra\ghidra_12.1.4_PUBLIC\symbols\win32\awesomium.exports
+Library not saved to project.
+------------------------------------------------
+
+Searching 52 paths for library BINK2W32.DLL...
+Loading file:///E:/Games/CODOL_Experience_V3.3.3.3_FULL.7z/CODOL_Experience_V3.3.3.3_FULL.7z/bink2w32.dll?MD5=4471ef04348612a46deaa69eb7075bc1...
+Created exports file: C:\Users\john\AppData\Roaming\ghidra\ghidra_12.1.4_PUBLIC\symbols\win32\bink2w32.exports
+Library not saved to project.
+------------------------------------------------
+
+Searching 52 paths for library D3D9.DLL...
+Loading file:///C:/Windows/SysWOW64/d3d9.dll?MD5=f9135fa5a1ff3ab3e46b58ef5aff501b...
+[d3d9.dll]: failed to create WEVTResource at 1016ab28: Failed to resolve data length for WEVTResource
+Using existing exports file: C:\Users\john\AppData\Roaming\ghidra\ghidra_12.1.4_PUBLIC\symbols\win32\d3d9.exports
+Library not saved to project.
+------------------------------------------------
+
+Searching 52 paths for library DBGHELP.DLL...
+Loading file:///C:/Windows/SysWOW64/dbghelp.dll?MD5=b0a2b7c05b4b52c9251a03f2943a2ba9...
+Using existing exports file: C:\Users\john\AppData\Roaming\ghidra\ghidra_12.1.4_PUBLIC\symbols\win32\dbghelp.exports
+Library not saved to project.
+------------------------------------------------
+
+Searching 52 paths for library GDI32.DLL...
+Loading file:///C:/Windows/SysWOW64/gdi32.dll?MD5=37002dbb23f87dae9ebd7dd7b5051995...
+Using existing exports file: C:\Users\john\AppData\Roaming\ghidra\ghidra_12.1.4_PUBLIC\symbols\win32\gdi32.exports
+Library not saved to project.
+------------------------------------------------
+
+Searching 52 paths for library IMM32.DLL...
+Loading file:///C:/Windows/SysWOW64/imm32.dll?MD5=e8b0c9d09c8ab10941ef74c0c4cfd03e...
+Using existing exports file: C:\Users\john\AppData\Roaming\ghidra\ghidra_12.1.4_PUBLIC\symbols\win32\imm32.exports
+Library not saved to project.
+------------------------------------------------
+
+Searching 52 paths for library IPHLPAPI.DLL...
+Loading file:///C:/Windows/SysWOW64/IPHLPAPI.DLL?MD5=afab86670b6b79c189d65ade30deb38a...
+Using existing exports file: C:\Users\john\AppData\Roaming\ghidra\ghidra_12.1.4_PUBLIC\symbols\win32\iphlpapi.exports
+Library not saved to project.
+------------------------------------------------
+
+Searching 52 paths for library KERNEL32.DLL...
+Loading file:///C:/Windows/SysWOW64/kernel32.dll?MD5=7180141a89985451fec9e096fc1e64a9...
+Using existing exports file: C:\Users\john\AppData\Roaming\ghidra\ghidra_12.1.4_PUBLIC\symbols\win32\kernel32.exports
+Library not saved to project.
+------------------------------------------------
+
+Searching 52 paths for library MSS32.DLL...
+Loading file:///E:/Games/CODOL_Experience_V3.3.3.3_FULL.7z/CODOL_Experience_V3.3.3.3_FULL.7z/mss32.dll?MD5=945e3eb5925f4efc9f7467e684bf5bc6...
+Created exports file: C:\Users\john\AppData\Roaming\ghidra\ghidra_12.1.4_PUBLIC\symbols\win32\mss32.exports
+Library not saved to project.
+------------------------------------------------
+
+Searching 52 paths for library OLE32.DLL...
+Loading file:///C:/Windows/SysWOW64/ole32.dll?MD5=f7d0fee5e134a50a125c3e41a68bf646...
+[ole32.dll]: failed to create WEVTResource at 10139740: Failed to resolve data length for WEVTResource
+Using existing exports file: C:\Users\john\AppData\Roaming\ghidra\ghidra_12.1.4_PUBLIC\symbols\win32\ole32.exports
+Library not saved to project.
+------------------------------------------------
+
+Searching 52 paths for library OLEAUT32.DLL...
+Loading file:///C:/Windows/SysWOW64/oleaut32.dll?MD5=e6bbb4eefacdda667ee95436a6e49d58...
+Using existing exports file: C:\Users\john\AppData\Roaming\ghidra\ghidra_12.1.4_PUBLIC\symbols\win32\oleaut32.exports
+Library not saved to project.
+------------------------------------------------
+
+Searching 52 paths for library SHELL32.DLL...
+Loading file:///C:/Windows/SysWOW64/shell32.dll?MD5=347ac97d43e76943fd2c880017b39051...
+Using existing exports file: C:\Users\john\AppData\Roaming\ghidra\ghidra_12.1.4_PUBLIC\symbols\win32\shell32.exports
+Library not saved to project.
+------------------------------------------------
+
+Searching 52 paths for library USER32.DLL...
+Loading file:///C:/Windows/SysWOW64/user32.dll?MD5=f6c0cb8b1debf964a0ab5330cca718e6...
+[user32.dll]: failed to create WEVTResource at 100f5a70: Failed to resolve data length for WEVTResource
+Using existing exports file: C:\Users\john\AppData\Roaming\ghidra\ghidra_12.1.4_PUBLIC\symbols\win32\user32.exports
+Library not saved to project.
+------------------------------------------------
+
+Searching 52 paths for library VERSION.DLL...
+Loading file:///C:/Windows/SysWOW64/version.dll?MD5=e540ee5a5c515d5c3005f0cd6d133124...
+Using existing exports file: C:\Users\john\AppData\Roaming\ghidra\ghidra_12.1.4_PUBLIC\symbols\win32\version.exports
+Library not saved to project.
+------------------------------------------------
+
+Searching 52 paths for library WINMM.DLL...
+Loading file:///C:/Windows/SysWOW64/winmm.dll?MD5=3636fbb95690d0908d6970e978398b0c...
+[winmm.dll]: failed to create WEVTResource at 1002b310: Failed to resolve data length for WEVTResource
+Using existing exports file: C:\Users\john\AppData\Roaming\ghidra\ghidra_12.1.4_PUBLIC\symbols\win32\winmm.exports
+Library not saved to project.
+------------------------------------------------
+
+Searching 52 paths for library WS2_32.DLL...
+Loading file:///C:/Windows/SysWOW64/ws2_32.dll?MD5=2654f681fcf2977f1e118d371b25f47e...
+[ws2_32.dll]: failed to create WEVTResource at 100524b8: Failed to resolve data length for WEVTResource
+Using existing exports file: C:\Users\john\AppData\Roaming\ghidra\ghidra_12.1.4_PUBLIC\symbols\win32\ws2_32.exports
+Library not saved to project.
+------------------------------------------------
+
+Searching 52 paths for library WSOCK32.DLL...
+Loading file:///C:/Windows/SysWOW64/wsock32.dll?MD5=37f04524570f79e3a206d307af4a0e92...
+Using existing exports file: C:\Users\john\AppData\Roaming\ghidra\ghidra_12.1.4_PUBLIC\symbols\win32\wsock32.exports
+Library not saved to project.
+------------------------------------------------
+
+Applying C:\Users\john\AppData\Roaming\ghidra\ghidra_12.1.4_PUBLIC\symbols\win32\winmm.exports
+Applying C:\Users\john\AppData\Roaming\ghidra\ghidra_12.1.4_PUBLIC\symbols\win32\wsock32.exports
+Applying C:\Users\john\AppData\Roaming\ghidra\ghidra_12.1.4_PUBLIC\symbols\win32\imm32.exports
+Applying cached symbols from MSS32.DLL
+Applying cached symbols from BINK2W32.DLL
+Applying C:\Users\john\AppData\Roaming\ghidra\ghidra_12.1.4_PUBLIC\symbols\win32\d3d9.exports
+Applying C:\Users\john\AppData\Roaming\ghidra\ghidra_12.1.4_PUBLIC\symbols\win32\kernel32.exports
+Applying C:\Users\john\AppData\Roaming\ghidra\ghidra_12.1.4_PUBLIC\symbols\win32\advapi32.exports
+Applying cached symbols from AWESOMIUM.DLL
+Applying C:\Users\john\AppData\Roaming\ghidra\ghidra_12.1.4_PUBLIC\symbols\win32\user32.exports
+Applying C:\Users\john\AppData\Roaming\ghidra\ghidra_12.1.4_PUBLIC\symbols\win32\gdi32.exports
+Applying C:\Users\john\AppData\Roaming\ghidra\ghidra_12.1.4_PUBLIC\symbols\win32\shell32.exports
+Applying C:\Users\john\AppData\Roaming\ghidra\ghidra_12.1.4_PUBLIC\symbols\win32\ole32.exports
+Applying C:\Users\john\AppData\Roaming\ghidra\ghidra_12.1.4_PUBLIC\symbols\win32\oleaut32.exports
+Applying C:\Users\john\AppData\Roaming\ghidra\ghidra_12.1.4_PUBLIC\symbols\win32\dbghelp.exports
+Applying C:\Users\john\AppData\Roaming\ghidra\ghidra_12.1.4_PUBLIC\symbols\win32\version.exports
+Applying C:\Users\john\AppData\Roaming\ghidra\ghidra_12.1.4_PUBLIC\symbols\win32\ws2_32.exports
+Applying C:\Users\john\AppData\Roaming\ghidra\ghidra_12.1.4_PUBLIC\symbols\win32\iphlpapi.exports
+Linking the External Programs of 'codoMP_client_shipRetail.exe' to imported libraries...
+  [WINMM.DLL] -> not found in project
+  [WSOCK32.DLL] -> not found in project
+  [IMM32.DLL] -> not found in project
+  [MSS32.DLL] -> not found in project
+  [BINK2W32.DLL] -> not found in project
+  [D3D9.DLL] -> not found in project
+  [KERNEL32.DLL] -> not found in project
+  [ADVAPI32.DLL] -> not found in project
+  [AWESOMIUM.DLL] -> not found in project
+  [USER32.DLL] -> not found in project
+  [GDI32.DLL] -> not found in project
+  [SHELL32.DLL] -> not found in project
+  [OLE32.DLL] -> not found in project
+  [OLEAUT32.DLL] -> not found in project
+  [DBGHELP.DLL] -> not found in project
+  [VERSION.DLL] -> not found in project
+  [WS2_32.DLL] -> not found in project
+  [IPHLPAPI.DLL] -> not found in project
+------------------------------------------------
+
+ (ProgramLoader)  
+INFO  IMPORTING: Loaded 0 additional files (HeadlessAnalyzer)  
+INFO  REPORT: Execute script: ExportFocusedFunctions.java 'E:\Games\CODOL_Experience_V3.3.3.3_FULL.7z\CODOL-Revival\tools\recovered-code/evidence/focused/profile-write.json' '00a5a420' '006d7340' '006c1e70' '006bf130'  (HeadlessAnalyzer)  
+INFO  SCRIPT: E:\Games\CODOL_Experience_V3.3.3.3_FULL.7z\CODOL-Revival\tools\recovered-code\maintenance\ExportFocusedFunctions.java (HeadlessAnalyzer)  
+INFO  ExportFocusedFunctions.java> EXPORTED 00a5a420 ok (GhidraScript)  
+INFO  ExportFocusedFunctions.java> EXPORTED 006d7340 ok (GhidraScript)  
+INFO  ExportFocusedFunctions.java> EXPORTED 006c1e70 ok (GhidraScript)  
+INFO  ExportFocusedFunctions.java> EXPORTED 006bf130 ok (GhidraScript)  
+INFO  REPORT: Discarded file import due to readOnly option: /codoMP_client_shipRetail.exe (HeadlessAnalyzer)  
+INFO  REPORT: Import succeeded (HeadlessAnalyzer)  

@@ -1,0 +1,138 @@
+{
+  "analysis_profile": {
+    "digest": "c3d2576361fca14bc637cfc460e3d5f1e99b096ce19af99217ea4bc71d5452cc",
+    "parameters": {
+      "upstream_analysis_profile": {
+        "digest": "b9d116ea480a02cc8773b19372074a3caf77785cbc080b1ac7133b5110e40b17",
+        "parameters": {
+          "analyzer_preset": "ghidra-default",
+          "annotation_policy": "atomic-function-entry-metadata-v1",
+          "architecture": "x86",
+          "available_architectures": [
+            "x86"
+          ],
+          "compiler_spec_id": "auto-default",
+          "decompiler_jump_loads": true,
+          "executable_role": "application",
+          "function_body_evidence": "complete-inclusive-ranges-v1",
+          "function_boundary_observations": "ghidra-terminal-call-limitations-v1",
+          "function_references": "complete-body-and-entry-reference-manager-v2",
+          "import_mode": "ephemeral-source-immutable",
+          "instruction_flow_evidence": "decoded-return-pcode-v1",
+          "jump_table_evidence": "typed-case-default-blocks-v1",
+          "language_id": "auto-from-header",
+          "load_image_observations": "source-mappings-entry-context-v2",
+          "loader": "auto-from-header",
+          "location_resolution": "explicit-address-exact-entry-symbol-first-v3",
+          "managed": false,
+          "native_aot_metadata": {
+            "contract_revision": "rtr-9.1-x64-pe-read-only-v3",
+            "report_bytes": 4194304,
+            "source_bytes": 134217728,
+            "work_units": 67108864,
+            "working_memory_bytes": 67108864
+          },
+          "no_return_repair": "disabled-windows-p0",
+          "process_launch": "official-headless-script-v1",
+          "string_inventory_evidence": "defined-data-coverage-v1",
+          "target_format": "pe",
+          "target_kind": "executable"
+        },
+        "provider": {
+          "id": "ghidra",
+          "name": "Ghidra",
+          "version": "12.1.4"
+        }
+      },
+      "workflow_revision": 2
+    },
+    "provider": {
+      "id": "rea-workflow",
+      "name": "REA composed investigation workflow",
+      "version": "1"
+    }
+  },
+  "authority": "shipped-artifact",
+  "confidence": "derived",
+  "environment": null,
+  "evidence_id": "ev_3ee074541bb53e150ad3ffea7543647929a0df5a099cb2faa2eecc3dd29728fb",
+  "evidence_links": [],
+  "limitations": [
+    "Derived by an REA composed workflow."
+  ],
+  "locations": [
+    {
+      "address": "0x4a4d60",
+      "kind": "address"
+    },
+    {
+      "address": "0x692ce0",
+      "kind": "address"
+    },
+    {
+      "address": "0x693160",
+      "kind": "address"
+    }
+  ],
+  "normalized_result": {
+    "failed": 0,
+    "items": [
+      {
+        "address": "0x4a4d6d",
+        "procedure": {
+          "address": "0x4a4d60",
+          "name": "FUN_004a4d60",
+          "status": "resolved"
+        },
+        "pseudocode": "\r\nundefined4 FUN_004a4d60(void)\r\n\r\n{\r\n  char cVar1;\r\n  \r\n  FUN_004a4b10();\r\n  cVar1 = FUN_004a4ca0();\r\n  if (cVar1 == '\\0') {\r\n    cVar1 = FUN_004a4d10();\r\n    if (cVar1 == '\\0') {\r\n      return 0;\r\n    }\r\n  }\r\n  return 1;\r\n}\r\n\r\n",
+        "status": "ok"
+      },
+      {
+        "address": "0x692d33",
+        "procedure": {
+          "address": "0x692ce0",
+          "name": "FUN_00692ce0",
+          "status": "resolved"
+        },
+        "pseudocode": "\r\nundefined4 FUN_00692ce0(void)\r\n\r\n{\r\n  int iVar1;\r\n  ushort uVar2;\r\n  char cVar3;\r\n  ushort in_AX;\r\n  undefined4 uVar4;\r\n  undefined2 uVar5;\r\n  \r\n  if ((((in_AX == 0) || (DAT_02dbb284 <= in_AX)) ||\r\n      (uVar2 = *(ushort *)(DAT_02dbb280 + (uint)in_AX * 2), uVar2 == 0)) ||\r\n     ((DAT_02dbb274 <= uVar2 || (iVar1 = DAT_02dbb270 + (uint)uVar2 * 0x18, iVar1 == 0)))) {\r\n    uVar5 = 0;\r\n  }\r\n  else {\r\n    uVar5 = *(undefined2 *)(iVar1 + 4);\r\n  }\r\n  uVar4 = FUN_00706e50();\r\n  FUN_004a4b10(uVar4);\r\n  cVar3 = FUN_004a4ca0(uVar5);\r\n  if (cVar3 == '\\0') {\r\n    cVar3 = FUN_004a4d10(uVar5);\r\n    if (cVar3 == '\\0') {\r\n      return 0;\r\n    }\r\n  }\r\n  return 1;\r\n}\r\n\r\n",
+        "status": "ok"
+      },
+      {
+        "address": "0x6931b4",
+        "procedure": {
+          "address": "0x693160",
+          "name": "FUN_00693160",
+          "status": "resolved"
+        },
+        "pseudocode": "\r\nundefined1 FUN_00693160(int param_1)\r\n\r\n{\r\n  char cVar1;\r\n  int iVar2;\r\n  undefined4 local_98;\r\n  undefined4 local_94;\r\n  undefined4 local_90;\r\n  int local_8c;\r\n  undefined4 local_88;\r\n  int local_84;\r\n  undefined4 local_80;\r\n  undefined4 local_7c;\r\n  undefined4 local_78;\r\n  undefined4 local_74;\r\n  int local_70;\r\n  undefined1 local_6c;\r\n  char local_6b;\r\n  int local_68;\r\n  int local_64;\r\n  int local_60;\r\n  undefined4 local_5c;\r\n  undefined4 local_58;\r\n  int local_54;\r\n  undefined1 local_50 [8];\r\n  int *local_48;\r\n  uint local_44;\r\n  undefined4 local_40;\r\n  undefined1 local_29;\r\n  undefined1 local_28 [8];\r\n  int *local_20;\r\n  uint local_1c;\r\n  char *local_18;\r\n  \r\n  cVar1 = FUN_007070b0();\r\n  if (cVar1 == '\\0') {\r\n    return 0;\r\n  }\r\n  local_54 = local_70;\r\n  if (0 < local_8c) {\r\n    local_54 = local_8c;\r\n  }\r\n  if (local_6b == '\\0') {\r\n    FUN_004a4b10(local_94);\r\n    cVar1 = FUN_004a4ca0(local_90);\r\n    if (cVar1 == '\\0') {\r\n      cVar1 = FUN_004a4d10(local_90);\r\n      local_29 = 0;\r\n      if (cVar1 == '\\0') goto LAB_006931d6;\r\n    }\r\n  }\r\n  local_29 = 1;\r\nLAB_006931d6:\r\n  local_58 = 0;\r\n  local_5c = 0;\r\n  if (local_6b == '\\0') {\r\n    FUN_004a4c10(local_90,&local_5c,&local_58);\r\n  }\r\n  local_48 = (int *)0x0;\r\n  local_44 = 0;\r\n  if (DAT_0c80327c != 0) {\r\n    iVar2 = FUN_006bed90();\r\n    FUN_00719d10(local_50,\"codo.objects.SKUObj\",0,0);\r\n    if (iVar2 != 0) {\r\n      FUN_006bee50();\r\n    }\r\n  }\r\n  local_18 = (char *)local_98;\r\n  local_20 = (int *)0x0;\r\n  local_1c = 3;\r\n  (**(code **)(*local_48 + 0x14))(local_40,\"productId\",local_28,((byte)local_44 & 0x8f) == 10);\r\n  if ((local_1c >> 6 & 1) != 0) {\r\n    (**(code **)(*local_20 + 8))(local_28,local_18);\r\n  }\r\n  local_18 = (char *)local_58;\r\n  local_20 = (int *)0x0;\r\n  local_1c = 3;\r\n  (**(code **)(*local_48 + 0x14))\r\n            (local_40,\"requirementLevel\",local_28,((byte)local_44 & 0x8f) == 10);\r\n  if ((local_1c >> 6 & 1) != 0) {\r\n    (**(code **)(*local_20 + 8))(local_28,local_18);\r\n  }\r\n  local_18 = (char *)local_5c;\r\n  local_20 = (int *)0x0;\r\n  local_1c = 3;\r\n  (**(code **)(*local_48 + 0x14))\r\n            (local_40,\"requirementPrestige\",local_28,((byte)local_44 & 0x8f) == 10);\r\n  if ((local_1c >> 6 & 1) != 0) {\r\n    (**(code **)(*local_20 + 8))(local_28,local_18);\r\n  }\r\n  local_18 = (char *)CONCAT31(local_18._1_3_,0 < local_8c);\r\n  local_20 = (int *)0x0;\r\n  local_1c = 2;\r\n  (**(code **)(*local_48 + 0x14))(local_40,\"stackable\",local_28,((byte)local_44 & 0x8f) == 10);\r\n  if ((local_1c >> 6 & 1) != 0) {\r\n    (**(code **)(*local_20 + 8))(local_28,local_18);\r\n  }\r\n  local_18 = (char *)CONCAT31(local_18._1_3_,local_29);\r\n  local_20 = (int *)0x0;\r\n  local_1c = 2;\r\n  (**(code **)(*local_48 + 0x14))(local_40,\"purchasable\",local_28,((byte)local_44 & 0x8f) == 10);\r\n  if ((local_1c >> 6 & 1) != 0) {\r\n    (**(code **)(*local_20 + 8))(local_28,local_18);\r\n  }\r\n  local_18 = (char *)local_88;\r\n  local_20 = (int *)0x0;\r\n  local_1c = 3;\r\n  (**(code **)(*local_48 + 0x14))(local_40,&DAT_00c65b54,local_28,((byte)local_44 & 0x8f) == 10);\r\n  if ((local_1c >> 6 & 1) != 0) {\r\n    (**(code **)(*local_20 + 8))(local_28,local_18);\r\n  }\r\n  local_18 = (char *)local_7c;\r\n  local_20 = (int *)0x0;\r\n  local_1c = 3;\r\n  (**(code **)(*local_48 + 0x14))(local_40,\"price\",local_28,((byte)local_44 & 0x8f) == 10);\r\n  if ((local_1c >> 6 & 1) != 0) {\r\n    (**(code **)(*local_20 + 8))(local_28,local_18);\r\n  }\r\n  local_18 = \"@SF_UI_CP\";\r\n  if (local_84 < 1) {\r\n    local_18 = \"@SF_UI_GP\";\r\n  }\r\n  local_20 = (int *)0x0;\r\n  local_1c = 6;\r\n  (**(code **)(*local_48 + 0x14))(local_40,\"currency\",local_28,((byte)local_44 & 0x8f) == 10);\r\n  if ((local_1c >> 6 & 1) != 0) {\r\n    (**(code **)(*local_20 + 8))(local_28,local_18);\r\n  }\r\n  local_20 = (int *)0x0;\r\n  local_1c = 3;\r\n  local_18 = (char *)local_84;\r\n  (**(code **)(*local_48 + 0x14))(local_40,&DAT_00c65e10,local_28,((byte)local_44 & 0x8f) == 10);\r\n  if ((local_1c >> 6 & 1) != 0) {\r\n    (**(code **)(*local_20 + 8))(local_28,local_18);\r\n  }\r\n  local_18 = (char *)local_80;\r\n  local_20 = (int *)0x0;\r\n  local_1c = 3;\r\n  (**(code **)(*local_48 + 0x14))(local_40,&DAT_00c65e0c,local_28,((byte)local_44 & 0x8f) == 10);\r\n  if ((local_1c >> 6 & 1) != 0) {\r\n    (**(code **)(*local_20 + 8))(local_28,local_18);\r\n  }\r\n  local_18 = (char *)local_54;\r\n  local_20 = (int *)0x0;\r\n  local_1c = 3;\r\n  (**(code **)(*local_48 + 0x14))(local_40,\"duration\",local_28,((byte)local_44 & 0x8f) == 10);\r\n  if ((local_1c >> 6 & 1) != 0) {\r\n    (**(code **)(*local_20 + 8))(local_28,local_18);\r\n  }\r\n  local_18 = (char *)local_78;\r\n  local_20 = (int *)0x0;\r\n  local_1c = 3;\r\n  (**(code **)(*local_48 + 0x14))(local_40,\"startDate\",local_28,((byte)local_44 & 0x8f) == 10);\r\n  if ((local_1c >> 6 & 1) != 0) {\r\n    (**(code **)(*local_20 + 8))(local_28,local_18);\r\n  }\r\n  local_18 = (char *)local_74;\r\n  local_20 = (int *)0x0;\r\n  local_1c = 3;\r\n  (**(code **)(*local_48 + 0x14))(local_40,\"endDate\",local_28,((byte)local_44 & 0x8f) == 10);\r\n  if ((local_1c >> 6 & 1) != 0) {\r\n    (**(code **)(*local_20 + 8))(local_28,local_18);\r\n  }\r\n  local_18 = (char *)CONCAT31(local_18._1_3_,local_6b);\r\n  local_20 = (int *)0x0;\r\n  local_1c = 2;\r\n  (**(code **)(*local_48 + 0x14))\r\n            (local_40,\"ignoreEntitlement\",local_28,((byte)local_44 & 0x8f) == 10);\r\n  if ((local_1c >> 6 & 1) != 0) {\r\n    (**(code **)(*local_20 + 8))(local_28,local_18);\r\n  }\r\n  local_18 = (char *)CONCAT31(local_18._1_3_,local_6c);\r\n  local_20 = (int *)0x0;\r\n  local_1c = 2;\r\n  (**(code **)(*local_48 + 0x14))(local_40,\"couponEnable\",local_28,((byte)local_44 & 0x8f) == 10);\r\n  if ((local_1c >> 6 & 1) != 0) {\r\n    (**(code **)(*local_20 + 8))(local_28,local_18);\r\n  }\r\n  if (((0 < local_64) && (0 < local_68)) && (0 < local_60)) {\r\n    local_20 = (int *)0x0;\r\n    local_1c = 3;\r\n    (**(code **)(*local_48 + 0x14))(local_40,\"originalPrice\",local_28,((byte)local_44 & 0x8f) == 10)\r\n    ;\r\n    FUN_004045f0();\r\n    local_20 = (int *)0x0;\r\n    local_1c = 3;\r\n    (**(code **)(*local_48 + 0x14))(local_40,\"price\",local_28,((byte)local_44 & 0x8f) == 10);\r\n    FUN_004045f0();\r\n    local_18 = (char *)local_64;\r\n    local_20 = (int *)0x0;\r\n    local_1c = 3;\r\n    (**(code **)(*local_48 + 0x14))(local_40,\"discountRate\",local_28,((byte)local_44 & 0x8f) == 10);\r\n    FUN_004045f0();\r\n  }\r\n  (**(code **)(**(int **)(param_1 + 8) + 0x3c))(*(undefined4 *)(param_1 + 0x10),local_50);\r\n  if ((local_44 >> 6 & 1) != 0) {\r\n    (**(code **)(*local_48 + 8))(local_50,local_40);\r\n  }\r\n  return 1;\r\n}\r\n\r\n",
+        "status": "ok"
+      }
+    ],
+    "succeeded": 3,
+    "total": 3
+  },
+  "operation": "batch_decompile",
+  "parameters": {
+    "addresses": [
+      "0x4a4d6d",
+      "0x692d33",
+      "0x6931b4"
+    ]
+  },
+  "predicate_type": "rea.analysis",
+  "provider": {
+    "id": "rea-workflow",
+    "name": "REA composed investigation workflow",
+    "version": "1"
+  },
+  "raw_result": null,
+  "subject": {
+    "architecture": "x86",
+    "digest": {
+      "sha256": "e3823fd6afc80fb25fa84747e6e9634707b9a0b189357a5466921cda354af37b"
+    },
+    "format": "pe",
+    "local_path": "E:\\Games\\CODOL_Experience_V3.3.3.3_FULL.7z\\CODOL_Experience_V3.3.3.3_FULL.7z\\codoMP_client_shipRetail.exe",
+    "name": "E:\\Games\\CODOL_Experience_V3.3.3.3_FULL.7z\\CODOL_Experience_V3.3.3.3_FULL.7z\\codoMP_client_shipRetail.exe"
+  }
+}

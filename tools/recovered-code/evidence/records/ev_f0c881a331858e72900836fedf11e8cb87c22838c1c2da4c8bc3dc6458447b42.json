@@ -1,0 +1,123 @@
+{
+  "evidence_id": "ev_f0c881a331858e72900836fedf11e8cb87c22838c1c2da4c8bc3dc6458447b42",
+  "subject": {
+    "name": "E:\\Games\\CODOL_Experience_V3.3.3.3_FULL.7z\\CODOL_Experience_V3.3.3.3_FULL.7z\\codoMP_client_shipRetail.exe",
+    "digest": {
+      "sha256": "e3823fd6afc80fb25fa84747e6e9634707b9a0b189357a5466921cda354af37b"
+    },
+    "format": "pe",
+    "architecture": "x86",
+    "local_path": "E:\\Games\\CODOL_Experience_V3.3.3.3_FULL.7z\\CODOL_Experience_V3.3.3.3_FULL.7z\\codoMP_client_shipRetail.exe"
+  },
+  "provider": {
+    "id": "rea-workflow",
+    "name": "REA composed investigation workflow",
+    "version": "1"
+  },
+  "analysis_profile": {
+    "provider": {
+      "id": "rea-workflow",
+      "name": "REA composed investigation workflow",
+      "version": "1"
+    },
+    "parameters": {
+      "upstream_analysis_profile": {
+        "provider": {
+          "id": "ghidra",
+          "name": "Ghidra",
+          "version": "12.1.4"
+        },
+        "parameters": {
+          "target_kind": "executable",
+          "target_format": "pe",
+          "executable_role": "application",
+          "managed": false,
+          "native_aot_metadata": {
+            "contract_revision": "rtr-9.1-x64-pe-read-only-v3",
+            "source_bytes": 134217728,
+            "work_units": 67108864,
+            "working_memory_bytes": 67108864,
+            "report_bytes": 4194304
+          },
+          "architecture": "x86",
+          "available_architectures": [
+            "x86"
+          ],
+          "import_mode": "ephemeral-source-immutable",
+          "annotation_policy": "atomic-function-entry-metadata-v1",
+          "load_image_observations": "source-mappings-entry-context-v2",
+          "function_body_evidence": "complete-inclusive-ranges-v1",
+          "function_references": "complete-body-and-entry-reference-manager-v2",
+          "string_inventory_evidence": "defined-data-coverage-v1",
+          "location_resolution": "explicit-address-exact-entry-symbol-first-v3",
+          "instruction_flow_evidence": "decoded-return-pcode-v1",
+          "function_boundary_observations": "ghidra-terminal-call-limitations-v1",
+          "no_return_repair": "disabled-windows-p0",
+          "process_launch": "official-headless-script-v1",
+          "jump_table_evidence": "typed-case-default-blocks-v1",
+          "decompiler_jump_loads": true,
+          "loader": "auto-from-header",
+          "language_id": "auto-from-header",
+          "compiler_spec_id": "auto-default",
+          "analyzer_preset": "ghidra-default"
+        },
+        "digest": "b9d116ea480a02cc8773b19372074a3caf77785cbc080b1ac7133b5110e40b17"
+      },
+      "workflow_revision": 2
+    },
+    "digest": "c3d2576361fca14bc637cfc460e3d5f1e99b096ce19af99217ea4bc71d5452cc"
+  },
+  "predicate_type": "rea.analysis",
+  "operation": "batch_decompile",
+  "parameters": {
+    "addresses": [
+      "0x6af970",
+      "0xa4c220"
+    ]
+  },
+  "raw_result": null,
+  "normalized_result": {
+    "items": [
+      {
+        "address": "0x6af970",
+        "procedure": {
+          "status": "resolved",
+          "address": "0x6af970",
+          "name": "FUN_006af970"
+        },
+        "status": "ok",
+        "pseudocode": "\r\nvoid FUN_006af970(int *param_1)\r\n\r\n{\r\n  char *pcVar1;\r\n  int iVar2;\r\n  undefined4 uVar3;\r\n  \r\n  iVar2 = 0;\r\n  pcVar1 = &DAT_0ba0b2c8;\r\n  do {\r\n    if (*pcVar1 == '\\x02') {\r\n      uVar3 = *(undefined4 *)(&DAT_0ba0b2cc + iVar2 * 0x20);\r\n      goto LAB_006af992;\r\n    }\r\n    pcVar1 = pcVar1 + 0x20;\r\n    iVar2 = iVar2 + 1;\r\n  } while ((int)pcVar1 < 0xba0b308);\r\n  uVar3 = 0;\r\nLAB_006af992:\r\n  iVar2 = *param_1;\r\n  if ((*(uint *)(iVar2 + 0xc) >> 6 & 1) != 0) {\r\n    (**(code **)(**(int **)(iVar2 + 8) + 8))(iVar2,*(undefined4 *)(iVar2 + 0x10));\r\n    *(undefined4 *)(iVar2 + 8) = 0;\r\n  }\r\n  *(undefined4 *)(iVar2 + 0x10) = uVar3;\r\n  *(undefined4 *)(iVar2 + 0xc) = 3;\r\n  return;\r\n}\r\n\r\n"
+      },
+      {
+        "address": "0xa4c220",
+        "procedure": {
+          "status": "resolved",
+          "address": "0xa4c220",
+          "name": "FUN_00a4c220"
+        },
+        "status": "ok",
+        "pseudocode": "\r\nundefined4 FUN_00a4c220(undefined4 param_1)\r\n\r\n{\r\n  FUN_00a456e0();\r\n  FUN_00a4c0b0(param_1);\r\n  return param_1;\r\n}\r\n\r\n"
+      }
+    ],
+    "total": 2,
+    "succeeded": 2,
+    "failed": 0
+  },
+  "confidence": "derived",
+  "authority": "shipped-artifact",
+  "environment": null,
+  "limitations": [
+    "Derived by an REA composed workflow."
+  ],
+  "locations": [
+    {
+      "kind": "address",
+      "address": "0x6af970"
+    },
+    {
+      "kind": "address",
+      "address": "0xa4c220"
+    }
+  ],
+  "evidence_links": []
+}

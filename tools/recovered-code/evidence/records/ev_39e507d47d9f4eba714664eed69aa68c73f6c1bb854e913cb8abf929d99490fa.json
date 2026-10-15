@@ -1,0 +1,153 @@
+{
+  "evidence_id": "ev_39e507d47d9f4eba714664eed69aa68c73f6c1bb854e913cb8abf929d99490fa",
+  "subject": {
+    "name": "E:\\Games\\CODOL_Experience_V3.3.3.3_FULL.7z\\CODOL_Experience_V3.3.3.3_FULL.7z\\codoMP_client_shipRetail.exe",
+    "digest": {
+      "sha256": "e3823fd6afc80fb25fa84747e6e9634707b9a0b189357a5466921cda354af37b"
+    },
+    "format": "pe",
+    "architecture": "x86",
+    "local_path": "E:\\Games\\CODOL_Experience_V3.3.3.3_FULL.7z\\CODOL_Experience_V3.3.3.3_FULL.7z\\codoMP_client_shipRetail.exe"
+  },
+  "provider": {
+    "id": "rea-workflow",
+    "name": "REA composed investigation workflow",
+    "version": "1"
+  },
+  "analysis_profile": {
+    "provider": {
+      "id": "rea-workflow",
+      "name": "REA composed investigation workflow",
+      "version": "1"
+    },
+    "parameters": {
+      "upstream_analysis_profile": {
+        "provider": {
+          "id": "ghidra",
+          "name": "Ghidra",
+          "version": "12.1.4"
+        },
+        "parameters": {
+          "target_kind": "executable",
+          "target_format": "pe",
+          "executable_role": "application",
+          "managed": false,
+          "native_aot_metadata": {
+            "contract_revision": "rtr-9.1-x64-pe-read-only-v3",
+            "source_bytes": 134217728,
+            "work_units": 67108864,
+            "working_memory_bytes": 67108864,
+            "report_bytes": 4194304
+          },
+          "architecture": "x86",
+          "available_architectures": [
+            "x86"
+          ],
+          "import_mode": "ephemeral-source-immutable",
+          "annotation_policy": "atomic-function-entry-metadata-v1",
+          "load_image_observations": "source-mappings-entry-context-v2",
+          "function_body_evidence": "complete-inclusive-ranges-v1",
+          "function_references": "complete-body-and-entry-reference-manager-v2",
+          "string_inventory_evidence": "defined-data-coverage-v1",
+          "location_resolution": "explicit-address-exact-entry-symbol-first-v3",
+          "instruction_flow_evidence": "decoded-return-pcode-v1",
+          "function_boundary_observations": "ghidra-terminal-call-limitations-v1",
+          "no_return_repair": "disabled-windows-p0",
+          "process_launch": "official-headless-script-v1",
+          "jump_table_evidence": "typed-case-default-blocks-v1",
+          "decompiler_jump_loads": true,
+          "loader": "auto-from-header",
+          "language_id": "auto-from-header",
+          "compiler_spec_id": "auto-default",
+          "analyzer_preset": "ghidra-default"
+        },
+        "digest": "b9d116ea480a02cc8773b19372074a3caf77785cbc080b1ac7133b5110e40b17"
+      },
+      "workflow_revision": 2
+    },
+    "digest": "c3d2576361fca14bc637cfc460e3d5f1e99b096ce19af99217ea4bc71d5452cc"
+  },
+  "predicate_type": "rea.analysis",
+  "operation": "batch_decompile",
+  "parameters": {
+    "addresses": [
+      "0x5b3542",
+      "0x5c36fe",
+      "0x5f0375",
+      "0x69866b"
+    ]
+  },
+  "raw_result": null,
+  "normalized_result": {
+    "items": [
+      {
+        "address": "0x5b3542",
+        "procedure": {
+          "status": "resolved",
+          "address": "0x5b3530",
+          "name": "FUN_005b3530"
+        },
+        "status": "ok",
+        "pseudocode": "\r\nvoid FUN_005b3530(int *param_1)\r\n\r\n{\r\n  int iVar1;\r\n  char cVar2;\r\n  undefined4 uVar3;\r\n  undefined1 uVar4;\r\n  \r\n  if (DAT_0783f8c0 == 0) {\r\n    uVar3 = FUN_005c6350(\"onboard_complete\");\r\n    cVar2 = FUN_005953a0(uVar3);\r\n    if ((cVar2 == '\\0') && (*(int *)(DAT_0783fa74 + 0xc) == 0)) {\r\n      uVar4 = 0;\r\n    }\r\n    else {\r\n      uVar4 = 1;\r\n    }\r\n  }\r\n  else {\r\n    uVar4 = 0;\r\n  }\r\n  iVar1 = *param_1;\r\n  if ((*(uint *)(iVar1 + 0xc) >> 6 & 1) != 0) {\r\n    (**(code **)(**(int **)(iVar1 + 8) + 8))(iVar1,*(undefined4 *)(iVar1 + 0x10));\r\n    *(undefined4 *)(iVar1 + 8) = 0;\r\n  }\r\n  *(undefined1 *)(iVar1 + 0x10) = uVar4;\r\n  *(undefined4 *)(iVar1 + 0xc) = 2;\r\n  return;\r\n}\r\n\r\n"
+      },
+      {
+        "address": "0x5c36fe",
+        "procedure": {
+          "status": "resolved",
+          "address": "0x5c36f0",
+          "name": "FUN_005c36f0"
+        },
+        "status": "ok",
+        "pseudocode": "\r\nuint FUN_005c36f0(void)\r\n\r\n{\r\n  char cVar1;\r\n  uint in_EAX;\r\n  undefined4 uVar2;\r\n  \r\n  if (DAT_0783f8c0 != 0) {\r\n    return in_EAX & 0xffffff00;\r\n  }\r\n  uVar2 = FUN_005c6350(\"onboard_complete\");\r\n  cVar1 = FUN_005953a0(uVar2);\r\n  if ((cVar1 == '\\0') && (*(int *)(DAT_0783fa74 + 0xc) == 0)) {\r\n    return 0;\r\n  }\r\n  return 1;\r\n}\r\n\r\n"
+      },
+      {
+        "address": "0x5f0375",
+        "procedure": {
+          "status": "resolved",
+          "address": "0x5f02b0",
+          "name": "FUN_005f02b0"
+        },
+        "status": "ok",
+        "pseudocode": "\r\nundefined4 FUN_005f02b0(int param_1,undefined4 *param_2)\r\n\r\n{\r\n  char cVar1;\r\n  int iVar2;\r\n  undefined4 uVar3;\r\n  undefined1 local_24 [8];\r\n  int *local_1c;\r\n  uint local_18;\r\n  undefined4 local_14;\r\n  \r\n  local_1c = (int *)0x0;\r\n  local_18 = 0;\r\n  switch(*(undefined4 *)(param_1 + 4)) {\r\n  case 0:\r\n    FUN_0068c460();\r\n    iVar2 = FUN_005eaa80();\r\n    if (iVar2 != 0) {\r\nLAB_005f02ea:\r\n      FUN_004045f0();\r\n      return 0;\r\n    }\r\n    *param_2 = \"CPP_StartFirstLoginStep\";\r\n    break;\r\n  case 1:\r\n    uVar3 = FUN_005c6350(\"onboard_character_selected\");\r\n    cVar1 = FUN_005953a0(uVar3);\r\n    if (cVar1 != '\\0') goto LAB_005f02ea;\r\n    iVar2 = FUN_006da140();\r\n    cVar1 = *(char *)(iVar2 + 0x90a0);\r\n    *(undefined1 *)(iVar2 + 0x90a0) = 0;\r\n    if (cVar1 != '\\0') {\r\n      *(undefined1 *)(param_1 + 0x14) = 1;\r\n      FUN_005ecf10(\"CPP_OnProfileReset\",0,0,0);\r\n    }\r\n    *param_2 = \"CPP_StartCharacterStep\";\r\n    break;\r\n  case 2:\r\n    if (*(char *)(param_1 + 0x14) == '\\0') {\r\n      cVar1 = FUN_005c3670();\r\n      if (cVar1 != '\\0') goto LAB_005f02ea;\r\n      *param_2 = \"CPP_StartTutorialMap1Step\";\r\n    }\r\n    else {\r\n      FUN_00593350();\r\n      FUN_005f0430();\r\n      DAT_0783f8c0 = 0;\r\n      *param_2 = \"CPP_FinishProfileReset\";\r\n    }\r\n    break;\r\n  case 3:\r\n    iVar2 = FUN_005f04f0();\r\n    *(int *)(param_1 + 0xc) = iVar2;\r\n    if (iVar2 == 8) goto LAB_005f02ea;\r\n    *param_2 = \"CPP_StartMenuTour1Step\";\r\n    break;\r\n  case 4:\r\n    uVar3 = FUN_005f0750();\r\n    *(undefined4 *)(param_1 + 0x10) = uVar3;\r\n    FUN_005952e0(0x2a,1);\r\n    *param_2 = \"CPP_StartMenuTour2Step\";\r\n  }\r\n  *(undefined1 *)(param_1 + 8) = 1;\r\n  if ((local_18 >> 6 & 1) != 0) {\r\n    (**(code **)(*local_1c + 8))(local_24,local_14);\r\n  }\r\n  return 1;\r\n}\r\n\r\n"
+      },
+      {
+        "address": "0x69866b",
+        "procedure": {
+          "status": "resolved",
+          "address": "0x6985e0",
+          "name": "FUN_006985e0"
+        },
+        "status": "ok",
+        "pseudocode": "\r\nvoid FUN_006985e0(void)\r\n\r\n{\r\n  ushort uVar1;\r\n  char cVar2;\r\n  byte bVar3;\r\n  int iVar4;\r\n  undefined4 uVar5;\r\n  int iVar6;\r\n  uint uVar7;\r\n  char *pcVar8;\r\n  uint uVar9;\r\n  byte bVar10;\r\n  uint *puVar11;\r\n  char *pcVar12;\r\n  undefined1 auStack_1c4 [2];\r\n  byte local_1c2;\r\n  byte local_1c1;\r\n  char *local_1c0;\r\n  undefined1 local_1b9;\r\n  uint *local_1b8;\r\n  uint *local_1b4;\r\n  undefined *local_1b0;\r\n  uint local_1ac;\r\n  undefined4 local_1a8;\r\n  uint local_1a4;\r\n  char **local_1a0;\r\n  uint *local_19c;\r\n  int *local_198;\r\n  uint local_194;\r\n  char *local_190;\r\n  undefined1 local_180 [8];\r\n  int *local_178;\r\n  uint local_174;\r\n  uint local_170;\r\n  char *local_160;\r\n  undefined4 local_15c;\r\n  char *local_158;\r\n  char *local_154;\r\n  undefined4 local_150;\r\n  undefined4 local_14c;\r\n  undefined1 local_130 [4];\r\n  char local_12c;\r\n  undefined1 local_100 [4];\r\n  char local_fc;\r\n  undefined1 local_d0 [4];\r\n  char local_cc;\r\n  undefined1 local_a0 [4];\r\n  char local_9c;\r\n  undefined1 local_70 [4];\r\n  char local_6c;\r\n  undefined1 local_40 [4];\r\n  char local_3c;\r\n  uint local_c;\r\n  \r\n  local_c = DAT_00cc7c80 ^ (uint)auStack_1c4;\r\n  FUN_00695e20();\r\n  bVar3 = 0;\r\n  FUN_00593b20();\r\n  FUN_00593700();\r\n  iVar6 = *(int *)(DAT_078b08e8 + 0xc);\r\n  iVar4 = FUN_006da140();\r\n  local_1ac = iVar4 + 0x90;\r\n  local_1a8 = 0x7ffc;\r\n  local_1c0 = \"loadoutVersion\";\r\n  iVar4 = FUN_00592930(&local_1c0);\r\n  if (((iVar4 < 3) && (2 < iVar6)) || (*(int *)(DAT_078b08ec + 0xc) != 0)) {\r\n    if (DAT_0783f8c0 == 0) {\r\n      uVar5 = FUN_005c6350(\"onboard_complete\");\r\n      cVar2 = FUN_005953a0(uVar5);\r\n      if ((cVar2 != '\\0') || (*(int *)(DAT_0783fa74 + 0xc) != 0)) {\r\n        FUN_00698030();\r\n      }\r\n    }\r\n    iVar6 = FUN_006da140();\r\n    if (iVar6 != -0x90) {\r\n      FUN_005927e0();\r\n    }\r\n    bVar3 = 1;\r\n    FUN_005939e0();\r\n    FUN_00594e90();\r\n    FUN_005948f0();\r\n  }\r\n  local_1c2 = 0;\r\n  local_1c1 = bVar3;\r\n  if ((DAT_0c8031d8 != 0) && (DAT_0783f860 != 0)) {\r\n    local_1b4 = (uint *)FUN_004a7ab0();\r\n    while (local_1b4 != (uint *)0x0) {\r\n      if ((((DAT_0783f860 != 0) && (local_1b4 != (uint *)0x0)) && (*(char *)local_1b4 != '\\0')) &&\r\n         ((pcVar12 = (char *)((DAT_00cdc27c ^ *(uint *)((int)local_1b4 + 4)) << 8 |\r\n                             (DAT_00cdc27c ^ *(uint *)((int)local_1b4 + 4)) >> 0x18),\r\n          0 < (int)pcVar12 && (uVar7 = 0, DAT_0c8031d8 != 0)))) {\r\nLAB_00698744:\r\n        if (pcVar12 != *(char **)(DAT_0c8031d0 + uVar7 * 4)) goto code_r0x0069874f;\r\n        iVar6 = FUN_005845b0();\r\n        if (iVar6 == 0) {\r\n          bVar3 = 0;\r\n          goto switchD_00698781_default;\r\n        }\r\n        bVar10 = 0;\r\n        iVar6 = FUN_005845b0();\r\n        bVar3 = 0;\r\n        if (iVar6 == 0) goto switchD_00698781_default;\r\n        switch(*(undefined1 *)(iVar6 + 5)) {\r\n        case 0:\r\n          bVar3 = FUN_00696a60(pcVar12);\r\n          break;\r\n        case 1:\r\n          bVar3 = FUN_00697650(pcVar12);\r\n          break;\r\n        case 2:\r\n        case 3:\r\n          bVar3 = FUN_00697da0(pcVar12);\r\n          break;\r\n        case 4:\r\n        case 5:\r\n        case 6:\r\n          bVar3 = FUN_00697c90();\r\n          break;\r\n        case 7:\r\n        case 9:\r\n        case 10:\r\n        case 0xb:\r\n          FUN_005c74e0();\r\n          bVar3 = bVar10;\r\n          goto switchD_00698781_default;\r\n        case 8:\r\n          iVar6 = FUN_00706e30();\r\n          if (iVar6 == 4) {\r\n            bVar3 = FUN_00697fd0();\r\n            break;\r\n          }\r\n          bVar3 = bVar10;\r\n          if ((iVar6 != 5) || (pcVar8 = (char *)FUN_007052d0(), pcVar8 != pcVar12))\r\n          goto switchD_00698781_default;\r\n          bVar3 = 1;\r\n          DAT_078a046c = 0;\r\n          goto LAB_00698797;\r\n        default:\r\n          goto switchD_00698781_default;\r\n        }\r\n        if (bVar3 != 0) {\r\nLAB_00698797:\r\n          local_198 = (int *)0x0;\r\n          local_194 = 3;\r\n          local_190 = pcVar12;\r\n          FUN_005ea5c0(\"cppItemUnequippedFromAllLoadouts\",0,&local_1a0,1);\r\n          if ((local_194 >> 6 & 1) != 0) {\r\n            (**(code **)(*local_198 + 8))(&local_1a0,local_190);\r\n            local_198 = (int *)0x0;\r\n          }\r\n          local_194 = 0;\r\n        }\r\nswitchD_00698781_default:\r\n        local_1c2 = local_1c2 | bVar3;\r\n      }\r\nLAB_006987fd:\r\n      FUN_004a7ae0();\r\n    }\r\n  }\r\n  local_1c1 = local_1c1 | local_1c2;\r\n  local_1c2 = 0;\r\n  if ((DAT_0783f860 == 0) || (DAT_078b0880 == 0)) {\r\n    local_1c2 = 0;\r\n  }\r\n  else {\r\n    local_1b4 = (uint *)FUN_004a7ab0();\r\n    while (local_1b4 != (uint *)0x0) {\r\n      FUN_00695a80(&local_160,local_1b4);\r\n      uVar7 = FUN_006fc940();\r\n      pcVar12 = local_160;\r\n      if (uVar7 < local_158) goto LAB_006989c6;\r\n      local_1c0 = local_160;\r\n      if (((((short)local_160 == 0) ||\r\n           (uVar7 = (uint)(ushort)((&DAT_02db8ad4)[((uint)local_160 & 0xffff) / 1000] +\r\n                                  (short)((ulonglong)((uint)local_160 & 0xffff) % 1000)),\r\n           DAT_02db8ad0 <= uVar7)) || (uVar1 = *(ushort *)(DAT_02db8acc + uVar7 * 2), uVar1 == 0))\r\n         || ((DAT_02db8ac8 <= uVar1 || (DAT_02db8ac4 + (uint)uVar1 * 0x28 == 0)))) {\r\n        bVar3 = 0;\r\n        goto switchD_00698956_default;\r\n      }\r\n      bVar10 = 0;\r\n      bVar3 = 0;\r\n      if ((local_160 == (char *)0x0) || (iVar6 = FUN_005845b0(), bVar3 = bVar10, iVar6 == 0))\r\n      goto switchD_00698956_default;\r\n      switch(*(undefined1 *)(iVar6 + 5)) {\r\n      case 0:\r\n        bVar3 = FUN_00696a60(pcVar12);\r\n        break;\r\n      case 1:\r\n        bVar3 = FUN_00697650(pcVar12);\r\n        break;\r\n      case 2:\r\n      case 3:\r\n        bVar3 = FUN_00697da0(pcVar12);\r\n        break;\r\n      case 4:\r\n      case 5:\r\n      case 6:\r\n        bVar3 = FUN_00697c90();\r\n        break;\r\n      case 7:\r\n      case 9:\r\n      case 10:\r\n      case 0xb:\r\n        FUN_005c74e0();\r\n        goto switchD_00698956_default;\r\n      case 8:\r\n        iVar6 = FUN_00706e30();\r\n        if (iVar6 == 4) {\r\n          bVar3 = FUN_00697fd0();\r\n          break;\r\n        }\r\n        if ((iVar6 != 5) || (pcVar8 = (char *)FUN_007052d0(), pcVar8 != pcVar12))\r\n        goto switchD_00698956_default;\r\n        bVar3 = 1;\r\n        DAT_078a046c = 0;\r\n        goto LAB_0069896c;\r\n      default:\r\n        goto switchD_00698956_default;\r\n      }\r\n      if (bVar3 != 0) {\r\nLAB_0069896c:\r\n        local_198 = (int *)0x0;\r\n        local_194 = 3;\r\n        local_190 = local_1c0;\r\n        FUN_005ea5c0(\"cppItemUnequippedFromAllLoadouts\",0,&local_1a0,1);\r\n        if ((local_194 >> 6 & 1) != 0) {\r\n          (**(code **)(*local_198 + 8))(&local_1a0,local_190);\r\n          local_198 = (int *)0x0;\r\n        }\r\n        local_194 = 0;\r\n      }\r\nswitchD_00698956_default:\r\n      local_1c2 = local_1c2 | bVar3;\r\nLAB_006989c6:\r\n      FUN_004a7ae0();\r\n    }\r\n    local_1b4 = (uint *)0x0;\r\n  }\r\n  local_1c1 = local_1c1 | local_1c2;\r\n  local_160 = (char *)&local_15c;\r\n  local_1b8 = (uint *)&DAT_02e16e50;\r\n  local_1c2 = 0;\r\n  local_15c = 0;\r\n  local_150 = 1;\r\n  local_14c = 0;\r\n  local_158 = local_160;\r\n  local_154 = local_160;\r\n  do {\r\n    iVar4 = 0;\r\n    iVar6 = 0x20;\r\n    puVar11 = local_1b8;\r\n    do {\r\n      if (*(char *)((int)puVar11 + iVar4 + 0x14) == '\\0') {\r\n        local_1c0 = (char *)0x0;\r\n      }\r\n      else {\r\n        uVar7 = (DAT_00cdd280 >> (0x10U - (char)iVar4 & 0x1f) |\r\n                DAT_00cdd280 << ((char)iVar4 + 0x10U & 0x1f)) ^ *(uint *)((int)puVar11 + iVar6);\r\n        local_1c0 = (char *)(uVar7 << 8 | uVar7 >> 0x18);\r\n        puVar11 = local_1b8;\r\n      }\r\n      if ((0 < (int)local_1c0) && (FUN_00695bc0(local_1c0,local_130), local_12c == '\\0')) {\r\n        FUN_004a7d30(&local_1c0);\r\n        puVar11 = local_1b8;\r\n      }\r\n      iVar6 = iVar6 + 4;\r\n      iVar4 = iVar4 + 1;\r\n    } while (iVar6 < 0x44);\r\n    local_1b8 = puVar11 + 0x13;\r\n  } while ((int)local_1b8 < 0x2e171e0);\r\n  local_1a4 = 0;\r\n  local_1b4 = &DAT_02e74044;\r\n  local_1b0 = &DAT_02e88f1c;\r\n  do {\r\n    uVar7 = local_1a4 / 5;\r\n    if (((uVar7 < 0xc) && ((&DAT_02e16e64)[uVar7 * 0x4c] != '\\0')) &&\r\n       (uVar7 = (DAT_00cdd280 << 0x10 | DAT_00cdd280 >> 0x10) ^ (&DAT_02e16e70)[uVar7 * 0x13],\r\n       0 < (int)(uVar7 << 8 | uVar7 >> 0x18))) {\r\n      iVar6 = 0;\r\n      puVar11 = (uint *)(local_1b0 + 0x24);\r\n      do {\r\n        if (local_1b0[iVar6 + 0x10] == '\\0') {\r\n          local_1c0 = (char *)0x0;\r\n        }\r\n        else {\r\n          uVar7 = (DAT_00cdd280 >> (0x10U - (char)iVar6 & 0x1f) |\r\n                  DAT_00cdd280 << ((char)iVar6 + 0x10U & 0x1f)) ^ *puVar11;\r\n          local_1c0 = (char *)(uVar7 << 8 | uVar7 >> 0x18);\r\n        }\r\n        if ((0 < (int)local_1c0) && (FUN_00695bc0(local_1c0,local_d0), local_cc == '\\0')) {\r\n          FUN_004a7d30(&local_1c0);\r\n        }\r\n        iVar6 = iVar6 + 1;\r\n        puVar11 = puVar11 + 1;\r\n      } while (iVar6 < 6);\r\n      iVar6 = 0;\r\n      puVar11 = (uint *)(local_1b0 + 0x48);\r\n      do {\r\n        if (local_1b0[iVar6 + 0x19] == '\\0') {\r\n          local_1c0 = (char *)0x0;\r\n        }\r\n        else {\r\n          uVar7 = (DAT_00cdd280 >> (0x10U - (char)iVar6 & 0x1f) |\r\n                  DAT_00cdd280 << ((char)iVar6 + 0x10U & 0x1f)) ^ *puVar11;\r\n          local_1c0 = (char *)(uVar7 << 8 | uVar7 >> 0x18);\r\n        }\r\n        if ((0 < (int)local_1c0) && (FUN_00695bc0(local_1c0,local_70), local_6c == '\\0')) {\r\n          FUN_004a7d30(&local_1c0);\r\n        }\r\n        iVar6 = iVar6 + 1;\r\n        puVar11 = puVar11 + 1;\r\n      } while (iVar6 < 3);\r\n      iVar6 = 0;\r\n      puVar11 = (uint *)(local_1b0 + 0x54);\r\n      do {\r\n        if (local_1b0[iVar6 + 0x1c] == '\\0') {\r\n          local_1c0 = (char *)0x0;\r\n        }\r\n        else {\r\n          uVar7 = (DAT_00cdd280 >> (0x10U - (char)iVar6 & 0x1f) |\r\n                  DAT_00cdd280 << ((char)iVar6 + 0x10U & 0x1f)) ^ *puVar11;\r\n          local_1c0 = (char *)(uVar7 << 8 | uVar7 >> 0x18);\r\n        }\r\n        if ((0 < (int)local_1c0) && (FUN_00695bc0(local_1c0,local_100), local_fc == '\\0')) {\r\n          FUN_004a7d30(&local_1c0);\r\n        }\r\n        iVar6 = iVar6 + 1;\r\n        puVar11 = puVar11 + 1;\r\n      } while (iVar6 < 3);\r\n      local_1b8 = local_1b4;\r\n      local_1c0 = (char *)0x2;\r\n      do {\r\n        if ((char)local_1b8[-3] == '\\0') {\r\n          local_1ac = 0;\r\n        }\r\n        else {\r\n          local_1ac = (local_1b8[-1] ^ DAT_00cdd280) << 8 | (local_1b8[-1] ^ DAT_00cdd280) >> 0x18;\r\n        }\r\n        if ((0 < (int)local_1ac) && (FUN_00695bc0(local_1ac,local_a0), local_9c == '\\0')) {\r\n          FUN_004a7d30(&local_1ac);\r\n        }\r\n        iVar6 = 0;\r\n        puVar11 = local_1b8;\r\n        do {\r\n          if (*(char *)((int)local_1b8 + iVar6 + -0xb) == '\\0') {\r\n            local_1ac = 0;\r\n          }\r\n          else {\r\n            uVar7 = (DAT_00cdd280 >> (0x10U - (char)iVar6 & 0x1f) |\r\n                    DAT_00cdd280 << ((char)iVar6 + 0x10U & 0x1f)) ^ *puVar11;\r\n            local_1ac = uVar7 << 8 | uVar7 >> 0x18;\r\n          }\r\n          if ((0 < (int)local_1ac) && (FUN_00695bc0(local_1ac,local_40), local_3c == '\\0')) {\r\n            FUN_004a7d30(&local_1ac);\r\n          }\r\n          iVar6 = iVar6 + 1;\r\n          puVar11 = puVar11 + 1;\r\n        } while (iVar6 < 6);\r\n        local_1b8 = local_1b8 + 10;\r\n        local_1c0 = local_1c0 + -1;\r\n      } while (local_1c0 != (char *)0x0);\r\n    }\r\n    local_1a4 = local_1a4 + 1;\r\n    local_1b4 = local_1b4 + 0x14;\r\n    local_1b0 = local_1b0 + 0x70;\r\n  } while ((int)local_1b0 < 0x2e8a95c);\r\n  local_1a0 = &local_160;\r\n  local_19c = (uint *)0x0;\r\n  local_198 = (int *)0x0;\r\n  local_194 = 0;\r\n  local_190 = (char *)0x0;\r\n  local_19c = (uint *)FUN_004e1890();\r\n  do {\r\n    if (local_19c == (uint *)0x0) {\r\n      FUN_00a38040(local_198);\r\n      pcVar12 = local_160;\r\n      if (local_160 != (char *)&local_15c) {\r\n        FUN_004a8020(*(undefined4 *)(local_160 + 4));\r\n        FUN_004a8020(*(undefined4 *)(pcVar12 + 8));\r\n        FUN_00a38040(pcVar12);\r\n      }\r\n      __security_check_cookie(local_c ^ (uint)auStack_1c4);\r\n      return;\r\n    }\r\n    uVar7 = *local_19c;\r\n    if (((((short)uVar7 == 0) ||\r\n         (uVar9 = (uint)(ushort)((&DAT_02db8ad4)[(uVar7 & 0xffff) / 1000] +\r\n                                (short)((ulonglong)(uVar7 & 0xffff) % 1000)), DAT_02db8ad0 <= uVar9)\r\n         ) || (uVar1 = *(ushort *)(DAT_02db8acc + uVar9 * 2), uVar1 == 0)) ||\r\n       ((DAT_02db8ac8 <= uVar1 || (DAT_02db8ac4 + (uint)uVar1 * 0x28 == 0)))) {\r\n      bVar3 = 0;\r\n      goto switchD_00698eaa_default;\r\n    }\r\n    bVar3 = 0;\r\n    local_1b9 = 0;\r\n    if ((uVar7 == 0) || (DAT_02db8ad0 <= uVar9)) goto switchD_00698eaa_default;\r\n    uVar1 = *(ushort *)(DAT_02db8acc + uVar9 * 2);\r\n    if (uVar1 == 0) {\r\n      iVar6 = 0;\r\n    }\r\n    else if (uVar1 < DAT_02db8ac8) {\r\n      iVar6 = DAT_02db8ac4 + (uint)uVar1 * 0x28;\r\n    }\r\n    else {\r\n      iVar6 = 0;\r\n    }\r\n    bVar3 = 0;\r\n    if (iVar6 == 0) goto switchD_00698eaa_default;\r\n    switch(*(undefined1 *)(iVar6 + 5)) {\r\n    case 0:\r\n      bVar3 = FUN_00696a60(uVar7);\r\n      break;\r\n    case 1:\r\n      bVar3 = FUN_00697650(uVar7);\r\n      break;\r\n    case 2:\r\n    case 3:\r\n      bVar3 = FUN_00697da0(uVar7);\r\n      break;\r\n    case 4:\r\n    case 5:\r\n    case 6:\r\n      bVar3 = FUN_00697c90();\r\n      break;\r\n    case 7:\r\n    case 9:\r\n    case 10:\r\n    case 0xb:\r\n      FUN_005c74e0();\r\n      goto switchD_00698eaa_default;\r\n    case 8:\r\n      if (DAT_02db8ad0 <= uVar9) goto switchD_00698eaa_default;\r\n      uVar1 = *(ushort *)(DAT_02db8acc + uVar9 * 2);\r\n      if (uVar1 == 0) {\r\n        iVar6 = 0;\r\n      }\r\n      else if (uVar1 < DAT_02db8ac8) {\r\n        iVar6 = DAT_02db8ac4 + (uint)uVar1 * 0x28;\r\n      }\r\n      else {\r\n        iVar6 = 0;\r\n      }\r\n      if (iVar6 == 0) goto switchD_00698eaa_default;\r\n      if (*(char *)(iVar6 + 6) == '\\x04') {\r\n        bVar3 = FUN_00697fd0();\r\n        break;\r\n      }\r\n      if (*(char *)(iVar6 + 6) != '\\x05') goto switchD_00698eaa_default;\r\n      uVar9 = DAT_078b08f0;\r\n      if (DAT_078a046c != 3) {\r\n        uVar9 = (DAT_078a046c != 4) - 1 & DAT_078b08f4;\r\n      }\r\n      if (uVar9 != uVar7) goto switchD_00698eaa_default;\r\n      bVar3 = 1;\r\n      DAT_078a046c = 0;\r\n      goto LAB_00698ec0;\r\n    default:\r\n      goto switchD_00698eaa_default;\r\n    }\r\n    if (bVar3 != 0) {\r\nLAB_00698ec0:\r\n      local_178 = (int *)0x0;\r\n      local_174 = 3;\r\n      local_170 = uVar7;\r\n      FUN_005ea5c0(\"cppItemUnequippedFromAllLoadouts\",0,local_180,1);\r\n      if ((local_174 >> 6 & 1) != 0) {\r\n        (**(code **)(*local_178 + 8))(local_180,local_170);\r\n        local_178 = (int *)0x0;\r\n      }\r\n      local_174 = 0;\r\n    }\r\nswitchD_00698eaa_default:\r\n    local_1c2 = local_1c2 | bVar3;\r\n    FUN_004e1790();\r\n  } while( true );\r\ncode_r0x0069874f:\r\n  uVar7 = uVar7 + 1;\r\n  if (DAT_0c8031d8 <= uVar7) goto LAB_006987fd;\r\n  goto LAB_00698744;\r\n}\r\n\r\n"
+      }
+    ],
+    "total": 4,
+    "succeeded": 4,
+    "failed": 0
+  },
+  "confidence": "derived",
+  "authority": "shipped-artifact",
+  "environment": null,
+  "limitations": [
+    "Derived by an REA composed workflow."
+  ],
+  "locations": [
+    {
+      "kind": "address",
+      "address": "0x5b3530"
+    },
+    {
+      "kind": "address",
+      "address": "0x5c36f0"
+    },
+    {
+      "kind": "address",
+      "address": "0x5f02b0"
+    },
+    {
+      "kind": "address",
+      "address": "0x6985e0"
+    }
+  ],
+  "evidence_links": []
+}

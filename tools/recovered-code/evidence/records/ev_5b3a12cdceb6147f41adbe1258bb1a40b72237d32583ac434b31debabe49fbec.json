@@ -1,0 +1,168 @@
+{
+  "analysis_profile": {
+    "digest": "c3d2576361fca14bc637cfc460e3d5f1e99b096ce19af99217ea4bc71d5452cc",
+    "parameters": {
+      "upstream_analysis_profile": {
+        "digest": "b9d116ea480a02cc8773b19372074a3caf77785cbc080b1ac7133b5110e40b17",
+        "parameters": {
+          "analyzer_preset": "ghidra-default",
+          "annotation_policy": "atomic-function-entry-metadata-v1",
+          "architecture": "x86",
+          "available_architectures": [
+            "x86"
+          ],
+          "compiler_spec_id": "auto-default",
+          "decompiler_jump_loads": true,
+          "executable_role": "application",
+          "function_body_evidence": "complete-inclusive-ranges-v1",
+          "function_boundary_observations": "ghidra-terminal-call-limitations-v1",
+          "function_references": "complete-body-and-entry-reference-manager-v2",
+          "import_mode": "ephemeral-source-immutable",
+          "instruction_flow_evidence": "decoded-return-pcode-v1",
+          "jump_table_evidence": "typed-case-default-blocks-v1",
+          "language_id": "auto-from-header",
+          "load_image_observations": "source-mappings-entry-context-v2",
+          "loader": "auto-from-header",
+          "location_resolution": "explicit-address-exact-entry-symbol-first-v3",
+          "managed": false,
+          "native_aot_metadata": {
+            "contract_revision": "rtr-9.1-x64-pe-read-only-v3",
+            "report_bytes": 4194304,
+            "source_bytes": 134217728,
+            "work_units": 67108864,
+            "working_memory_bytes": 67108864
+          },
+          "no_return_repair": "disabled-windows-p0",
+          "process_launch": "official-headless-script-v1",
+          "string_inventory_evidence": "defined-data-coverage-v1",
+          "target_format": "pe",
+          "target_kind": "executable"
+        },
+        "provider": {
+          "id": "ghidra",
+          "name": "Ghidra",
+          "version": "12.1.4"
+        }
+      },
+      "workflow_revision": 2
+    },
+    "provider": {
+      "id": "rea-workflow",
+      "name": "REA composed investigation workflow",
+      "version": "1"
+    }
+  },
+  "authority": "shipped-artifact",
+  "confidence": "derived",
+  "environment": null,
+  "evidence_id": "ev_5b3a12cdceb6147f41adbe1258bb1a40b72237d32583ac434b31debabe49fbec",
+  "evidence_links": [],
+  "limitations": [
+    "Derived by an REA composed workflow."
+  ],
+  "locations": [
+    {
+      "address": "0x4a74e0",
+      "kind": "address"
+    },
+    {
+      "address": "0x6a8dc0",
+      "kind": "address"
+    },
+    {
+      "address": "0x4a4ca0",
+      "kind": "address"
+    },
+    {
+      "address": "0x5c63b0",
+      "kind": "address"
+    },
+    {
+      "address": "0x699920",
+      "kind": "address"
+    }
+  ],
+  "normalized_result": {
+    "failed": 0,
+    "items": [
+      {
+        "address": "0x004a7786",
+        "procedure": {
+          "address": "0x4a74e0",
+          "name": "FUN_004a74e0",
+          "status": "resolved"
+        },
+        "pseudocode": "\r\n/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */\r\n\r\nvoid FUN_004a74e0(void)\r\n\r\n{\r\n  int iVar1;\r\n  undefined *puVar2;\r\n  undefined *puVar3;\r\n  undefined4 *local_8;\r\n  \r\n  iVar1 = FUN_0058e410();\r\n  if (iVar1 == 0) {\r\n    _DAT_0ca1a0e0 = \"marketplace.init\";\r\n    _DAT_0ca1a0e4 = &LAB_004a6ec0;\r\n    _DAT_0ca1a0dc = DAT_02e01224;\r\n    DAT_02e01224 = &DAT_0ca1a0dc;\r\n  }\r\n  puVar3 = DAT_02e01224;\r\n  iVar1 = FUN_0058e410();\r\n  puVar2 = puVar3;\r\n  if (iVar1 == 0) {\r\n    puVar2 = &DAT_0ca1a0d0;\r\n    _DAT_0ca1a0d4 = \"marketplace.getbalance\";\r\n    _DAT_0ca1a0d8 = FUN_004a47e0;\r\n    DAT_02e01224 = &DAT_0ca1a0d0;\r\n    _DAT_0ca1a0d0 = puVar3;\r\n  }\r\n  iVar1 = FUN_0058e410();\r\n  puVar3 = puVar2;\r\n  if (iVar1 == 0) {\r\n    puVar3 = &DAT_0ca1a0c4;\r\n    _DAT_0ca1a0c8 = \"marketplace.deposit\";\r\n    _DAT_0ca1a0cc = FUN_004a5a20;\r\n    DAT_02e01224 = &DAT_0ca1a0c4;\r\n    _DAT_0ca1a0c4 = puVar2;\r\n  }\r\n  iVar1 = FUN_0058e410();\r\n  puVar2 = puVar3;\r\n  if (iVar1 == 0) {\r\n    puVar2 = &DAT_0ca1a0b8;\r\n    _DAT_0ca1a0bc = \"marketplace.getproducts\";\r\n    _DAT_0ca1a0c0 = FUN_00a53d80;\r\n    DAT_02e01224 = &DAT_0ca1a0b8;\r\n    _DAT_0ca1a0b8 = puVar3;\r\n  }\r\n  iVar1 = FUN_0058e410();\r\n  puVar3 = puVar2;\r\n  if (iVar1 == 0) {\r\n    puVar3 = &DAT_0ca1a0ac;\r\n    _DAT_0ca1a0b0 = \"marketplace.getskus\";\r\n    _DAT_0ca1a0b4 = &LAB_004a6450;\r\n    DAT_02e01224 = &DAT_0ca1a0ac;\r\n    _DAT_0ca1a0ac = puVar2;\r\n  }\r\n  iVar1 = FUN_0058e410();\r\n  puVar2 = puVar3;\r\n  if (iVar1 == 0) {\r\n    puVar2 = &DAT_0ca1a0a0;\r\n    _DAT_0ca1a0a4 = \"marketplace.getinventory\";\r\n    _DAT_0ca1a0a8 = &LAB_004a6d80;\r\n    DAT_02e01224 = &DAT_0ca1a0a0;\r\n    _DAT_0ca1a0a0 = puVar3;\r\n  }\r\n  iVar1 = FUN_0058e410();\r\n  puVar3 = puVar2;\r\n  if (iVar1 == 0) {\r\n    puVar3 = &DAT_0ca1a094;\r\n    _DAT_0ca1a098 = \"marketplace.clearinventory\";\r\n    _DAT_0ca1a09c = &LAB_004a6ed0;\r\n    DAT_02e01224 = &DAT_0ca1a094;\r\n    _DAT_0ca1a094 = puVar2;\r\n  }\r\n  iVar1 = FUN_0058e410();\r\n  puVar2 = puVar3;\r\n  if (iVar1 == 0) {\r\n    puVar2 = &DAT_0ca1a088;\r\n    _DAT_0ca1a08c = \"marketplace.getinventories\";\r\n    _DAT_0ca1a090 = FUN_00a53d80;\r\n    DAT_02e01224 = &DAT_0ca1a088;\r\n    _DAT_0ca1a088 = puVar3;\r\n  }\r\n  iVar1 = FUN_0058e410();\r\n  puVar3 = puVar2;\r\n  if (iVar1 == 0) {\r\n    puVar3 = &DAT_0ca1a07c;\r\n    _DAT_0ca1a080 = \"marketplace.putentitlement\";\r\n    _DAT_0ca1a084 = FUN_00a53d80;\r\n    DAT_02e01224 = &DAT_0ca1a07c;\r\n    _DAT_0ca1a07c = puVar2;\r\n  }\r\n  iVar1 = FUN_0058e410();\r\n  puVar2 = puVar3;\r\n  if (iVar1 == 0) {\r\n    puVar2 = &DAT_0ca1a070;\r\n    _DAT_0ca1a074 = \"marketplace.getentitlements\";\r\n    _DAT_0ca1a078 = &LAB_004a7190;\r\n    DAT_02e01224 = &DAT_0ca1a070;\r\n    _DAT_0ca1a070 = puVar3;\r\n  }\r\n  iVar1 = FUN_0058e410();\r\n  puVar3 = puVar2;\r\n  if (iVar1 == 0) {\r\n    puVar3 = &DAT_0ca1a064;\r\n    _DAT_0ca1a068 = \"marketplace.showentitlements\";\r\n    _DAT_0ca1a06c = FUN_00a53d80;\r\n    DAT_02e01224 = &DAT_0ca1a064;\r\n    _DAT_0ca1a064 = puVar2;\r\n  }\r\n  iVar1 = FUN_0058e410();\r\n  puVar2 = puVar3;\r\n  if (iVar1 == 0) {\r\n    puVar2 = &DAT_0ca1a058;\r\n    _DAT_0ca1a05c = \"marketplace.getplayerinventory\";\r\n    _DAT_0ca1a060 = FUN_00a53d80;\r\n    DAT_02e01224 = &DAT_0ca1a058;\r\n    _DAT_0ca1a058 = puVar3;\r\n  }\r\n  iVar1 = FUN_0058e410();\r\n  puVar3 = puVar2;\r\n  if (iVar1 == 0) {\r\n    puVar3 = &DAT_0ca1a04c;\r\n    _DAT_0ca1a050 = \"marketplace.downloadconfig\";\r\n    _DAT_0ca1a054 = &LAB_004a71a0;\r\n    DAT_02e01224 = &DAT_0ca1a04c;\r\n    _DAT_0ca1a04c = puVar2;\r\n  }\r\n  iVar1 = FUN_0058e410();\r\n  puVar2 = puVar3;\r\n  if (iVar1 == 0) {\r\n    puVar2 = &DAT_0ca1a040;\r\n    _DAT_0ca1a044 = \"marketplace.livemarketupdate\";\r\n    _DAT_0ca1a048 = &LAB_004a6980;\r\n    DAT_02e01224 = &DAT_0ca1a040;\r\n    _DAT_0ca1a040 = puVar3;\r\n  }\r\n  iVar1 = FUN_0058e410();\r\n  puVar3 = puVar2;\r\n  if (iVar1 == 0) {\r\n    puVar3 = &DAT_0ca1a034;\r\n    _DAT_0ca1a038 = \"marketplace.purchasesku\";\r\n    _DAT_0ca1a03c = FUN_004a6460;\r\n    DAT_02e01224 = &DAT_0ca1a034;\r\n    _DAT_0ca1a034 = puVar2;\r\n  }\r\n  iVar1 = FUN_0058e410();\r\n  if (iVar1 == 0) {\r\n    _DAT_0ca1a02c = \"toggleMaintainMarketplace\";\r\n    _DAT_0ca1a030 = &LAB_004a6530;\r\n    DAT_02e01224 = &DAT_0ca1a028;\r\n    _DAT_0ca1a028 = puVar3;\r\n  }\r\n  FUN_00709870();\r\n  FUN_00692b60();\r\n  if (DAT_0783f85c == (undefined4 *)0x0) {\r\n    DAT_0783f85c = (undefined4 *)FUN_00af6dd2(4);\r\n    if (DAT_0783f85c == (undefined4 *)0x0) {\r\n      DAT_0783f85c = (undefined4 *)0x0;\r\n    }\r\n    else {\r\n      *DAT_0783f85c = PlayerDataEventHandler::vftable;\r\n    }\r\n    local_8 = DAT_0783f85c;\r\n    FUN_004a7b50(&local_8);\r\n  }\r\n  return;\r\n}\r\n\r\n",
+        "status": "ok"
+      },
+      {
+        "address": "0x006a8e39",
+        "procedure": {
+          "address": "0x6a8dc0",
+          "name": "FUN_006a8dc0",
+          "status": "resolved"
+        },
+        "pseudocode": "\r\nvoid FUN_006a8dc0(void)\r\n\r\n{\r\n  undefined4 *puVar1;\r\n  int unaff_EDI;\r\n  undefined1 local_28 [8];\r\n  int *local_20;\r\n  uint local_1c;\r\n  undefined4 local_18;\r\n  \r\n  local_20 = (int *)0x0;\r\n  local_1c = 0;\r\n  puVar1 = (undefined4 *)(**(code **)(*DAT_00cee208 + 0x28))(8,0);\r\n  if (puVar1 == (undefined4 *)0x0) {\r\n    puVar1 = (undefined4 *)0x0;\r\n  }\r\n  else {\r\n    *puVar1 = Scaleform::RefCountImplCore::vftable;\r\n    puVar1[1] = 1;\r\n    *puVar1 = AS_IsMarketplaceItemPurchasable::vftable;\r\n  }\r\n  FUN_00719d50(local_28,puVar1,0);\r\n  if ((local_1c & 0x8f) != 0) {\r\n    (**(code **)(**(int **)(unaff_EDI + 8) + 0x14))\r\n              (*(undefined4 *)(unaff_EDI + 0x10),\"IsMarketplaceItemPurchasable\",local_28,\r\n               ((byte)*(undefined4 *)(unaff_EDI + 0xc) & 0x8f) == 10);\r\n  }\r\n  if (puVar1 != (undefined4 *)0x0) {\r\n    FUN_009724b0();\r\n  }\r\n  if ((local_1c >> 6 & 1) != 0) {\r\n    (**(code **)(*local_20 + 8))(local_28,local_18);\r\n  }\r\n  return;\r\n}\r\n\r\n",
+        "status": "ok"
+      },
+      {
+        "address": "0x004a4cbb",
+        "procedure": {
+          "address": "0x4a4ca0",
+          "name": "FUN_004a4ca0",
+          "status": "resolved"
+        },
+        "pseudocode": "\r\nbool FUN_004a4ca0(uint param_1)\r\n\r\n{\r\n  int in_EAX;\r\n  uint uVar1;\r\n  char *local_18;\r\n  undefined4 local_14;\r\n  int local_10;\r\n  undefined4 local_c;\r\n  \r\n  if (in_EAX == 0) {\r\n    return true;\r\n  }\r\n  local_18 = \"unlockFlagsNew\";\r\n  local_14 = FUN_00637c60(&DAT_00c5dde0);\r\n  local_10 = FUN_006da140();\r\n  local_10 = local_10 + 0x91b8;\r\n  local_c = 0x7ffc;\r\n  uVar1 = FUN_00592930(&local_18);\r\n  return param_1 <= uVar1;\r\n}\r\n\r\n",
+        "status": "ok"
+      },
+      {
+        "address": "0x005c64b1",
+        "procedure": {
+          "address": "0x5c63b0",
+          "name": "FUN_005c63b0",
+          "status": "resolved"
+        },
+        "pseudocode": "\r\nundefined1 FUN_005c63b0(byte *param_1)\r\n\r\n{\r\n  byte bVar1;\r\n  int iVar2;\r\n  int iVar3;\r\n  undefined1 *puVar4;\r\n  uint uVar5;\r\n  int iVar6;\r\n  uint uVar7;\r\n  byte *pbVar8;\r\n  int iVar9;\r\n  byte *pbVar10;\r\n  undefined1 *puVar11;\r\n  bool bVar12;\r\n  undefined1 local_25;\r\n  int local_20;\r\n  char *local_18;\r\n  undefined4 local_14;\r\n  int local_10;\r\n  undefined4 local_c;\r\n  \r\n  iVar3 = FUN_0049e7d0(0x25,\"mp/uiNotifications.csv\",1);\r\n  iVar2 = *(int *)(iVar3 + 8);\r\n  local_25 = 0;\r\n  local_20 = 0;\r\n  if (iVar2 < 1) {\r\n    return 0;\r\n  }\r\n  do {\r\n    iVar6 = *(int *)(iVar3 + 4);\r\n    pbVar10 = param_1;\r\n    if ((((iVar6 < 1) || (*(int *)(iVar3 + 8) <= local_20)) || (local_20 < 0)) ||\r\n       (pbVar8 = *(byte **)(*(int *)(iVar3 + 0xc) + iVar6 * local_20 * 8), pbVar8 == (byte *)0x0)) {\r\n      pbVar8 = &DAT_00c4e869;\r\n    }\r\n    do {\r\n      bVar1 = *pbVar8;\r\n      bVar12 = bVar1 < *pbVar10;\r\n      if (bVar1 != *pbVar10) {\r\nLAB_005c6433:\r\n        iVar9 = (1 - (uint)bVar12) - (uint)(bVar12 != 0);\r\n        goto LAB_005c6438;\r\n      }\r\n      if (bVar1 == 0) break;\r\n      bVar1 = pbVar8[1];\r\n      bVar12 = bVar1 < pbVar10[1];\r\n      if (bVar1 != pbVar10[1]) goto LAB_005c6433;\r\n      pbVar8 = pbVar8 + 2;\r\n      pbVar10 = pbVar10 + 2;\r\n    } while (bVar1 != 0);\r\n    iVar9 = 0;\r\nLAB_005c6438:\r\n    if (iVar9 == 0) {\r\n      if (((iVar6 < 3) || (*(int *)(iVar3 + 8) <= local_20)) ||\r\n         ((local_20 < 0 ||\r\n          (puVar11 = *(undefined1 **)(*(int *)(iVar3 + 0xc) + 0x10 + iVar6 * local_20 * 8),\r\n          puVar11 == (undefined1 *)0x0)))) {\r\n        puVar11 = &DAT_00c4e869;\r\n      }\r\n      if (((iVar6 < 4) || (*(int *)(iVar3 + 8) <= local_20)) ||\r\n         ((local_20 < 0 ||\r\n          (puVar4 = *(undefined1 **)(*(int *)(iVar3 + 0xc) + 0x18 + iVar6 * local_20 * 8),\r\n          puVar4 == (undefined1 *)0x0)))) {\r\n        puVar4 = &DAT_00c4e869;\r\n      }\r\n      uVar5 = FUN_00af6e68(puVar4);\r\n      iVar6 = FUN_004a4b10(puVar11);\r\n      if (iVar6 != 0) {\r\n        local_18 = \"unlockFlagsNew\";\r\n        local_14 = FUN_00637c60(&DAT_00c5dde0,iVar6);\r\n        local_10 = FUN_006da140();\r\n        local_10 = local_10 + 0x91b8;\r\n        local_c = 0x7ffc;\r\n        uVar7 = FUN_00592930(&local_18);\r\n        if (uVar7 < uVar5) {\r\n          iVar9 = 0;\r\n          if (DAT_07be4738 == 0) {\r\nLAB_005c652d:\r\n            local_25 = 0;\r\n          }\r\n          else {\r\n            do {\r\n              if ((&DAT_07be473c)[iVar9] == iVar6) {\r\n                if (uVar5 <= *(uint *)(iVar9 * 4 + 0x7be85bc)) goto LAB_005c653c;\r\n                goto LAB_005c652d;\r\n              }\r\n              iVar9 = iVar9 + 1;\r\n            } while (iVar9 < (int)(uint)DAT_07be4738);\r\n            local_25 = 0;\r\n          }\r\n          goto LAB_005c6545;\r\n        }\r\n      }\r\nLAB_005c653c:\r\n      local_25 = 1;\r\n    }\r\nLAB_005c6545:\r\n    local_20 = local_20 + 1;\r\n    if (iVar2 <= local_20) {\r\n      return local_25;\r\n    }\r\n  } while( true );\r\n}\r\n\r\n",
+        "status": "ok"
+      },
+      {
+        "address": "0x00699a6a",
+        "procedure": {
+          "address": "0x699920",
+          "name": "FUN_00699920",
+          "status": "resolved"
+        },
+        "pseudocode": "\r\nvoid FUN_00699920(char param_1,int param_2,char param_3)\r\n\r\n{\r\n  char cVar1;\r\n  undefined1 local_c8 [8];\r\n  int *local_c0;\r\n  uint local_bc;\r\n  undefined4 local_b8;\r\n  undefined1 local_a8 [8];\r\n  int *local_a0;\r\n  uint local_9c;\r\n  undefined4 local_98;\r\n  undefined1 local_88 [8];\r\n  int *local_80;\r\n  undefined4 local_7c;\r\n  undefined4 local_78;\r\n  undefined1 local_68 [8];\r\n  int local_60;\r\n  undefined4 local_5c;\r\n  int local_58;\r\n  undefined1 local_48 [8];\r\n  undefined4 local_40;\r\n  undefined4 local_3c;\r\n  char local_38;\r\n  undefined1 local_28 [8];\r\n  undefined4 local_20;\r\n  undefined4 local_1c;\r\n  undefined4 local_18;\r\n  \r\n  if (param_1 == '\\0') {\r\n    if (param_2 == 0x1f41) {\r\n      FUN_00597d20(2,\"@SF_UI_MARKETPLACE_RESOURCE_NOT_FOUND\");\r\n      return;\r\n    }\r\n    if (param_2 == 0x1f43) {\r\n      local_c0 = (int *)0x0;\r\n      local_bc = 1;\r\n      local_b8 = 0;\r\n      FUN_005ea300(0x465,0,\"@SF_UI_PURCHASE_SKUS_FAILED\",local_c8);\r\n      if ((local_bc >> 6 & 1) == 0) {\r\n        return;\r\n      }\r\n      (**(code **)(*local_c0 + 8))(local_c8,local_b8);\r\n      return;\r\n    }\r\n    if (param_2 == 0x1f47) {\r\n      local_a0 = (int *)0x0;\r\n      local_9c = 1;\r\n      local_98 = 0;\r\n      FUN_005ea300(0x465,0,\"@SF_UI_PURCHASE_INSUFFICIENT_FUNDS\",local_a8);\r\n      if ((local_9c >> 6 & 1) == 0) {\r\n        return;\r\n      }\r\n      (**(code **)(*local_a0 + 8))(local_a8,local_98);\r\n      return;\r\n    }\r\n    if ((param_2 == 0x1f4d) && (local_60 = FUN_005e2a20(), local_60 == 0)) {\r\n      local_5c = 1;\r\n      local_58 = local_60;\r\n      FUN_005ea300(0x465,0,\"@SF_UI_PURCHASE_INSUFFICIENT_FUNDS\",local_68);\r\n      FUN_004045f0();\r\n      return;\r\n    }\r\n    if ((param_3 != '\\0') && (param_2 == 0)) {\r\n      local_80 = (int *)0x0;\r\n      local_7c = 0;\r\n      cVar1 = FUN_005e9e20(local_88);\r\n      if (cVar1 != '\\0') {\r\n        local_40 = 0;\r\n        local_3c = 2;\r\n        local_38 = param_3;\r\n        (**(code **)(*local_80 + 0x14))\r\n                  (local_78,\"purchaseInterrupted\",local_48,((byte)local_7c & 0x8f) == 10);\r\n        FUN_004045f0();\r\n      }\r\n      FUN_005ea300(0x465,0,\"@SF_UI_PURCHASE_INTERRUPTED\",local_88);\r\n      FUN_004045f0();\r\n      return;\r\n    }\r\n    local_20 = 0;\r\n    local_1c = 1;\r\n    local_18 = 0;\r\n    FUN_005ea300(0x465,0,\"@SF_UI_PURCHASE_SKUS_FAILED\",local_28);\r\n    FUN_004045f0();\r\n    return;\r\n  }\r\n  if (DAT_0783f864 == 7) {\r\n    DAT_0783f864 = 8;\r\n  }\r\n  else {\r\n    if (DAT_0783f864 == 4) {\r\n      local_c0 = (int *)0x0;\r\n      local_bc = 1;\r\n      local_b8 = 0;\r\n      FUN_005ea300(0x465,1,0,local_c8);\r\n      if ((local_bc >> 6 & 1) != 0) {\r\n        (**(code **)(*local_c0 + 8))(local_c8,local_b8);\r\n      }\r\n      goto LAB_00699bf3;\r\n    }\r\n    if (DAT_0783f864 != 8) goto LAB_00699bf3;\r\n  }\r\n  FUN_0058d840();\r\n  FUN_004a6b10();\r\n  DAT_07817dd6 = 1;\r\nLAB_00699bf3:\r\n  if (DAT_02c1a563 != '\\0') {\r\n    FUN_0069a600(1);\r\n  }\r\n  return;\r\n}\r\n\r\n",
+        "status": "ok"
+      }
+    ],
+    "succeeded": 5,
+    "total": 5
+  },
+  "operation": "batch_decompile",
+  "parameters": {
+    "addresses": [
+      "0x004a7786",
+      "0x006a8e39",
+      "0x004a4cbb",
+      "0x005c64b1",
+      "0x00699a6a"
+    ]
+  },
+  "predicate_type": "rea.analysis",
+  "provider": {
+    "id": "rea-workflow",
+    "name": "REA composed investigation workflow",
+    "version": "1"
+  },
+  "raw_result": null,
+  "subject": {
+    "architecture": "x86",
+    "digest": {
+      "sha256": "e3823fd6afc80fb25fa84747e6e9634707b9a0b189357a5466921cda354af37b"
+    },
+    "format": "pe",
+    "local_path": "E:\\Games\\CODOL_Experience_V3.3.3.3_FULL.7z\\CODOL_Experience_V3.3.3.3_FULL.7z\\codoMP_client_shipRetail.exe",
+    "name": "E:\\Games\\CODOL_Experience_V3.3.3.3_FULL.7z\\CODOL_Experience_V3.3.3.3_FULL.7z\\codoMP_client_shipRetail.exe"
+  }
+}

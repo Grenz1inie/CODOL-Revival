@@ -1,0 +1,37 @@
+[
+  {
+    "source": "research/evidence/controller-entitlement-instructions.json",
+    "copy": "evidence/support/controller-entitlement-instructions.json",
+    "sha256": "a5587f989b8c75ff67fbcc35c25ca0267fdb85d7d2504e4ec1fe1d92777d7aa7"
+  },
+  {
+    "source": "research/evidence/controller-inventory-instructions.json",
+    "copy": "evidence/support/controller-inventory-instructions.json",
+    "sha256": "d4ae0cb7c631a6f3863c5bf54d26304053f43eccb00ccc6edaabbec46bd3a578"
+  },
+  {
+    "source": "research/evidence/controller-inventory-wire-types.json",
+    "copy": "evidence/support/controller-inventory-wire-types.json",
+    "sha256": "bfee740cdf5fbd41e3e0e15632e647156762b478e91175444d047f3788dbbf57"
+  },
+  {
+    "source": "research/evidence/controller-purchase-wire-instructions.json",
+    "copy": "evidence/support/controller-purchase-wire-instructions.json",
+    "sha256": "fb07309f82863887e962c7621f34af0bb28799d520c87c5b6913da83a3db3132"
+  },
+  {
+    "source": "research/evidence/controller-assets-vtables.json",
+    "copy": "evidence/support/controller-assets-vtables.json",
+    "sha256": "b014362cc92b9aa15b3e3203e5a0659d19aedab0ed0e6d23061c713324ed6990"
+  },
+  {
+    "source": "research/evidence/controller-currency-instructions.json",
+    "copy": "evidence/support/controller-currency-instructions.json",
+    "sha256": "d1da8f87de5957b5c55ec443f3d62b2bed24f46bff143be3a2233a3c8015f767"
+  },
+  {
+    "source": "research/evidence/controller-currency-names.json",
+    "copy": "evidence/support/controller-currency-names.json",
+    "sha256": "8edcf8b672b1d9697c5cf7045b19b0aadef8cc2854d5557cdb1d83f08955f4e0"
+  }
+]

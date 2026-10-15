@@ -1,0 +1,6 @@
+{
+  "source": "research\\evidence\\expansion-complete.rea.json",
+  "copy": "evidence\\reuse-history.rea.json",
+  "sha256": "24eb1a29ff5403f553ea974e32764927a84799efe65175a962cef08af0515abc",
+  "description": "Unmodified copy of historical REA snapshot; not a fresh default Ghidra analysis."
+}

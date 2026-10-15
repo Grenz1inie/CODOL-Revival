@@ -1,0 +1,168 @@
+{
+  "analysis_profile": {
+    "digest": "c3d2576361fca14bc637cfc460e3d5f1e99b096ce19af99217ea4bc71d5452cc",
+    "parameters": {
+      "upstream_analysis_profile": {
+        "digest": "b9d116ea480a02cc8773b19372074a3caf77785cbc080b1ac7133b5110e40b17",
+        "parameters": {
+          "analyzer_preset": "ghidra-default",
+          "annotation_policy": "atomic-function-entry-metadata-v1",
+          "architecture": "x86",
+          "available_architectures": [
+            "x86"
+          ],
+          "compiler_spec_id": "auto-default",
+          "decompiler_jump_loads": true,
+          "executable_role": "application",
+          "function_body_evidence": "complete-inclusive-ranges-v1",
+          "function_boundary_observations": "ghidra-terminal-call-limitations-v1",
+          "function_references": "complete-body-and-entry-reference-manager-v2",
+          "import_mode": "ephemeral-source-immutable",
+          "instruction_flow_evidence": "decoded-return-pcode-v1",
+          "jump_table_evidence": "typed-case-default-blocks-v1",
+          "language_id": "auto-from-header",
+          "load_image_observations": "source-mappings-entry-context-v2",
+          "loader": "auto-from-header",
+          "location_resolution": "explicit-address-exact-entry-symbol-first-v3",
+          "managed": false,
+          "native_aot_metadata": {
+            "contract_revision": "rtr-9.1-x64-pe-read-only-v3",
+            "report_bytes": 4194304,
+            "source_bytes": 134217728,
+            "work_units": 67108864,
+            "working_memory_bytes": 67108864
+          },
+          "no_return_repair": "disabled-windows-p0",
+          "process_launch": "official-headless-script-v1",
+          "string_inventory_evidence": "defined-data-coverage-v1",
+          "target_format": "pe",
+          "target_kind": "executable"
+        },
+        "provider": {
+          "id": "ghidra",
+          "name": "Ghidra",
+          "version": "12.1.4"
+        }
+      },
+      "workflow_revision": 2
+    },
+    "provider": {
+      "id": "rea-workflow",
+      "name": "REA composed investigation workflow",
+      "version": "1"
+    }
+  },
+  "authority": "shipped-artifact",
+  "confidence": "derived",
+  "environment": null,
+  "evidence_id": "ev_49d61387299a094510d358d60a8f173492b6e5188b8505523cef1baedf72f0ca",
+  "evidence_links": [],
+  "limitations": [
+    "Derived by an REA composed workflow."
+  ],
+  "locations": [
+    {
+      "address": "0x6d9c10",
+      "kind": "address"
+    },
+    {
+      "address": "0x6d7b20",
+      "kind": "address"
+    },
+    {
+      "address": "0x6d7500",
+      "kind": "address"
+    },
+    {
+      "address": "0x6d72e0",
+      "kind": "address"
+    },
+    {
+      "address": "0xa47450",
+      "kind": "address"
+    }
+  ],
+  "normalized_result": {
+    "failed": 0,
+    "items": [
+      {
+        "address": "0x006d9c5d",
+        "procedure": {
+          "address": "0x6d9c10",
+          "name": "FUN_006d9c10",
+          "status": "resolved"
+        },
+        "pseudocode": "\r\nvoid FUN_006d9c10(void)\r\n\r\n{\r\n  int *pbBuffer;\r\n  BOOL BVar1;\r\n  undefined4 *in_ECX;\r\n  undefined4 *puVar2;\r\n  int local_10;\r\n  \r\n  puVar2 = in_ECX + 4;\r\n  local_10 = 1;\r\n  do {\r\n    puVar2[1] = &DAT_00c7e518;\r\n    puVar2[3] = &DAT_00c7e520;\r\n    puVar2[0x2448] = bdReferencable::vftable;\r\n    puVar2[0x2449] = 0;\r\n    FUN_00a5a240(0);\r\n    *puVar2 = dwProfile::vftable;\r\n    puVar2[2] = dwProfile::vftable;\r\n    *(undefined ***)(*(int *)(puVar2[1] + 4) + 4 + (int)puVar2) = dwProfile::vftable;\r\n    puVar2[0x2422] = 0;\r\n    puVar2[0x2423] = 0;\r\n    puVar2[0x16] = 0;\r\n    puVar2[0x18] = 0;\r\n    puVar2[0x19] = 0;\r\n    *(undefined1 *)(puVar2 + 0x1a) = 0;\r\n    puVar2[0x1b] = 0;\r\n    puVar2[0x1c] = 0;\r\n    puVar2[0x1d] = 0;\r\n    puVar2[0x1e] = 0;\r\n    puVar2[0x2447] = 0;\r\n    puVar2[0x2425] = 0;\r\n    puVar2[0x2426] = 0;\r\n    puVar2[0x2443] = 0;\r\n    puVar2[0x2444] = 0xffffffff;\r\n    *(undefined2 *)(puVar2 + 0x2424) = 0x100;\r\n    _memset(puVar2 + 0x1f,0,0x8000);\r\n    if (DAT_07817b6c == '\\0') {\r\n      CryptAcquireContextA(&DAT_017c6f80,(LPCSTR)0x0,(LPCSTR)0x0,1,0xf0000000);\r\n      DAT_07817b6c = '\\x01';\r\n    }\r\n    pbBuffer = puVar2 + 0x2445;\r\n    BVar1 = CryptGenRandom(DAT_017c6f80,4,(BYTE *)pbBuffer);\r\n    if ((BVar1 == 0) || (*pbBuffer == 0)) {\r\n      FUN_00a367e0();\r\n      FUN_00a36790(pbBuffer,4);\r\n      FUN_00a53d80();\r\n    }\r\n    *(undefined1 *)(puVar2 + 0x2446) = 0;\r\n    _memset(puVar2 + 0x2021,0,0x1000);\r\n    if (puVar2[0x2422] != 0) {\r\n      FUN_00af6cad(puVar2[0x2422]);\r\n      puVar2[0x2422] = 0;\r\n      puVar2[0x2423] = 0;\r\n    }\r\n    puVar2[0x2020] = 0;\r\n    puVar2[0x201f] = 0;\r\n    *(undefined2 *)(puVar2 + 0x2421) = 0;\r\n    *(undefined1 *)(puVar2 + 6) = 0;\r\n    puVar2 = puVar2 + 0x244a;\r\n    local_10 = local_10 + -1;\r\n  } while (-1 < local_10);\r\n  *in_ECX = 0;\r\n  in_ECX[1] = 0;\r\n  return;\r\n}\r\n\r\n",
+        "status": "ok"
+      },
+      {
+        "address": "0x006d7b20",
+        "procedure": {
+          "address": "0x6d7b20",
+          "name": "FUN_006d7b20",
+          "status": "resolved"
+        },
+        "pseudocode": "\r\n/* WARNING: Function: __alloca_probe replaced with injection: alloca_probe */\r\n\r\nvoid FUN_006d7b20(void)\r\n\r\n{\r\n  uint uVar1;\r\n  int iVar2;\r\n  int in_ECX;\r\n  undefined1 *puVar3;\r\n  char *pcVar4;\r\n  undefined1 auStack_2f04 [4];\r\n  int local_2f00 [22];\r\n  undefined1 local_2ea8 [11932];\r\n  uint local_c;\r\n  \r\n  local_c = DAT_00cc7c80 ^ (uint)auStack_2f04;\r\n  pcVar4 = \"mp/playerdata.def\";\r\n  if (*(int *)(in_ECX + 0x6c) != 1) {\r\n    pcVar4 = \"mp/playersecuredata.def\";\r\n  }\r\n  iVar2 = FUN_0049e7d0(0x27,pcVar4,1);\r\n  iVar2 = *(int *)(iVar2 + 8);\r\n  if (0x7ffc < *(uint *)(iVar2 + 0x30)) {\r\n    FUN_00597d20(2,\"943 %s %d %d\",pcVar4,*(uint *)(iVar2 + 0x30),0x7ffc);\r\n  }\r\n  local_2f00[0] = in_ECX + 0x80;\r\n  local_2f00[1] = 0x7ffc;\r\n  local_2f00[2] = 0;\r\n  uVar1 = *(uint *)(iVar2 + 0x28);\r\n  if (uVar1 < 10) {\r\n    FUN_00630750(iVar2,(uint *)(iVar2 + 0x28),0,0,local_2f00,local_2f00 + 2,uVar1);\r\n  }\r\n  if (local_2f00[2] != 0) {\r\n    puVar3 = local_2ea8;\r\n    iVar2 = local_2f00[2];\r\n    do {\r\n      switch(*(undefined4 *)(puVar3 + -0xc)) {\r\n      case 0:\r\n      case 1:\r\n      case 8:\r\n      case 9:\r\n        break;\r\n      case 3:\r\n      }\r\n      puVar3 = puVar3 + 0x50;\r\n      iVar2 = iVar2 + -1;\r\n    } while (iVar2 != 0);\r\n  }\r\n  __security_check_cookie(local_c ^ (uint)auStack_2f04);\r\n  return;\r\n}\r\n\r\n",
+        "status": "ok"
+      },
+      {
+        "address": "0x006d7500",
+        "procedure": {
+          "address": "0x6d7500",
+          "name": "FUN_006d7500",
+          "status": "resolved"
+        },
+        "pseudocode": "\r\n/* WARNING: Function: __alloca_probe replaced with injection: alloca_probe */\r\n\r\nvoid FUN_006d7500(undefined4 param_1)\r\n\r\n{\r\n  uint uVar1;\r\n  char cVar2;\r\n  int iVar3;\r\n  int in_ECX;\r\n  undefined4 *puVar4;\r\n  char *pcVar5;\r\n  uint uVar6;\r\n  bool bVar7;\r\n  undefined1 auStack_2f14 [4];\r\n  undefined4 local_2f10;\r\n  undefined *local_2f0c;\r\n  undefined4 local_2f08;\r\n  int local_2f04;\r\n  int local_2f00 [21];\r\n  undefined4 local_2eac [2984];\r\n  uint local_c;\r\n  \r\n  local_c = DAT_00cc7c80 ^ (uint)auStack_2f14;\r\n  local_2f10 = param_1;\r\n  pcVar5 = \"mp/playerdata.def\";\r\n  if (*(int *)(in_ECX + 100) != 1) {\r\n    pcVar5 = \"mp/playersecuredata.def\";\r\n  }\r\n  iVar3 = FUN_0049e7d0(0x27,pcVar5,1);\r\n  local_2f04 = *(int *)(iVar3 + 8);\r\n  if (0x7ffc < *(uint *)(local_2f04 + 0x30)) {\r\n    FUN_00597d20(2,\"943 %s %d %d\",pcVar5,*(uint *)(local_2f04 + 0x30),0x7ffc);\r\n  }\r\n  local_2f08 = FUN_006d7d80();\r\n  iVar3 = FUN_006d7340(in_ECX + -8);\r\n  bVar7 = iVar3 != 0;\r\n  if (bVar7) {\r\n    local_2f0c = &DAT_077f3148;\r\n  }\r\n  else {\r\n    local_2f0c = (undefined *)(in_ECX + 0x74);\r\n    iVar3 = 0x8000;\r\n  }\r\n  cVar2 = FUN_007d0550(local_2f10);\r\n  if ((((cVar2 == '\\0') || (cVar2 = FUN_00a38f30(bVar7), cVar2 == '\\0')) ||\r\n      (cVar2 = FUN_00a38f30(1), cVar2 == '\\0')) ||\r\n     ((cVar2 = FUN_00a38f30(local_2f08), cVar2 == '\\0' ||\r\n      (cVar2 = FUN_00a39020(local_2f0c,iVar3), cVar2 == '\\0')))) {\r\n    __security_check_cookie(local_c ^ (uint)auStack_2f14);\r\n    return;\r\n  }\r\n  local_2f00[0] = in_ECX + 0x78;\r\n  uVar6 = 0;\r\n  local_2f00[1] = 0x7ffc;\r\n  local_2f00[2] = 0;\r\n  uVar1 = *(uint *)(local_2f04 + 0x28);\r\n  bVar7 = true;\r\n  if (uVar1 < 10) {\r\n    FUN_00630750(local_2f04,(uint *)(local_2f04 + 0x28),0,0,local_2f00,local_2f00 + 2,uVar1);\r\n  }\r\n  puVar4 = local_2eac;\r\n  do {\r\n    if ((uint)local_2f00[2] <= uVar6) break;\r\n    switch(puVar4[-2]) {\r\n    case 0:\r\n      if (bVar7) {\r\n        cVar2 = FUN_00a38ee0(*(undefined4 *)*puVar4);\r\nLAB_006d76e2:\r\n        if (cVar2 != '\\0') {\r\n          bVar7 = true;\r\n          goto switchD_006d7656_caseD_2;\r\n        }\r\n      }\r\n      break;\r\n    case 1:\r\n      if (bVar7) {\r\n        cVar2 = FUN_00a38ee0(*(undefined1 *)*puVar4);\r\n        goto LAB_006d76e2;\r\n      }\r\n      break;\r\n    default:\r\n      goto switchD_006d7656_caseD_2;\r\n    case 3:\r\n      if (bVar7) {\r\n        cVar2 = FUN_00a38f80(*puVar4,puVar4[1]);\r\n        goto LAB_006d76e2;\r\n      }\r\n      break;\r\n    case 8:\r\n      if (bVar7) {\r\n        cVar2 = FUN_00a38a00(*(undefined4 *)*puVar4);\r\n        goto LAB_006d76e2;\r\n      }\r\n      break;\r\n    case 9:\r\n      if (bVar7) {\r\n        cVar2 = FUN_00a38ee0((int)*(short *)*puVar4);\r\n        goto LAB_006d76e2;\r\n      }\r\n    }\r\n    bVar7 = false;\r\nswitchD_006d7656_caseD_2:\r\n    uVar6 = uVar6 + 1;\r\n    puVar4 = puVar4 + 0x14;\r\n  } while (bVar7);\r\n  __security_check_cookie(local_c ^ (uint)auStack_2f14);\r\n  return;\r\n}\r\n\r\n",
+        "status": "ok"
+      },
+      {
+        "address": "0x006d72e0",
+        "procedure": {
+          "address": "0x6d72e0",
+          "name": "FUN_006d72e0",
+          "status": "resolved"
+        },
+        "pseudocode": "\r\nint FUN_006d72e0(byte param_1)\r\n\r\n{\r\n  int in_ECX;\r\n  \r\n  FUN_00a5a2f0();\r\n  FUN_00a37f60();\r\n  if ((param_1 & 1) != 0) {\r\n    FUN_00a38040(in_ECX + -0x9120);\r\n  }\r\n  return in_ECX + -0x9120;\r\n}\r\n\r\n",
+        "status": "ok"
+      },
+      {
+        "address": "0x00a47450",
+        "procedure": {
+          "address": "0xa47450",
+          "name": "FUN_00a47450",
+          "status": "resolved"
+        },
+        "pseudocode": "\r\nuint FUN_00a47450(void)\r\n\r\n{\r\n  undefined4 *in_ECX;\r\n  uint uVar1;\r\n  undefined **local_30;\r\n  undefined4 local_2c;\r\n  uint local_28;\r\n  undefined4 local_24;\r\n  undefined4 local_20;\r\n  undefined4 local_1c;\r\n  undefined2 local_18;\r\n  undefined1 local_16;\r\n  char local_11;\r\n  void *local_10;\r\n  undefined1 *puStack_c;\r\n  undefined4 local_8;\r\n  \r\n  puStack_c = &LAB_00b41d00;\r\n  local_10 = ExceptionList;\r\n  ExceptionList = &local_10;\r\n  local_2c = 0;\r\n  local_30 = bdByteBuffer::vftable;\r\n  local_28 = 0;\r\n  local_24 = 0;\r\n  local_18 = 0x101;\r\n  local_16 = 0;\r\n  local_1c = 0;\r\n  local_20 = 0;\r\n  local_8 = 1;\r\n  local_11 = (**(code **)*in_ECX)(&local_30,DAT_00cc7c80 ^ (uint)&stack0xfffffffc);\r\n  if (local_11 == '\\0') {\r\n    FUN_00a53d80();\r\n  }\r\n  if ((0x7fffffff < local_28) || (uVar1 = local_28, local_11 == '\\0')) {\r\n    uVar1 = 0xffffffff;\r\n  }\r\n  local_8 = 0xffffffff;\r\n  FUN_00a387d0();\r\n  ExceptionList = local_10;\r\n  return uVar1;\r\n}\r\n\r\n",
+        "status": "ok"
+      }
+    ],
+    "succeeded": 5,
+    "total": 5
+  },
+  "operation": "batch_decompile",
+  "parameters": {
+    "addresses": [
+      "0x006d9c5d",
+      "0x006d7b20",
+      "0x006d7500",
+      "0x006d72e0",
+      "0x00a47450"
+    ]
+  },
+  "predicate_type": "rea.analysis",
+  "provider": {
+    "id": "rea-workflow",
+    "name": "REA composed investigation workflow",
+    "version": "1"
+  },
+  "raw_result": null,
+  "subject": {
+    "architecture": "x86",
+    "digest": {
+      "sha256": "e3823fd6afc80fb25fa84747e6e9634707b9a0b189357a5466921cda354af37b"
+    },
+    "format": "pe",
+    "local_path": "E:\\Games\\CODOL_Experience_V3.3.3.3_FULL.7z\\CODOL_Experience_V3.3.3.3_FULL.7z\\codoMP_client_shipRetail.exe",
+    "name": "E:\\Games\\CODOL_Experience_V3.3.3.3_FULL.7z\\CODOL_Experience_V3.3.3.3_FULL.7z\\codoMP_client_shipRetail.exe"
+  }
+}

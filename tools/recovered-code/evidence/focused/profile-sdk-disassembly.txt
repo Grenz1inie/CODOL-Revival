@@ -1,0 +1,739 @@
+
+E:\Games\CODOL_Experience_V3.3.3.3_FULL.7z\CODOL_Experience_V3.3.3.3_FULL.7z\codoMP_client_shipRetail.exe:     file format pei-i386
+
+
+Disassembly of section .text:
+
+00a5a400 <.text+0x659400>:
+  a5a400:	8d 4e 18             	lea    0x18(%esi),%ecx
+  a5a403:	e8 58 db fd ff       	call   0xa37f60
+  a5a408:	f6 45 08 01          	testb  $0x1,0x8(%ebp)
+  a5a40c:	74 09                	je     0xa5a417
+  a5a40e:	56                   	push   %esi
+  a5a40f:	e8 2c dc fd ff       	call   0xa38040
+  a5a414:	83 c4 04             	add    $0x4,%esp
+  a5a417:	5f                   	pop    %edi
+  a5a418:	8b c6                	mov    %esi,%eax
+  a5a41a:	5e                   	pop    %esi
+  a5a41b:	5d                   	pop    %ebp
+  a5a41c:	c2 04 00             	ret    $0x4
+  a5a41f:	cc                   	int3
+  a5a420:	55                   	push   %ebp
+  a5a421:	8b ec                	mov    %esp,%ebp
+  a5a423:	6a ff                	push   $0xffffffff
+  a5a425:	68 bc 3a b4 00       	push   $0xb43abc
+  a5a42a:	64 a1 00 00 00 00    	mov    %fs:0x0,%eax
+  a5a430:	50                   	push   %eax
+  a5a431:	83 ec 0c             	sub    $0xc,%esp
+  a5a434:	53                   	push   %ebx
+  a5a435:	56                   	push   %esi
+  a5a436:	57                   	push   %edi
+  a5a437:	a1 80 7c cc 00       	mov    0xcc7c80,%eax
+  a5a43c:	33 c5                	xor    %ebp,%eax
+  a5a43e:	50                   	push   %eax
+  a5a43f:	8d 45 f4             	lea    -0xc(%ebp),%eax
+  a5a442:	64 a3 00 00 00 00    	mov    %eax,%fs:0x0
+  a5a448:	89 4d ec             	mov    %ecx,-0x14(%ebp)
+  a5a44b:	33 c0                	xor    %eax,%eax
+  a5a44d:	89 45 f0             	mov    %eax,-0x10(%ebp)
+  a5a450:	8b 5d 08             	mov    0x8(%ebp),%ebx
+  a5a453:	89 03                	mov    %eax,(%ebx)
+  a5a455:	8b 7d 0c             	mov    0xc(%ebp),%edi
+  a5a458:	89 45 fc             	mov    %eax,-0x4(%ebp)
+  a5a45b:	8b 07                	mov    (%edi),%eax
+  a5a45d:	8b 50 04             	mov    0x4(%eax),%edx
+  a5a460:	8b cf                	mov    %edi,%ecx
+  a5a462:	c7 45 f0 01 00 00 00 	movl   $0x1,-0x10(%ebp)
+  a5a469:	ff d2                	call   *%edx
+  a5a46b:	6a 2c                	push   $0x2c
+  a5a46d:	8d 70 49             	lea    0x49(%eax),%esi
+  a5a470:	e8 ab db fd ff       	call   0xa38020
+  a5a475:	83 c4 04             	add    $0x4,%esp
+  a5a478:	89 45 e8             	mov    %eax,-0x18(%ebp)
+  a5a47b:	c7 45 fc 01 00 00 00 	movl   $0x1,-0x4(%ebp)
+  a5a482:	85 c0                	test   %eax,%eax
+  a5a484:	74 0c                	je     0xa5a492
+  a5a486:	6a 01                	push   $0x1
+  a5a488:	56                   	push   %esi
+  a5a489:	8b c8                	mov    %eax,%ecx
+  a5a48b:	e8 20 89 00 00       	call   0xa62db0
+  a5a490:	eb 02                	jmp    0xa5a494
+  a5a492:	33 c0                	xor    %eax,%eax
+  a5a494:	89 45 0c             	mov    %eax,0xc(%ebp)
+  a5a497:	85 c0                	test   %eax,%eax
+  a5a499:	74 0a                	je     0xa5a4a5
+  a5a49b:	83 c0 04             	add    $0x4,%eax
+  a5a49e:	50                   	push   %eax
+  a5a49f:	ff 15 fc b0 b5 00    	call   *0xb5b0fc
+  a5a4a5:	6a 03                	push   $0x3
+  a5a4a7:	8d 45 0c             	lea    0xc(%ebp),%eax
+  a5a4aa:	6a 08                	push   $0x8
+  a5a4ac:	50                   	push   %eax
+  a5a4ad:	c7 45 fc 02 00 00 00 	movl   $0x2,-0x4(%ebp)
+  a5a4b4:	e8 f7 0c fe ff       	call   0xa3b1b0
+  a5a4b9:	8b 57 08             	mov    0x8(%edi),%edx
+  a5a4bc:	8b 45 0c             	mov    0xc(%ebp),%eax
+  a5a4bf:	8b 12                	mov    (%edx),%edx
+  a5a4c1:	8d 4f 08             	lea    0x8(%edi),%ecx
+  a5a4c4:	83 c4 0c             	add    $0xc,%esp
+  a5a4c7:	50                   	push   %eax
+  a5a4c8:	ff d2                	call   *%edx
+  a5a4ca:	8b 4d ec             	mov    -0x14(%ebp),%ecx
+  a5a4cd:	8b 09                	mov    (%ecx),%ecx
+  a5a4cf:	8d 45 0c             	lea    0xc(%ebp),%eax
+  a5a4d2:	50                   	push   %eax
+  a5a4d3:	53                   	push   %ebx
+  a5a4d4:	e8 67 19 fe ff       	call   0xa3be40
+  a5a4d9:	85 c0                	test   %eax,%eax
+  a5a4db:	74 09                	je     0xa5a4e6
+  a5a4dd:	50                   	push   %eax
+  a5a4de:	e8 9d 98 ff ff       	call   0xa53d80
+  a5a4e3:	83 c4 04             	add    $0x4,%esp
+  a5a4e6:	8b 45 0c             	mov    0xc(%ebp),%eax
+  a5a4e9:	c6 45 fc 00          	movb   $0x0,-0x4(%ebp)
+  a5a4ed:	85 c0                	test   %eax,%eax
+  a5a4ef:	74 1d                	je     0xa5a50e
+  a5a4f1:	83 c0 04             	add    $0x4,%eax
+  a5a4f4:	50                   	push   %eax
+  a5a4f5:	ff 15 00 b1 b5 00    	call   *0xb5b100
+  a5a4fb:	85 c0                	test   %eax,%eax
+  a5a4fd:	75 0f                	jne    0xa5a50e
+  a5a4ff:	8b 4d 0c             	mov    0xc(%ebp),%ecx
+  a5a502:	85 c9                	test   %ecx,%ecx
+  a5a504:	74 08                	je     0xa5a50e
+  a5a506:	8b 11                	mov    (%ecx),%edx
+  a5a508:	8b 02                	mov    (%edx),%eax
+  a5a50a:	6a 01                	push   $0x1
+  a5a50c:	ff d0                	call   *%eax
+  a5a50e:	8b c3                	mov    %ebx,%eax
+  a5a510:	8b 4d f4             	mov    -0xc(%ebp),%ecx
+  a5a513:	64 89 0d 00 00 00 00 	mov    %ecx,%fs:0x0
+  a5a51a:	59                   	pop    %ecx
+  a5a51b:	5f                   	pop    %edi
+  a5a51c:	5e                   	pop    %esi
+  a5a51d:	5b                   	pop    %ebx
+  a5a51e:	8b e5                	mov    %ebp,%esp
+  a5a520:	5d                   	pop    %ebp
+  a5a521:	c2 08 00             	ret    $0x8
+  a5a524:	cc                   	int3
+  a5a525:	cc                   	int3
+  a5a526:	cc                   	int3
+  a5a527:	cc                   	int3
+  a5a528:	cc                   	int3
+  a5a529:	cc                   	int3
+  a5a52a:	cc                   	int3
+  a5a52b:	cc                   	int3
+  a5a52c:	cc                   	int3
+  a5a52d:	cc                   	int3
+  a5a52e:	cc                   	int3
+  a5a52f:	cc                   	int3
+  a5a530:	55                   	push   %ebp
+  a5a531:	8b ec                	mov    %esp,%ebp
+  a5a533:	6a ff                	push   $0xffffffff
+  a5a535:	68 0c 3b b4 00       	push   $0xb43b0c
+  a5a53a:	64 a1 00 00 00 00    	mov    %fs:0x0,%eax
+  a5a540:	50                   	push   %eax
+  a5a541:	83 ec 0c             	sub    $0xc,%esp
+  a5a544:	53                   	push   %ebx
+  a5a545:	56                   	push   %esi
+  a5a546:	57                   	push   %edi
+  a5a547:	a1 80 7c cc 00       	mov    0xcc7c80,%eax
+  a5a54c:	33 c5                	xor    %ebp,%eax
+  a5a54e:	50                   	push   %eax
+  a5a54f:	8d 45 f4             	lea    -0xc(%ebp),%eax
+  a5a552:	64 a3 00 00 00 00    	mov    %eax,%fs:0x0
+  a5a558:	89 4d ec             	mov    %ecx,-0x14(%ebp)
+  a5a55b:	33 c0                	xor    %eax,%eax
+  a5a55d:	89 45 f0             	mov    %eax,-0x10(%ebp)
+  a5a560:	8b 4d 08             	mov    0x8(%ebp),%ecx
+  a5a563:	89 01                	mov    %eax,(%ecx)
+  a5a565:	8b 7d 14             	mov    0x14(%ebp),%edi
+  a5a568:	8b 17                	mov    (%edi),%edx
+  a5a56a:	89 45 fc             	mov    %eax,-0x4(%ebp)
+  a5a56d:	8b 42 04             	mov    0x4(%edx),%eax
+  a5a570:	bb 01 00 00 00       	mov    $0x1,%ebx
+  a5a575:	8b cf                	mov    %edi,%ecx
+  a5a577:	89 5d f0             	mov    %ebx,-0x10(%ebp)
+  a5a57a:	ff d0                	call   *%eax
+  a5a57c:	6a 2c                	push   $0x2c
+  a5a57e:	8d 70 53             	lea    0x53(%eax),%esi
+  a5a581:	e8 9a da fd ff       	call   0xa38020
+  a5a586:	83 c4 04             	add    $0x4,%esp
+  a5a589:	89 45 e8             	mov    %eax,-0x18(%ebp)
+  a5a58c:	89 5d fc             	mov    %ebx,-0x4(%ebp)
+  a5a58f:	85 c0                	test   %eax,%eax
+  a5a591:	74 0b                	je     0xa5a59e
+  a5a593:	53                   	push   %ebx
+  a5a594:	56                   	push   %esi
+  a5a595:	8b c8                	mov    %eax,%ecx
+  a5a597:	e8 14 88 00 00       	call   0xa62db0
+  a5a59c:	eb 02                	jmp    0xa5a5a0
+  a5a59e:	33 c0                	xor    %eax,%eax
+  a5a5a0:	89 45 14             	mov    %eax,0x14(%ebp)
+  a5a5a3:	85 c0                	test   %eax,%eax
+  a5a5a5:	74 0a                	je     0xa5a5b1
+  a5a5a7:	83 c0 04             	add    $0x4,%eax
+  a5a5aa:	50                   	push   %eax
+  a5a5ab:	ff 15 fc b0 b5 00    	call   *0xb5b0fc
+  a5a5b1:	6a 06                	push   $0x6
+  a5a5b3:	8d 4d 14             	lea    0x14(%ebp),%ecx
+  a5a5b6:	6a 08                	push   $0x8
+  a5a5b8:	51                   	push   %ecx
+  a5a5b9:	c7 45 fc 02 00 00 00 	movl   $0x2,-0x4(%ebp)
+  a5a5c0:	e8 eb 0b fe ff       	call   0xa3b1b0
+  a5a5c5:	8b 55 10             	mov    0x10(%ebp),%edx
+  a5a5c8:	8b 45 0c             	mov    0xc(%ebp),%eax
+  a5a5cb:	8b 4d 14             	mov    0x14(%ebp),%ecx
+  a5a5ce:	83 c4 0c             	add    $0xc,%esp
+  a5a5d1:	52                   	push   %edx
+  a5a5d2:	50                   	push   %eax
+  a5a5d3:	e8 c8 e3 fd ff       	call   0xa389a0
+  a5a5d8:	8b 57 08             	mov    0x8(%edi),%edx
+  a5a5db:	8b 12                	mov    (%edx),%edx
+  a5a5dd:	8d 4f 08             	lea    0x8(%edi),%ecx
+  a5a5e0:	8a d8                	mov    %al,%bl
+  a5a5e2:	8b 45 14             	mov    0x14(%ebp),%eax
+  a5a5e5:	50                   	push   %eax
+  a5a5e6:	ff d2                	call   *%edx
+  a5a5e8:	8b 75 08             	mov    0x8(%ebp),%esi
+  a5a5eb:	80 fb 01             	cmp    $0x1,%bl
+  a5a5ee:	75 1c                	jne    0xa5a60c
+  a5a5f0:	8b 4d ec             	mov    -0x14(%ebp),%ecx
+  a5a5f3:	8b 09                	mov    (%ecx),%ecx
+  a5a5f5:	8d 45 14             	lea    0x14(%ebp),%eax
+  a5a5f8:	50                   	push   %eax
+  a5a5f9:	56                   	push   %esi
+  a5a5fa:	e8 41 18 fe ff       	call   0xa3be40
+  a5a5ff:	85 c0                	test   %eax,%eax
+  a5a601:	74 09                	je     0xa5a60c
+  a5a603:	50                   	push   %eax
+  a5a604:	e8 77 97 ff ff       	call   0xa53d80
+  a5a609:	83 c4 04             	add    $0x4,%esp
+  a5a60c:	8b 45 14             	mov    0x14(%ebp),%eax
+  a5a60f:	c6 45 fc 00          	movb   $0x0,-0x4(%ebp)
+  a5a613:	85 c0                	test   %eax,%eax
+  a5a615:	74 1d                	je     0xa5a634
+  a5a617:	83 c0 04             	add    $0x4,%eax
+  a5a61a:	50                   	push   %eax
+  a5a61b:	ff 15 00 b1 b5 00    	call   *0xb5b100
+  a5a621:	85 c0                	test   %eax,%eax
+  a5a623:	75 0f                	jne    0xa5a634
+  a5a625:	8b 4d 14             	mov    0x14(%ebp),%ecx
+  a5a628:	85 c9                	test   %ecx,%ecx
+  a5a62a:	74 08                	je     0xa5a634
+  a5a62c:	8b 11                	mov    (%ecx),%edx
+  a5a62e:	8b 02                	mov    (%edx),%eax
+  a5a630:	6a 01                	push   $0x1
+  a5a632:	ff d0                	call   *%eax
+  a5a634:	8b c6                	mov    %esi,%eax
+  a5a636:	8b 4d f4             	mov    -0xc(%ebp),%ecx
+  a5a639:	64 89 0d 00 00 00 00 	mov    %ecx,%fs:0x0
+  a5a640:	59                   	pop    %ecx
+  a5a641:	5f                   	pop    %edi
+  a5a642:	5e                   	pop    %esi
+  a5a643:	5b                   	pop    %ebx
+  a5a644:	8b e5                	mov    %ebp,%esp
+  a5a646:	5d                   	pop    %ebp
+  a5a647:	c2 10 00             	ret    $0x10
+  a5a64a:	cc                   	int3
+  a5a64b:	cc                   	int3
+  a5a64c:	cc                   	int3
+  a5a64d:	cc                   	int3
+  a5a64e:	cc                   	int3
+  a5a64f:	cc                   	int3
+  a5a650:	55                   	push   %ebp
+  a5a651:	8b ec                	mov    %esp,%ebp
+  a5a653:	6a ff                	push   $0xffffffff
+  a5a655:	68 0c 3b b4 00       	push   $0xb43b0c
+  a5a65a:	64 a1 00 00 00 00    	mov    %fs:0x0,%eax
+  a5a660:	50                   	push   %eax
+  a5a661:	83 ec 0c             	sub    $0xc,%esp
+  a5a664:	53                   	push   %ebx
+  a5a665:	56                   	push   %esi
+  a5a666:	57                   	push   %edi
+  a5a667:	a1 80 7c cc 00       	mov    0xcc7c80,%eax
+  a5a66c:	33 c5                	xor    %ebp,%eax
+  a5a66e:	50                   	push   %eax
+  a5a66f:	8d 45 f4             	lea    -0xc(%ebp),%eax
+  a5a672:	64 a3 00 00 00 00    	mov    %eax,%fs:0x0
+  a5a678:	89 4d ec             	mov    %ecx,-0x14(%ebp)
+  a5a67b:	33 c0                	xor    %eax,%eax
+  a5a67d:	89 45 f0             	mov    %eax,-0x10(%ebp)
+  a5a680:	8b 4d 08             	mov    0x8(%ebp),%ecx
+  a5a683:	89 01                	mov    %eax,(%ecx)
+  a5a685:	8b 7d 14             	mov    0x14(%ebp),%edi
+  a5a688:	8b 17                	mov    (%edi),%edx
+  a5a68a:	89 45 fc             	mov    %eax,-0x4(%ebp)
+  a5a68d:	8b 42 04             	mov    0x4(%edx),%eax
+  a5a690:	bb 01 00 00 00       	mov    $0x1,%ebx
+  a5a695:	8b cf                	mov    %edi,%ecx
+  a5a697:	89 5d f0             	mov    %ebx,-0x10(%ebp)
+  a5a69a:	ff d0                	call   *%eax
+  a5a69c:	6a 2c                	push   $0x2c
+  a5a69e:	8d 70 52             	lea    0x52(%eax),%esi
+  a5a6a1:	e8 7a d9 fd ff       	call   0xa38020
+  a5a6a6:	83 c4 04             	add    $0x4,%esp
+  a5a6a9:	89 45 e8             	mov    %eax,-0x18(%ebp)
+  a5a6ac:	89 5d fc             	mov    %ebx,-0x4(%ebp)
+  a5a6af:	85 c0                	test   %eax,%eax
+  a5a6b1:	74 0b                	je     0xa5a6be
+  a5a6b3:	53                   	push   %ebx
+  a5a6b4:	56                   	push   %esi
+  a5a6b5:	8b c8                	mov    %eax,%ecx
+  a5a6b7:	e8 f4 86 00 00       	call   0xa62db0
+  a5a6bc:	eb 02                	jmp    0xa5a6c0
+  a5a6be:	33 c0                	xor    %eax,%eax
+  a5a6c0:	89 45 14             	mov    %eax,0x14(%ebp)
+  a5a6c3:	85 c0                	test   %eax,%eax
+  a5a6c5:	74 0a                	je     0xa5a6d1
+  a5a6c7:	83 c0 04             	add    $0x4,%eax
+  a5a6ca:	50                   	push   %eax
+  a5a6cb:	ff 15 fc b0 b5 00    	call   *0xb5b0fc
+  a5a6d1:	6a 08                	push   $0x8
+  a5a6d3:	8d 4d 14             	lea    0x14(%ebp),%ecx
+  a5a6d6:	6a 08                	push   $0x8
+  a5a6d8:	51                   	push   %ecx
+  a5a6d9:	c7 45 fc 02 00 00 00 	movl   $0x2,-0x4(%ebp)
+  a5a6e0:	e8 cb 0a fe ff       	call   0xa3b1b0
+  a5a6e5:	8b 55 10             	mov    0x10(%ebp),%edx
+  a5a6e8:	8b 45 0c             	mov    0xc(%ebp),%eax
+  a5a6eb:	8b 4d 14             	mov    0x14(%ebp),%ecx
+  a5a6ee:	83 c4 0c             	add    $0xc,%esp
+  a5a6f1:	52                   	push   %edx
+  a5a6f2:	50                   	push   %eax
+  a5a6f3:	e8 a8 e2 fd ff       	call   0xa389a0
+  a5a6f8:	8b 57 08             	mov    0x8(%edi),%edx
+  a5a6fb:	8b 12                	mov    (%edx),%edx
+  a5a6fd:	8d 4f 08             	lea    0x8(%edi),%ecx
+  a5a700:	8a d8                	mov    %al,%bl
+  a5a702:	8b 45 14             	mov    0x14(%ebp),%eax
+  a5a705:	50                   	push   %eax
+  a5a706:	ff d2                	call   *%edx
+  a5a708:	8b 75 08             	mov    0x8(%ebp),%esi
+  a5a70b:	80 fb 01             	cmp    $0x1,%bl
+  a5a70e:	75 1c                	jne    0xa5a72c
+  a5a710:	8b 4d ec             	mov    -0x14(%ebp),%ecx
+  a5a713:	8b 09                	mov    (%ecx),%ecx
+  a5a715:	8d 45 14             	lea    0x14(%ebp),%eax
+  a5a718:	50                   	push   %eax
+  a5a719:	56                   	push   %esi
+  a5a71a:	e8 21 17 fe ff       	call   0xa3be40
+  a5a71f:	85 c0                	test   %eax,%eax
+  a5a721:	74 09                	je     0xa5a72c
+  a5a723:	50                   	push   %eax
+  a5a724:	e8 57 96 ff ff       	call   0xa53d80
+  a5a729:	83 c4 04             	add    $0x4,%esp
+  a5a72c:	8b 45 14             	mov    0x14(%ebp),%eax
+  a5a72f:	c6 45 fc 00          	movb   $0x0,-0x4(%ebp)
+  a5a733:	85 c0                	test   %eax,%eax
+  a5a735:	74 1d                	je     0xa5a754
+  a5a737:	83 c0 04             	add    $0x4,%eax
+  a5a73a:	50                   	push   %eax
+  a5a73b:	ff 15 00 b1 b5 00    	call   *0xb5b100
+  a5a741:	85 c0                	test   %eax,%eax
+  a5a743:	75 0f                	jne    0xa5a754
+  a5a745:	8b 4d 14             	mov    0x14(%ebp),%ecx
+  a5a748:	85 c9                	test   %ecx,%ecx
+  a5a74a:	74 08                	je     0xa5a754
+  a5a74c:	8b 11                	mov    (%ecx),%edx
+  a5a74e:	8b 02                	mov    (%edx),%eax
+  a5a750:	6a 01                	push   $0x1
+  a5a752:	ff d0                	call   *%eax
+  a5a754:	8b c6                	mov    %esi,%eax
+  a5a756:	8b 4d f4             	mov    -0xc(%ebp),%ecx
+  a5a759:	64 89 0d 00 00 00 00 	mov    %ecx,%fs:0x0
+  a5a760:	59                   	pop    %ecx
+  a5a761:	5f                   	pop    %edi
+  a5a762:	5e                   	pop    %esi
+  a5a763:	5b                   	pop    %ebx
+  a5a764:	8b e5                	mov    %ebp,%esp
+  a5a766:	5d                   	pop    %ebp
+  a5a767:	c2 10 00             	ret    $0x10
+  a5a76a:	cc                   	int3
+  a5a76b:	cc                   	int3
+  a5a76c:	cc                   	int3
+  a5a76d:	cc                   	int3
+  a5a76e:	cc                   	int3
+  a5a76f:	cc                   	int3
+  a5a770:	55                   	push   %ebp
+  a5a771:	8b ec                	mov    %esp,%ebp
+  a5a773:	6a ff                	push   $0xffffffff
+  a5a775:	68 ac 27 b4 00       	push   $0xb427ac
+  a5a77a:	64 a1 00 00 00 00    	mov    %fs:0x0,%eax
+  a5a780:	50                   	push   %eax
+  a5a781:	83 ec 0c             	sub    $0xc,%esp
+  a5a784:	56                   	push   %esi
+  a5a785:	57                   	push   %edi
+  a5a786:	a1 80 7c cc 00       	mov    0xcc7c80,%eax
+  a5a78b:	33 c5                	xor    %ebp,%eax
+  a5a78d:	50                   	push   %eax
+  a5a78e:	8d 45 f4             	lea    -0xc(%ebp),%eax
+  a5a791:	64 a3 00 00 00 00    	mov    %eax,%fs:0x0
+  a5a797:	8b f9                	mov    %ecx,%edi
+  a5a799:	c7 45 ec 00 00 00 00 	movl   $0x0,-0x14(%ebp)
+  a5a7a0:	8b 75 08             	mov    0x8(%ebp),%esi
+  a5a7a3:	c7 06 00 00 00 00    	movl   $0x0,(%esi)
+  a5a7a9:	6a 2c                	push   $0x2c
+  a5a7ab:	c7 45 fc 00 00 00 00 	movl   $0x0,-0x4(%ebp)
+  a5a7b2:	c7 45 ec 01 00 00 00 	movl   $0x1,-0x14(%ebp)
+  a5a7b9:	e8 62 d8 fd ff       	call   0xa38020
+  a5a7be:	83 c4 04             	add    $0x4,%esp
+  a5a7c1:	89 45 e8             	mov    %eax,-0x18(%ebp)
+  a5a7c4:	c7 45 fc 01 00 00 00 	movl   $0x1,-0x4(%ebp)
+  a5a7cb:	85 c0                	test   %eax,%eax
+  a5a7cd:	74 0d                	je     0xa5a7dc
+  a5a7cf:	6a 01                	push   $0x1
+  a5a7d1:	6a 52                	push   $0x52
+  a5a7d3:	8b c8                	mov    %eax,%ecx
+  a5a7d5:	e8 d6 85 00 00       	call   0xa62db0
+  a5a7da:	eb 02                	jmp    0xa5a7de
+  a5a7dc:	33 c0                	xor    %eax,%eax
+  a5a7de:	89 45 f0             	mov    %eax,-0x10(%ebp)
+  a5a7e1:	85 c0                	test   %eax,%eax
+  a5a7e3:	74 0a                	je     0xa5a7ef
+  a5a7e5:	83 c0 04             	add    $0x4,%eax
+  a5a7e8:	50                   	push   %eax
+  a5a7e9:	ff 15 fc b0 b5 00    	call   *0xb5b0fc
+  a5a7ef:	6a 07                	push   $0x7
+  a5a7f1:	8d 45 f0             	lea    -0x10(%ebp),%eax
+  a5a7f4:	6a 08                	push   $0x8
+  a5a7f6:	50                   	push   %eax
+  a5a7f7:	c7 45 fc 02 00 00 00 	movl   $0x2,-0x4(%ebp)
+  a5a7fe:	e8 ad 09 fe ff       	call   0xa3b1b0
+  a5a803:	8b 4d 10             	mov    0x10(%ebp),%ecx
+  a5a806:	8b 55 0c             	mov    0xc(%ebp),%edx
+  a5a809:	83 c4 0c             	add    $0xc,%esp
+  a5a80c:	51                   	push   %ecx
+  a5a80d:	8b 4d f0             	mov    -0x10(%ebp),%ecx
+  a5a810:	52                   	push   %edx
+  a5a811:	e8 8a e1 fd ff       	call   0xa389a0
+  a5a816:	3c 01                	cmp    $0x1,%al
+  a5a818:	75 2a                	jne    0xa5a844
+  a5a81a:	8b 0f                	mov    (%edi),%ecx
+  a5a81c:	8d 45 f0             	lea    -0x10(%ebp),%eax
+  a5a81f:	50                   	push   %eax
+  a5a820:	56                   	push   %esi
+  a5a821:	e8 1a 16 fe ff       	call   0xa3be40
+  a5a826:	85 c0                	test   %eax,%eax
+  a5a828:	74 0b                	je     0xa5a835
+  a5a82a:	50                   	push   %eax
+  a5a82b:	e8 50 95 ff ff       	call   0xa53d80
+  a5a830:	83 c4 04             	add    $0x4,%esp
+  a5a833:	eb 14                	jmp    0xa5a849
+  a5a835:	8b 55 14             	mov    0x14(%ebp),%edx
+  a5a838:	8b 0e                	mov    (%esi),%ecx
+  a5a83a:	6a 01                	push   $0x1
+  a5a83c:	52                   	push   %edx
+  a5a83d:	e8 be a4 fe ff       	call   0xa44d00
+  a5a842:	eb 05                	jmp    0xa5a849
+  a5a844:	e8 37 95 ff ff       	call   0xa53d80
+  a5a849:	8b 45 f0             	mov    -0x10(%ebp),%eax
+  a5a84c:	c6 45 fc 00          	movb   $0x0,-0x4(%ebp)
+  a5a850:	85 c0                	test   %eax,%eax
+  a5a852:	74 1d                	je     0xa5a871
+  a5a854:	83 c0 04             	add    $0x4,%eax
+  a5a857:	50                   	push   %eax
+  a5a858:	ff 15 00 b1 b5 00    	call   *0xb5b100
+  a5a85e:	85 c0                	test   %eax,%eax
+  a5a860:	75 0f                	jne    0xa5a871
+  a5a862:	8b 4d f0             	mov    -0x10(%ebp),%ecx
+  a5a865:	85 c9                	test   %ecx,%ecx
+  a5a867:	74 08                	je     0xa5a871
+  a5a869:	8b 01                	mov    (%ecx),%eax
+  a5a86b:	8b 10                	mov    (%eax),%edx
+  a5a86d:	6a 01                	push   $0x1
+  a5a86f:	ff d2                	call   *%edx
+  a5a871:	8b c6                	mov    %esi,%eax
+  a5a873:	8b 4d f4             	mov    -0xc(%ebp),%ecx
+  a5a876:	64 89 0d 00 00 00 00 	mov    %ecx,%fs:0x0
+  a5a87d:	59                   	pop    %ecx
+  a5a87e:	5f                   	pop    %edi
+  a5a87f:	5e                   	pop    %esi
+  a5a880:	8b e5                	mov    %ebp,%esp
+  a5a882:	5d                   	pop    %ebp
+  a5a883:	c2 10 00             	ret    $0x10
+  a5a886:	cc                   	int3
+  a5a887:	cc                   	int3
+  a5a888:	cc                   	int3
+  a5a889:	cc                   	int3
+  a5a88a:	cc                   	int3
+  a5a88b:	cc                   	int3
+  a5a88c:	cc                   	int3
+  a5a88d:	cc                   	int3
+  a5a88e:	cc                   	int3
+  a5a88f:	cc                   	int3
+  a5a890:	55                   	push   %ebp
+  a5a891:	8b ec                	mov    %esp,%ebp
+  a5a893:	6a ff                	push   $0xffffffff
+  a5a895:	68 0c 3b b4 00       	push   $0xb43b0c
+  a5a89a:	64 a1 00 00 00 00    	mov    %fs:0x0,%eax
+  a5a8a0:	50                   	push   %eax
+  a5a8a1:	83 ec 0c             	sub    $0xc,%esp
+  a5a8a4:	53                   	push   %ebx
+  a5a8a5:	56                   	push   %esi
+  a5a8a6:	57                   	push   %edi
+  a5a8a7:	a1 80 7c cc 00       	mov    0xcc7c80,%eax
+  a5a8ac:	33 c5                	xor    %ebp,%eax
+  a5a8ae:	50                   	push   %eax
+  a5a8af:	8d 45 f4             	lea    -0xc(%ebp),%eax
+  a5a8b2:	64 a3 00 00 00 00    	mov    %eax,%fs:0x0
+  a5a8b8:	89 4d ec             	mov    %ecx,-0x14(%ebp)
+  a5a8bb:	33 c0                	xor    %eax,%eax
+  a5a8bd:	89 45 f0             	mov    %eax,-0x10(%ebp)
+  a5a8c0:	8b 5d 08             	mov    0x8(%ebp),%ebx
+  a5a8c3:	89 03                	mov    %eax,(%ebx)
+  a5a8c5:	8b 7d 14             	mov    0x14(%ebp),%edi
+  a5a8c8:	6a 2c                	push   $0x2c
+  a5a8ca:	89 45 fc             	mov    %eax,-0x4(%ebp)
+  a5a8cd:	c7 45 f0 01 00 00 00 	movl   $0x1,-0x10(%ebp)
+  a5a8d4:	8d 74 ff 48          	lea    0x48(%edi,%edi,8),%esi
+  a5a8d8:	e8 43 d7 fd ff       	call   0xa38020
+  a5a8dd:	83 c4 04             	add    $0x4,%esp
+  a5a8e0:	89 45 e8             	mov    %eax,-0x18(%ebp)
+  a5a8e3:	c7 45 fc 01 00 00 00 	movl   $0x1,-0x4(%ebp)
+  a5a8ea:	85 c0                	test   %eax,%eax
+  a5a8ec:	74 0c                	je     0xa5a8fa
+  a5a8ee:	6a 01                	push   $0x1
+  a5a8f0:	56                   	push   %esi
+  a5a8f1:	8b c8                	mov    %eax,%ecx
+  a5a8f3:	e8 b8 84 00 00       	call   0xa62db0
+  a5a8f8:	eb 02                	jmp    0xa5a8fc
+  a5a8fa:	33 c0                	xor    %eax,%eax
+  a5a8fc:	89 45 14             	mov    %eax,0x14(%ebp)
+  a5a8ff:	85 c0                	test   %eax,%eax
+  a5a901:	74 0a                	je     0xa5a90d
+  a5a903:	83 c0 04             	add    $0x4,%eax
+  a5a906:	50                   	push   %eax
+  a5a907:	ff 15 fc b0 b5 00    	call   *0xb5b0fc
+  a5a90d:	6a 01                	push   $0x1
+  a5a90f:	8d 45 14             	lea    0x14(%ebp),%eax
+  a5a912:	6a 08                	push   $0x8
+  a5a914:	50                   	push   %eax
+  a5a915:	c7 45 fc 02 00 00 00 	movl   $0x2,-0x4(%ebp)
+  a5a91c:	e8 8f 08 fe ff       	call   0xa3b1b0
+  a5a921:	83 c4 0c             	add    $0xc,%esp
+  a5a924:	33 f6                	xor    %esi,%esi
+  a5a926:	b0 01                	mov    $0x1,%al
+  a5a928:	85 ff                	test   %edi,%edi
+  a5a92a:	74 2f                	je     0xa5a95b
+  a5a92c:	8b 5d 0c             	mov    0xc(%ebp),%ebx
+  a5a92f:	90                   	nop
+  a5a930:	84 c0                	test   %al,%al
+  a5a932:	74 19                	je     0xa5a94d
+  a5a934:	8b 4c f3 04          	mov    0x4(%ebx,%esi,8),%ecx
+  a5a938:	8b 14 f3             	mov    (%ebx,%esi,8),%edx
+  a5a93b:	51                   	push   %ecx
+  a5a93c:	8b 4d 14             	mov    0x14(%ebp),%ecx
+  a5a93f:	52                   	push   %edx
+  a5a940:	e8 5b e0 fd ff       	call   0xa389a0
+  a5a945:	84 c0                	test   %al,%al
+  a5a947:	74 04                	je     0xa5a94d
+  a5a949:	b0 01                	mov    $0x1,%al
+  a5a94b:	eb 02                	jmp    0xa5a94f
+  a5a94d:	32 c0                	xor    %al,%al
+  a5a94f:	46                   	inc    %esi
+  a5a950:	3b f7                	cmp    %edi,%esi
+  a5a952:	72 dc                	jb     0xa5a930
+  a5a954:	3c 01                	cmp    $0x1,%al
+  a5a956:	75 2f                	jne    0xa5a987
+  a5a958:	8b 5d 08             	mov    0x8(%ebp),%ebx
+  a5a95b:	8b 4d ec             	mov    -0x14(%ebp),%ecx
+  a5a95e:	8b 09                	mov    (%ecx),%ecx
+  a5a960:	8d 45 14             	lea    0x14(%ebp),%eax
+  a5a963:	50                   	push   %eax
+  a5a964:	53                   	push   %ebx
+  a5a965:	e8 d6 14 fe ff       	call   0xa3be40
+  a5a96a:	85 c0                	test   %eax,%eax
+  a5a96c:	74 0b                	je     0xa5a979
+  a5a96e:	50                   	push   %eax
+  a5a96f:	e8 0c 94 ff ff       	call   0xa53d80
+  a5a974:	83 c4 04             	add    $0x4,%esp
+  a5a977:	eb 16                	jmp    0xa5a98f
+  a5a979:	8b 55 10             	mov    0x10(%ebp),%edx
+  a5a97c:	8b 0b                	mov    (%ebx),%ecx
+  a5a97e:	57                   	push   %edi
+  a5a97f:	52                   	push   %edx
+  a5a980:	e8 7b a3 fe ff       	call   0xa44d00
+  a5a985:	eb 08                	jmp    0xa5a98f
+  a5a987:	e8 f4 93 ff ff       	call   0xa53d80
+  a5a98c:	8b 5d 08             	mov    0x8(%ebp),%ebx
+  a5a98f:	8b 45 14             	mov    0x14(%ebp),%eax
+  a5a992:	c6 45 fc 00          	movb   $0x0,-0x4(%ebp)
+  a5a996:	85 c0                	test   %eax,%eax
+  a5a998:	74 1d                	je     0xa5a9b7
+  a5a99a:	83 c0 04             	add    $0x4,%eax
+  a5a99d:	50                   	push   %eax
+  a5a99e:	ff 15 00 b1 b5 00    	call   *0xb5b100
+  a5a9a4:	85 c0                	test   %eax,%eax
+  a5a9a6:	75 0f                	jne    0xa5a9b7
+  a5a9a8:	8b 4d 14             	mov    0x14(%ebp),%ecx
+  a5a9ab:	85 c9                	test   %ecx,%ecx
+  a5a9ad:	74 08                	je     0xa5a9b7
+  a5a9af:	8b 01                	mov    (%ecx),%eax
+  a5a9b1:	8b 10                	mov    (%eax),%edx
+  a5a9b3:	6a 01                	push   $0x1
+  a5a9b5:	ff d2                	call   *%edx
+  a5a9b7:	8b c3                	mov    %ebx,%eax
+  a5a9b9:	8b 4d f4             	mov    -0xc(%ebp),%ecx
+  a5a9bc:	64 89 0d 00 00 00 00 	mov    %ecx,%fs:0x0
+  a5a9c3:	59                   	pop    %ecx
+  a5a9c4:	5f                   	pop    %edi
+  a5a9c5:	5e                   	pop    %esi
+  a5a9c6:	5b                   	pop    %ebx
+  a5a9c7:	8b e5                	mov    %ebp,%esp
+  a5a9c9:	5d                   	pop    %ebp
+  a5a9ca:	c2 10 00             	ret    $0x10
+  a5a9cd:	cc                   	int3
+  a5a9ce:	cc                   	int3
+  a5a9cf:	cc                   	int3
+  a5a9d0:	55                   	push   %ebp
+  a5a9d1:	8b ec                	mov    %esp,%ebp
+  a5a9d3:	6a ff                	push   $0xffffffff
+  a5a9d5:	68 ac 27 b4 00       	push   $0xb427ac
+  a5a9da:	64 a1 00 00 00 00    	mov    %fs:0x0,%eax
+  a5a9e0:	50                   	push   %eax
+  a5a9e1:	83 ec 0c             	sub    $0xc,%esp
+  a5a9e4:	56                   	push   %esi
+  a5a9e5:	57                   	push   %edi
+  a5a9e6:	a1 80 7c cc 00       	mov    0xcc7c80,%eax
+  a5a9eb:	33 c5                	xor    %ebp,%eax
+  a5a9ed:	50                   	push   %eax
+  a5a9ee:	8d 45 f4             	lea    -0xc(%ebp),%eax
+  a5a9f1:	64 a3 00 00 00 00    	mov    %eax,%fs:0x0
+  a5a9f7:	8b f9                	mov    %ecx,%edi
+  a5a9f9:	c7 45 ec 00 00 00 00 	movl   $0x0,-0x14(%ebp)
+  a5aa00:	8b 75 08             	mov    0x8(%ebp),%esi
+  a5aa03:	c7 06 00 00 00 00    	movl   $0x0,(%esi)
+  a5aa09:	6a 2c                	push   $0x2c
+  a5aa0b:	c7 45 fc 00 00 00 00 	movl   $0x0,-0x4(%ebp)
+  a5aa12:	c7 45 ec 01 00 00 00 	movl   $0x1,-0x14(%ebp)
+  a5aa19:	e8 02 d6 fd ff       	call   0xa38020
+  a5aa1e:	83 c4 04             	add    $0x4,%esp
+  a5aa21:	89 45 e8             	mov    %eax,-0x18(%ebp)
+  a5aa24:	c7 45 fc 01 00 00 00 	movl   $0x1,-0x4(%ebp)
+  a5aa2b:	85 c0                	test   %eax,%eax
+  a5aa2d:	74 0d                	je     0xa5aa3c
+  a5aa2f:	6a 01                	push   $0x1
+  a5aa31:	6a 48                	push   $0x48
+  a5aa33:	8b c8                	mov    %eax,%ecx
+  a5aa35:	e8 76 83 00 00       	call   0xa62db0
+  a5aa3a:	eb 02                	jmp    0xa5aa3e
+  a5aa3c:	33 c0                	xor    %eax,%eax
+  a5aa3e:	89 45 f0             	mov    %eax,-0x10(%ebp)
+  a5aa41:	85 c0                	test   %eax,%eax
+  a5aa43:	74 0a                	je     0xa5aa4f
+  a5aa45:	83 c0 04             	add    $0x4,%eax
+  a5aa48:	50                   	push   %eax
+  a5aa49:	ff 15 fc b0 b5 00    	call   *0xb5b0fc
+  a5aa4f:	6a 02                	push   $0x2
+  a5aa51:	8d 45 f0             	lea    -0x10(%ebp),%eax
+  a5aa54:	6a 08                	push   $0x8
+  a5aa56:	50                   	push   %eax
+  a5aa57:	c7 45 fc 02 00 00 00 	movl   $0x2,-0x4(%ebp)
+  a5aa5e:	e8 4d 07 fe ff       	call   0xa3b1b0
+  a5aa63:	83 c4 0c             	add    $0xc,%esp
+  a5aa66:	8d 4d f0             	lea    -0x10(%ebp),%ecx
+  a5aa69:	51                   	push   %ecx
+  a5aa6a:	8b 0f                	mov    (%edi),%ecx
+  a5aa6c:	56                   	push   %esi
+  a5aa6d:	e8 ce 13 fe ff       	call   0xa3be40
+  a5aa72:	85 c0                	test   %eax,%eax
+  a5aa74:	74 0b                	je     0xa5aa81
+  a5aa76:	50                   	push   %eax
+  a5aa77:	e8 04 93 ff ff       	call   0xa53d80
+  a5aa7c:	83 c4 04             	add    $0x4,%esp
+  a5aa7f:	eb 0d                	jmp    0xa5aa8e
+  a5aa81:	8b 55 0c             	mov    0xc(%ebp),%edx
+  a5aa84:	8b 0e                	mov    (%esi),%ecx
+  a5aa86:	6a 01                	push   $0x1
+  a5aa88:	52                   	push   %edx
+  a5aa89:	e8 72 a2 fe ff       	call   0xa44d00
+  a5aa8e:	8b 45 f0             	mov    -0x10(%ebp),%eax
+  a5aa91:	c6 45 fc 00          	movb   $0x0,-0x4(%ebp)
+  a5aa95:	85 c0                	test   %eax,%eax
+  a5aa97:	74 1d                	je     0xa5aab6
+  a5aa99:	83 c0 04             	add    $0x4,%eax
+  a5aa9c:	50                   	push   %eax
+  a5aa9d:	ff 15 00 b1 b5 00    	call   *0xb5b100
+  a5aaa3:	85 c0                	test   %eax,%eax
+  a5aaa5:	75 0f                	jne    0xa5aab6
+  a5aaa7:	8b 4d f0             	mov    -0x10(%ebp),%ecx
+  a5aaaa:	85 c9                	test   %ecx,%ecx
+  a5aaac:	74 08                	je     0xa5aab6
+  a5aaae:	8b 01                	mov    (%ecx),%eax
+  a5aab0:	8b 10                	mov    (%eax),%edx
+  a5aab2:	6a 01                	push   $0x1
+  a5aab4:	ff d2                	call   *%edx
+  a5aab6:	8b c6                	mov    %esi,%eax
+  a5aab8:	8b 4d f4             	mov    -0xc(%ebp),%ecx
+  a5aabb:	64 89 0d 00 00 00 00 	mov    %ecx,%fs:0x0
+  a5aac2:	59                   	pop    %ecx
+  a5aac3:	5f                   	pop    %edi
+  a5aac4:	5e                   	pop    %esi
+  a5aac5:	8b e5                	mov    %ebp,%esp
+  a5aac7:	5d                   	pop    %ebp
+  a5aac8:	c2 08 00             	ret    $0x8
+  a5aacb:	cc                   	int3
+  a5aacc:	cc                   	int3
+  a5aacd:	cc                   	int3
+  a5aace:	cc                   	int3
+  a5aacf:	cc                   	int3
+  a5aad0:	55                   	push   %ebp
+  a5aad1:	8b ec                	mov    %esp,%ebp
+  a5aad3:	8a 45 08             	mov    0x8(%ebp),%al
+  a5aad6:	88 41 05             	mov    %al,0x5(%ecx)
+  a5aad9:	5d                   	pop    %ebp
+  a5aada:	c2 04 00             	ret    $0x4
+  a5aadd:	cc                   	int3
+  a5aade:	cc                   	int3
+  a5aadf:	cc                   	int3
+  a5aae0:	33 c0                	xor    %eax,%eax
+  a5aae2:	88 41 05             	mov    %al,0x5(%ecx)
+  a5aae5:	89 41 08             	mov    %eax,0x8(%ecx)
+  a5aae8:	c3                   	ret
+  a5aae9:	cc                   	int3
+  a5aaea:	cc                   	int3
+  a5aaeb:	cc                   	int3
+  a5aaec:	cc                   	int3
+  a5aaed:	cc                   	int3
+  a5aaee:	cc                   	int3
+  a5aaef:	cc                   	int3
+  a5aaf0:	55                   	push   %ebp
+  a5aaf1:	8b ec                	mov    %esp,%ebp
+  a5aaf3:	8b 51 08             	mov    0x8(%ecx),%edx
+  a5aaf6:	32 c0                	xor    %al,%al
+  a5aaf8:	81 fa 80 00 00 00    	cmp    $0x80,%edx
+  a5aafe:	73 0f                	jae    0xa5ab0f
+  a5ab00:	8b 45 08             	mov    0x8(%ebp),%eax
+  a5ab03:	89 44 91 0c          	mov    %eax,0xc(%ecx,%edx,4)
+  a5ab07:	b8 01 00 00 00       	mov    $0x1,%eax
+  a5ab0c:	01 41 08             	add    %eax,0x8(%ecx)
+  a5ab0f:	5d                   	pop    %ebp
+  a5ab10:	c2 04 00             	ret    $0x4
+  a5ab13:	cc                   	int3
+  a5ab14:	cc                   	int3
+  a5ab15:	cc                   	int3
+  a5ab16:	cc                   	int3
+  a5ab17:	cc                   	int3
+  a5ab18:	cc                   	int3
+  a5ab19:	cc                   	int3
+  a5ab1a:	cc                   	int3
+  a5ab1b:	cc                   	int3
+  a5ab1c:	cc                   	int3
+  a5ab1d:	cc                   	int3
+  a5ab1e:	cc                   	int3
+  a5ab1f:	cc                   	int3
+  a5ab20:	55                   	push   %ebp
+  a5ab21:	8b ec                	mov    %esp,%ebp
+  a5ab23:	6a ff                	push   $0xffffffff
+  a5ab25:	68 57 4f b4 00       	push   $0xb44f57
+  a5ab2a:	64 a1 00 00 00 00    	mov    %fs:0x0,%eax
+  a5ab30:	50                   	push   %eax
+  a5ab31:	83 ec 08             	sub    $0x8,%esp
+  a5ab34:	53                   	push   %ebx
+  a5ab35:	56                   	push   %esi
+  a5ab36:	57                   	push   %edi
+  a5ab37:	a1 80 7c cc 00       	mov    0xcc7c80,%eax
+  a5ab3c:	33 c5                	xor    %ebp,%eax
+  a5ab3e:	50                   	push   %eax
+  a5ab3f:	8d                   	.byte 0x8d

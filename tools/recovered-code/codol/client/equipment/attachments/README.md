@@ -1,0 +1,14 @@
+# 武器配件装备与槽位限制
+
+逻辑包：`codol.client.equipment.attachments`
+
+本目录保存 REA/Ghidra 伪代码，业务标签由分析者添加。完整来源、代码哈希和变体见根目录 function-index.json。
+
+| 地址 | 功能标签 | 代码 |
+|---|---|---|
+| 0x006b43c0 | WL_EquipWeaponAttachment 配件装备回调 | [伪代码](FUN_006b43c0.c) |
+| 0x006c1190 | 防暴盾例外与六槽位装备检查 | [伪代码](FUN_006c1190.c) |
+| 0x006b7950 | WL_EquipWeaponAttachment 注册入口 | [伪代码](FUN_006b7950.c) |
+| 0x006c2090 | 配件装备直接写入路径 | [伪代码](FUN_006c2090.c) |
+| 0x006bf680 | 配件槽位同步到编辑缓存 | [伪代码](FUN_006bf680.c) |
+| 0x00699de0 | 装备变更后的界面状态刷新 | [伪代码](FUN_00699de0.c) |

@@ -1,0 +1,17 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "{\"result\":{\"path\":\"E:\\\\Games\\\\CODOL_Experience_V3.3.3.3_FULL.7z\\\\CODOL_Experience_V3.3.3.3_FULL.7z\\\\codoMP_client_shipRetail.exe\",\"format\":\"pe\",\"kind\":\"executable\",\"sha256\":\"e3823fd6afc80fb25fa84747e6e9634707b9a0b189357a5466921cda354af37b\",\"architecture\":\"x86\"}}"
+    }
+  ],
+  "structuredContent": {
+    "result": {
+      "path": "E:\\Games\\CODOL_Experience_V3.3.3.3_FULL.7z\\CODOL_Experience_V3.3.3.3_FULL.7z\\codoMP_client_shipRetail.exe",
+      "format": "pe",
+      "kind": "executable",
+      "sha256": "e3823fd6afc80fb25fa84747e6e9634707b9a0b189357a5466921cda354af37b",
+      "architecture": "x86"
+    }
+  }
+}

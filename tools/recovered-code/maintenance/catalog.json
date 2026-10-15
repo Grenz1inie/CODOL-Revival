@@ -1,0 +1,153 @@
+{
+  "account.auth": {
+    "title": "账号认证与票据",
+    "reference": "docs/wiki/03-redirection-tls-auth.md",
+    "functions": {
+      "00a598b0": "认证响应与 client_ticket 解码入口",
+      "00a678c0": "128 字节认证票据字段读取",
+      "00a595c0": "当前版本票据校验回调"
+    }
+  },
+  "account.profile": {
+    "title": "公开和私有档案的序列化、解压与任务入口",
+    "reference": "docs/wiki/06-onboarding-profile.md",
+    "functions": {
+      "006d9c10": "公开和私有 dwProfile 对象初始化",
+      "006d7740": "档案反序列化与 DDL 扩展字段读取",
+      "00a5a370": "档案基类字段读取",
+      "006d7430": "档案解压与数据检查",
+      "006d7d80": "档案 CRC 计算路径",
+      "006d7500": "档案序列化与扩展字段写入",
+      "006d7b20": "按档案类型选择 DDL 定义",
+      "006d87d0": "默认档案初始化路径",
+      "006d8560": "档案下载状态处理",
+      "006d83e0": "档案异步任务完成处理",
+      "00a5a890": "公开档案查询任务 8/1",
+      "00a5a420": "公开档案保存任务 8/3",
+      "006d7340": "档案压缩辅助",
+      "00a5a9d0": "私有档案查询任务 8/2",
+      "00a5a530": "私有档案保存任务 8/6"
+    }
+  },
+  "lobby.connection": {
+    "title": "大厅配置与握手派生",
+    "reference": "docs/wiki/04-lobby-stun.md",
+    "functions": {
+      "00641e10": "dwauth 与 STUN 配置读取",
+      "00a61980": "协议 210 握手 transcript 与密钥派生"
+    }
+  },
+  "lobby.onboarding": {
+    "title": "大厅前置引导判断",
+    "reference": "docs/wiki/06-onboarding-profile.md",
+    "functions": {
+      "005c3670": "un_mp_tutorial 完成判断",
+      "005c36f0": "onboard_complete 完成判断",
+      "005c6350": "UI 通知定义查询",
+      "005953a0": "UI 通知状态访问"
+    }
+  },
+  "inventory.assets": {
+    "title": "登录资产包与所有者结构",
+    "reference": "docs/wiki/08-player-progression-marketplace.md",
+    "functions": {
+      "00a472b0": "资产获取任务 80/230",
+      "004a5120": "资产请求和结果绑定",
+      "00a4a5b0": "资产对象构造",
+      "00a4a6b0": "余额、库存和权益复合对象读取",
+      "00a45950": "账号 ID 与账号类型读取",
+      "00a64ad0": "继承所有者的余额条目读取",
+      "00a4bd80": "权益条目读取（需结合汇编）",
+      "004a5680": "登录资产结果转移到余额和库存缓存"
+    }
+  },
+  "inventory.items": {
+    "title": "仓库获取、物品结构与缓存更新",
+    "reference": "docs/wiki/08-player-progression-marketplace.md",
+    "functions": {
+      "00a468c0": "库存刷新任务 80/203",
+      "004a6b10": "库存刷新请求入口",
+      "004a6c10": "库存刷新完成回调",
+      "00a4b850": "库存条目反序列化",
+      "00a4b4e0": "库存条目默认值初始化",
+      "004a57d0": "库存结果消费路径",
+      "004a6cc0": "库存条目转移路径",
+      "005e2a50": "库存到物品目录的映射"
+    }
+  },
+  "inventory.currency": {
+    "title": "游戏币、点券与大厅显示",
+    "reference": "docs/wiki/09-inventory-completion.md",
+    "functions": {
+      "004a4930": "游戏币与点券请求路由",
+      "00a461d0": "游戏币余额请求任务 80/130",
+      "00a4bfc0": "点券余额请求任务 93/1",
+      "00a4c4a0": "简单余额条目读取",
+      "004a47f0": "游戏币结果处理入口",
+      "004a4890": "点券结果处理入口",
+      "006af9e0": "GetCP 界面回调",
+      "006af970": "GetCC 界面回调"
+    }
+  },
+  "inventory.purchase": {
+    "title": "购买构造与结果反馈",
+    "reference": "docs/wiki/08-player-progression-marketplace.md",
+    "functions": {
+      "004a6550": "购买任务分派",
+      "00a467e0": "游戏币购买任务 80/154 参数构造",
+      "00a4c220": "点券购买任务 93/131 参数构造",
+      "00a45b40": "购买参数序列化",
+      "004a6940": "购买完成回调分派"
+    }
+  },
+  "inventory.catalog": {
+    "title": "商品、SKU、物品与解锁条件",
+    "reference": "docs/wiki/08-player-progression-marketplace.md",
+    "functions": {
+      "00693160": "SKU 界面对象与购买条件",
+      "004a4b10": "解锁条件名称到索引",
+      "004a4ca0": "unlockFlagsNew 条件比较",
+      "004a4c10": "转生和等级阈值解释",
+      "007070b0": "SKU 价格和期限读取",
+      "00706f10": "产品内物品与数量读取",
+      "005840a0": "目录编码值读取"
+    }
+  },
+  "equipment.progression": {
+    "title": "武器经验、等级与界面消费",
+    "reference": "docs/wiki/09-inventory-completion.md",
+    "functions": {
+      "006b7190": "WL_GetWeaponRank 界面回调",
+      "00695bc0": "按武器 ID 读取库存信息",
+      "00695a80": "库存信息提取（含经验）",
+      "0046eb20": "经验到武器 rank 查询",
+      "0046ee30": "武器最大 rank 查询",
+      "006b5070": "武器最高等级的界面消费",
+      "005845b0": "物品描述符查询"
+    }
+  },
+  "equipment.attachments": {
+    "title": "武器配件装备与槽位限制",
+    "reference": "docs/wiki/09-inventory-completion.md",
+    "functions": {
+      "006b43c0": "WL_EquipWeaponAttachment 配件装备回调",
+      "006c1190": "防暴盾例外与六槽位装备检查",
+      "006b7950": "WL_EquipWeaponAttachment 注册入口",
+      "006c2090": "配件装备直接写入路径",
+      "006bf680": "配件槽位同步到编辑缓存",
+      "00699de0": "装备变更后的界面状态刷新"
+    }
+  },
+  "equipment.loadout": {
+    "title": "武器装备与指定槽位入口",
+    "reference": "docs/wiki/09-inventory-completion.md",
+    "functions": {
+      "006b4230": "WL_EquipWeapon 回调",
+      "006b4350": "WL_EquipWeaponInSlot 回调",
+      "006c1e70": "武器装备写入路径",
+      "006bf130": "装备槽位上下文辅助",
+      "006b7740": "WL_EquipWeapon 注册入口",
+      "006b78a0": "WL_EquipWeaponInSlot 注册入口"
+    }
+  }
+}

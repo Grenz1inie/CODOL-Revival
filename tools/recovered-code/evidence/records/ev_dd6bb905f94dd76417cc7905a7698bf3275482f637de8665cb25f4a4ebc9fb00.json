@@ -1,0 +1,123 @@
+{
+  "analysis_profile": {
+    "digest": "c3d2576361fca14bc637cfc460e3d5f1e99b096ce19af99217ea4bc71d5452cc",
+    "parameters": {
+      "upstream_analysis_profile": {
+        "digest": "b9d116ea480a02cc8773b19372074a3caf77785cbc080b1ac7133b5110e40b17",
+        "parameters": {
+          "analyzer_preset": "ghidra-default",
+          "annotation_policy": "atomic-function-entry-metadata-v1",
+          "architecture": "x86",
+          "available_architectures": [
+            "x86"
+          ],
+          "compiler_spec_id": "auto-default",
+          "decompiler_jump_loads": true,
+          "executable_role": "application",
+          "function_body_evidence": "complete-inclusive-ranges-v1",
+          "function_boundary_observations": "ghidra-terminal-call-limitations-v1",
+          "function_references": "complete-body-and-entry-reference-manager-v2",
+          "import_mode": "ephemeral-source-immutable",
+          "instruction_flow_evidence": "decoded-return-pcode-v1",
+          "jump_table_evidence": "typed-case-default-blocks-v1",
+          "language_id": "auto-from-header",
+          "load_image_observations": "source-mappings-entry-context-v2",
+          "loader": "auto-from-header",
+          "location_resolution": "explicit-address-exact-entry-symbol-first-v3",
+          "managed": false,
+          "native_aot_metadata": {
+            "contract_revision": "rtr-9.1-x64-pe-read-only-v3",
+            "report_bytes": 4194304,
+            "source_bytes": 134217728,
+            "work_units": 67108864,
+            "working_memory_bytes": 67108864
+          },
+          "no_return_repair": "disabled-windows-p0",
+          "process_launch": "official-headless-script-v1",
+          "string_inventory_evidence": "defined-data-coverage-v1",
+          "target_format": "pe",
+          "target_kind": "executable"
+        },
+        "provider": {
+          "id": "ghidra",
+          "name": "Ghidra",
+          "version": "12.1.4"
+        }
+      },
+      "workflow_revision": 2
+    },
+    "provider": {
+      "id": "rea-workflow",
+      "name": "REA composed investigation workflow",
+      "version": "1"
+    }
+  },
+  "authority": "shipped-artifact",
+  "confidence": "derived",
+  "environment": null,
+  "evidence_id": "ev_dd6bb905f94dd76417cc7905a7698bf3275482f637de8665cb25f4a4ebc9fb00",
+  "evidence_links": [],
+  "limitations": [
+    "Derived by an REA composed workflow."
+  ],
+  "locations": [
+    {
+      "address": "0x6af9e0",
+      "kind": "address"
+    },
+    {
+      "address": "0x6afa50",
+      "kind": "address"
+    }
+  ],
+  "normalized_result": {
+    "failed": 0,
+    "items": [
+      {
+        "address": "0x6af9e0",
+        "procedure": {
+          "address": "0x6af9e0",
+          "name": "FUN_006af9e0",
+          "status": "resolved"
+        },
+        "pseudocode": "\r\nvoid FUN_006af9e0(int *param_1)\r\n\r\n{\r\n  char *pcVar1;\r\n  int iVar2;\r\n  undefined4 uVar3;\r\n  \r\n  iVar2 = 0;\r\n  pcVar1 = &DAT_0ba0b2c8;\r\n  do {\r\n    if (*pcVar1 == '\\x01') {\r\n      uVar3 = *(undefined4 *)(&DAT_0ba0b2cc + iVar2 * 0x20);\r\n      goto LAB_006afa02;\r\n    }\r\n    pcVar1 = pcVar1 + 0x20;\r\n    iVar2 = iVar2 + 1;\r\n  } while ((int)pcVar1 < 0xba0b308);\r\n  uVar3 = 0;\r\nLAB_006afa02:\r\n  iVar2 = *param_1;\r\n  if ((*(uint *)(iVar2 + 0xc) >> 6 & 1) != 0) {\r\n    (**(code **)(**(int **)(iVar2 + 8) + 8))(iVar2,*(undefined4 *)(iVar2 + 0x10));\r\n    *(undefined4 *)(iVar2 + 8) = 0;\r\n  }\r\n  *(undefined4 *)(iVar2 + 0x10) = uVar3;\r\n  *(undefined4 *)(iVar2 + 0xc) = 3;\r\n  return;\r\n}\r\n\r\n",
+        "status": "ok"
+      },
+      {
+        "address": "0x6afa50",
+        "procedure": {
+          "address": "0x6afa50",
+          "name": "FUN_006afa50",
+          "status": "resolved"
+        },
+        "pseudocode": "\r\nvoid FUN_006afa50(int param_1)\r\n\r\n{\r\n  byte bVar1;\r\n  byte *pbVar2;\r\n  int iVar3;\r\n  byte *pbVar4;\r\n  char *pcVar5;\r\n  bool bVar6;\r\n  \r\n  iVar3 = *(int *)(param_1 + 0x10);\r\n  if ((*(uint *)(iVar3 + 0xc) >> 6 & 1) == 0) {\r\n    pbVar4 = *(byte **)(iVar3 + 0x10);\r\n  }\r\n  else {\r\n    pbVar4 = (byte *)**(undefined4 **)(iVar3 + 0x10);\r\n  }\r\n  pcVar5 = \"buy_token_cp\";\r\n  pbVar2 = pbVar4;\r\n  do {\r\n    bVar1 = *pbVar2;\r\n    bVar6 = bVar1 < (byte)*pcVar5;\r\n    if (bVar1 != *pcVar5) {\r\nLAB_006afa96:\r\n      iVar3 = (1 - (uint)bVar6) - (uint)(bVar6 != 0);\r\n      goto LAB_006afa9b;\r\n    }\r\n    if (bVar1 == 0) break;\r\n    bVar1 = pbVar2[1];\r\n    bVar6 = bVar1 < (byte)pcVar5[1];\r\n    if (bVar1 != pcVar5[1]) goto LAB_006afa96;\r\n    pbVar2 = pbVar2 + 2;\r\n    pcVar5 = pcVar5 + 2;\r\n  } while (bVar1 != 0);\r\n  iVar3 = 0;\r\nLAB_006afa9b:\r\n  if (iVar3 != 0) {\r\n    pcVar5 = \"buy_token_cc\";\r\n    pbVar2 = pbVar4;\r\n    do {\r\n      bVar1 = *pbVar2;\r\n      bVar6 = bVar1 < (byte)*pcVar5;\r\n      if (bVar1 != *pcVar5) {\r\nLAB_006afad0:\r\n        iVar3 = (1 - (uint)bVar6) - (uint)(bVar6 != 0);\r\n        goto LAB_006afad5;\r\n      }\r\n      if (bVar1 == 0) break;\r\n      bVar1 = pbVar2[1];\r\n      bVar6 = bVar1 < (byte)pcVar5[1];\r\n      if (bVar1 != pcVar5[1]) goto LAB_006afad0;\r\n      pbVar2 = pbVar2 + 2;\r\n      pcVar5 = pcVar5 + 2;\r\n    } while (bVar1 != 0);\r\n    iVar3 = 0;\r\nLAB_006afad5:\r\n    if (iVar3 != 0) {\r\n      pcVar5 = \"spend_token\";\r\n      do {\r\n        bVar1 = *pbVar4;\r\n        bVar6 = bVar1 < (byte)*pcVar5;\r\n        if (bVar1 != *pcVar5) {\r\nLAB_006afb00:\r\n          iVar3 = (1 - (uint)bVar6) - (uint)(bVar6 != 0);\r\n          goto LAB_006afb05;\r\n        }\r\n        if (bVar1 == 0) break;\r\n        bVar1 = pbVar4[1];\r\n        bVar6 = bVar1 < (byte)pcVar5[1];\r\n        if (bVar1 != pcVar5[1]) goto LAB_006afb00;\r\n        pbVar4 = pbVar4 + 2;\r\n        pcVar5 = pcVar5 + 2;\r\n      } while (bVar1 != 0);\r\n      iVar3 = 0;\r\nLAB_006afb05:\r\n      if (iVar3 != 0) {\r\n        return;\r\n      }\r\n      iVar3 = FUN_00584470();\r\n      if (iVar3 == 0) {\r\n        FUN_004a7070();\r\n        return;\r\n      }\r\n      FUN_004a7070();\r\n      return;\r\n    }\r\n  }\r\n  FUN_00699d10();\r\n  return;\r\n}\r\n\r\n",
+        "status": "ok"
+      }
+    ],
+    "succeeded": 2,
+    "total": 2
+  },
+  "operation": "batch_decompile",
+  "parameters": {
+    "addresses": [
+      "0x6af9e0",
+      "0x6afa50"
+    ]
+  },
+  "predicate_type": "rea.analysis",
+  "provider": {
+    "id": "rea-workflow",
+    "name": "REA composed investigation workflow",
+    "version": "1"
+  },
+  "raw_result": null,
+  "subject": {
+    "architecture": "x86",
+    "digest": {
+      "sha256": "e3823fd6afc80fb25fa84747e6e9634707b9a0b189357a5466921cda354af37b"
+    },
+    "format": "pe",
+    "local_path": "E:\\Games\\CODOL_Experience_V3.3.3.3_FULL.7z\\CODOL_Experience_V3.3.3.3_FULL.7z\\codoMP_client_shipRetail.exe",
+    "name": "E:\\Games\\CODOL_Experience_V3.3.3.3_FULL.7z\\CODOL_Experience_V3.3.3.3_FULL.7z\\codoMP_client_shipRetail.exe"
+  }
+}
