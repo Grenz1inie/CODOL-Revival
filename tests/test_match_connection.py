@@ -125,6 +125,21 @@ class ConnectionTests(unittest.TestCase):
                          (1, b'\x06'))
         self.assertEqual(self.connection.phase, 'primed')  # No claim of spawn yet.
 
+    def test_map_category_and_current_serverinfo_maxclients(self):
+        from unicorn.x86_const import UC_X86_REG_EBX, UC_X86_REG_EDI, UC_X86_REG_ESP
+        wire=self.connection.gamestate
+        self.assertEqual(wire[5:].split(b'\0',2)[:2],[b'mp_killhouse_sh',b'mp'])
+        reader=ClientReader423()
+        reader.gamestate(wire,checksum=0x11223344)
+        cpu=reader.cpu
+        offset,=struct.unpack('<I',cpu.mem_read(0x796f2dc,4))
+        cpu.reg_write(UC_X86_REG_EDI,0x7976124+offset)
+        cpu.reg_write(UC_X86_REG_EBX,0x30300000)
+        cpu.reg_write(UC_X86_REG_ESP,0x303ff000)
+        # Stock CG serverinfo consumer: Info_ValueForKey("2485") -> atoi -> maxclients.
+        cpu.emu_start(0x579066,0x5790b9,count=20000)
+        self.assertEqual(struct.unpack('<I',cpu.mem_read(0x30300064,4))[0],2)
+
     def test_challenge_identity_and_message_ack_are_bound_to_admission(self):
         with self.assertRaisesRegex(ValueError, 'identity'):
             self.connection.receive(b'\xff'*4+b'getchallenge 0000000000000001\0')

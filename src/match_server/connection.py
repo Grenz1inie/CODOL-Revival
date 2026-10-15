@@ -72,14 +72,16 @@ class Connection:
         self.input_bases = {0:{}}
         self.default_input = {}
         rows = dict(configstrings)
-        rows[0] = r'\mapname\mp_killhouse_sh\g_gametype\dm\sv_maxclients\2'
+        # 0x57909e consumes numeric dvar 2485, not the legacy textual key.
+        rows[0] = r'\mapname\mp_killhouse_sh\g_gametype\dm\2485\2'
+        rows[2] = 'cod'
         rows[3] = str(self.server_id)
         if len(position_base) != 3 or any(type(v) is not int or not -32767 <= v <= 32768
                                           for v in position_base):
             raise ValueError('invalid map position base')
         self.position_base = tuple(position_base)
         rows[16] = ' '.join(map(str,position_base))
-        self.gamestate = encode_gamestate('mp_killhouse_sh', 'dm', netconst_checksum,
+        self.gamestate = encode_gamestate('mp_killhouse_sh', 'mp', netconst_checksum,
             command_sequence=0, client_number=0, checksum_feed=self.checksum_feed,
             ordinary=sorted(rows.items()), aliases=aliases, recipes=recipes)
 
@@ -152,7 +154,7 @@ class Connection:
         self.input_bases = {n:b for n,b in self.input_bases.items() if n > self.sent-64}
         return packets
 
-    def receive(self, packet):
+    def receive(self, packet, *, reply=True):
         if packet.startswith(b'\xff'*4):
             reply = self._oob(packet[4:])
             return [reply] if reply is not None else []
@@ -201,4 +203,4 @@ class Connection:
         if self.phase == 'connected' or not ack:
             self.phase = 'primed'
             return self.send(self.gamestate)
-        return self.send(b'\x06')
+        return self.send(b'\x06') if reply else []

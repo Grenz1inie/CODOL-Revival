@@ -104,34 +104,54 @@ def _delta(m, bits, value, center):
         _player_value(m,bits,0,value)
 
 
-def _player_entity(m, values, center):
-    fields = TABLES['entity_player']
+def _entity(m, values, center):
+    kind=values.get(4,1)
+    if kind not in (1,6):
+        raise ValueError('only player and static mover entities are supported')
+    fields = TABLES['entity_player' if kind==1 else 'entity_script_mover']
     if any(offset not in {f[0] for f in fields} for offset in values):
         raise ValueError('unknown player entity field')
-    if values.get(4,1) != 1:
-        raise ValueError('only player entity type is supported')
     m.bits(0,1)  # Not removed.
     m.bits(1,1)  # Changed, with an explicit type transition from the zero base.
     m.bits(0,1)
     m.bits(len(fields)-1,6)
     for offset,bits,_ in fields:
         m.bits(1,1)  # Consecutive field; no omitted delta fields.
-        _delta(m,bits,1 if offset == 4 else values.get(offset,0),center)
+        _delta(m,bits,kind if offset == 4 else values.get(offset,0),center)
 
 
 def encode_player_entity(values, *, position_base=(0,0,0)):
     m = _Message()
-    _player_entity(m,values,position_base)
+    if values.get(4,1)!=1:
+        raise ValueError('expected player entity')
+    _entity(m,values,position_base)
     m.data.append(6)
     return bytes(m.data)
+
+
+def baseline_entities(data):
+    if data[:8]!=b'IWCB000\x01' or (len(data)-8)%272 or len(data)>190408:
+        raise ValueError('invalid current baseline length/header')
+    result=[]
+    for start in range(8,len(data),272):
+        number,kind=struct.unpack_from('<II',data,start)
+        if not 2 <= number < 2047 or kind!=6:
+            raise ValueError('unsupported baseline entity')
+        values={offset:struct.unpack_from('<Q' if bits==-94 else '<I',data,start+offset)[0]
+                for offset,bits,_ in TABLES['entity_script_mover']}
+        result.append((number,values))
+    result.sort()
+    if len({n for n,_ in result})!=len(result):
+        raise ValueError('duplicate baseline entity')
+    return result
 
 
 def _inventory(m, health, inventory):
     if type(health) is not int or not 0 <= health <= 32767:
         raise ValueError('health out of range')
     m.bits(1,1)
-    m.bits(1,4)
-    m.data.extend(struct.pack('<h',health))
+    m.bits(5,4)  # Current stats[0] health and stats[2] max health.
+    m.data.extend(struct.pack('<hh',health,100))
     if inventory is None:
         m.bits(0,13)
         return
@@ -183,7 +203,7 @@ def encode_snapshot(player, *, server_time, health, inventory=None, entities=(),
     previous = -1
     for number,values in entities:
         _number(m,number,previous)
-        _player_entity(m,values,position_base)
+        _entity(m,values,position_base)
         previous = number
     _number(m,2047,previous)
     previous = -1

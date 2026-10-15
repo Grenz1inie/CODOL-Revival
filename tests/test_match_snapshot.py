@@ -1,6 +1,7 @@
 """Independent state -> 3.3.3.3 client, with inventory and two player records."""
 import struct
 import unittest
+from pathlib import Path
 from client_reader423 import ClientReader423
 
 
@@ -25,7 +26,7 @@ class MatchSnapshotTests(unittest.TestCase):
         self.assertEqual(result['remaining'],b'\x06')
         data=bytes(self.client.cpu.mem_read(0x7996128,0x3524))
         self.assertEqual(struct.unpack_from('<3f',data,28),(100.,-50.,25.))
-        for offset,value in ((0x190,100),(0x340,7),(0x2a4,7),(0x3dc,1),(0x3e0,30),
+        for offset,value in ((0x190,100),(0x198,100),(0x340,7),(0x2a4,7),(0x3dc,1),(0x3e0,30),
                              (0x364,1),(0x368,90)):
             self.assertEqual(struct.unpack_from('<I',data,offset)[0],value,hex(offset))
         self.assertEqual([struct.unpack_from('<I',d,4)[0] for d in result['entities_data']],[1,1])
@@ -38,6 +39,23 @@ class MatchSnapshotTests(unittest.TestCase):
         self.assertEqual(tail,b'\x06')
         for offset,value in ((24,-1024.),(28,2048.),(32,37.),(64,90.)):
             self.assertEqual(struct.unpack('<f',struct.pack('<I',result[offset]))[0],value)
+
+    def test_authored_current_dm_baselines_are_visible_static_movers(self):
+        from match_server.snapshot import baseline_entities, encode_snapshot
+        path=Path(__file__).resolve().parents[1]/'research/experiments/independent-match/killhouse-dm-v3/baseline.bin'
+        if not path.exists():
+            self.skipTest('local current baseline fixture unavailable')
+        entities=baseline_entities(path.read_bytes())
+        self.assertEqual(len(entities),156)
+        wire=encode_snapshot({0:1000},server_time=1000,health=100,entities=entities)
+        result=self.client.snapshot(wire,sequence=1)
+        self.assertEqual(result['entities'],156)
+        for (_,expected),actual in zip(entities,result['entities_data']):
+            self.assertEqual(struct.unpack_from('<I',actual,4)[0],6)
+            for offset in (92,152,164,220):  # Registered model / brush model / sentinels.
+                self.assertEqual(struct.unpack_from('<I',actual,offset)[0],expected.get(offset,0))
+        with self.assertRaises(ValueError):
+            baseline_entities(path.read_bytes()[:-1])
 
     def test_invalid_inventory_and_duplicate_players_are_rejected(self):
         from match_server.snapshot import encode_snapshot, Inventory
