@@ -79,8 +79,9 @@ def lobby_client(sock, peer):
                          profiles=ProfileStore(RUNTIME / 'data/public-profiles'),
                          private_profiles=PrivateProfileStore(RUNTIME / 'data/private-profiles', RUNTIME / 'backups/private-profiles'),
                          marketplace=MarketplaceStore(RUNTIME / 'data/marketplace', RUNTIME / 'backups/marketplace'),
+                         # Menu text is decoded as CP936 by the shipped client.
                          publisher_files={'mp_playlists_shipRetail_release.info':
-                                          (ROOT / 'data/match-playlist.info').read_bytes()},
+                                          (ROOT / 'data/match-playlist.info').read_text('utf-8').encode('gbk')},
                          matchmaking=MATCHMAKING)
     except OSError as error:
         record('lobby_error', peer=peer, error=str(error))

@@ -1,9 +1,10 @@
-version 798
+version 799
 
 // UI review catalogue adapted from the user-provided Server playlist (version 796).
 // Published playlist IDs, map rows and rules retained; unused gametypes omitted to fit the 32-type client limit.
 // Category rows use this client's five fields. No global engine tuning.
 // Chinese text restored; obsolete online activity schedules omitted for local menu review.
+// Source is UTF-8; the publisher encodes this file as CP936 for the game menu.
 
 catinfo 11    1     0 "狼人行动" "狼人行动"
 catinfo 2     1     1 "经典爆破模式" "经典爆破模式"
@@ -2434,12 +2435,12 @@ displayorder 13
 category 13
 name chinese "勇者游戏 单人"
 name english "勇者游戏 单人"
-overridename chinese "BattleCity"
-overridename english "ÓÂÕßÓÎÏ·"
+overridename chinese "勇者游戏"
+overridename english "勇者游戏"
 description chinese "勇者游戏单人模式。在废弃的未来城市中，克服多变的自然环境，收集武器装备，淘汰其他选手，成为最强勇者！"
 description english "勇者游戏单人模式。在废弃的未来城市中，克服多变的自然环境，收集武器装备，淘汰其他选手，成为最强勇者！"
-overridedescription chinese "Survive to be the winner."
-overridedescription english "ÔÚ·ÏÆúµÄÎ´À´³ÇÊÐÖÐ£¬¿Ë·þ¶à±äµÄ×ÔÈ»»·¾³£¬ÊÕ¼¯ÎäÆ÷×°±¸£¬ÌÔÌ­ÆäËûÑ¡ÊÖ£¬³ÉÎª×îÇ¿ÓÂÕß£¡"
+overridedescription chinese "在废弃的未来城市中，克服多变的自然环境，收集武器装备，淘汰其他选手，成为最强勇者！"
+overridedescription english "在废弃的未来城市中，克服多变的自然环境，收集武器装备，淘汰其他选手，成为最强勇者！"
 buildversion default cb3 release
 set scr_dmz_buddymode 0
 ranked
@@ -2562,12 +2563,12 @@ displayorder 1
 category 8
 name chinese "周末勇者联赛 单人"
 name english "周末勇者联赛 单人"
-overridename chinese "BattleCity League"
-overridename english "ÖÜÄ©ÓÂÕßÁªÈü"
+overridename chinese "周末勇者联赛"
+overridename english "周末勇者联赛"
 description chinese "勇者游戏联赛单人模式。在废弃的未来城市中，克服多变的自然环境，收集武器装备，淘汰其他选手，成为最强勇者！"
 description english "勇者游戏联赛单人模式。在废弃的未来城市中，克服多变的自然环境，收集武器装备，淘汰其他选手，成为最强勇者！"
-overridedescription chinese "BattleCity League Description"
-overridedescription english "[ÁªÈüÃ¿ÖÜÁù¡¢ÈÕ 10µã-24µã¿ª·Å]ÔÚÓÂÕßÓÎÏ·³£¹æ±ÈÈüÖÐ³ÉÎªÓÅÊ¤Õß£¬ÒÔ»ñµÃÁªÈüÈë³¡È¯£¬¿É²ÎÓëÖÜÄ©ÓÂÕßÁªÈü¡£²ÎÓëÃ¿³¡ÁªÈü¶¼»áÓ®È¡»ý·Ö£¬²¢ÒÔ´Ë¶Ò»»·áºñ½±Àø¡£ÓÂÕß£¬ÔÚ¾Û¹âµÆÏÂµÄÎèÌ¨ÉÏÖ¤Ã÷ÄãµÄÊµÁ¦°É£¡"
+overridedescription chinese "[联赛每周六、日 10点-24点开放]在勇者游戏常规比赛中成为优胜者，以获得联赛入场券，可参与周末勇者联赛。参与每场联赛都会赢取积分，并以此兑换丰厚奖励。勇者，在聚光灯下的舞台上证明你的实力吧！"
+overridedescription english "[联赛每周六、日 10点-24点开放]在勇者游戏常规比赛中成为优胜者，以获得联赛入场券，可参与周末勇者联赛。参与每场联赛都会赢取积分，并以此兑换丰厚奖励。勇者，在聚光灯下的舞台上证明你的实力吧！"
 buildversion default cb3 release
 set scr_dmz_buddymode 0
 ranked

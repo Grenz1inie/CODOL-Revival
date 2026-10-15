@@ -8,7 +8,8 @@ from client_playlist423 import ClientPlaylist423
 class PlaylistTests(unittest.TestCase):
     def test_stock_categories_and_map_choices_reach_client(self):
         reader=ClientPlaylist423()
-        categories=reader.parse((Path(__file__).resolve().parents[1]/'data/match-playlist.info').read_bytes())
+        content=(Path(__file__).resolve().parents[1]/'data/match-playlist.info').read_text('utf-8').encode('gbk')
+        categories=reader.parse(content)
         visible={item['id']:item for item in categories if item['playlists']}
         self.assertTrue({1,2,3,9,11,13,14,15,16}.issubset(visible), 'PVP categories missing')
         self.assertTrue({20,22,23,26,28,29,30}.issubset(visible), 'PVE categories missing')

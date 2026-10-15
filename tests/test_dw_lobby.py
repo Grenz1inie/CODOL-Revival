@@ -79,8 +79,10 @@ class LobbyTests(unittest.TestCase):
         clear=aes.update(packet[26:-8])+aes.finalize()
         payload=clear[5:5+struct.unpack_from('<I',clear)[0]]
         content=payload[32:]
-        self.assertEqual(content,(local_server.ROOT/'data/match-playlist.info').read_bytes())
-        self.assertIn('战术团竞6V6',content.decode('utf-8'))
+        decoded=content.decode('gbk')
+        self.assertEqual(decoded,(local_server.ROOT/'data/match-playlist.info').read_text('utf-8'))
+        self.assertIn('战术团竞6V6',decoded)
+        self.assertIn(b'\xc0\xc7\xc8\xcb\xd0\xd0\xb6\xaf',content)  # 狼人行动 in CP936.
 
     def test_named_publisher_content_is_returned_exactly_and_other_files_stay_empty(self):
         auth, _, keys = client_auth()

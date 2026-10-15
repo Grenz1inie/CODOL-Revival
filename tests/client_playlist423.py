@@ -47,7 +47,7 @@ class ClientPlaylist423(ClientReader423):
             category,group=struct.unpack('<2I',cpu.mem_read(base,8))
             length,=struct.unpack('<I',cpu.mem_read(base+0x44c,4))
             entries=list(struct.unpack('<'+'I'*length,cpu.mem_read(base+0x4c,4*length)))
-            name=bytes(cpu.mem_read(base+12,64)).split(b'\0')[0].decode('utf-8')
+            name=bytes(cpu.mem_read(base+12,64)).split(b'\0')[0].decode('gbk')
             categories.append(dict(id=category,group=group,name=name,playlists=entries))
         return categories
 
@@ -55,7 +55,7 @@ class ClientPlaylist423(ClientReader423):
         base=0x31fe618+playlist_id*0x3ba8
         count,=struct.unpack('<I',self.cpu.mem_read(base+0x3a98,4))
         def string(address, size):
-            return bytes(self.cpu.mem_read(address,size)).split(b'\0')[0].decode('utf-8')
+            return bytes(self.cpu.mem_read(address,size)).split(b'\0')[0].decode('gbk')
         return dict(name=string(base,64),description=string(base+64,256),
                     maps=[(string(base+0x960+i*60,32),string(base+0x980+i*60,16))
                           for i in range(count)])
