@@ -1,18 +1,19 @@
-"""Independent match transport, checked against the current client hash code."""
+"""Independent transport checked against the shipped client DATA serializer."""
 import unittest
 import struct
-import hmac
+import hashlib
 
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.asymmetric import ec
 
 from client_connection423 import ClientConnection423
+from client_transport423 import ClientTransport423
 
 
 class MatchTransportTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.client = ClientConnection423()
+        cls.transport = ClientTransport423()
 
     def test_tiger_matches_current_client_at_padding_and_block_boundaries(self):
         from match_server.crypto import tiger
@@ -53,17 +54,9 @@ class MatchTransportTests(unittest.TestCase):
             xy.append(int.from_bytes(cookie[p+2:p+2+n], 'big'))
             p += n+2
         remote = ec.EllipticCurvePublicNumbers(*xy, ec.SECP224R1()).public_key()
-        key = self.client.tiger(private.exchange(ec.ECDH(), remote)+security)
-        def crypt(value, counter):
-            iv = int.from_bytes(self.client.tiger(struct.pack('<I', counter))[:16], 'little')
-            aes = Cipher(algorithms.AES(key), modes.ECB()).encryptor()
-            pad = aes.update(b''.join(((iv+i)%(1<<128)).to_bytes(16, 'little')
-                                     for i in range((len(value)+15)//16)))+aes.finalize()
-            return bytes(a^b for a,b in zip(value, pad))
+        key = hashlib.sha1(private.exchange(ec.ECDH(), remote)+security).digest()
         def packet(value, counter):
-            header = struct.pack('<BBHH', 6, 2, tag, counter&65535)
-            data = crypt(value, counter)
-            return header+hmac.digest(key, header+data, 'sha1')[:8]+struct.pack('<H', len(data))+data
+            return self.transport.data_packet(key, tag, counter, value)
         # A fresh association may start above counter one; handle the wire rollover.
         for counter in (65534, 65535, 65536, 65537):
             value = b'\xff'*4+b'getchallenge '+str(counter).encode()
@@ -73,8 +66,8 @@ class MatchTransportTests(unittest.TestCase):
                 server.decrypt(encrypted)
         reply = server.encrypt(b'\xff'*4+b'challengeResponse 1234')
         self.assertEqual(reply[:4], struct.pack('<BBH', 6, 2, 713))
-        self.assertEqual(reply[6:14], hmac.digest(key, reply[:6]+reply[16:], 'sha1')[:8])
-        self.assertEqual(crypt(reply[16:], 1), b'\xff'*4+b'challengeResponse 1234')
+        self.assertEqual(reply, self.transport.data_packet(
+            key, 713, 1, b'\xff'*4+b'challengeResponse 1234'))
         valid = packet(b'valid', 65538)
         for bad in (valid[:-1], valid[:6]+bytes(8)+valid[14:], valid[:2]+b'\0\0'+valid[4:]):
             with self.assertRaises(ValueError):

@@ -2,6 +2,7 @@
 
 SPDX-License-Identifier: AGPL-3.0-or-later
 """
+import hashlib
 import hmac
 import secrets
 import socket
@@ -9,9 +10,6 @@ import struct
 
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-
-from .crypto import tiger
-
 
 def _export_public(key):
     point = key.public_key().public_numbers()
@@ -84,15 +82,17 @@ class Association:
                 or packet[6:44] != self.init_ack or packet[81:89] != self.sid):
             raise ValueError('invalid COOKIE echo')
         public = _import_public(packet[89:])
-        self.key = tiger(self.private.exchange(ec.ECDH(), public)+self.security)
+        # Client 0xa7af90: SHA-1(shared X || reservation key), AES uses 16 bytes.
+        self.key = hashlib.sha1(self.private.exchange(ec.ECDH(), public)+self.security).digest()
         self.cookie_ack = struct.pack('<BBHH', 4, 2, self.remote_tag, 0)+_export_public(self.private)+self.sid
         self.private = None
         self.echo = packet
         return self.cookie_ack
 
-    def _crypt(self, data, counter):
-        iv = int.from_bytes(tiger(struct.pack('<I', counter))[:16], 'little')
-        aes = Cipher(algorithms.AES(self.key), modes.ECB()).encryptor()
+    def _crypt(self, data, counter, tag):
+        # DATA writer 0xa7f960 includes the destination tag in the IV seed.
+        iv = int.from_bytes(hashlib.sha1(struct.pack('<IH', counter, tag)).digest()[:16], 'little')
+        aes = Cipher(algorithms.AES(self.key[:16]), modes.ECB()).encryptor()
         stream = aes.update(b''.join(((iv+i) % (1 << 128)).to_bytes(16, 'little')
                                     for i in range((len(data)+15)//16)))+aes.finalize()
         return bytes(a ^ b for a, b in zip(data, stream))
@@ -102,15 +102,16 @@ class Association:
             raise ValueError('DATA channel unavailable or payload too large')
         self.sent += 1
         header = struct.pack('<BBHH', 6, 2, self.remote_tag, self.sent & 65535)
-        cipher = self._crypt(plain, self.sent)
-        return header+hmac.digest(self.key, header+cipher, 'sha1')[:8]+struct.pack('<H', len(cipher))+cipher
+        cipher = self._crypt(plain, self.sent, self.remote_tag)
+        body = struct.pack('<H', len(cipher))+cipher
+        return header+hmac.digest(self.key, header+body, 'sha1')[:8]+body
 
     def decrypt(self, packet):
         if self.key is None or len(packet) < 16 or packet[:4] != struct.pack('<BBH', 6, 2, self.local_tag):
             raise ValueError('invalid DATA channel')
         if struct.unpack_from('<H', packet, 14)[0] != len(packet)-16:
             raise ValueError('invalid DATA length')
-        if not hmac.compare_digest(packet[6:14], hmac.digest(self.key, packet[:6]+packet[16:], 'sha1')[:8]):
+        if not hmac.compare_digest(packet[6:14], hmac.digest(self.key, packet[:6]+packet[14:], 'sha1')[:8]):
             raise ValueError('invalid DATA authentication')
         low, = struct.unpack_from('<H', packet, 4)
         counter = (self.received & ~65535) | low
@@ -120,6 +121,6 @@ class Association:
             counter -= 65536
         if not self.received < counter <= 0xffffffff:
             raise ValueError('replayed DATA record')
-        plain = self._crypt(packet[16:], counter)
+        plain = self._crypt(packet[16:], counter, self.local_tag)
         self.received = counter
         return plain

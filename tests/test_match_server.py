@@ -1,4 +1,4 @@
-"""Real loopback UDP; only the current client parser/hash runs in emulation."""
+"""Real loopback UDP with current DATA framing and native client consumers."""
 import struct
 import socket
 import time
@@ -44,9 +44,9 @@ class MatchServerTests(unittest.TestCase):
         with MatchServer(uid,sid,security,netconst_checksum=55,world=world,
                          record=lambda event,**fields:events.append((event,fields))) as server:
             client,reader=ClientConnection423(),ClientReader423()
-            peer=EncryptedPeer(server.port,sid,security,client)
+            peer=EncryptedPeer(server.port,sid,security,client,current=True)
             try:
-                challenge=int(peer.oob(f'getchallenge {uid:016x}\0'.encode(),b'challengeResponse ').split()[1])
+                challenge=int(peer.oob(f'getchallenge 0 "{uid:016x}"\0'.encode(),b'challengeResponse ').split()[1])
                 info=f'\\xuid\\{uid:016x}\\challenge\\{challenge}\\name\\VGVzdA=='
                 peer.oob(f'connect {uid:016x} "{info}"\0'.encode(),b'connectResponse ')
                 profile=zlib.compress(profile_bytes())
@@ -118,9 +118,9 @@ class MatchServerTests(unittest.TestCase):
         uid, sid, security = 0x1234567812345678, b'12345678', bytes(range(16))
         with MatchServer(uid, sid, security, netconst_checksum=0x11223344) as server:
             client, reader = ClientConnection423(), ClientReader423()
-            peer = EncryptedPeer(server.port, sid, security, client)
+            peer = EncryptedPeer(server.port, sid, security, client, current=True)
             try:
-                challenge = int(peer.oob(f'getchallenge {uid:016x}\0'.encode(),
+                challenge = int(peer.oob(f'getchallenge 0 "{uid:016x}"\0'.encode(),
                                          b'challengeResponse ').split()[1])
                 info = f'\\xuid\\{uid:016x}\\challenge\\{challenge}\\name\\VGVzdA=='
                 peer.oob(f'connect {uid:016x} "{info}"\0'.encode(), b'connectResponse ')

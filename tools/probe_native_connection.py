@@ -1,5 +1,6 @@
 """Owned loopback connection probe; current client readers, no game/saves edited."""
 import base64
+import hashlib
 import hmac
 import json
 from pathlib import Path
@@ -23,8 +24,9 @@ from native_server import NativeServer
 
 
 class EncryptedPeer:
-    """Reference DATA framing with Tiger executed from the current client."""
-    def __init__(self, port, sid, security, client):
+    """Legacy reference probe; current=True selects the verified 3.3.3.3 wire."""
+    def __init__(self, port, sid, security, client, *, current=False):
+        self.current = current
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         # x86 emulation consumes a burst slower than the real game; keep a full
         # initial snapshot queued instead of dropping its final fragments.
@@ -59,11 +61,14 @@ class EncryptedPeer:
             coordinates.append(int.from_bytes(key[cursor+2:cursor+2+length], 'big'))
             cursor += 2+length
         peer = ec.EllipticCurvePublicNumbers(*coordinates, ec.SECP224R1()).public_key()
-        self.key = client.tiger(private.exchange(ec.ECDH(), peer)+security)
+        material = private.exchange(ec.ECDH(), peer)+security
+        self.key = hashlib.sha1(material).digest() if current else client.tiger(material)
 
-    def crypt(self, data, counter):
-        iv = int.from_bytes(self.client.tiger(struct.pack('<I', counter))[:16], 'little')
-        encryptor = Cipher(algorithms.AES(self.key), modes.ECB()).encryptor()
+    def crypt(self, data, counter, tag=None):
+        digest = (hashlib.sha1(struct.pack('<IH', counter, tag)).digest() if self.current
+                  else self.client.tiger(struct.pack('<I', counter)))
+        iv = int.from_bytes(digest[:16], 'little')
+        encryptor = Cipher(algorithms.AES(self.key[:16] if self.current else self.key), modes.ECB()).encryptor()
         stream = encryptor.update(b''.join(((iv+i) % (1<<128)).to_bytes(16, 'little')
                                            for i in range((len(data)+15)//16)))+encryptor.finalize()
         return bytes(a^b for a,b in zip(data, stream))
@@ -71,9 +76,10 @@ class EncryptedPeer:
     def send(self, plain):
         self.sent += 1
         header = struct.pack('<BBHH', 6, 2, self.server_tag, self.sent & 65535)
-        data = self.crypt(plain, self.sent)
-        self.socket.sendto(header+hmac.digest(self.key, header+data, 'sha1')[:8]
-                           +struct.pack('<H', len(data))+data, self.endpoint)
+        data = self.crypt(plain, self.sent, self.server_tag) if self.current else self.crypt(plain, self.sent)
+        body = struct.pack('<H', len(data))+data
+        self.socket.sendto(header+hmac.digest(self.key, header+(body if self.current else data), 'sha1')[:8]
+                           +body, self.endpoint)
 
     def receive(self, *, allow_deferred=True):
         if allow_deferred and self.deferred:
@@ -88,9 +94,10 @@ class EncryptedPeer:
             counter -= 65536
         assert counter > self.received
         assert struct.unpack_from('<H', packet, 14)[0] == len(packet)-16
-        assert hmac.compare_digest(packet[6:14], hmac.digest(self.key, packet[:6]+packet[16:], 'sha1')[:8])
+        signed = packet[:6]+packet[14 if self.current else 16:]
+        assert hmac.compare_digest(packet[6:14], hmac.digest(self.key, signed, 'sha1')[:8])
         self.received = counter
-        return self.crypt(packet[16:], counter)
+        return self.crypt(packet[16:], counter, self.tag) if self.current else self.crypt(packet[16:], counter)
 
     def oob(self, request, prefix):
         self.send(b'\xff'*4+request)
