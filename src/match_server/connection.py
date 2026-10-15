@@ -108,7 +108,10 @@ class Connection:
             text = packet.removesuffix(b'\0').decode('ascii')
         except UnicodeDecodeError as error:
             raise ValueError('invalid connection text') from error
-        loading = re.fullmatch(r'gamestateupdate ([0-3])', text)
+        if text == 'heartbeat' and self.phase != 'reserved':
+            return b'\xff'*4+b'heartbeatresponse'
+        # 0x465b9a/0x465bab report stages 3 and 6 around the final map load.
+        loading = re.fullmatch(r'gamestateupdate ([0-6])', text)
         if loading:
             if self.phase not in ('primed','active'):
                 raise ValueError('loading update before gamestate')

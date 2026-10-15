@@ -140,6 +140,15 @@ class ConnectionTests(unittest.TestCase):
         cpu.emu_start(0x579066,0x5790b9,count=20000)
         self.assertEqual(struct.unpack('<I',cpu.mem_read(0x30300064,4))[0],2)
 
+    def test_db_loading_heartbeat_and_final_progress(self):
+        self.connect()
+        self.assertEqual(self.connection.receive(b'\xff'*4+b'heartbeat'),
+                         [b'\xff'*4+b'heartbeatresponse'])
+        self.upload()
+        self.connection.receive(self.packet(b'\x03',1))
+        self.assertEqual(self.connection.receive(b'\xff'*4+b'gamestateupdate 6\0'),[])
+        self.assertEqual(self.connection.loading_status,6)
+
     def test_challenge_identity_and_message_ack_are_bound_to_admission(self):
         with self.assertRaisesRegex(ValueError, 'identity'):
             self.connection.receive(b'\xff'*4+b'getchallenge 0000000000000001\0')

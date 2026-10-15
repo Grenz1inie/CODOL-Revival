@@ -33,3 +33,16 @@ Input and snapshot algorithms selectively translated from the archived 423 adapt
 - `codol_2697_delta.c`: `74e73807a7349dc9eaa9b3170f9d11c9c4e43f8f08427bd7493b591ba9ce63a5`
 
 The field tables in `data/match-fields423.json` are extracted from the current client, identified by the recorded SHA-256 and addresses. The input writer and snapshot reader tests execute that client code; source portability alone is not a compatibility claim.
+
+Standing movement and waypoint navigation selectively translate the algorithms
+in the following AGPL-3.0-or-later reference files. Python owns the player state;
+no native player layout, assembly engine or native runtime is used.
+
+- `src/codol/player/codol_pmove_c1_ground.c`: `546ee852eb82bb72523c1db95efc17c7bf7d9326f83f6405c0b7c69e68b70588`
+- `src/codol/player/codol_bot_nav.c`: `9e928b94b009f5de45b696b356850881ed6712da39a970948d5f9042a2681518`
+- Current weapon offsets, archived `server3333/src/codol/weapon/codol_weapon_2697.c`: `a81de9bfb5039884f860fcb61180034fb489fff68e8141b619f5d8acc8c64909`
+
+The minimal AI reaction, single-rifle damage rules and respawn policy are this
+project's implementation. They do not claim to reproduce the original game's
+complete bot behavior, perks, penetration, body-part damage or movement modes.
+Waypoint and game resource bytes stay in ignored local bundles with input hashes.
