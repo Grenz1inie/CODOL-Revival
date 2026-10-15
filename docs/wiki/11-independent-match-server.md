@@ -27,7 +27,7 @@
 | `SV_BotUserMove` → `CODOL_BotBuildCommand` | 目标选择、瞄准、移动、开火/换弹指令；AI同样通过输入驱动角色 | `world.py` 的AI、移动与武器路径 |
 | `src/codol/snapshot/codol_sv_state.c` | 地图身份、serverinfo、注册表与初始状态保持一致 | `connection.py`、`runtime.py`、`mapdata.py` |
 
-核弹小镇隔离资源包及地图身份接入已经完成。2026-10-16修正握手加密后，完整游戏已到 `connected`；随后定位并修正了对局stats误用存档CRC的拒收。地图状态、出生和操作仍待实机验证，详见下节。加载画面不能证明这些阶段已通过。
+核弹小镇隔离资源包及地图身份接入已经完成。2026-10-16修正握手、stats和初始地图编号后，完整游戏已消费gamestate并完成地图初始化，停在“等待玩家数据”。正在修正首帧发送时序；出生和操作仍待实机验证，详见下节。
 
 保留完整原菜单，复用“冲锋团队竞技 → 核弹小镇”入口，使用最小自由混战规则，说明标明1真人＋1AI；不把这个入口标成原9V9玩法已恢复。核弹爆炸、环境事件、破坏物、连杀奖励及高级AI动作均可后置；静态碰撞与射击遮挡先保持一致。核弹小镇可作为首个样板，不必将Killhouse实机验收作为额外前置，但共同握手/出生链路仍必须完成。
 
@@ -73,6 +73,14 @@
 01:59未附加调试器的完整游戏已完成stats，界面由“等待连接”推进到“设置游戏”，但服务端拒收首个netchan，原因是 `invalid client sequence or server id`。02:05的限定抓包记录在 `runtime/captures/match-connection-trace-20261016-020046.json`：首包明文为 `0100000000000000000000000036`，序号1、server ID 0、两项ack 0；本次challenge为535873589，末字节解码为EOF 3。该14字节包不含玩家数据。
 
 REA缓存 `client-send-command423.json` 的 `0x4602a0` 读取当前地图状态的首字节作为server ID；首次尚未收到gamestate时为0。此前测试构造255掩盖了这个边界。现在只在connected/primed、ack均为0时接受初始ID 0；收到地图确认后仍拒绝0。新增用例直接回放上述真实首包，覆盖重复首包及后续编号检查；连接与UDP共16项通过。完整游戏是否消费gamestate另行记录，不用此测试声称出生成功。
+
+### 加载完成后等待首帧
+
+02:26（Asia/Shanghai）完整游戏依次发出 `gamestateupdate 1..6`，只读CDB确认 `0x1a2e7ec=9`、已接收序号1、NCS值 `0x2df7d90=0x69355ea4`（1765105316）。客户端正常CRC比较已通过；这比离线读取器证据更强，但不表示全部模型、武器及渲染路径兼容。原始材料在 `runtime/captures/match-connection-trace-20261016-022157.json` 和 `match-client-state9-20261016-022630.txt`，均不提交。
+
+本次实抓先发送14字节初始netchan，完成加载回报后不发送move，等待服务器首帧；原独立服却要收到move才发首帧，形成互等。`server.py` 改为在primed且首次收到阶段6时发送两名玩家的初始状态和武器选择，仍须真实move才能进入active并推进模拟。阶段1..5及重复阶段6不启动AI、不重置世界。新UDP回归先复现首帧等待超时，再由当前客户端快照读取器验证初始玩家数据，并继续检查输入、移动、扣弹和伤害；连接/UDP共16项通过。
+
+`Read-MatchDebug.ps1 -Connection` 仅只读提取当前状态、NCS及netchan计数；`trace_match_connection.py` 当前限定128条双向加密/解密记录，含临时密钥，仍仅写入忽略目录。两字节 `<3` 是已认证的底层保活，不是玩家move；它在首帧等待期出现，不能单凭这条消息声称输入解析失败。
 
 ## 当前方案与参考源码
 
@@ -228,7 +236,7 @@ python -m unittest test_match_transport test_match_connection test_match_server 
 
 - `navigation.py` 复用参考CSV路点与A*；CSV连线必须再经当前地图盒体扫掠验证，隐藏目标需要绕过掩体才能被射击。
 - `loadout.py` 从当前423武器头直接读取参数；`export_match_loadout.py` 通过本版本NCS前缀还原名称，提取 `acr_mp`，不按旧资源编号或资产序号猜测。ACR为36发、90ms射击间隔、2000/2500ms普通/空仓换弹。最小对局初始给予一个弹匣及三个备用弹匣。
-- `server.py` 在有效gamestate确认后的首个move上进入模拟，随后按20Hz发送状态。回环测试使用真实加密UDP和当前客户端writer/reader，确认输入改变新服位置、弹药和对手生命值，而不仅是收到回复。
+- `server.py` 在加载阶段6后先发送初始玩家快照，在有效gamestate确认后的首个move上进入模拟，随后按20Hz发送状态。回环测试使用真实加密UDP和当前客户端writer/reader，确认输入改变新服位置、弹药和对手生命值，而不仅是收到回复。
 - `matchmaking.py` 复用现有查询编码和事件21预订消息，绑定一个账号、Killhouse和dm；只发布已启动的独立UDP实例。`local_server.py` 使用 `runtime.load_matchmaking`，运行时不读取参考源码目录或启动旧引擎。
 
 当前机器码 `0x4232d0/0x4253e0` 的死亡门槛为 `pm_type >= 8`，7是倒地状态；`0x4131a0` 同时填写实体 `0xd0/0xd2` 的当前武器。事件序号按8位回绕。上述边界已加入测试，不能沿用其他版本的枚举与布局。

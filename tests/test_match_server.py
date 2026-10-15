@@ -91,6 +91,24 @@ class MatchServerTests(unittest.TestCase):
                             if result['command_time']>=minimum_time:
                                 return result
                     self.fail('no current-client snapshot')
+                # Native client reaches state 9 and reports stages 1..6 before
+                # sending any move: it needs its first playerstate to proceed.
+                for stage in range(1,6):
+                    peer.send(b'\xff'*4+f'gamestateupdate {stage}\0'.encode())
+                peer.socket.settimeout(.2)
+                with self.assertRaises(socket.timeout):
+                    peer.receive()
+                peer.socket.settimeout(3)
+                peer.send(b'\xff'*4+b'gamestateupdate 6\0')
+                initial_frame=frame()
+                self.assertEqual((initial_frame['entities'],initial_frame['clients']),(2,2))
+                self.assertEqual(server.connection.phase,'primed')
+                self.assertIsNone(server.next_tick)  # No AI simulation before input.
+                peer.send(b'\xff'*4+b'gamestateupdate 6\0')
+                peer.socket.settimeout(.2)
+                with self.assertRaises(socket.timeout):
+                    peer.receive()
+                peer.socket.settimeout(3)
                 # The first post-gamestate move is admission, not proof of motion.
                 send_move({'time':100})
                 first=frame()

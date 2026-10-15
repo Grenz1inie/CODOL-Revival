@@ -20,7 +20,7 @@ def main():
 
     def trace(method, original):
         def call(self, packet):
-            if len(events) >= 32:
+            if len(events) >= 128:
                 return original(self, packet)
             event = dict(time=time.time(), method=method, packet=packet.hex())
             if method == 'handshake' and self.private is not None:
@@ -40,7 +40,7 @@ def main():
                 target.write_text(json.dumps(events, indent=2), encoding='utf-8')
         return call
 
-    for method in ('handshake', 'decrypt'):
+    for method in ('handshake', 'decrypt', 'encrypt'):
         setattr(Association, method, trace(method, getattr(Association, method)))
     runpy.run_path(str(ROOT / 'src/local_server.py'), run_name='__main__')
 

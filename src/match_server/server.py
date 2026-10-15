@@ -72,18 +72,25 @@ class MatchServer:
                     plain = self.association.decrypt(packet)
                     previous_phase=self.connection.phase
                     previous_sequence=self.connection.received
+                    previous_loading=self.connection.loading_status
                     values=self.connection.receive(plain,reply=self.world is None)
+                    initial_snapshot=(self.world is not None and self.connection.phase == 'primed'
+                                      and previous_loading < 6 and self.connection.loading_status == 6)
                     if (self.world is not None and self.connection.received > previous_sequence
                             and self.connection.pending_commands):
                         self.pending_inputs.extend(self.connection.pending_commands)
                         if self.connection.phase == 'primed' and plain[4] == self.connection.server_id:
                             self.connection.phase='active'
                             self.next_tick=time.monotonic()+.05
-                            # Shipped command handler 0x57d560 case 'a' selects
-                            # the granted weapon; the following usercmd confirms it.
+                            initial_snapshot=True
+                    if initial_snapshot:
+                        # Native state 9 waits for player data after loading;
+                        # waiting for its first move here would deadlock.
+                        if self.connection.published_command == 0:
+                            # Shipped handler 0x57d560 case 'a' selects the weapon.
                             self.connection.queue_command(f'a {self.world.weapon.index}'.encode())
-                            payload,fields=self.world.snapshot()
-                            values.extend(self.connection.send(payload,player_fields=fields))
+                        payload,fields=self.world.snapshot()
+                        values.extend(self.connection.send(payload,player_fields=fields))
                     if self.connection.phase!=previous_phase:
                         self.record('match_phase',phase=self.connection.phase,
                                     loading_status=self.connection.loading_status,peer=address)

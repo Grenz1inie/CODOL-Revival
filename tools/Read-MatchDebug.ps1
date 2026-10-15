@@ -1,4 +1,4 @@
-param([switch]$Stats)
+param([switch]$Stats, [switch]$Connection)
 $ErrorActionPreference = 'Stop'
 $rootPath = Split-Path $PSScriptRoot -Parent
 $expectedExe = Join-Path (Split-Path $rootPath -Parent) 'CODOL_Experience_V3.3.3.3_FULL.7z/codoMP_client_shipRetail.exe'
@@ -7,6 +7,7 @@ $principal = [Security.Principal.WindowsPrincipal]::new($identity)
 if (!$principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     $arguments = @('-NoProfile','-File',('"'+$PSCommandPath+'"'))
     if ($Stats) { $arguments += '-Stats' }
+    if ($Connection) { $arguments += '-Connection' }
     Start-Process powershell.exe -Verb RunAs -WindowStyle Hidden -ArgumentList $arguments
     return
 }
@@ -33,6 +34,11 @@ if ($Stats) {
     # If a debugger command fails, its next prompt detaches instead of leaving
     # the game suspended. Normal completion detaches at the third breakpoint.
     'qd' | & $cdb -G -p $game[0].ProcessId -cf $commandPath *> $outputPath
+    return
+}
+# Read the current state and netchan counters without suspending the client.
+if ($Connection) {
+    & $cdb -pv -p $game[0].ProcessId -c 'dd codoMP_client_shipRetail+0x162e7d0 L10; dd codoMP_client_shipRetail+0x29f7d90 L1; r @$t0 = poi(codoMP_client_shipRetail+0x162a538) ^ 0xd362501f; dd @$t0 L18; dd @$t0+0x40140 L8; dd @$t0+0x80158 L10; q' *> $outputPath
     return
 }
 # Noninvasive, nonsuspending attach: module inventory and thread stacks only.
