@@ -1,4 +1,4 @@
-version 801
+version 802
 
 // UI review catalogue adapted from the user-provided Server playlist (version 796).
 // Published IDs retained; Nuketown 110 uses the local DM rules. Unused gametypes omitted to fit the 32-type limit.
@@ -283,6 +283,7 @@ mp_mission_sh,cha,3
 streakBreakId 158
 
 playlist 110
+ranked
 displayorder 7
 category 1
 name chinese "-核弹小镇"

@@ -9,11 +9,20 @@ class PlaylistTests(unittest.TestCase):
     def test_nuketown_reuses_existing_team_category_without_new_tab(self):
         reader=ClientPlaylist423()
         content=(Path(__file__).resolve().parents[1]/'data/match-playlist.info').read_text('utf-8').encode('gbk')
-        visible={item['id']:item for item in reader.parse(content) if item['playlists']}
-        self.assertNotIn(6,visible)
-        self.assertFalse(any(240 in item['playlists'] for item in visible.values()))
-        self.assertEqual(visible[1]['name'],'冲锋团队竞技')
-        self.assertIn(110,visible[1]['playlists'])
+        categories={item['id']:item for item in reader.parse(content) if item['playlists']}
+        self.assertNotIn(6,categories)
+        self.assertFalse(any(240 in item['playlists'] for item in categories.values()))
+        self.assertEqual(categories[1]['name'],'冲锋团队竞技')
+        expected=[(1,'实战对抗',2),(236,'生死狙击',1),(71,'冲锋团竞9V9',1),
+                  (253,'-残垣之镇',1),(250,'-立交封锁',1),(238,'-边境废墟',1),
+                  (110,'-核弹小镇',1)]
+        self.assertEqual(categories[1]['playlists'],[item[0] for item in expected])
+        # Raw category membership alone missed a UI regression: removing ranked
+        # changes the native UI type to 0 while the map record still exists.
+        for playlist_id,name,menu_type in expected:
+            with self.subTest(playlist=playlist_id):
+                self.assertEqual(reader.playlist(playlist_id)['name'],name)
+                self.assertEqual(reader.menu_type(playlist_id),menu_type)
         entry=reader.playlist(110)
         self.assertEqual(entry['name'],'-核弹小镇')
         self.assertEqual(entry['maps'],[('mp_nuked','ffa')])

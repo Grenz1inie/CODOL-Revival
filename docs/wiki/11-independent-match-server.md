@@ -38,6 +38,8 @@
 ### 核弹小镇接入（2026-10-15）
 
 - 赛单版本801按用户纠正移除新增分类6和赛单240，复用“冲锋团队竞技 → 核弹小镇”（分类1、赛单110），保留名称和位置。此入口使用 `mp_nuked,ffa,1`，客户端已有 `ffa → dm` 映射；规则与说明为1真人＋1AI、ACR、自由混战，其余赛单不变。
+- 版本802修复801误删 `ranked` 的回归。原客户端 `GetPlayList`（`0x6ab670`）调用 `0x613ed0`，在 `0x6ac42b` 将结果发布为UI字段 `type`。801中110仍存在于分类和地图表，但类型从1变成0；只补回 `ranked` 即恢复1，地图及1V1规则无需回退。`tests/test_client_playlist.py` 已保护冲锋分类七个赛单的名称、顺序与真实客户端UI类型，以及110的地图/规则说明、无新增入口；修复前定向用例报 `0 != 1`，修复后通过。该测试执行当前EXE机器码，未执行Flash渲染，最终显示仍由用户复审。
+- 本次对照证据为 `research/evidence/nuketown-menu-type423.json`；REA新反编译请求再次300秒超时，结论来自原EXE汇编与机器码执行，未冒称新反编译成功。23:15:33（Asia/Shanghai）服务PID52332已就绪，重登后发布802。
 - `runtime → matchmaking → MatchServer → Connection` 传递包内地图身份，连接响应、serverinfo及gamestate使用同一地图名；当前客户端机器码读取器已消费Nuketown的状态。
 - REA已保存的 `client-coop-mmstart423.json` 中 `0x6e6bf0` 证明PVP有 `playlist …; start_map_rotate_once …` 分支，不能只识别 `map`。新服接受固定赛单110或明确的 `map mp_nuked` / `g_gametype dm`；不执行客户端任意控制台文本，拒绝已撤下的240及其他赛单/地图/玩法。
 - 参考源码 `src/codol/net/codol_network.c:359–371` 的明文bdNAT INTRO发生在加密INIT前：29字节 `0d 02 00` 请求原样回显，仅类型改成 `0c`。已补入独立UDP入口，保留客户端MAC与地址，不提前占用预订。定向测试先复现超时，再验证回应和后续INIT_ACK。
@@ -240,7 +242,7 @@ python tools/export_match_loadout.py --source research/experiments/independent-m
 
 本图离线记录 `research/evidence/nuketown-navigation-smoke.json`：初始23节点路径，100步内AI从 `[2071.4,165.7,-64]` 推进到 `[1672.687,372.918,-64]`。这证明实际地图碰撞与路径跟随开始工作，不代表已完成全图巡航或游戏内互射验收。
 
-1. 完全退出旧游戏，在控制器重新启动，让客户端读取赛单版本801。
+1. 完全退出旧游戏，在控制器重新启动，让客户端读取赛单版本802。
 2. 进入 **玩 → 多人竞技(PVP) → 冲锋团队竞技 → 核弹小镇 → 开始匹配**。复用原赛单110，右侧说明应为一名真人、一个AI、ACR、自由混战，不再出现“本地人机测试”分类。
 3. 检查实际进入地图并看见武器，而非停留在加载画面；WASD、鼠标、空格、R分别检查移动、瞄准射击、跳跃、换弹。
 4. 检查一个AI是否可见，双方射击是否扣血，死亡后约3秒重生。固定ACR，不以仓库其他武器或配件作为本轮验收对象。
