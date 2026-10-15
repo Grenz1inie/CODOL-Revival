@@ -54,9 +54,12 @@ class StatsTransfer:
 class Connection:
     """One admitted human, through stats and the map-loading handoff."""
     def __init__(self, uid, *, netconst_checksum, configstrings=(), aliases=(), recipes=(),
-                 position_base=(0,0,0)):
+                 position_base=(0,0,0), map_name='mp_killhouse_sh'):
         if type(uid) is not int or not 0 < uid < 1 << 64:
             raise ValueError('invalid admitted identity')
+        if map_name not in ('mp_killhouse_sh','mp_nuked'):
+            raise ValueError('unsupported map identity')
+        self.map_name=map_name
         self.uid = uid
         self.challenge = secrets.randbelow(0x7ffffffe)+1
         self.server_id = secrets.randbelow(254)+1
@@ -73,7 +76,7 @@ class Connection:
         self.default_input = {}
         rows = dict(configstrings)
         # 0x57909e consumes numeric dvar 2485, not the legacy textual key.
-        rows[0] = r'\mapname\mp_killhouse_sh\g_gametype\dm\2485\2'
+        rows[0] = f'\\mapname\\{map_name}\\g_gametype\\dm\\2485\\2'
         rows[2] = 'cod'
         rows[3] = str(self.server_id)
         if len(position_base) != 3 or any(type(v) is not int or not -32767 <= v <= 32768
@@ -81,7 +84,7 @@ class Connection:
             raise ValueError('invalid map position base')
         self.position_base = tuple(position_base)
         rows[16] = ' '.join(map(str,position_base))
-        self.gamestate = encode_gamestate('mp_killhouse_sh', 'mp', netconst_checksum,
+        self.gamestate = encode_gamestate(map_name, 'mp', netconst_checksum,
             command_sequence=0, client_number=0, checksum_feed=self.checksum_feed,
             ordinary=sorted(rows.items()), aliases=aliases, recipes=recipes)
 
@@ -132,8 +135,8 @@ class Connection:
             self.phase = 'connected'
         # The current OOB dispatcher accepts the connection here; map loading
         # context is separately conveyed and verified by SVC_GAMESTATE.
-        return (b'\xff'*4+b'connectResponse \\mapname\\mp_killhouse_sh\\gametype\\dm'
-                b'\\sv_maxclients\\2\\protocol\\1\\shortversion\\3.3.3.3\0')
+        return (b'\xff'*4+f'connectResponse \\mapname\\{self.map_name}\\gametype\\dm'.encode()
+                +b'\\sv_maxclients\\2\\protocol\\1\\shortversion\\3.3.3.3\0')
 
     def queue_command(self, command):
         if not isinstance(command,bytes) or not command or b'\0' in command or len(command)>1023:

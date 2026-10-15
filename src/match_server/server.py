@@ -13,11 +13,11 @@ from .transport import Association
 class MatchServer:
     def __init__(self, uid, security_id, security_key, *, netconst_checksum,
                  configstrings=(), aliases=(), recipes=(), position_base=(0,0,0),
-                 world=None, port=0, record=None):
+                 world=None, port=0, record=None, map_name='mp_killhouse_sh'):
         self.uid, self.sid, self.security = uid, security_id, security_key
         self.map_state = dict(netconst_checksum=netconst_checksum,
                              configstrings=configstrings, aliases=aliases, recipes=recipes,
-                             position_base=position_base)
+                             position_base=position_base,map_name=map_name)
         self.connection = Connection(uid, **self.map_state)
         self.world, self.pending_inputs, self.next_tick = world, [], None
         self.record=record or (lambda *_args,**_fields:None)
@@ -49,6 +49,13 @@ class MatchServer:
             try:
                 if address[0] != '127.0.0.1':
                     raise ValueError('non-loopback peer')
+                # bdNAT INTRO is plaintext and precedes the bdDTLS INIT.
+                # Its MAC belongs to the client: preserve it and both endpoints.
+                # Reference: sh1x_dedicated/src/codol/net/codol_network.c:359.
+                if len(packet)==29 and packet[:3]==b'\x0d\x02\0':
+                    self.socket.sendto(b'\x0c'+packet[1:],address)
+                    self.record('match_nat_reply',peer=address)
+                    continue
                 if self.association is not None and address != self.association.peer:
                     raise ValueError('reservation already bound to another peer')
                 if packet[:1] in (b'\x01', b'\x03'):
@@ -86,7 +93,8 @@ class MatchServer:
             except ValueError as error:
                 self.last_error = str(error)
                 self.rejected_packets += 1
-                self.record('match_rejected',reason=str(error),bytes=len(packet),peer=address)
+                self.record('match_rejected',reason=str(error),bytes=len(packet),peer=address,
+                            header=packet[:6].hex())
 
     def _tick(self):
         if self.next_tick is None or self.connection.phase != 'active':

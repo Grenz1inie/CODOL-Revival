@@ -1,4 +1,4 @@
-version 799
+version 800
 
 // UI review catalogue adapted from the user-provided Server playlist (version 796).
 // Published playlist IDs, map rows and rules retained; unused gametypes omitted to fit the 32-type client limit.
@@ -6,6 +6,7 @@ version 799
 // Chinese text restored; obsolete online activity schedules omitted for local menu review.
 // Source is UTF-8; the publisher encodes this file as CP936 for the game menu.
 
+catinfo 6     1     0 "本地人机测试" "本地人机测试"
 catinfo 11    1     0 "狼人行动" "狼人行动"
 catinfo 2     1     1 "经典爆破模式" "经典爆破模式"
 catinfo 1     1     0 "冲锋团队竞技" "冲锋团队竞技"
@@ -182,6 +183,23 @@ script dmz
 gametype nftbl
 name MPUI_NFTBL
 script nftbl
+
+// Independent server: fixed map, one human and one AI. FFA maps to script dm.
+playlist 240
+displayorder 0
+category 6
+name chinese "核弹小镇 · 1对1人机"
+name english "核弹小镇 · 1对1人机"
+description chinese "本地测试：一名真人与一个AI，固定ACR步枪，自由混战。验证出生、移动、射击与死亡重生。"
+description english "本地测试：一名真人与一个AI，固定ACR步枪，自由混战。验证出生、移动、射击与死亡重生。"
+buildversion default cb3 release
+minparty 1
+maxparty 1
+unlocklevelend 70
+vsrule "1V1"
+rule 1011 1
+rule 3265 2
+mp_nuked,ffa,1
 
 playlist 1
 displayorder 1

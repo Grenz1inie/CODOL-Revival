@@ -15,8 +15,8 @@ from .matchmaking import IndependentMatchmaking
 def load_world(directory):
     package=load_map(directory)
     manifest,files=package['manifest'],package['files']
-    if (manifest['map'],manifest['gametype'])!=('mp_killhouse_sh','dm'):
-        raise ValueError('only Killhouse DM is supported')
+    if manifest['map'] not in ('mp_killhouse_sh','mp_nuked') or manifest['gametype']!='dm':
+        raise ValueError('only Killhouse or Nuketown DM is supported')
     if not manifest.get('physics_ready') or package['geometry'] is None:
         raise ValueError('map collision is not ready')
     loadout=json.loads(files['loadout.json'])
@@ -40,6 +40,7 @@ def load_world(directory):
 
 def load_matchmaking(directory, *, port=28970, record=None):
     world=load_world(directory)
+    manifest=json.loads((Path(directory)/'manifest.json').read_text(encoding='utf-8'))
     ncs=json.loads((Path(directory)/'ncs.json').read_text(encoding='utf-8'))
     return IndependentMatchmaking(world,netconst_checksum=ncs['registry']['checksum'],
-                                  port=port,record=record)
+                                  port=port,record=record,map_name=manifest['map'])

@@ -6,6 +6,18 @@ from client_playlist423 import ClientPlaylist423
 
 
 class PlaylistTests(unittest.TestCase):
+    def test_nuketown_bot_entry_has_one_map_and_keeps_stock_catalogue(self):
+        reader=ClientPlaylist423()
+        content=(Path(__file__).resolve().parents[1]/'data/match-playlist.info').read_text('utf-8').encode('gbk')
+        visible={item['id']:item for item in reader.parse(content) if item['playlists']}
+        self.assertEqual(visible[6]['name'],'本地人机测试')
+        self.assertEqual(visible[6]['playlists'],[240])
+        entry=reader.playlist(240)
+        self.assertEqual(entry['name'],'核弹小镇 · 1对1人机')
+        self.assertEqual(entry['maps'],[('mp_nuked','ffa')])
+        self.assertIn('一名真人',entry['description'])
+        self.assertIn(110,visible[1]['playlists'])
+
     def test_stock_categories_and_map_choices_reach_client(self):
         reader=ClientPlaylist423()
         content=(Path(__file__).resolve().parents[1]/'data/match-playlist.info').read_text('utf-8').encode('gbk')

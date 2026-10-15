@@ -1,5 +1,6 @@
 """Real loopback UDP; only the current client parser/hash runs in emulation."""
 import struct
+import socket
 import time
 import unittest
 import zlib
@@ -11,6 +12,28 @@ from test_match_connection import profile_bytes
 
 
 class MatchServerTests(unittest.TestCase):
+    def test_nat_intro_reply_precedes_dtls_without_claiming_a_reservation(self):
+        from match_server.server import MatchServer
+        # bdNAT v2 INTRO: id, opaque client MAC, and two endpoints.
+        intro=bytes.fromhex('0d020078563412001122334455667788997f00000131757f0000012a71')
+        with MatchServer(1,b'12345678',bytes(16),netconst_checksum=55) as server:
+            with socket.socket(socket.AF_INET,socket.SOCK_DGRAM) as peer:
+                peer.settimeout(.3)
+                endpoint=('127.0.0.1',server.port)
+                for invalid in (intro[:-1],intro+b'x',intro[:1]+b'\x03'+intro[2:]):
+                    peer.sendto(invalid,endpoint)
+                    with self.assertRaises(socket.timeout):
+                        peer.recvfrom(65535)
+                peer.sendto(intro,endpoint)
+                reply,address=peer.recvfrom(65535)
+                self.assertEqual(address,endpoint)
+                self.assertEqual(reply,bytes.fromhex('0c020078563412001122334455667788997f00000131757f0000012a71'))
+                self.assertIsNone(server.association)
+                peer.sendto(struct.pack('<BBHHH',1,2,0,0,123)+b'12345678',endpoint)
+                ack,_=peer.recvfrom(65535)
+                self.assertEqual(ack[:4],struct.pack('<BBH',2,2,123))
+                self.assertEqual(len(ack),38)
+
     def test_current_client_input_changes_independent_world_over_encrypted_udp(self):
         from match_server.server import MatchServer
         from match_server.input import usercmd_key, FIELDS

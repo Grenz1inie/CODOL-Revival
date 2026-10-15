@@ -12,6 +12,25 @@ def message(recipient,text):
 
 
 class IndependentMatchmakingTests(unittest.TestCase):
+    def test_nuketown_accepts_fixed_playlist_rotation_and_rejects_other_maps(self):
+        from match_server.matchmaking import IndependentMatchmaking
+        service=IndependentMatchmaking(fixture.MatchWorldTests().world(),netconst_checksum=55,
+                                      map_name='mp_nuked',port=0)
+        try:
+            service.find(1,bytes.fromhex('08010000000800000000080a000000079b1ff0d600'))
+            start='mmstart sv_resetServer; 2486 1; 3265 2; 2489 0; playlist 240; start_map_rotate_once 2'
+            self.assertIsNone(service.message(1,message(service.server_id,start)))
+            self.assertIsNone(service.message(1,message(service.server_id,'mmstart g_gametype dm; map mp_nuked')))
+            for invalid in (start.replace('playlist 240','playlist 0'),
+                            start.replace('start_map_rotate_once 2','start_map_rotate_once -1'),
+                            start+'; map mp_killhouse_sh',
+                            'mmstart g_gametype cha; map mp_nuked',
+                            'mmstart map mp_nuked; map mp_killhouse_sh'):
+                with self.subTest(command=invalid),self.assertRaises(ValueError):
+                    service.message(1,message(service.server_id,invalid))
+        finally:
+            service.close()
+
     def test_live_independent_endpoint_is_published_and_room_is_bound_to_killhouse(self):
         from match_server.matchmaking import IndependentMatchmaking
         service=IndependentMatchmaking(fixture.MatchWorldTests().world(),netconst_checksum=55,port=0)

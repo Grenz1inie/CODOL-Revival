@@ -6,7 +6,7 @@ import struct
 import tempfile
 import unittest
 
-def package(directory):
+def package(directory, map_name='mp_killhouse_sh'):
     header=bytearray(0xe28)
     for offset,value in ((0xd08,36),(0xd10,90),(0x71c,2000),(0x728,2500),(0x6dc,30),(0xbc8,22)):
         struct.pack_into('<I',header,offset,value)
@@ -29,7 +29,7 @@ def package(directory):
         'loadout.json':{'weapon':{'name':'acr_mp','index':1,'header':'weapon-acr.bin'},
                         'body':{'name':'body','index':1},'hands':{'name':'hands','index':2}}}
     files.update({n:json.dumps(v).encode() for n,v in objects.items()})
-    manifest=dict(schema_version=1,format_version=423,map='mp_killhouse_sh',gametype='dm',
+    manifest=dict(schema_version=1,format_version=423,map=map_name,gametype='dm',
         physics_ready=True,baseline={'count':0},files={n:{'bytes':len(d),
             'sha256':hashlib.sha256(d).hexdigest()} for n,d in files.items()})
     directory.mkdir()
@@ -39,6 +39,25 @@ def package(directory):
 
 
 class MatchRuntimeTests(unittest.TestCase):
+    def test_nuketown_package_drives_both_connection_and_client_map_identity(self):
+        from match_server.runtime import load_matchmaking
+        from client_reader423 import ClientReader423
+        with tempfile.TemporaryDirectory() as temp:
+            path=Path(temp)/'nuketown'
+            package(path,'mp_nuked')
+            service=load_matchmaking(path,port=0)
+            try:
+                service.find(1,bytes.fromhex('08010000000800000000080a000000079b1ff0d600'))
+                connection=service.server.connection
+                challenge=connection.challenge
+                request=f'connect 0000000000000001 "\\xuid\\0000000000000001\\challenge\\{challenge}"'
+                reply,=connection.receive(b'\xff'*4+request.encode())
+                self.assertIn(b'\\mapname\\mp_nuked\\gametype\\dm',reply)
+                state=ClientReader423().gamestate(connection.gamestate,checksum=3852334052)
+                self.assertEqual((state['map'],state['game_type']),('mp_nuked','dm'))
+            finally:
+                service.close()
+
     def test_package_registration_reaches_the_independent_udp_endpoint(self):
         from match_server.runtime import load_matchmaking
         with tempfile.TemporaryDirectory() as temp:

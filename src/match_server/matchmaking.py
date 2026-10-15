@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
-"""Publish and book the independent Killhouse world through the existing lobby."""
+"""Publish and book one independent map through the existing lobby."""
 import base64
 import secrets
 import threading
@@ -11,10 +11,13 @@ from .server import MatchServer
 class IndependentMatchmaking:
     server_id=0x3333000000000001
 
-    def __init__(self, world, *, netconst_checksum, configstrings=(), aliases=(), recipes=(), port=28970, record=None):
+    def __init__(self, world, *, netconst_checksum, configstrings=(), aliases=(), recipes=(), port=28970, record=None,
+                 map_name='mp_killhouse_sh'):
         self.world=world
+        self.map_name=map_name
         self.options=dict(netconst_checksum=netconst_checksum,configstrings=configstrings,
-            aliases=aliases,recipes=recipes,position_base=world.position_base,port=port,record=record)
+            aliases=aliases,recipes=recipes,position_base=world.position_base,port=port,record=record,
+            map_name=map_name)
         self.security_id,self.security_key=secrets.token_bytes(8),secrets.token_bytes(16)
         self.owner,self.server=None,None
         self.lock=threading.Lock()
@@ -50,15 +53,26 @@ class IndependentMatchmaking:
                     raise ValueError('invalid booking identity')
                 return booking_push(self.server_id,b'mmbook accepted')
             if text.startswith('mmstart '):
-                commands=[part.strip().split() for part in text[8:].split(';')]
-                maps=[command for command in commands if command and command[0]=='map']
-                if maps != [['map','mp_killhouse_sh']]:
-                    raise ValueError('this instance only runs mp_killhouse_sh')
+                commands=[part.strip().split() for part in text[8:].split(';') if part.strip()]
+                maps=[c for c in commands if c[0]=='map']
+                playlists=[c for c in commands if c[0]=='playlist']
+                rotations=[c for c in commands if c[0]=='start_map_rotate_once']
+                if playlists or rotations:
+                    # 0x6e6bf0 has a playlist-rotation branch without a map command.
+                    # Only our single-map FFA entry (240) has an implemented world.
+                    if (self.map_name!='mp_nuked' or maps or playlists!=[['playlist','240']]
+                            or len(rotations)!=1 or len(rotations[0])!=2
+                            or not rotations[0][1].isdecimal() or not 0<int(rotations[0][1])<1<<32):
+                        raise ValueError('only the Nuketown test playlist 240 can rotate')
+                elif maps != [['map',self.map_name]]:
+                    raise ValueError(f'this instance only runs {self.map_name}')
                 for command in commands:
-                    if (len(command)>=2 and command[0]=='set' and command[1]=='g_gametype'
-                            and command != ['set','g_gametype','dm']):
+                    setting=command[1:] if command[0]=='set' else command
+                    if setting[0:1]==['g_gametype'] and setting!=['g_gametype','dm']:
                         raise ValueError('this instance only runs dm')
                 # Other client text is never executed as console commands.
+                if self.options['record']:
+                    self.options['record']('match_start',map=self.map_name,gametype='dm',command=text)
                 return None
             raise ValueError('unsupported local booking command')
 

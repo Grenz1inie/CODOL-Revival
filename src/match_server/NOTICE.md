@@ -22,6 +22,10 @@ Handshake and DATA framing are a Python adaptation of the following AGPL-3.0-or-
 - `codol_crypto.c`: SHA-256 `caad3e3ce1a8f68172c5b99f2fad5b6bb80472d8a568c5852ec4e07f4f406fb8`
 - `codol_wire.c`: SHA-256 `516c28d6b237554b4205ae4e652f12c1af24fa94952112b5213f59f7ff59f6f8`
 
+The plaintext NAT INTRO reply in `server.py` follows the 29-byte request/echo
+contract at `sh1x_dedicated/src/codol/net/codol_network.c:359-371` (same license).
+It preserves the client's opaque MAC and endpoints and does not establish DTLS.
+
 Connection/userinfo parsing follows `codol_connect.c` and the current-client OOB evidence at `0x466790`. Stats assembly follows the current 423 adaptation of `codol_stats.c` in the archived `server3333` source; the fragment format is tested using the shipped client's `0x6d81a0` writer. Reference hashes: connect `4e0de96c02584aa67d3f1797aac010ec61d8cb07b607ab963fec2245d3c2aba9`; stats `ce86943bdc895136b0e75050ca2b13ef1ea1cef4f6152f8e837b7fdde4964c36`.
 
 Input and snapshot algorithms selectively translated from the archived 423 adaptation under the same AGPL-3.0-or-later license. These modules encode independent Python state directly; they do not use the old engine or its layout adapter. Source SHA-256:
