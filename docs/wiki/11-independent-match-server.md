@@ -135,12 +135,12 @@ python tools/export_match_loadout.py --source research/experiments/independent-m
 
 导出要求新目录，已有包不会覆盖。将完整导出目录部署到 `runtime/match/killhouse/`；生成物、游戏资源和玩家档案均不提交。重建依赖本机已提取输入，运行只依赖独立包。
 
-## 本轮人工验收入口
+## 部署记录与后续对局验收
 
-`data/match-playlist.info` 通过已观测的 **10/21 → mp_playlists_shipRetail_release.info** 发布，只提供 `Killhouse DM`；其他发布文件保持原响应。采用参考语法 `ffa → script dm`、单人组队及数字人数规则1/2。数字规则和菜单选择的完整UI效果仍待实机确认；AI由独立World创建。
+此前 `data/match-playlist.info` 通过 **10/21 → mp_playlists_shipRetail_release.info** 仅发布 `Killhouse DM`。用户截图显示分类存在但子赛单为空、匹配按钮缺失，不能视为可用入口。现按用户要求先恢复完整菜单供人工复审，实施与步骤见 [05](05-publisher-character-selection.md#赛单恢复与界面复审2026-10-15)。本节后续对局验收暂后置；独立World仍只支持Killhouse/dm，不因菜单恢复而声称其他模式可玩。
 
-1. 通过现有Web控制器启动游戏，进入 **玩 → 多人竞技(PVP) → Killhouse DM**。
-2. 一名真人点击开始匹配，检查是否加载Killhouse并出生；不从剧情入口测试。
+1. 界面复审通过后再接回明确的Killhouse/dm测试入口。
+2. 一名真人开始匹配，检查是否加载Killhouse并出生；不使用剧情或其他模式代替。
 3. 使用WASD、空格、鼠标及R验证移动、跳跃、射击和换弹；当前固定ACR，不验证完整仓库装备。
 4. 找到一个AI，检查双方可见、互射扣血、死亡后约3秒重生。
 
