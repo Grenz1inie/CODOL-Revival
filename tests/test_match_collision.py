@@ -23,6 +23,27 @@ def actual_geometry():
 
 
 class MatchCollisionTests(unittest.TestCase):
+    def test_box_on_sloped_contact_cannot_round_through_the_surface(self):
+        from match_server.collision import CollisionWorld
+        # Reduced from the first Nuketown AI stall: the preceding sweep lands
+        # on a slope, whose next contact time rounds a few ulps below zero.
+        geometry = dict(materials=[dict(contents=1)],world_brushes=[],
+            vertices=[[701,817.533203125,-64],[406.75,844,-62],
+                      [1179.9996337890625,1084.26708984375,-64]],
+            triangles=[[0,1,2]],partitions=[dict(first_tri=0,tri_count=1)],
+            world_partitions=[[0,0]],static_models=[],closure=dict(blockers=[]))
+        world = CollisionWorld(geometry)
+        start = [801.3170703001568,879.5982372168976,-63.689413269572164]
+        end = [798.3848270720862,878.8140310831764,-64.0]
+        hit = world.trace_box(start,end)
+        self.assertTrue(hit['hit'])
+        self.assertFalse(hit['start_solid'])
+        self.assertAlmostEqual(hit['fraction'],0)
+        self.assertGreater(hit['normal'][2],.99)
+        self.assertFalse(world.trace_box(hit['position'],hit['position'])['start_solid'])
+        # Contact can still be left; this must not turn into an invisible wall.
+        self.assertFalse(world.trace_box(start,[start[0],start[1],start[2]+1])['hit'])
+
     def test_nuketown_frozen_baseline_installs_dm_objects_and_retains_collision_masks(self):
         package = PACKAGE.parent / 'nuketown-dm-v2'
         if not (package/'geometry.json').is_file():

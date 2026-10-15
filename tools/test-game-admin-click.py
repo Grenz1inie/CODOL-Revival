@@ -14,12 +14,14 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--pid', type=int, required=True)
     parser.add_argument('--hwnd', type=int, required=True)
-    parser.add_argument('--target', choices=('backpack', 'capture', 'story-start', 'point'), default='backpack')
+    parser.add_argument('--target', choices=('backpack', 'capture', 'story-start', 'point', 'move-fire'), default='backpack')
     parser.add_argument('--point', type=int, nargs=2, help='Observed client-area coordinates for this one click')
     parser.add_argument('--size', type=int, nargs=2, help='Client size in the observed screenshot')
     args = parser.parse_args()
     if args.target == 'point' and (args.point is None or args.size is None):
         parser.error('--target point requires --point X Y and --size WIDTH HEIGHT')
+    if args.target == 'move-fire' and args.size is None:
+        parser.error('--target move-fire requires --size WIDTH HEIGHT')
     if not ctypes.windll.shell32.IsUserAnAdmin():
         raise PermissionError('This one-shot test requires the approved elevated process')
     user = ctypes.WinDLL('user32', use_last_error=True)
@@ -47,7 +49,7 @@ def main():
     rectangle, origin = wintypes.RECT(), wintypes.POINT()
     if not user.GetClientRect(hwnd, ctypes.byref(rectangle)) or not user.ClientToScreen(hwnd, ctypes.byref(origin)):
         raise ctypes.WinError(ctypes.get_last_error())
-    expected_size = tuple(args.size) if args.target == 'point' else (1280, 960)
+    expected_size = tuple(args.size) if args.target in ('point', 'move-fire') else (1280, 960)
     if args.target != 'capture' and (rectangle.right, rectangle.bottom) != expected_size:
         raise ValueError('Window size differs from the observed screenshot; do not click')
     if args.target == 'point' and not (0 <= args.point[0] < rectangle.right and 0 <= args.point[1] < rectangle.bottom):
@@ -63,6 +65,16 @@ def main():
     point = {'backpack': (56, 117), 'story-start': (1040, 820)}.get(args.target)
     if args.target == 'point':
         point = args.point
+    if args.target == 'move-fire':
+        if uia.GetForegroundWindow() != args.hwnd:
+            raise RuntimeError('Game lost foreground; do not send movement')
+        try:
+            uia.PressKey(0x57, waitTime=0.5)
+        finally:
+            uia.ReleaseKey(0x57)
+        if uia.GetForegroundWindow() != args.hwnd:
+            raise RuntimeError('Game lost foreground; do not fire')
+        point = (rectangle.right // 2, rectangle.bottom // 2)
     x, y = (origin.x + point[0], origin.y + point[1]) if point else (None, None)
     if point:
         uia.SetCursorPos(x, y)
@@ -73,7 +85,7 @@ def main():
     ImageGrab.grab().save(screenshot)
     result = {'pid': args.pid, 'hwnd': args.hwnd, 'target': args.target,
               'screen_point': [x, y], 'click_count': int(point is not None), 'screenshot': str(screenshot)}
-    result_path = 'runtime/captures/admin-input-test.json' if args.target == 'point' else 'research/evidence/admin-input-test.json'
+    result_path = 'runtime/captures/admin-input-test.json' if args.target in ('point', 'move-fire') else 'research/evidence/admin-input-test.json'
     (ROOT / result_path).write_text(json.dumps(result, indent=2), encoding='utf-8')
     print(json.dumps(result))
 

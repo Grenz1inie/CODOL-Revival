@@ -152,7 +152,7 @@ def _brush_projections(planes):
 
 
 def _sweep(start, end, half, projections):
-    enter,leave,normal,inside = 0.0,1.0,None,True
+    enter,leave,normal,inside = -math.inf,1.0,None,True
     for axis,lo,hi in projections:
         radius = sum(abs(n)*h for n,h in zip(axis,half))
         lo,hi = lo-radius,hi+radius
@@ -175,8 +175,10 @@ def _sweep(start, end, half, projections):
             return None
     if inside:
         return 0.0,None,True
-    if normal is not None and 0 <= enter <= 1 and leave >= enter:
-        return enter,normal,False
+    # A prior contact can round just behind the surface. Retain its normal
+    # and clamp that tiny negative time, instead of tunnelling into the slope.
+    if normal is not None and -1e-8 <= enter <= 1 and leave >= enter:
+        return max(0.0,enter),normal,False
     return None
 
 
