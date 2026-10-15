@@ -1,0 +1,4 @@
+{
+  "include": ["decompiled/", "shipped/"],
+  "exclude": [".gitnexus/", "manifest.json", "README.md"]
+}

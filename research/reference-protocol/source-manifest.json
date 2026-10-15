@@ -1,0 +1,1379 @@
+[
+  {
+    "name": "s1-mod",
+    "repository": "https://git.alterware.dev/alterware/s1-mod",
+    "commit": "f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef",
+    "branch": "master",
+    "files": [
+      {
+        "path": ".gitmodules",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/.gitmodules",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/.gitmodules",
+        "sha256": "e06a1b5f0455a3895077ac0ec4ccc5df5306ad2ac591e155e272392a63bd1fc2"
+      },
+      {
+        "path": "LICENSE",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/LICENSE",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/LICENSE",
+        "sha256": "8b1ba204bb69a0ade2bfcf65ef294a920f6bb361b317dba43c7ef29d96332b9b"
+      },
+      {
+        "path": "src/client/component/demonware.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/component/demonware.cpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/component/demonware.cpp",
+        "sha256": "3e2013d44a9ace8d5a35cfa871b2671dfeb42d98156334ff036ad4b686b3a1d9"
+      },
+      {
+        "path": "src/client/game/demonware/bit_buffer.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/bit_buffer.cpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/bit_buffer.cpp",
+        "sha256": "7c19c0eeceac8cc6d5337aaecf98bd202ca605714316bf8254a2759591322ba9"
+      },
+      {
+        "path": "src/client/game/demonware/bit_buffer.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/bit_buffer.hpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/bit_buffer.hpp",
+        "sha256": "630f0c0ff039d4089042c69fcf17a6fec0492992ed3af5766ef73e708da87599"
+      },
+      {
+        "path": "src/client/game/demonware/byte_buffer.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/byte_buffer.cpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/byte_buffer.cpp",
+        "sha256": "1d0cf16a95ee1d04d7e1294b05dcff8e76cb830c025b400511af9cc1ca170bf6"
+      },
+      {
+        "path": "src/client/game/demonware/byte_buffer.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/byte_buffer.hpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/byte_buffer.hpp",
+        "sha256": "8c1a3cfe805dadae84ec437a553ade98e143163fa5e4b15def0983a4f05ac33d"
+      },
+      {
+        "path": "src/client/game/demonware/data_types.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/data_types.hpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/data_types.hpp",
+        "sha256": "f963914313a6807849aff8f14d825b9321484a482cdc6f671b17d2605355b75d"
+      },
+      {
+        "path": "src/client/game/demonware/keys.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/keys.cpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/keys.cpp",
+        "sha256": "c8d151ee3b8665efe5a676760a39eef26ca605dfc9e2ca39aef8fe9f307706f3"
+      },
+      {
+        "path": "src/client/game/demonware/keys.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/keys.hpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/keys.hpp",
+        "sha256": "af65569ce3338a443bf844abea6451009184b8245500b0586f799c48c739d81b"
+      },
+      {
+        "path": "src/client/game/demonware/reply.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/reply.cpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/reply.cpp",
+        "sha256": "15568de5a27c174705666891bbf560444f602b7f8a65e608e228f62196d0aa4f"
+      },
+      {
+        "path": "src/client/game/demonware/reply.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/reply.hpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/reply.hpp",
+        "sha256": "f77814181116c9d11768f7d9751e42802d94574324bda190aef968c344342791"
+      },
+      {
+        "path": "src/client/game/demonware/server_registry.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/server_registry.hpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/server_registry.hpp",
+        "sha256": "b606c33963807887f00943ef95225cdeaa8407eaf679408fcaae0f40001b581b"
+      },
+      {
+        "path": "src/client/game/demonware/servers/auth3_server.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/servers/auth3_server.cpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/servers/auth3_server.cpp",
+        "sha256": "bec86c737b047dc945c5965fdbeed51cc51ac162197ce71fd4ebdcefe5f690da"
+      },
+      {
+        "path": "src/client/game/demonware/servers/auth3_server.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/servers/auth3_server.hpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/servers/auth3_server.hpp",
+        "sha256": "c50ec8fe8c10bb3873ec4075c8dd63513f8d4143d9afcb9b6ae996c6b41353aa"
+      },
+      {
+        "path": "src/client/game/demonware/servers/base_server.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/servers/base_server.cpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/servers/base_server.cpp",
+        "sha256": "ddc3e736a155d6b43458f56b0f425573a6b120c0208bb007b9cfc84577d888e4"
+      },
+      {
+        "path": "src/client/game/demonware/servers/base_server.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/servers/base_server.hpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/servers/base_server.hpp",
+        "sha256": "8b98cfe001029e81a69dd36e2e443f7ce3b53c1444b2f153d84f334fdab69ec3"
+      },
+      {
+        "path": "src/client/game/demonware/servers/lobby_server.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/servers/lobby_server.cpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/servers/lobby_server.cpp",
+        "sha256": "4ad6206d48cd654fe22f7e8d57be141c6091ff40e9f8abd8cdb041f673d43a64"
+      },
+      {
+        "path": "src/client/game/demonware/servers/lobby_server.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/servers/lobby_server.hpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/servers/lobby_server.hpp",
+        "sha256": "9b0a89aa7f4b24aaf8678bed8a252cdfe746e1059ceac86de1ec831534e9a7b3"
+      },
+      {
+        "path": "src/client/game/demonware/servers/service_server.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/servers/service_server.hpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/servers/service_server.hpp",
+        "sha256": "78bccb7e07c56413e942dfe4cfb7a0a8cfe6d67b975c0272d9c52b537befd74e"
+      },
+      {
+        "path": "src/client/game/demonware/servers/stun_server.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/servers/stun_server.cpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/servers/stun_server.cpp",
+        "sha256": "4aeacea8f3f53a431e65b5d242f774cf80c785807d02f9f9d68125a54386d493"
+      },
+      {
+        "path": "src/client/game/demonware/servers/stun_server.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/servers/stun_server.hpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/servers/stun_server.hpp",
+        "sha256": "e751e3d3f3ad1c1cb3e74c605c0054686d443320f8d245de6115ae302246ef35"
+      },
+      {
+        "path": "src/client/game/demonware/servers/tcp_server.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/servers/tcp_server.cpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/servers/tcp_server.cpp",
+        "sha256": "d4d9659026fc9b4e139107423e932d434f6b9110d056f133a1456c184074e718"
+      },
+      {
+        "path": "src/client/game/demonware/servers/tcp_server.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/servers/tcp_server.hpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/servers/tcp_server.hpp",
+        "sha256": "30bf07317b9c77c47ce3d2a09b6c685c814c80c53dcb2b7ae0ad3c028eb33830"
+      },
+      {
+        "path": "src/client/game/demonware/servers/udp_server.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/servers/udp_server.cpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/servers/udp_server.cpp",
+        "sha256": "33dc9fb52d0376de9a12ee0d0276189607d42ec60d2afaa6d84e72d1b95cc1ae"
+      },
+      {
+        "path": "src/client/game/demonware/servers/udp_server.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/servers/udp_server.hpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/servers/udp_server.hpp",
+        "sha256": "ed93f9be4af0c1ef74afba2e45b257b62adc04a52a8dbf198896b6fec41b9703"
+      },
+      {
+        "path": "src/client/game/demonware/servers/umbrella_server.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/servers/umbrella_server.cpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/servers/umbrella_server.cpp",
+        "sha256": "5ba49a11e38e25c5b7e4ac3791f0fff55ced4075eef27e2da7b84b453958ecb3"
+      },
+      {
+        "path": "src/client/game/demonware/servers/umbrella_server.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/servers/umbrella_server.hpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/servers/umbrella_server.hpp",
+        "sha256": "c83436800245d0c2c0c895cc31aec69c49f509ab6a29f7c8b340532d6030c607"
+      },
+      {
+        "path": "src/client/game/demonware/service.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/service.hpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/service.hpp",
+        "sha256": "ad066a3c2ead340250c9cdb4cc010b609c3a8b2f208e61f5e97530c1870eaa47"
+      },
+      {
+        "path": "src/client/game/demonware/services.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services.hpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services.hpp",
+        "sha256": "ffbba63ade1a72de0b9468b2eb128957068fb077e509cd2aa105b670c0ee1e3d"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdAnticheat.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdAnticheat.cpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdAnticheat.cpp",
+        "sha256": "d286a771e4a8a34a6eb23673fc6fd940215d4063737b6013e5ce9c16ea2da845"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdAnticheat.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdAnticheat.hpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdAnticheat.hpp",
+        "sha256": "a4021e75c9c0f046701169db07d4026b1a4b317e7361a38b41454ac837c1e99b"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdContentStreaming.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdContentStreaming.cpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdContentStreaming.cpp",
+        "sha256": "0a5b45da16b7a19b730b4c7ed0976fb529c649bc7d9962a8a2c37151c60ad83f"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdContentStreaming.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdContentStreaming.hpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdContentStreaming.hpp",
+        "sha256": "884ae300fa70d6c7140e09244027bc00b423028b22809049c585293b659f9e17"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdCounters.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdCounters.cpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdCounters.cpp",
+        "sha256": "4e262b708fc4550560eac4dfb9b065ef5b3f22ff6744d935f480162ecca5d964"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdCounters.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdCounters.hpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdCounters.hpp",
+        "sha256": "a2f8c17de42bf519b45637b38403a6bbbee1f9c5536a72e7213cc19198546e90"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdDML.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdDML.cpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdDML.cpp",
+        "sha256": "ee1d8312aa94f052179be78d5c94fdbda65f69461d54451753a8f07c974e5635"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdDML.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdDML.hpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdDML.hpp",
+        "sha256": "7ab8eef648e2891f4ecc30532a432f708f6600063be044e21bf95b2402d470ca"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdEventLog.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdEventLog.cpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdEventLog.cpp",
+        "sha256": "ec92a008968bc744395d1f814202ee4e5d7eb2dc4fbc224c4473eab5227bee7b"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdEventLog.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdEventLog.hpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdEventLog.hpp",
+        "sha256": "b0d29ade0d5bd09db3b44b35309c452deea269df56ef8d1948aed592fa903183"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdFacebook.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdFacebook.cpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdFacebook.cpp",
+        "sha256": "1f2315b4b48b165660f6e884a7975956ddc3b2cb89f0358e939c55560b7a20c9"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdFacebook.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdFacebook.hpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdFacebook.hpp",
+        "sha256": "9d026e0dc110b9931b3ee57b99a304d5c6f83fad90babeef93821e86504c4517"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdGroups.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdGroups.cpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdGroups.cpp",
+        "sha256": "184b3496fa5ce2060d9ff16cc7689460e509d7e77a0b79810d9c43a4a6048973"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdGroups.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdGroups.hpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdGroups.hpp",
+        "sha256": "13dd837c1e8134e56bd8c0f5cd62691d894c6e97289a0570dc07c2ab3f809ad4"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdMarketing.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdMarketing.cpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdMarketing.cpp",
+        "sha256": "1d415a3e1b4a841ffdcc6eb92dc3ceb4e21bed419931d15c3de955bc3a51e138"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdMarketing.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdMarketing.hpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdMarketing.hpp",
+        "sha256": "58c7ef8a360d7f2fd195d7e934a26beaea7a9e28c6aab044c878fcfbec815727"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdMarketingComms.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdMarketingComms.cpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdMarketingComms.cpp",
+        "sha256": "0ab38bedc092b237c063f894b377eade8dac2188f225b1bd559c3352d680c69c"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdMarketingComms.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdMarketingComms.hpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdMarketingComms.hpp",
+        "sha256": "c3475dcb8197e0de78cabf1c49c5a7a4fb200b63173f03f30a27778f356d91c5"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdMatchMaking2.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdMatchMaking2.cpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdMatchMaking2.cpp",
+        "sha256": "79a5f78d325bc07f0ce1fbb6b3d1e3b694077e90a033e0b68bebd93e09ccebd3"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdMatchMaking2.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdMatchMaking2.hpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdMatchMaking2.hpp",
+        "sha256": "09de0210712d7e6f01aa745e29e52ef4781b203b7e3abd1e9313401cbdba133a"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdPresence.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdPresence.cpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdPresence.cpp",
+        "sha256": "8f3f3951683d50985bbdcf6744757701860401a0897dc353363802d6d13abcd2"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdPresence.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdPresence.hpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdPresence.hpp",
+        "sha256": "819053bc9a2de8201f204bf0d113d10a026f7b5b2f61274822db9df98e881ce6"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdProfiles.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdProfiles.cpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdProfiles.cpp",
+        "sha256": "3d87c9e6d7cffce94e0618d74bb70c48f93825e4005c35c2d8d9475971f6c94b"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdProfiles.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdProfiles.hpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdProfiles.hpp",
+        "sha256": "f780238e383dd9ce5bc8b8e6f5c086069d823521968e50f58639ac59e3841f55"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdRichPresence.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdRichPresence.cpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdRichPresence.cpp",
+        "sha256": "39783efc64f02bef2c6ab7ae6e20ff5c612eaf1350086ec050921e7a06b488ee"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdRichPresence.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdRichPresence.hpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdRichPresence.hpp",
+        "sha256": "191d10ca496ce976acedf4b20ffe3223aed3f14e0b6d7896524cff0b1edf987f"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdStats.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdStats.cpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdStats.cpp",
+        "sha256": "7fc5ea943d96617c7af19eae4a2afbefb4cb898acc953a77fa6b4b4a851ccc7e"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdStats.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdStats.hpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdStats.hpp",
+        "sha256": "f2d299818e3a228ea4a18e39a8a5d211b4531e27788285e48b9f1805832ea5f7"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdStorage.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdStorage.cpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdStorage.cpp",
+        "sha256": "30262c4630da3d79c3b26816ec2319588784b0992d5a365b3dd8daa558a6a59f"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdStorage.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdStorage.hpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdStorage.hpp",
+        "sha256": "72ca15863d04699601b90259dc387348d437ecf3abaa33214139658a53f4ca2d"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdTitleUtilities.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdTitleUtilities.cpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdTitleUtilities.cpp",
+        "sha256": "0fedaabc71f31b21ba424451156ea99e098f003646871a24275c1e82cd8e73d7"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdTitleUtilities.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdTitleUtilities.hpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdTitleUtilities.hpp",
+        "sha256": "de7abb7c76c1a06d1e95c12c11804c0bdee4f5101c2a190d90df4c54cbac1cb2"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdUNK63.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdUNK63.cpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdUNK63.cpp",
+        "sha256": "89be97486e1ac45c883e45e6205a105a15ec598129d8975a8f9797ade005ac90"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdUNK63.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdUNK63.hpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdUNK63.hpp",
+        "sha256": "f0d7186ef2531102058651afa39ff07db598ba999f74356c6d98bbf1e9122937"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdUNK80.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdUNK80.cpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdUNK80.cpp",
+        "sha256": "7b2d95849de64c626ab180ab83d3fd570005f6625441c68c6afe894f07d5c2a6"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdUNK80.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdUNK80.hpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/demonware/services/bdUNK80.hpp",
+        "sha256": "94a19ea72853ee63e52e52064d6a33f9fdf5ca68dda522d3a7a8ef5f2197d451"
+      },
+      {
+        "path": "src/common/utils/cryptography.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/common/utils/cryptography.cpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/common/utils/cryptography.cpp",
+        "sha256": "ede8b0d4606d72ce4bc8f9c1387b5161edcddbb906b0c2d662db8f7673a7cf9e"
+      },
+      {
+        "path": "src/common/utils/cryptography.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/common/utils/cryptography.hpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/common/utils/cryptography.hpp",
+        "sha256": "6ff42d3430f2ce3400bc322961879129ccabfcb95c2f340b86ddb631c10ef68d"
+      },
+      {
+        "path": "src/client/game/structs.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/structs.hpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/game/structs.hpp",
+        "sha256": "1420c8eab1395acf8f00511a42ef52b027c389143ed6d7ea463115d469889986"
+      },
+      {
+        "path": "src/client/steam/interfaces/user.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/s1-mod/raw/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/steam/interfaces/user.cpp",
+        "url": "https://git.alterware.dev/alterware/s1-mod/src/commit/f325d4bfaff5d0d9f3bf8b2bd19e8d4271175eef/src/client/steam/interfaces/user.cpp",
+        "sha256": "164476c3066f80342d75714a7e8293c6181d991a46abb60f8ae32486054ea77d"
+      }
+    ]
+  },
+  {
+    "name": "iw6-mod",
+    "repository": "https://git.alterware.dev/alterware/iw6-mod",
+    "commit": "b54b3f51aff244a27d309bc0775f450aa236c2f3",
+    "branch": "master",
+    "files": [
+      {
+        "path": ".gitmodules",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/.gitmodules",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/.gitmodules",
+        "sha256": "e06a1b5f0455a3895077ac0ec4ccc5df5306ad2ac591e155e272392a63bd1fc2"
+      },
+      {
+        "path": "LICENSE",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/LICENSE",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/LICENSE",
+        "sha256": "8b1ba204bb69a0ade2bfcf65ef294a920f6bb361b317dba43c7ef29d96332b9b"
+      },
+      {
+        "path": "src/client/component/demonware.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/component/demonware.cpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/component/demonware.cpp",
+        "sha256": "876d65108df35bfcca811685e5fc1c09bc34b2c21c82808eb5d0ddaf0ad1c931"
+      },
+      {
+        "path": "src/client/game/demonware/bit_buffer.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/bit_buffer.cpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/bit_buffer.cpp",
+        "sha256": "6653d81940aedff28f52fcc993ec6345ecd65ce1be0ef90f1e142a7a4224ed3f"
+      },
+      {
+        "path": "src/client/game/demonware/bit_buffer.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/bit_buffer.hpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/bit_buffer.hpp",
+        "sha256": "d7172d6ab21ece926e4bbaace45b4451ff6f246a8183f8622883e5332944ede4"
+      },
+      {
+        "path": "src/client/game/demonware/byte_buffer.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/byte_buffer.cpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/byte_buffer.cpp",
+        "sha256": "e284f7ef9f7b688102ce8940516c6ef112fe31b4731d61707926d06b22e4fa2d"
+      },
+      {
+        "path": "src/client/game/demonware/byte_buffer.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/byte_buffer.hpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/byte_buffer.hpp",
+        "sha256": "2c860f534baaf759a1ef08de1c159b5ac8e4e28c5e41eefece7f946063951c4f"
+      },
+      {
+        "path": "src/client/game/demonware/data_types.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/data_types.hpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/data_types.hpp",
+        "sha256": "52160a277d03ba7805c13c0c756202e2486109158a24aec36daff7da63445d1b"
+      },
+      {
+        "path": "src/client/game/demonware/i_server.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/i_server.hpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/i_server.hpp",
+        "sha256": "75c4b4d88523ff1e6311e0d57a8d1654b586f2a97269d12a1f28c73db26c557c"
+      },
+      {
+        "path": "src/client/game/demonware/i_service.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/i_service.hpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/i_service.hpp",
+        "sha256": "4b61dbc031834b0ca9dea41a9ac35bf45c840e63ddef9c9d28d268670a74f5eb"
+      },
+      {
+        "path": "src/client/game/demonware/service_server.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/service_server.cpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/service_server.cpp",
+        "sha256": "cb60d4cd91a96b90315cc61fc74c7ef851c39797e6e00fc00a1ea1119c127665"
+      },
+      {
+        "path": "src/client/game/demonware/service_server.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/service_server.hpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/service_server.hpp",
+        "sha256": "c7f80eb3b57cc2ff2e476ee4623d9cdfa243d98d34bc87dbce050a25a56cb5d7"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdAnticheat.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdAnticheat.cpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdAnticheat.cpp",
+        "sha256": "0e44c7552a5e78c893c428675879447d812d5d1b94610300ddafa17e9028239b"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdAnticheat.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdAnticheat.hpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdAnticheat.hpp",
+        "sha256": "31f461f5c70039ffac327b40f5c56ff129b89f98d2e39612607d8d4ffe0c4f1a"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdBandwidthTest.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdBandwidthTest.cpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdBandwidthTest.cpp",
+        "sha256": "f18d8277005536f855d999ed8f88c1956ab12c4adf7f14f168c48f08f6821cbd"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdBandwidthTest.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdBandwidthTest.hpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdBandwidthTest.hpp",
+        "sha256": "0574b791f03328d582cac4cfdf9a1facd5dad62ff06b417ea3ee8bf21590a350"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdDML.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdDML.cpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdDML.cpp",
+        "sha256": "b890e25a2a7076a9e2bf88459bbdf1b64351615d7b6c07ba36ea49f112a0b526"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdDML.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdDML.hpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdDML.hpp",
+        "sha256": "a872a1acf71368c692edf9c56d99603428951790da4d531f3d89f0243a6d1f27"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdDediAuth.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdDediAuth.cpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdDediAuth.cpp",
+        "sha256": "84ae1f2654c000201bad5468be6582338f80ac8cebfe4c00ee6d741a37531636"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdDediAuth.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdDediAuth.hpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdDediAuth.hpp",
+        "sha256": "b5f35e94f192b4ab3b7e67bb5a38414d1b89f09c7ce001d058e159d41cdc4b11"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdDediRSAAuth.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdDediRSAAuth.cpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdDediRSAAuth.cpp",
+        "sha256": "d514e35c045d4698270085733c8c2eacb712c4006feb9685e0443973d57d4717"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdDediRSAAuth.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdDediRSAAuth.hpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdDediRSAAuth.hpp",
+        "sha256": "6780f4c0b0bd50bb1cab39e938df3b134ec26b6718c09499bd26136b9a2b5435"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdGroup.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdGroup.cpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdGroup.cpp",
+        "sha256": "e5402f03e745d6844b860717ee5f093372a5e321dcf4666b238448ea1c3cb907"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdGroup.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdGroup.hpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdGroup.hpp",
+        "sha256": "f4f95712630e8dad9a0e74c70a08597b524d5c3643edfa92dacb4c0c574e4a22"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdLSGHello.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdLSGHello.cpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdLSGHello.cpp",
+        "sha256": "786a97cdc69767a4bacd8f287cae7d2242375d9d8a37ed8fb675789d0557b249"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdLSGHello.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdLSGHello.hpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdLSGHello.hpp",
+        "sha256": "f6de4cce0866daa72b9305e2d19d2de7aabadfaa361c2345ef78077e483aa4b9"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdMatchMaking.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdMatchMaking.cpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdMatchMaking.cpp",
+        "sha256": "8cc87464ba1dca861d4c133fa7796b8ae33fc945484753186cbb1a4202ad5b9b"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdMatchMaking.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdMatchMaking.hpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdMatchMaking.hpp",
+        "sha256": "12c4bb4ce88a4dd4894c7f11d6bc842c9621f5e7e826efb03fef648758662b0d"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdRelayService.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdRelayService.cpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdRelayService.cpp",
+        "sha256": "8cdcc5b4228c9d2af1f0c84416a17070c0e5506d0f404d2db19199a2243c19c6"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdRelayService.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdRelayService.hpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdRelayService.hpp",
+        "sha256": "301b3f80099aa749d8be35beeb4f484c96490292227d9e1f2699cec401ced421"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdSteamAuth.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdSteamAuth.cpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdSteamAuth.cpp",
+        "sha256": "fe3958d9980e730a4420c9209c4620196a6ad01dce2cf8fc66305af8e1638b99"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdSteamAuth.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdSteamAuth.hpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdSteamAuth.hpp",
+        "sha256": "25d36dcac8c019d231f4e8dfe26ffbb49a2d999181756ad136626d1bbfaf20cc"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdStorage.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdStorage.cpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdStorage.cpp",
+        "sha256": "91de0a8926340cf2a6ca786c6e45235cce456e8c540943748c0ba51d4b7d9f52"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdStorage.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdStorage.hpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdStorage.hpp",
+        "sha256": "6b3c7306bd8ba17fe1b25ea31da0f179becf3005d75a0655ac516b453e485d08"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdTitleUtilities.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdTitleUtilities.cpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdTitleUtilities.cpp",
+        "sha256": "3b2576e293cc81382119016e95e0ec84d997906ca0f7acdc9435b0cb7eb09638"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdTitleUtilities.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdTitleUtilities.hpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/services/bdTitleUtilities.hpp",
+        "sha256": "6088add01ff37ee276e63299a0075a0bd67d71ffbf46fa7714ca584c683ebceb"
+      },
+      {
+        "path": "src/client/game/demonware/stun_server.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/stun_server.cpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/stun_server.cpp",
+        "sha256": "d2da1316ed952eed44163af40621bfcf86c693c6b61f87ed2a74ac9045b6b271"
+      },
+      {
+        "path": "src/client/game/demonware/stun_server.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/stun_server.hpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/client/game/demonware/stun_server.hpp",
+        "sha256": "c47b76413d0ddcf3e95b6933ea4956e6ae059715a8d1cdf4e25b3fa9fa667e54"
+      },
+      {
+        "path": "src/common/utils/cryptography.cpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/common/utils/cryptography.cpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/common/utils/cryptography.cpp",
+        "sha256": "ede8b0d4606d72ce4bc8f9c1387b5161edcddbb906b0c2d662db8f7673a7cf9e"
+      },
+      {
+        "path": "src/common/utils/cryptography.hpp",
+        "raw_url": "https://git.alterware.dev/alterware/iw6-mod/raw/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/common/utils/cryptography.hpp",
+        "url": "https://git.alterware.dev/alterware/iw6-mod/src/commit/b54b3f51aff244a27d309bc0775f450aa236c2f3/src/common/utils/cryptography.hpp",
+        "sha256": "6ff42d3430f2ce3400bc322961879129ccabfcb95c2f340b86ddb631c10ef68d"
+      }
+    ]
+  },
+  {
+    "name": "iw7-mod",
+    "repository": "https://github.com/auroramod/iw7-mod",
+    "commit": "37abcb260408ce7cdef0dde831bbfcad594510e3",
+    "branch": "develop",
+    "files": [
+      {
+        "path": ".gitmodules",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/.gitmodules",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/.gitmodules",
+        "sha256": "67146e6bae485e90b23f7a527ed1ba24c6974e7dee3f40589d8c55a835f4a187"
+      },
+      {
+        "path": "LICENSE",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/LICENSE",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/LICENSE",
+        "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+      },
+      {
+        "path": "src/client/component/demonware.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/component/demonware.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/component/demonware.cpp",
+        "sha256": "2bd0d077e322fcf15b25dc15618808b8cb1e42c344c721cbc9254c0ce91ae653"
+      },
+      {
+        "path": "src/client/game/demonware/byte_buffer.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/byte_buffer.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/byte_buffer.cpp",
+        "sha256": "12774c9e92d40a95fa5e0383bd1fc933134a0f62ce580bbf8fd48f0dd8ac9a58"
+      },
+      {
+        "path": "src/client/game/demonware/byte_buffer.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/byte_buffer.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/byte_buffer.hpp",
+        "sha256": "ee5732f99937349282e2162aa35d7aebf161e09cc13da8c4731b8cd03de927c1"
+      },
+      {
+        "path": "src/client/game/demonware/data_types.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/data_types.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/data_types.hpp",
+        "sha256": "9bb836e460d8c040db78b9de6f7a71673ec7f7b2c824ef6d0d07aa0e1b72d47e"
+      },
+      {
+        "path": "src/client/game/demonware/dw_include.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/dw_include.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/dw_include.hpp",
+        "sha256": "d6722251de53bcd008cea43c1669d86c25bdca6837761b8b9cbba8d970481288"
+      },
+      {
+        "path": "src/client/game/demonware/keys.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/keys.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/keys.cpp",
+        "sha256": "89c02495b8b9f50bd3513a3587b8bcc2898fbb46a53b38562e1df689ddb80305"
+      },
+      {
+        "path": "src/client/game/demonware/keys.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/keys.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/keys.hpp",
+        "sha256": "af65569ce3338a443bf844abea6451009184b8245500b0586f799c48c739d81b"
+      },
+      {
+        "path": "src/client/game/demonware/loot/loot.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/loot/loot.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/loot/loot.cpp",
+        "sha256": "97dddabb2a95afc2b363d106460f9b6b48701be0b48cda4f62989c986c019a07"
+      },
+      {
+        "path": "src/client/game/demonware/loot/loot.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/loot/loot.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/loot/loot.hpp",
+        "sha256": "bc5442dcb217fc8fe02e5b6cbdaa53d489b34b1bd2ec7fa664b456ee9e228e76"
+      },
+      {
+        "path": "src/client/game/demonware/loot/missions.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/loot/missions.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/loot/missions.cpp",
+        "sha256": "43de34a742ef20b2bb707cf2c843991a8c25736aad2f48bae6b683c8dcef62e4"
+      },
+      {
+        "path": "src/client/game/demonware/loot/missions.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/loot/missions.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/loot/missions.hpp",
+        "sha256": "46a587e980cbde92952e48a8d71f29d67ed433c0518011084e6f2cfb9f2eca1e"
+      },
+      {
+        "path": "src/client/game/demonware/reply.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/reply.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/reply.cpp",
+        "sha256": "192bef5ef3333933f3b673db3e708e3ea267b10e01b34c0566eec1e71aa4e21c"
+      },
+      {
+        "path": "src/client/game/demonware/reply.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/reply.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/reply.hpp",
+        "sha256": "db542eebc77413551a78421aad4938a0980c54b81ebb7ac2255f14d0d8005ef7"
+      },
+      {
+        "path": "src/client/game/demonware/server_registry.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/server_registry.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/server_registry.hpp",
+        "sha256": "b606c33963807887f00943ef95225cdeaa8407eaf679408fcaae0f40001b581b"
+      },
+      {
+        "path": "src/client/game/demonware/servers/auth3_server.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/servers/auth3_server.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/servers/auth3_server.cpp",
+        "sha256": "deb3026a294784b72deb102122e052f178814cded7dfed70fce3da6b09d6d7e8"
+      },
+      {
+        "path": "src/client/game/demonware/servers/auth3_server.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/servers/auth3_server.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/servers/auth3_server.hpp",
+        "sha256": "c50ec8fe8c10bb3873ec4075c8dd63513f8d4143d9afcb9b6ae996c6b41353aa"
+      },
+      {
+        "path": "src/client/game/demonware/servers/base_server.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/servers/base_server.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/servers/base_server.cpp",
+        "sha256": "24c164caa366c3045c6b3a929b92404f3656dd38ff77ab45da2e9aa68e9687c3"
+      },
+      {
+        "path": "src/client/game/demonware/servers/base_server.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/servers/base_server.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/servers/base_server.hpp",
+        "sha256": "8b98cfe001029e81a69dd36e2e443f7ce3b53c1444b2f153d84f334fdab69ec3"
+      },
+      {
+        "path": "src/client/game/demonware/servers/lobby_server.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/servers/lobby_server.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/servers/lobby_server.cpp",
+        "sha256": "c3fddb997390f0199105401d585681be6b6698943f48f58e9ab95e4ad64d633b"
+      },
+      {
+        "path": "src/client/game/demonware/servers/lobby_server.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/servers/lobby_server.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/servers/lobby_server.hpp",
+        "sha256": "9b0a89aa7f4b24aaf8678bed8a252cdfe746e1059ceac86de1ec831534e9a7b3"
+      },
+      {
+        "path": "src/client/game/demonware/servers/service_server.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/servers/service_server.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/servers/service_server.hpp",
+        "sha256": "7c3fc2780d6a440657a9a2c5ac4d0e99cb92eca240d1a8288b3df8b64236d484"
+      },
+      {
+        "path": "src/client/game/demonware/servers/stun_server.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/servers/stun_server.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/servers/stun_server.cpp",
+        "sha256": "49b0f030797cb71a0765f49a09595eab5bd07765648a1bf59e462c7f6ea39a8d"
+      },
+      {
+        "path": "src/client/game/demonware/servers/stun_server.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/servers/stun_server.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/servers/stun_server.hpp",
+        "sha256": "e751e3d3f3ad1c1cb3e74c605c0054686d443320f8d245de6115ae302246ef35"
+      },
+      {
+        "path": "src/client/game/demonware/servers/tcp_server.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/servers/tcp_server.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/servers/tcp_server.cpp",
+        "sha256": "c9e1901dc9b00d914fa0a248b1f0b545633d16a8b5e2fefbb07e0514d8a257db"
+      },
+      {
+        "path": "src/client/game/demonware/servers/tcp_server.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/servers/tcp_server.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/servers/tcp_server.hpp",
+        "sha256": "30bf07317b9c77c47ce3d2a09b6c685c814c80c53dcb2b7ae0ad3c028eb33830"
+      },
+      {
+        "path": "src/client/game/demonware/servers/udp_server.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/servers/udp_server.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/servers/udp_server.cpp",
+        "sha256": "da74c098e51cf1a5d9bb69be360b891195b3d15dc49ecd4fe6e52d6bd538bb2d"
+      },
+      {
+        "path": "src/client/game/demonware/servers/udp_server.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/servers/udp_server.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/servers/udp_server.hpp",
+        "sha256": "ed93f9be4af0c1ef74afba2e45b257b62adc04a52a8dbf198896b6fec41b9703"
+      },
+      {
+        "path": "src/client/game/demonware/servers/umbrella_server.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/servers/umbrella_server.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/servers/umbrella_server.cpp",
+        "sha256": "520ceda6770fd69c4c9e5c89e8a407fd8bb2fc23450889f9d2ac95d07e897ad5"
+      },
+      {
+        "path": "src/client/game/demonware/servers/umbrella_server.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/servers/umbrella_server.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/servers/umbrella_server.hpp",
+        "sha256": "c83436800245d0c2c0c895cc31aec69c49f509ab6a29f7c8b340532d6030c607"
+      },
+      {
+        "path": "src/client/game/demonware/service.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/service.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/service.hpp",
+        "sha256": "9ef66652848b2bf72a9533255cc4c1913255a05239a039bb5776e3e37e383f5d"
+      },
+      {
+        "path": "src/client/game/demonware/services.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services.hpp",
+        "sha256": "55c3518b3375c69c0acf1a8f5f576f492fd6b96c63fd2960a2614598a94b0dd3"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdAnticheat.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdAnticheat.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdAnticheat.cpp",
+        "sha256": "ad6dabb7ac2ce26e6d7fb7de4388065ea4a4e7f12880a19083c4946bb0a6c3cd"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdAnticheat.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdAnticheat.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdAnticheat.hpp",
+        "sha256": "5260ab7d3cd694aaaa2d59a692f19e685ccb2efd824649d602524ff596185caa"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdAsyncMatchMaking.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdAsyncMatchMaking.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdAsyncMatchMaking.cpp",
+        "sha256": "7ffecb3b78518ed06cef96dd052a7d48c7369269d396585374a4581b60a7df44"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdAsyncMatchMaking.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdAsyncMatchMaking.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdAsyncMatchMaking.hpp",
+        "sha256": "62704c227f3f843e62b35ffae19eb0d1a605e7e6ce71a600119251087f90b343"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdBandwidthTest.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdBandwidthTest.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdBandwidthTest.cpp",
+        "sha256": "ac831b8f718830c229657499756b3fdfc6d844b945b632cfb7475839b98a57b4"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdBandwidthTest.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdBandwidthTest.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdBandwidthTest.hpp",
+        "sha256": "1316e1759600b90c8842f78e68731ec2cc4d43f472d464b86a24fa48b6b3cc9b"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdCMail.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdCMail.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdCMail.cpp",
+        "sha256": "9bd946bfa9d5263203b85faaa908ab3cba7176b4c749fdeb978669d253848d39"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdCMail.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdCMail.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdCMail.hpp",
+        "sha256": "5fea0b7c93eff9fcf8418d6ab79ce4e7bde13fe5ce6ea0d22accd8a588c65fe3"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdContentStreaming.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdContentStreaming.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdContentStreaming.cpp",
+        "sha256": "9da46878673a7e869c0a1a40cf599cde8cc7b022fd360665fa9fa5c06180f74a"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdContentStreaming.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdContentStreaming.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdContentStreaming.hpp",
+        "sha256": "a6cd8045b295023a04d1bb8374203571ad8ff0c8b20363212b59545fd0a12849"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdCounter.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdCounter.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdCounter.cpp",
+        "sha256": "de33a207c10998bb4e2e121210ecf89719f520fba58be4968063054727cecfa3"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdCounter.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdCounter.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdCounter.hpp",
+        "sha256": "851e23ec36cc6151e80275d6a69e75763e83c4938f1ad6825cbb6e159c30fc3c"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdDML.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdDML.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdDML.cpp",
+        "sha256": "4a6dbb5aba6d8f0c6bb6cea778ce57b5a4c6b6db9374780f7043d0cdf76ddad2"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdDML.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdDML.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdDML.hpp",
+        "sha256": "fe079387e6cc66c04c0a77fc27ccb57b3b717b8d65933c6bc7e69385d05fd9f3"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdEventLog.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdEventLog.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdEventLog.cpp",
+        "sha256": "b3fe05911fdc296190b32be636cded4e79e12d9af350cc1311b665f4d9139d13"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdEventLog.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdEventLog.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdEventLog.hpp",
+        "sha256": "060ea2924714762220cd467d44b349f280b3fea9273fe28ccef28f468130b5b1"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdFacebook.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdFacebook.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdFacebook.cpp",
+        "sha256": "72862f75821e3dcecdf6df9c8f18d40edc75dfc6138b26b090a2b34934710963"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdFacebook.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdFacebook.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdFacebook.hpp",
+        "sha256": "59de67f5b01c533c953d4ee6522df3cdbe79212125bc4452d92cdf75df8d63a9"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdGroup.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdGroup.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdGroup.cpp",
+        "sha256": "5e279a5718fa0784a89a5552bcc062a35e95e4246368cbf9d23eda201b4f9067"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdGroup.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdGroup.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdGroup.hpp",
+        "sha256": "490f4ec6acb807245b85b3fad51f6e66f3b55a9555911d40b2be12ea5590f49a"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdLeague.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdLeague.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdLeague.cpp",
+        "sha256": "5e272e7be803be89fc6afcc586cc3a60b477f1ad80cec507b0695f10ebe7b699"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdLeague.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdLeague.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdLeague.hpp",
+        "sha256": "8362b0e88ab6516231aa5be9b58d127ae92dfcc95d37ddab9e04947d3362c16d"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdLeague2.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdLeague2.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdLeague2.cpp",
+        "sha256": "7030beeaf9be81f309255e02bf5595c75cb31c79336a0a33cc7dedeec1943656"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdLeague2.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdLeague2.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdLeague2.hpp",
+        "sha256": "0a3375489aac1d1cf1dc7d0567538a65073cb67d3d9189eb36035a17f0da4d7f"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdMarketingComms.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdMarketingComms.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdMarketingComms.cpp",
+        "sha256": "579757355b1103b7d911a86de95620abdbf884e94087765c712c0cf7128fe3ba"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdMarketingComms.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdMarketingComms.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdMarketingComms.hpp",
+        "sha256": "094a4879615ff3fd90d769155906c47e90b99f06dd3b9984ac026776ab2d52af"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdMarketplace.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdMarketplace.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdMarketplace.cpp",
+        "sha256": "6ae562241d46dfee17a7e0d81c8dc40c9466f4953ffd8bbcd443319795b5f156"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdMarketplace.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdMarketplace.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdMarketplace.hpp",
+        "sha256": "09375bdc97deb3290ac34514a8971a4fda1f4548ad08433a08e064ded9902e42"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdMatchMaking.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdMatchMaking.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdMatchMaking.cpp",
+        "sha256": "21eee3f264dda957cf1e94d467dab47e92116711b05f6e19407ee5ddd1fedb5b"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdMatchMaking.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdMatchMaking.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdMatchMaking.hpp",
+        "sha256": "05ecd0a4ba5fd22b1494d754629d081d0ac228f8624e0af4d436cf5484c9c3e9"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdPresence.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdPresence.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdPresence.cpp",
+        "sha256": "b28bfbfaa5a6b1c5c0c29470bb9b68e38f65e67e55eee71254e103bdcbd420e4"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdPresence.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdPresence.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdPresence.hpp",
+        "sha256": "819053bc9a2de8201f204bf0d113d10a026f7b5b2f61274822db9df98e881ce6"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdProfiles.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdProfiles.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdProfiles.cpp",
+        "sha256": "26cfcf8cc342b9caf83ce383025fd12e5eb87e9dfd1cada299a3129879564bc5"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdProfiles.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdProfiles.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdProfiles.hpp",
+        "sha256": "13c3cacc41954a7d5f0b001f5cf37c7aa3973ca0314dd43052ef8e14a69fd288"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdPublisherVariables.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdPublisherVariables.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdPublisherVariables.cpp",
+        "sha256": "640946eec3931c0fcc1ca1ea2921f7b61ec0a0bb83dba61e1ac93edfb60e7e21"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdPublisherVariables.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdPublisherVariables.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdPublisherVariables.hpp",
+        "sha256": "f4929b6e1e47dfc1a7bfc07c814b5c8c0131699d27ec948c0e345ece1e9f62f1"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdReward.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdReward.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdReward.cpp",
+        "sha256": "65233baf4812b9cd1f3c280b8a72f1aa2c9a04e1d087aac37237f921ed788809"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdReward.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdReward.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdReward.hpp",
+        "sha256": "d952026e816886f0ece84570e98ce599530a9de6aed110607e17da286a960830"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdRichPresence.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdRichPresence.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdRichPresence.cpp",
+        "sha256": "1b1c3b44db80af9438d99502fb4bc09dee131fa1a8bdf44be34cb9cdb67bfe66"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdRichPresence.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdRichPresence.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdRichPresence.hpp",
+        "sha256": "fa7a50c29db2c450b061089773b04a943d1bac7bcbe265f3de8c757e44db3233"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdStats.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdStats.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdStats.cpp",
+        "sha256": "b02adc80043ccff0cb9464031059cd7d5334a9f7c7ad3584240c097b83a14775"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdStats.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdStats.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdStats.hpp",
+        "sha256": "276933ebee1b656f95e073c362e53749fb03a6a3ba6cbf841ee7df89d591a234"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdStats2.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdStats2.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdStats2.cpp",
+        "sha256": "1829b787826d78848946fcf9001b0406e638fe3752c84ec1e60731229fdca256"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdStats2.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdStats2.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdStats2.hpp",
+        "sha256": "dc148b90088c4514f749afc0fa7ed2aa8654bdf622e066cc1ea5b324425b457b"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdStats3.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdStats3.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdStats3.cpp",
+        "sha256": "1ca4a17542cec07328475756416c275fa63b58ae3624a5e015f29afe88857753"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdStats3.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdStats3.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdStats3.hpp",
+        "sha256": "f9373b613b17ddeb4a35a1210b379971cc2c7becdb8e52a43480576cba7d43e4"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdStorage.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdStorage.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdStorage.cpp",
+        "sha256": "7492acb328d341cc97ebb9705e28f49feccc6e81328b80bc0110d37a2ec8d983"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdStorage.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdStorage.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdStorage.hpp",
+        "sha256": "af3c45caa1652e470656953998c686b07dc5b472636829299f8bb62145b4a727"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdTeams.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdTeams.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdTeams.cpp",
+        "sha256": "bf678b6a2ecc37fae9c1da05be70108d9f42534ea017dc0ca6ed35b34fe18277"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdTeams.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdTeams.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdTeams.hpp",
+        "sha256": "2c6d93d0f49ceeb1527c3fa168c575200b72b3b639a211de43b59ee0c9bcc467"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdTitleUtilities.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdTitleUtilities.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdTitleUtilities.cpp",
+        "sha256": "9b9eb308537ef9f6aaefb065c42dc30e37b11904753decd00a692323dd2e946d"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdTitleUtilities.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdTitleUtilities.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdTitleUtilities.hpp",
+        "sha256": "1d32f8cb35d85a0dfba407e988d6092f487af8f4d5aee234cc5827715e04b55a"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdUserGroups.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdUserGroups.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdUserGroups.cpp",
+        "sha256": "43a378d200a53db83dec6ae26165358e4a018122c485a6e0484b28e84a704643"
+      },
+      {
+        "path": "src/client/game/demonware/services/bdUserGroups.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdUserGroups.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/demonware/services/bdUserGroups.hpp",
+        "sha256": "84955d960208431736b9a9397f4170d9b1f62e6e84ef58ee0da39bba7cf99aa7"
+      },
+      {
+        "path": "src/client/game/structs.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/structs.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/structs.hpp",
+        "sha256": "c8b934a33631dad43365071e4e350911bf2628a03681395bae6acaddf95a198b"
+      },
+      {
+        "path": "src/common/utils/cryptography.cpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/common/utils/cryptography.cpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/common/utils/cryptography.cpp",
+        "sha256": "ede8b0d4606d72ce4bc8f9c1387b5161edcddbb906b0c2d662db8f7673a7cf9e"
+      },
+      {
+        "path": "src/common/utils/cryptography.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/common/utils/cryptography.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/common/utils/cryptography.hpp",
+        "sha256": "6ff42d3430f2ce3400bc322961879129ccabfcb95c2f340b86ddb631c10ef68d"
+      },
+      {
+        "path": "src/client/game/types/demonware.hpp",
+        "raw_url": "https://raw.githubusercontent.com/auroramod/iw7-mod/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/types/demonware.hpp",
+        "url": "https://github.com/auroramod/iw7-mod/blob/37abcb260408ce7cdef0dde831bbfcad594510e3/src/client/game/types/demonware.hpp",
+        "sha256": "784ef7233cfe2de5b49d8734291efb4ff855eda015a8890e4753c7c443f2c369"
+      }
+    ]
+  },
+  {
+    "name": "open-bitdemon-emulator",
+    "repository": "https://github.com/Laupetin/open-bitdemon-emulator",
+    "commit": "e2324e95516210a949a646c6b57fa4df70011442",
+    "branch": "main",
+    "files": [
+      {
+        "path": "LICENSE",
+        "raw_url": "https://raw.githubusercontent.com/Laupetin/open-bitdemon-emulator/e2324e95516210a949a646c6b57fa4df70011442/LICENSE",
+        "url": "https://github.com/Laupetin/open-bitdemon-emulator/blob/e2324e95516210a949a646c6b57fa4df70011442/LICENSE",
+        "sha256": "0982c2151d09d6f3a66e2a537d1f971a360fd34f290231a5a7bb3ea1b8487170"
+      },
+      {
+        "path": "libbitdemon/src/crypto/mod.rs",
+        "raw_url": "https://raw.githubusercontent.com/Laupetin/open-bitdemon-emulator/e2324e95516210a949a646c6b57fa4df70011442/libbitdemon/src/crypto/mod.rs",
+        "url": "https://github.com/Laupetin/open-bitdemon-emulator/blob/e2324e95516210a949a646c6b57fa4df70011442/libbitdemon/src/crypto/mod.rs",
+        "sha256": "7cc4dc659dec71a87cf2dcede4ab1f175eea8b2207389730998f8d0814f0ed8a"
+      },
+      {
+        "path": "libbitdemon/src/auth/result/auth_ticket.rs",
+        "raw_url": "https://raw.githubusercontent.com/Laupetin/open-bitdemon-emulator/e2324e95516210a949a646c6b57fa4df70011442/libbitdemon/src/auth/result/auth_ticket.rs",
+        "url": "https://github.com/Laupetin/open-bitdemon-emulator/blob/e2324e95516210a949a646c6b57fa4df70011442/libbitdemon/src/auth/result/auth_ticket.rs",
+        "sha256": "c7bbb9386679a25fdf2998ae6c2ca791a15e18c5f64279873a5705de20b85eb5"
+      },
+      {
+        "path": "libbitdemon/src/auth/response.rs",
+        "raw_url": "https://raw.githubusercontent.com/Laupetin/open-bitdemon-emulator/e2324e95516210a949a646c6b57fa4df70011442/libbitdemon/src/auth/response.rs",
+        "url": "https://github.com/Laupetin/open-bitdemon-emulator/blob/e2324e95516210a949a646c6b57fa4df70011442/libbitdemon/src/auth/response.rs",
+        "sha256": "2102083d6cf5b0af4e583c1527459ef536a5011b2ae46e9151e5caeff79d3f9f"
+      },
+      {
+        "path": "libbitdemon/src/auth/authentication.rs",
+        "raw_url": "https://raw.githubusercontent.com/Laupetin/open-bitdemon-emulator/e2324e95516210a949a646c6b57fa4df70011442/libbitdemon/src/auth/authentication.rs",
+        "url": "https://github.com/Laupetin/open-bitdemon-emulator/blob/e2324e95516210a949a646c6b57fa4df70011442/libbitdemon/src/auth/authentication.rs",
+        "sha256": "a392c9828c42b2f9479baca9c89fbcf39da62c8a35147c7d7e7a1a71d7b097a2"
+      },
+      {
+        "path": "libbitdemon/src/auth/auth_handler/steam.rs",
+        "raw_url": "https://raw.githubusercontent.com/Laupetin/open-bitdemon-emulator/e2324e95516210a949a646c6b57fa4df70011442/libbitdemon/src/auth/auth_handler/steam.rs",
+        "url": "https://github.com/Laupetin/open-bitdemon-emulator/blob/e2324e95516210a949a646c6b57fa4df70011442/libbitdemon/src/auth/auth_handler/steam.rs",
+        "sha256": "53320c0ed75401dd2e296edaf8f3186c00987b5c9a39281c5d3e78b2725f6bb6"
+      },
+      {
+        "path": "libbitdemon/src/lobby/lsg.rs",
+        "raw_url": "https://raw.githubusercontent.com/Laupetin/open-bitdemon-emulator/e2324e95516210a949a646c6b57fa4df70011442/libbitdemon/src/lobby/lsg.rs",
+        "url": "https://github.com/Laupetin/open-bitdemon-emulator/blob/e2324e95516210a949a646c6b57fa4df70011442/libbitdemon/src/lobby/lsg.rs",
+        "sha256": "c51a25f7582fed10e707f7a864df86719fb0ca7bc2b016a213369ee0c3f424d8"
+      },
+      {
+        "path": "libbitdemon/src/lobby/storage/handler.rs",
+        "raw_url": "https://raw.githubusercontent.com/Laupetin/open-bitdemon-emulator/e2324e95516210a949a646c6b57fa4df70011442/libbitdemon/src/lobby/storage/handler.rs",
+        "url": "https://github.com/Laupetin/open-bitdemon-emulator/blob/e2324e95516210a949a646c6b57fa4df70011442/libbitdemon/src/lobby/storage/handler.rs",
+        "sha256": "243e028a0c9c70b489418b5a6bc294f1ce5f1ea4b5a0db44c79fd7f6bab77e7b"
+      },
+      {
+        "path": "libbitdemon/src/lobby/storage/result.rs",
+        "raw_url": "https://raw.githubusercontent.com/Laupetin/open-bitdemon-emulator/e2324e95516210a949a646c6b57fa4df70011442/libbitdemon/src/lobby/storage/result.rs",
+        "url": "https://github.com/Laupetin/open-bitdemon-emulator/blob/e2324e95516210a949a646c6b57fa4df70011442/libbitdemon/src/lobby/storage/result.rs",
+        "sha256": "c60e65d29428d0a07422998061b2078595df70d68f867b1139b9f0405ea83079"
+      },
+      {
+        "path": "libbitdemon/src/lobby/storage/service.rs",
+        "raw_url": "https://raw.githubusercontent.com/Laupetin/open-bitdemon-emulator/e2324e95516210a949a646c6b57fa4df70011442/libbitdemon/src/lobby/storage/service.rs",
+        "url": "https://github.com/Laupetin/open-bitdemon-emulator/blob/e2324e95516210a949a646c6b57fa4df70011442/libbitdemon/src/lobby/storage/service.rs",
+        "sha256": "cf40c8c2f15ddc3cf915e6f9a07fe88d57f5a47b70d8e20542446b96702b7686"
+      },
+      {
+        "path": "libbitdemon/src/lobby/response/task_reply.rs",
+        "raw_url": "https://raw.githubusercontent.com/Laupetin/open-bitdemon-emulator/e2324e95516210a949a646c6b57fa4df70011442/libbitdemon/src/lobby/response/task_reply.rs",
+        "url": "https://github.com/Laupetin/open-bitdemon-emulator/blob/e2324e95516210a949a646c6b57fa4df70011442/libbitdemon/src/lobby/response/task_reply.rs",
+        "sha256": "0052bf88199f0946b14f6707c1853bb5ed25eda9772c8678fce066d7cce62275"
+      },
+      {
+        "path": "libbitdemon/src/lobby/response/lsg_reply.rs",
+        "raw_url": "https://raw.githubusercontent.com/Laupetin/open-bitdemon-emulator/e2324e95516210a949a646c6b57fa4df70011442/libbitdemon/src/lobby/response/lsg_reply.rs",
+        "url": "https://github.com/Laupetin/open-bitdemon-emulator/blob/e2324e95516210a949a646c6b57fa4df70011442/libbitdemon/src/lobby/response/lsg_reply.rs",
+        "sha256": "6db0476671b7a1ab0afac0fc122bac35e5e7041a214d92c971a4ecfac73d29de"
+      },
+      {
+        "path": "libbitdemon/src/networking/bd_socket.rs",
+        "raw_url": "https://raw.githubusercontent.com/Laupetin/open-bitdemon-emulator/e2324e95516210a949a646c6b57fa4df70011442/libbitdemon/src/networking/bd_socket.rs",
+        "url": "https://github.com/Laupetin/open-bitdemon-emulator/blob/e2324e95516210a949a646c6b57fa4df70011442/libbitdemon/src/networking/bd_socket.rs",
+        "sha256": "6ecf944a1b85ae2d842129d87edfb82ec75dc36856552092b80fe21a1160df75"
+      },
+      {
+        "path": "libbitdemon/src/messaging/bd_message.rs",
+        "raw_url": "https://raw.githubusercontent.com/Laupetin/open-bitdemon-emulator/e2324e95516210a949a646c6b57fa4df70011442/libbitdemon/src/messaging/bd_message.rs",
+        "url": "https://github.com/Laupetin/open-bitdemon-emulator/blob/e2324e95516210a949a646c6b57fa4df70011442/libbitdemon/src/messaging/bd_message.rs",
+        "sha256": "43cb98a7bed9fde6c3cf3bf5c5190107074286635f915cfa03f5e140d52f52d4"
+      },
+      {
+        "path": "libbitdemon/src/domain/title.rs",
+        "raw_url": "https://raw.githubusercontent.com/Laupetin/open-bitdemon-emulator/e2324e95516210a949a646c6b57fa4df70011442/libbitdemon/src/domain/title.rs",
+        "url": "https://github.com/Laupetin/open-bitdemon-emulator/blob/e2324e95516210a949a646c6b57fa4df70011442/libbitdemon/src/domain/title.rs",
+        "sha256": "6d1b04a5727b3ad0e70636d5e8bd63a6e19ca665434a940cad8deb2b5b0821d8"
+      },
+      {
+        "path": "libbitdemon/src/auth/auth_handler/mod.rs",
+        "raw_url": "https://raw.githubusercontent.com/Laupetin/open-bitdemon-emulator/e2324e95516210a949a646c6b57fa4df70011442/libbitdemon/src/auth/auth_handler/mod.rs",
+        "url": "https://github.com/Laupetin/open-bitdemon-emulator/blob/e2324e95516210a949a646c6b57fa4df70011442/libbitdemon/src/auth/auth_handler/mod.rs",
+        "sha256": "51e856423cb475a23ab23e241a2201d249e91b842c00cde4491facd081e579eb"
+      }
+    ]
+  },
+  {
+    "name": "ryunet-demonware-ctr",
+    "repository": "https://github.com/Ryu7w7/ryunet-demonware-ctr",
+    "commit": "9560e81650e40068cf54705127557e66e65ab308",
+    "files": [
+      {
+        "path": "server/auth.go",
+        "raw_url": "https://raw.githubusercontent.com/Ryu7w7/ryunet-demonware-ctr/9560e81650e40068cf54705127557e66e65ab308/server/auth.go",
+        "url": "https://github.com/Ryu7w7/ryunet-demonware-ctr/blob/9560e81650e40068cf54705127557e66e65ab308/server/auth.go",
+        "sha256": "b8c30b3919151911769140e2a9150afb0d26f26056531712e52056abb007bc91"
+      },
+      {
+        "path": "server/bdcrypto.go",
+        "raw_url": "https://raw.githubusercontent.com/Ryu7w7/ryunet-demonware-ctr/9560e81650e40068cf54705127557e66e65ab308/server/bdcrypto.go",
+        "url": "https://github.com/Ryu7w7/ryunet-demonware-ctr/blob/9560e81650e40068cf54705127557e66e65ab308/server/bdcrypto.go",
+        "sha256": "2bb432d5bacde54de8552e02998d3738f0fe7f872883dde5e0e75400d80bb382"
+      },
+      {
+        "path": "server/accountlookup.go",
+        "raw_url": "https://raw.githubusercontent.com/Ryu7w7/ryunet-demonware-ctr/9560e81650e40068cf54705127557e66e65ab308/server/accountlookup.go",
+        "url": "https://github.com/Ryu7w7/ryunet-demonware-ctr/blob/9560e81650e40068cf54705127557e66e65ab308/server/accountlookup.go",
+        "sha256": "277185c2a9405821495b039dbdcb7cbf245751e4504102350e0cb5b8ec8fca00"
+      },
+      {
+        "path": "server/lobby.go",
+        "raw_url": "https://raw.githubusercontent.com/Ryu7w7/ryunet-demonware-ctr/9560e81650e40068cf54705127557e66e65ab308/server/lobby.go",
+        "url": "https://github.com/Ryu7w7/ryunet-demonware-ctr/blob/9560e81650e40068cf54705127557e66e65ab308/server/lobby.go",
+        "sha256": "409f50face07eb186208dab69bd425b5cea1c6b5b61d3068ecff46f595856ad1"
+      },
+      {
+        "path": "server/handshake.go",
+        "raw_url": "https://raw.githubusercontent.com/Ryu7w7/ryunet-demonware-ctr/9560e81650e40068cf54705127557e66e65ab308/server/handshake.go",
+        "url": "https://github.com/Ryu7w7/ryunet-demonware-ctr/blob/9560e81650e40068cf54705127557e66e65ab308/server/handshake.go",
+        "sha256": "d126323ede4039ee5c169e55fd0b2a79626f733c310c6fc78fd7e239636ceb31"
+      },
+      {
+        "path": "LICENSE.md",
+        "raw_url": "https://raw.githubusercontent.com/Ryu7w7/ryunet-demonware-ctr/9560e81650e40068cf54705127557e66e65ab308/LICENSE.md",
+        "url": "https://github.com/Ryu7w7/ryunet-demonware-ctr/blob/9560e81650e40068cf54705127557e66e65ab308/LICENSE.md",
+        "sha256": "12cfb22c48ad6e9cc701acd341af3bc2b1e1120b4ea7f8aa2e40c53a4cfe5bff"
+      }
+    ]
+  }
+]
