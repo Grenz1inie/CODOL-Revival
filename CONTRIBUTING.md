@@ -37,7 +37,7 @@ python -m venv .venv
 
 索引根目录是 `CODOL-Revival`，不是相邻的游戏目录。GitNexus 的 `.gitnexusignore` 仅放行 `src/`、`tests/`、`tools/`、`scripts/`、`web/`，排除前端依赖和产物；CodeGraph 的 `codegraph.json` 排除运行数据、归档、研究材料、文档及测试二进制样本。新增顶层目录时检查这两份配置，避免引入第三方源码或数据。
 
-索引数据库位于 `.gitnexus/` 和 `.codegraph/`，已加入 `.gitignore`；保留配置文件即可在其他机器重建。当前未初始化 Git，因此 GitNexus 不提供基于提交的增量更新。
+索引数据库位于 `.gitnexus/` 和 `.codegraph/`，已加入 `.gitignore`；保留配置文件即可在其他机器重建。项目已初始化Git并分阶段提交，可按当前提交刷新索引；索引未更新时以当前源码为准。
 
 在项目根目录执行：
 

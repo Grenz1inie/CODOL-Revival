@@ -10,18 +10,19 @@
 
 ## 当前方案与参考源码
 
-独立服源码已开始落在 `src/match_server/`，目前完成隔离回环端口的握手、加密、准入、档案上传和地图状态发送。**尚未完成实际开图、出生和对战。** `local_server.py` 仍使用原来的 `NativeServer` 入口；开发中的独立服没有发布到大厅，也没有重启现有服务。
+独立服源码位于 `src/match_server/`，已接入现有认证/大厅，资源独立保存在 `runtime/match/killhouse/`。`local_server.py` 已替换 `NativeServer`，启动时读取地图、碰撞、武器与寻路数据；查询时为当前账号建立回环UDP实例。**自动验证覆盖协议消费和服务端模拟；完整客户端开图、画面、操作及对战仍待用户验收。**
 
 | 对象 | 实际作用及状态 |
 |---|---|
 | `sh1x_dedicated/` | 源码/算法参考；用户已允许必要修改，相邻 `.7z` 为保留归档。本阶段未修改它，也未启动其中的服务器 |
 | `reference-source/` | 从用户提供的 `native-source.zip` 提取的另一份同源参考，保持不可变 |
+| 用户更正后的相邻 `Server/` | 12份发布配置，没有对局程序或源码；播放列表提供分类、FFA→dm和地图入口语法参考 |
 | `server3333/` + `server3333.patch` | 旧引擎源码加新版适配后重新编译的实验；尚未完成完整客户端对局验收，停止扩展 |
 | 当前客户端读取器与REA证据 | 新服可继续采用的协议验证依据；必须绑定当前EXE哈希 |
 
 本次逐文件对照：两份参考的 `codol_bot_nav.c` 完全相同，SHA-256为 `9e928b94b009f5de45b696b356850881ed6712da39a970948d5f9042a2681518`；`codol_bot.c`、`codol_sv_state.c` 分别有53、93行增删，新增参考缺少现有参考的一部分目标版本资源适配。两者不能视为可直接替换的3.3.3.3实现。
 
-REA会话已保存为[独立服参考基线](../../research/evidence/client423-independent-server-baseline.rea.json)并关闭，保留92项工作流及183条证据。恢复时绑定客户端SHA-256 `e3823fd6afc80fb25fa84747e6e9634707b9a0b189357a5466921cda354af37b`；持久化证据不代表新服实现通过。
+REA会话已保存为[独立服参考基线](../../research/evidence/client423-independent-server-baseline.rea.json)，保留92项工作流及183条证据，本轮恢复后继续复用。绑定客户端SHA-256 `e3823fd6afc80fb25fa84747e6e9634707b9a0b189357a5466921cda354af37b`；持久化证据不代表新服实现通过。已超时的整段反编译/xref不再重复扫描，缺失调用参数使用对应地址的汇编核对。
 
 旧PVP实验在方向切换前已挂载Killhouse资源、读取181个寻路点，随后因 `projectile_cbu97_clusterbomb_lod010` 缺失失败。新版MP/地图包另提取43份模型流，哈希无冲突；没有继续开图验证。保留[失败日志](../../research/evidence/pvp-startup-icons.log)和[资源记录](../../research/evidence/server3333-pvp-model-streams.json)，不再沿旧服的完整脚本预加载逐项补模型。
 
@@ -94,6 +95,59 @@ $env:PYTHONPATH='src;tests;tools'
 python -m unittest test_match_transport test_match_connection test_match_server test_match_input test_match_snapshot test_story_wire423 -q
 ```
 
-验证边界仍是协议消费：真实客户端writer `0x5a1be0`、默认输入 `0x5a18e0`、snapshot reader `0x46d170`；没有执行完整渲染或开图。地图包已有本地导出，实际NCS挂载集合、碰撞闭包、权威模拟与出生尚在接线，当前没有发布可人工对战的实例。
+验证边界仍是协议消费：真实客户端writer `0x5a1be0`、默认输入 `0x5a18e0`、snapshot reader `0x46d170`；没有执行完整渲染或开图。后续资源、模拟和大厅接线状态见下文，不能用这些读取器结果替代游戏验收。
+
+## 独立模拟与大厅接入
+
+`world.py` 已持有两名玩家的位置、速度、生命值、弹药、射击/换弹计时和重生状态。真人输入和AI共用移动及射击入口；射线先受地图遮挡，再按命中距离扣血，AI没有直接改对手生命值的捷径。当前只实现站立移动、跳跃、跨低台阶和单支步枪，其他姿态、技能、穿透及骨骼伤害后置。
+
+- `navigation.py` 复用参考CSV路点与A*；CSV连线必须再经当前地图盒体扫掠验证，隐藏目标需要绕过掩体才能被射击。
+- `loadout.py` 从当前423武器头直接读取参数；`export_match_loadout.py` 通过本版本NCS前缀还原名称，提取 `acr_mp`，不按旧资源编号或资产序号猜测。ACR为36发、90ms射击间隔、2000/2500ms普通/空仓换弹。最小对局初始给予一个弹匣及三个备用弹匣。
+- `server.py` 在有效gamestate确认后的首个move上进入模拟，随后按20Hz发送状态。回环测试使用真实加密UDP和当前客户端writer/reader，确认输入改变新服位置、弹药和对手生命值，而不仅是收到回复。
+- `matchmaking.py` 复用现有查询编码和事件21预订消息，绑定一个账号、Killhouse和dm；只发布已启动的独立UDP实例。`local_server.py` 使用 `runtime.load_matchmaking`，运行时不读取参考源码目录或启动旧引擎。
+
+当前机器码 `0x4232d0/0x4253e0` 的死亡门槛为 `pm_type >= 8`，7是倒地状态；`0x4131a0` 同时填写实体 `0xd0/0xd2` 的当前武器。事件序号按8位回绕。上述边界已加入测试，不能沿用其他版本的枚举与布局。
+
+```powershell
+$env:PYTHONPATH='src;tests;tools'
+python -m unittest test_match_world test_match_navigation test_match_loadout test_independent_matchmaking test_match_server -q
+```
+
+这些测试尚未运行完整客户端渲染、实际开图和玩家操作。v5地图包确认17个DM出生点可落地；静态碰撞包括14931个brush、11610个地形三角形、1627个模型实例及78个初始世界子模型。采用空间粗筛和几何缓存后，一次真实地图20步记录中常规步为9–11ms，首次路径计算5.765s；现已把初始AI路径预热移到发布前。新路线缓存仍可能产生延迟，实际手感由用户检查，不宣称完整物理一致。
+
+碰撞就绪只指DM初始静态世界：保留156个原始type6基线实体，不重排其资源编号；玻璃破坏、动态物体、训练/其他模式的子模型不在本轮可玩承诺中。
+
+## 首次开图预加载与注册表
+
+正常Room连接入口 `0x46a750` 在 `0x46a8a5` 调用 `0x46a450`，再经 `0x49fe30` 提交地图加载；这是握手前已有的预加载。stats完成的 `statResponse 0 → 0x466660` 检查DB就绪，未就绪进入state6，经 `heartbeatresponse` 再检查后进入state7。新服补齐heartbeat响应及 `gamestateupdate 0..6`，不额外发送 `loadingnewmap`。后者有先检查旧DB状态再提交加载的时序，不能作为正常首连的必要步骤。
+
+首次gamestate仍在解析配置串前比较NCS CRC，不绕过比较。此前将 `0x448070` 的UI预览初始化误称为 `CG_Init`，现纠正；不能据此强行切换两套CRC。
+
+`build_match_registration.py` 校验当前客户端和签名FF，按实际加载器选择重建54张地图NCS表。商城lite表在卸载UI后仍保留，原52表候选391859916不再用于启动；最终地图候选CRC为 **3852334052**，大厅候选为962763178，seed为3451066449。`probe_match_registration.py` 执行当前机器码核对算法，**所选集合仍是加载器推导，尚非实机挂载捕获**。清单保留 `mounted_set_verified=false`，最终是否一致由客户端正常CRC比较反馈。
+
+对应角色/手部/ACR编号为109/53/5。`export_match_loadout.py` 将注册表、武器头、路点与地图文件放入独立包；不借用旧编号或旧安装目录。生成命令：
+
+```powershell
+$env:PYTHONPATH='src;tests;tools'
+python tools/build_match_registration.py
+python tools/export_match_loadout.py --source research/experiments/independent-match/killhouse-dm-v5 --output research/experiments/independent-match/killhouse-loadout-v2 --common-zone research/experiments/story-native/zone-assets/common_mp/zone.bin --waypoints research/experiments/story-native/source-startup-xygdjp3z/main/waypoints/mp_killhouse_sh_wp.csv --registration research/experiments/independent-match/registration/rebuilt
+```
+
+导出要求新目录，已有包不会覆盖。将完整导出目录部署到 `runtime/match/killhouse/`；生成物、游戏资源和玩家档案均不提交。重建依赖本机已提取输入，运行只依赖独立包。
+
+## 本轮人工验收入口
+
+`data/match-playlist.info` 通过已观测的 **10/21 → mp_playlists_shipRetail_release.info** 发布，只提供 `Killhouse DM`；其他发布文件保持原响应。采用参考语法 `ffa → script dm`、单人组队及数字人数规则1/2。数字规则和菜单选择的完整UI效果仍待实机确认；AI由独立World创建。
+
+1. 通过现有Web控制器启动游戏，进入 **玩 → 多人竞技(PVP) → Killhouse DM**。
+2. 一名真人点击开始匹配，检查是否加载Killhouse并出生；不从剧情入口测试。
+3. 使用WASD、空格、鼠标及R验证移动、跳跃、射击和换弹；当前固定ACR，不验证完整仓库装备。
+4. 找到一个AI，检查双方可见、互射扣血、死亡后约3秒重生。
+
+`runtime/logs/server.jsonl` 记录 `independent_match_ready`、查询/预订、`match_phase`、`match_state` 和 `match_rejected`；生命值变化及约5秒一次的位置/弹药用于关联人工反馈。当前每次服务启动只维护一场预订；退出对局后重新测试请重启项目服务。不能把资源初始化完成或监听成功写成游戏内验收通过。
+
+2026-10-15 19:09（Asia/Shanghai）已重启本项目服务，PID62484：从34文件独立包完成地图/武器/导航初始化，CRC3852334052；认证443、大厅TCP3074、STUN UDP3074已监听。一次实际加密大厅启动检查读取原有公开档案、取到精确播放列表并查询到UDP28970，未上传档案，也未消耗游戏端握手连接；无旧 `server3333.exe` 进程。新增资源编号导出测试、资源包接线测试和发布入口测试均先失败后通过；已通过的旧检查不重复执行，真实游戏留给用户。
+
+本轮本地阶段提交：`6332840` 地图与碰撞导出，`ee9496a` 玩家/AI模拟，`502a880` 大厅接入。
 
 **完成条件**：原版3.3.3.3客户端的上述操作由独立服维护，关掉/移走旧服安装后仍能完成同一验收。旧服协议探针通过与独立服通过分开记录。
