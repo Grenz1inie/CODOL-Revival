@@ -239,6 +239,40 @@ class ConnectionTests(unittest.TestCase):
         self.assertEqual(self.connection.pending_commands[0]['weapon'],7)
         self.assertEqual(self.connection.pending_commands[0]['buttons'],1)
 
+    def test_score_poll_does_not_discard_bundled_move_or_break_reliable_ack(self):
+        from match_server.input import usercmd_key
+        self.connect()
+        self.upload()
+        self.connection.receive(self.packet(b'\x03',1))
+        command = f'userinfo "{self.info}"'.encode()
+        move = self.client.usercmd({'time':100,'buttons':1,'weapon':5,'forward':127},
+            key=usercmd_key(1,self.connection.checksum_feed),move=True,
+            reliables=((1,b's'),(2,command),(3,b's')))
+        packet = self.packet(move,2,ack=1,server_id=self.connection.server_id)
+        replies = self.connection.receive(packet)
+        self.assertEqual(self.connection.reliable,3)
+        self.assertEqual(self.connection.command,b's')
+        self.assertEqual(self.connection.pending_commands[0]['buttons'],1)
+        self.assertEqual(self.connection.pending_commands[0]['weapon'],5)
+        self.assertNotEqual(self.connection.pending_commands[0]['direction'],0)
+        reader = ClientReader423()
+        reader.reset_netchan()
+        self.assertEqual(reader.packet(replies[0],challenge=self.challenge,command=b's')[1:],
+                         (3,b'\x06'))
+        self.assertEqual(self.connection.receive(packet),[])
+
+    def test_score_poll_does_not_allow_reliable_gaps_or_unknown_commands(self):
+        self.connect()
+        self.upload()
+        self.connection.receive(self.packet(b'\x03',1))
+        for number,command in ((2,b's'),(1,b's extra'),(1,b'give all')):
+            packet = self.packet(b'\x1a'+struct.pack('<I',number)+command+b'\0',2,
+                                 ack=1,server_id=self.connection.server_id)
+            with self.assertRaisesRegex(ValueError,'reliable client command'):
+                self.connection.receive(packet)
+            self.assertEqual((self.connection.received,self.connection.reliable),(1,0))
+            self.assertEqual(self.connection.pending_commands,[])
+
     def test_weapon_command_and_acknowledged_snapshot_key_the_next_input(self):
         from match_server.input import usercmd_key
         from match_server.snapshot import encode_snapshot,Inventory

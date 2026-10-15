@@ -207,9 +207,14 @@ class Connection:
             if opcode == 2:
                 number, candidate = reader.number(4), reader.string()
                 if number > reliable:
-                    if number != reliable+1 or not candidate.startswith(b'userinfo "') or not candidate.endswith(b'"'):
+                    if number != reliable+1:
                         raise ValueError('unsupported or missing reliable client command')
-                    self._userinfo(candidate[10:-1].decode('ascii'))
+                    if candidate.startswith(b'userinfo "') and candidate.endswith(b'"'):
+                        self._userinfo(candidate[10:-1].decode('ascii'))
+                    elif candidate != b's':
+                        raise ValueError('unsupported or missing reliable client command')
+                    # The live client polls scores with `s`. Acknowledge it so
+                    # that this packet's usercmd and later reliables can pass.
                     reliable, command = number, candidate
             elif opcode in (0,1) and not commands:
                 commands = read_move(reader,usercmd_key(ack,self.checksum_feed,server_command),self.input_bases[ack])

@@ -148,7 +148,7 @@ class ClientReader423:
                           for off in (0x6b8,0x6c0,0x6d0)) for row in rows]
         finally:cpu.hook_del(hook)
 
-    def usercmd(self, values, *, key, base=None, move=False):
+    def usercmd(self, values, *, key, base=None, move=False, reliables=()):
         """Run the shipped 0x5a1be0 writer; inputs use its real usercmd layout."""
         cpu = self.cpu
         msg, data, source, dest = 0x30000000, 0x30001000, 0x30280000, 0x30290000
@@ -165,10 +165,17 @@ class ClientReader423:
             for field, value in command.items():
                 offset, form = offsets[field]
                 cpu.mem_write(address + offset, struct.pack('<' + form, value))
-        cpu.mem_write(msg, struct.pack('<12I', 0, 0, data, 0, 4096, 2 if move else 0,
-                                      0, 0, 3 if move else 0, 0, 0, 0))
+        from story_wire423 import _Message
+        prefix = _Message()
         if move:
-            cpu.mem_write(data, b'\x01\x01')  # moveNoDelta (3 bits), one command.
+            for sequence, command in reliables:
+                prefix.bits(2, 3)
+                prefix.data.extend(struct.pack('<I', sequence)+command+b'\0')
+            prefix.bits(1, 3)  # moveNoDelta, one command.
+            prefix.data.append(1)
+            cpu.mem_write(data, bytes(prefix.data))
+        cpu.mem_write(msg, struct.pack('<12I', 0, 0, data, 0, 4096, len(prefix.data),
+                                      0, 0, prefix.bit, 0, 0, 0))
         cpu.mem_write(stack, struct.pack('<III', end, key, source))
         cpu.reg_write(UC_X86_REG_ESP, stack)
         cpu.reg_write(UC_X86_REG_EAX, msg)
