@@ -1,0 +1,21 @@
+{
+  "operation": "batch_decompile",
+  "parameters": {
+    "addresses": [
+      "0x006d7c70",
+      "0x006d7ce0",
+      "0x006d87d0",
+      "0x006d7d80"
+    ]
+  },
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "tool call error: tool call failed for `rea/batch_decompile`\n\nCaused by:\n    timed out awaiting tools/call after 300s"
+      }
+    ],
+    "isError": true
+  },
+  "interpretation": "Client timed out after 300 seconds; no new REA decompilation result or cache hit was confirmed."
+}

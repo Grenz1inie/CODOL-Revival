@@ -3,6 +3,7 @@ import hashlib
 import json
 import re
 from pathlib import Path
+from call_chains import build as build_call_chains
 
 ROOT = Path(__file__).resolve().parents[1]
 REPO = ROOT.parents[1]
@@ -47,6 +48,9 @@ def main():
     selected = {address: (package, label) for package, group in CATALOG.items()
                 for address, label in group['functions'].items()}
     found = {address: {} for address in selected}
+    previous = json.loads((ROOT / 'function-index.json').read_text(encoding='utf-8'))
+    primary_hashes = {f['address'][2:]: f['variants'][0]['pseudocode_sha256']
+                      for f in previous['functions']}
     prefixes = ('auth-parser-', 'lobby-keys-', 'controller-', 'expansion-',
                 'dwprofile-', 'onboard-', 'onboarding-')
     sources = [p for p in sorted((REPO / 'research/evidence').glob('*.json'))
@@ -127,6 +131,7 @@ def main():
                 index.append(f'| 0x{address} | {label} | 尚缺可用伪代码 |')
                 continue
             ordered = sorted(variants.items(), key=lambda pair: (
+                pair[0] != primary_hashes.get(address),
                 not any(o['source_kind'] == 'rea-evidence' for o in pair[1]['origins']),
                 not any(o['collection'] == 'current-session' for o in pair[1]['origins']), pair[0]))
             function = {'address': '0x' + address, 'rva': hex(int(address, 16) - 0x400000),
@@ -156,6 +161,7 @@ def main():
             lines.append(f'| 0x{address} | {label} | [伪代码](FUN_{address}.c) |')
         index.append('')
         (ROOT / directory / 'README.md').write_text('\n'.join(lines) + '\n', encoding='utf-8')
+    build_call_chains(manifest)
     save(ROOT / 'function-index.json', manifest)
     (ROOT / 'INDEX.md').write_text('\n'.join(index) + '\n', encoding='utf-8')
     print(json.dumps({'functions': len(manifest['functions']), 'records': len(retained),

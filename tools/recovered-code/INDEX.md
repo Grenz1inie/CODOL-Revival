@@ -13,6 +13,10 @@
 | [0x00a598b0](codol/client/account/auth/FUN_00a598b0.c) | 认证响应与 client_ticket 解码入口 | REA 历史证据 |
 | [0x00a678c0](codol/client/account/auth/FUN_00a678c0.c) | 128 字节认证票据字段读取 | REA 历史证据 |
 | [0x00a595c0](codol/client/account/auth/FUN_00a595c0.c) | 当前版本票据校验回调 | REA 历史证据 |
+| [0x00a36e40](codol/client/account/auth/FUN_00a36e40.c) | 认证票据文本解码包装 | Ghidra 定向分析 |
+| [0x00a676f0](codol/client/account/auth/FUN_00a676f0.c) | 认证对象 24 字节字段双向掩码转换 | Ghidra 定向分析 |
+| [0x00a678b0](codol/client/account/auth/FUN_00a678b0.c) | 认证会话字段双向掩码转换 | Ghidra 定向分析 |
+| [0x00a36c10](codol/client/account/auth/FUN_00a36c10.c) | 认证票据 Base64 字符解码和长度边界 | Ghidra 定向分析 |
 
 ## 公开和私有档案的序列化、解压与任务入口
 
@@ -35,6 +39,18 @@
 | [0x006d7340](codol/client/account/profile/FUN_006d7340.c) | 档案压缩辅助 | Ghidra 定向分析 |
 | [0x00a5a9d0](codol/client/account/profile/FUN_00a5a9d0.c) | 私有档案查询任务 8/2 | REA 历史证据 |
 | [0x00a5a530](codol/client/account/profile/FUN_00a5a530.c) | 私有档案保存任务 8/6 | REA 历史证据 |
+| [0x006d7290](codol/client/account/profile/FUN_006d7290.c) | 档案远程任务引用转移 | Ghidra 定向分析 |
+| [0x006d7c70](codol/client/account/profile/FUN_006d7c70.c) | 档案数据和扩展缓存清空 | REA 历史证据 |
+| [0x006d7ce0](codol/client/account/profile/FUN_006d7ce0.c) | 公开或私有 DDL 版本头初始化 | REA 历史证据 |
+| [0x006d82f0](codol/client/account/profile/FUN_006d82f0.c) | 档案任务结束和状态复位 | Ghidra 定向分析 |
+| [0x006d8a00](codol/client/account/profile/FUN_006d8a00.c) | 档案随机掩码初始化 | REA 历史证据 |
+| [0x006d8a70](codol/client/account/profile/FUN_006d8a70.c) | 保存前清理无效装备并同步档案 | Ghidra 定向分析 |
+| [0x006d90c0](codol/client/account/profile/FUN_006d90c0.c) | 装备与名片缓存回写档案 | REA 历史证据 |
+| [0x006d9da0](codol/client/account/profile/FUN_006d9da0.c) | 账号切换时重置公开和私有档案 | REA 历史证据 |
+| [0x006da140](codol/client/account/profile/FUN_006da140.c) | 当前账号档案上下文获取 | REA 历史证据 |
+| [0x00a5a650](codol/client/account/profile/FUN_00a5a650.c) | 指定账号公开档案保存任务 8/8 | Ghidra 定向分析 |
+| [0x00a5a770](codol/client/account/profile/FUN_00a5a770.c) | 指定账号私有档案查询任务 8/7 | REA 历史证据 |
+| [0x006d7e60](codol/client/account/profile/FUN_006d7e60.c) | 档案下载完成后的标志与缓存处理 | Ghidra 定向分析 |
 
 ## 大厅配置与握手派生
 
@@ -44,6 +60,12 @@
 |---|---|---|
 | [0x00641e10](codol/client/lobby/connection/FUN_00641e10.c) | dwauth 与 STUN 配置读取 | REA 历史证据 |
 | [0x00a61980](codol/client/lobby/connection/FUN_00a61980.c) | 协议 210 握手 transcript 与密钥派生 | REA 历史证据 |
+| [0x00a60120](codol/client/lobby/connection/FUN_00a60120.c) | 握手带标签的分块密钥扩展 | Ghidra 定向分析 |
+| [0x00a5fb90](codol/client/lobby/connection/FUN_00a5fb90.c) | 握手摘要和密钥材料组合 | Ghidra 定向分析 |
+| [0x00a60fd0](codol/client/lobby/connection/FUN_00a60fd0.c) | 握手输出加入发送队列并驱动发送 | Ghidra 定向分析 |
+| [0x00a613c0](codol/client/lobby/connection/FUN_00a613c0.c) | 连接失败状态切换和 socket 清理 | Ghidra 定向分析 |
+| [0x00a60470](codol/client/lobby/connection/FUN_00a60470.c) | 发送队列链表插入 | Ghidra 定向分析 |
+| [0x00a60690](codol/client/lobby/connection/FUN_00a60690.c) | 连接建立轮询与发送队列推进 | Ghidra 定向分析 |
 
 ## 大厅前置引导判断
 
@@ -166,4 +188,21 @@
 | [0x006bf130](codol/client/equipment/loadout/FUN_006bf130.c) | 装备槽位上下文辅助 | Ghidra 定向分析 |
 | [0x006b7740](codol/client/equipment/loadout/FUN_006b7740.c) | WL_EquipWeapon 注册入口 | Ghidra 定向分析 |
 | [0x006b78a0](codol/client/equipment/loadout/FUN_006b78a0.c) | WL_EquipWeaponInSlot 注册入口 | Ghidra 定向分析 |
+
+## 大厅远程任务与异步回调
+
+包：`codol.client.lobby.tasks`
+
+| 地址 | 功能标签 | 来源 |
+|---|---|---|
+| [0x00a62db0](codol/client/lobby/tasks/FUN_00a62db0.c) | 远程任务缓冲对象初始化 | Ghidra 定向分析 |
+| [0x00a3b1b0](codol/client/lobby/tasks/FUN_00a3b1b0.c) | 服务号和任务号写入请求 | Ghidra 定向分析 |
+| [0x00a3be40](codol/client/lobby/tasks/FUN_00a3be40.c) | 远程任务创建并交给提交器 | Ghidra 定向分析 |
+| [0x00a44d00](codol/client/lobby/tasks/FUN_00a44d00.c) | 远程任务结果对象与数量绑定 | Ghidra 定向分析 |
+| [0x00a44cf0](codol/client/lobby/tasks/FUN_00a44cf0.c) | 远程任务错误码读取 | Ghidra 定向分析 |
+| [0x006f5fb0](codol/client/lobby/tasks/FUN_006f5fb0.c) | 客户端异步任务及回调登记包装 | Ghidra 定向分析 |
+| [0x00a3b8a0](codol/client/lobby/tasks/FUN_00a3b8a0.c) | 任务缓冲检查与传输虚调用 | Ghidra 定向分析 |
+| [0x006f5d20](codol/client/lobby/tasks/FUN_006f5d20.c) | 客户端异步任务槽位分配及回调路径 | Ghidra 定向分析 |
+| [0x00a44d90](codol/client/lobby/tasks/FUN_00a44d90.c) | 远程任务状态对象初始化 | Ghidra 定向分析 |
+| [0x00a62c40](codol/client/lobby/tasks/FUN_00a62c40.c) | 远程任务缓冲内存和游标初始化 | Ghidra 定向分析 |
 

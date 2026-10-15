@@ -71,6 +71,39 @@ def main():
     actual_files = {p.relative_to(ROOT).as_posix() for p in (ROOT / 'codol').rglob('*.c')}
     if expected_files != actual_files:
         errors.append('Unindexed or missing pseudocode files')
+    graph = json.loads((ROOT / 'call-chains.json').read_text(encoding='utf-8'))
+    if graph['binary_sha256'] != index['binary_sha256'] or graph['execution_observed']:
+        errors.append('Call graph target or authority mismatch')
+    call_checks = 0
+    outgoing = {f['address']: set() for f in index['functions']}
+    incoming = {a: set() for a in outgoing}
+    for observation in graph['observations']:
+        raw = (ROOT / observation['record']).read_bytes()
+        if sha(raw) != observation['record_sha256']:
+            errors.append('Call observation source changed ' + observation['record'])
+        record = json.loads(raw)
+        item = next(i for i in record['items']
+                    if int(i['address'], 16) == int(observation['function'], 16))
+        if len(observation['calls']) != len(item['call_sites']):
+            errors.append('Call sites omitted ' + observation['function'])
+        for call, site in zip(observation['calls'], item['call_sites']):
+            call_checks += 1
+            direct = not site['computed'] and len(site['targets']) == 1
+            target = f"0x{int(site['targets'][0], 16):08x}" if direct else None
+            if (int(call['site'], 16) != int(site['address'], 16)
+                    or call['instruction'] != site['instruction']
+                    or call['target'] != target
+                    or call['kind'] != ('direct' if direct else 'unresolved-indirect')
+                    or site['address'][2:] + ' ' + site['instruction'] not in item['instructions']):
+                errors.append('Call site differs from instructions ' + call['site'])
+            if direct:
+                outgoing[observation['function']].add(target)
+                if target in incoming:
+                    incoming[target].add(observation['function'])
+    for function in index['functions']:
+        if (function['verified_direct_callees'] != sorted(outgoing[function['address']])
+                or function['verified_direct_callers'] != sorted(incoming[function['address']])):
+            errors.append('Function call index mismatch ' + function['address'])
     for document in ROOT.rglob('*.md'):
         for target in re.findall(r'\]\(([^)]+)\)', document.read_text(encoding='utf-8')):
             if '://' in target or target.startswith('#'):
@@ -88,6 +121,8 @@ def main():
     report = {'verified_at_utc': datetime.now(timezone.utc).isoformat(),
               'passed': not errors, 'functions': len(seen), 'variants': variants,
               'origin_checks': origins, 'local_links': links,
+              'call_site_checks': call_checks,
+              'call_graph_coverage': graph['coverage'],
               'binary_sha256': sha(binary), 'binary_unchanged': sha(binary) == baseline['binary_sha256'],
               'preexisting_tracked_files_checked': len(baseline['tracked_files']),
               'preexisting_tracked_files_changed': changed,

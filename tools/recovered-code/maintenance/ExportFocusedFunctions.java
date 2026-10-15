@@ -48,12 +48,26 @@ public class ExportFocusedFunctions extends GhidraScript {
                     item.put("body", function.getBody().toString());
                     List<String> instructions = new ArrayList<>();
                     Set<String> targets = new TreeSet<>();
+                    List<Map<String, Object>> callSites = new ArrayList<>();
                     for (Instruction ins : currentProgram.getListing().getInstructions(function.getBody(), true)) {
                         instructions.add(ins.getAddress() + " " + ins.toString());
-                        if (ins.getFlowType().isCall()) for (Address a : ins.getFlows()) targets.add("0x" + a.toString());
+                        if (ins.getFlowType().isCall()) {
+                            Map<String, Object> site = new LinkedHashMap<>();
+                            site.put("address", "0x" + ins.getAddress());
+                            site.put("instruction", ins.toString());
+                            site.put("computed", ins.getFlowType().isComputed());
+                            List<String> destinations = new ArrayList<>();
+                            for (Address a : ins.getFlows()) {
+                                destinations.add("0x" + a);
+                                if (!ins.getFlowType().isComputed()) targets.add("0x" + a);
+                            }
+                            site.put("targets", destinations);
+                            callSites.add(site);
+                        }
                     }
                     item.put("instructions", instructions);
                     item.put("direct_call_targets", targets);
+                    item.put("call_sites", callSites);
                     DecompileResults result = decompiler.decompileFunction(function, 90, monitor);
                     item.put("status", result.decompileCompleted() ? "ok" : "failed");
                     item.put("diagnostic", result.getErrorMessage());

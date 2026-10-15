@@ -1,0 +1,43 @@
+{
+  "phase": "account-lobby",
+  "new_candidates": [
+    "00a36e40",
+    "00a676f0",
+    "00a678b0",
+    "006d7290",
+    "006d7c70",
+    "006d7ce0",
+    "006d82f0",
+    "006d8a00",
+    "006d8a70",
+    "006d90c0",
+    "006d9da0",
+    "006da140",
+    "00a5a650",
+    "00a5a770",
+    "00a62db0",
+    "00a3b1b0",
+    "00a3be40",
+    "00a44d00",
+    "00a44cf0",
+    "006f5fb0",
+    "00a60120",
+    "00a5fb90",
+    "00a60fd0",
+    "00a613c0"
+  ],
+  "chain_entry_points": [
+    "00a598b0",
+    "00a678c0",
+    "006d8560",
+    "006d83e0",
+    "006d7740",
+    "006d7500",
+    "00a5a890",
+    "00a5a9d0",
+    "00a5a420",
+    "00a5a530",
+    "00a61980"
+  ],
+  "selection_basis": "Explicit calls in the already retained pseudocode; canonical entry and bodies checked by focused Ghidra."
+}

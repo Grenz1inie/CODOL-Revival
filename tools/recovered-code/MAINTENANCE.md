@@ -11,6 +11,10 @@ python tools/recovered-code/maintenance/export.py
 python tools/recovered-code/maintenance/verify.py
 ```
 
+导出器同时生成 `call-chains.json`，并在函数索引中记录已取证的直接调用者和被调用者。`ExportFocusedFunctions.java` 的 `call_sites` 保留每个 CALL 地址、原始指令及 computed 标志；验证器逐项核对来源记录和指令，不把伪代码中的名字匹配当作调用证据。已有主文件的内容哈希优先保留，新结果作为变体。
+
+临时 Ghidra 项目放在本目录 `work-projects/`（Git 忽略），不要用以点开头的目录名；Ghidra 的项目路径检查会拒绝它。仍使用 `-readOnly -deleteProject -noanalysis`，结果写入 `evidence/focused/`，日志写入对应轮次目录。
+
 `catalog.json` 显式列出需要维护的地址、包和业务标签。导出器从现有 REA 单次反编译证据、本目录 `evidence/fresh` 和 `evidence/focused` 收集匹配目标哈希的结果；只做换行规范化，并为代码正文、文件和来源记录 SHA-256。首次任务基线在 `evidence/baseline.json`。
 
 新增函数时先通过 REA 定位真实入口，获得反编译结果，再加入清单。不要把任意内部指令地址当新函数，不要用手写逻辑替换 Ghidra 正文。补充解释放在文档中；有不同恢复结果时保留来源和变体。离线导出不会启动 REA/Ghidra。
