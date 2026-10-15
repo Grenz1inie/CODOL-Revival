@@ -141,6 +141,21 @@ class ConnectionTests(unittest.TestCase):
                          (1, b'\x06'))
         self.assertEqual(self.connection.phase, 'primed')  # No claim of spawn yet.
 
+    def test_captured_first_netchan_uses_zero_server_id_until_gamestate(self):
+        # Authenticated 2026-10-16 DATA; 0x4602a0 sends the unset map epoch as 0.
+        self.connection.challenge = 535873589
+        self.connect()
+        self.upload()
+        captured = bytes.fromhex('0100000000000000000000000036')
+        replies = self.connection.receive(captured)
+        self.assertEqual(self.connection.phase, 'primed')
+        self.assertTrue(replies)
+        self.assertEqual(self.connection.receive(captured), [])
+        with self.assertRaisesRegex(ValueError, 'server id'):
+            self.connection.receive(self.packet(b'\x03', 2, ack=1, server_id=0))
+        self.assertTrue(self.connection.receive(self.packet(
+            b'\x03', 2, ack=1, server_id=self.connection.server_id)))
+
     def test_map_category_and_current_serverinfo_maxclients(self):
         from unicorn.x86_const import UC_X86_REG_EBX, UC_X86_REG_EDI, UC_X86_REG_ESP
         wire=self.connection.gamestate

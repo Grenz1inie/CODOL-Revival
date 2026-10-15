@@ -68,6 +68,12 @@
 
 复现工具为 `tools/Read-MatchDebug.ps1 -Stats`，使用三个硬件断点，不改EXE代码字节；第三次命中后脱离。需在新启动、首次匹配前附加，后续重试会复用压缩缓存。原始缓冲区位于忽略目录 `runtime/captures/stats-20261016-014425-*.bin`，包含玩家数据，不提交。调试后客户端上报异常并退出，此次只用于取证；可玩性验证须使用不附加调试器的独立重试。
 
+### 首个netchan的地图编号
+
+01:59未附加调试器的完整游戏已完成stats，界面由“等待连接”推进到“设置游戏”，但服务端拒收首个netchan，原因是 `invalid client sequence or server id`。02:05的限定抓包记录在 `runtime/captures/match-connection-trace-20261016-020046.json`：首包明文为 `0100000000000000000000000036`，序号1、server ID 0、两项ack 0；本次challenge为535873589，末字节解码为EOF 3。该14字节包不含玩家数据。
+
+REA缓存 `client-send-command423.json` 的 `0x4602a0` 读取当前地图状态的首字节作为server ID；首次尚未收到gamestate时为0。此前测试构造255掩盖了这个边界。现在只在connected/primed、ack均为0时接受初始ID 0；收到地图确认后仍拒绝0。新增用例直接回放上述真实首包，覆盖重复首包及后续编号检查；连接与UDP共16项通过。完整游戏是否消费gamestate另行记录，不用此测试声称出生成功。
+
 ## 当前方案与参考源码
 
 ### 核弹小镇接入（2026-10-15）

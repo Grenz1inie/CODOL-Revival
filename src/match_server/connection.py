@@ -174,7 +174,10 @@ class Connection:
         if len(packet) < 14:
             raise ValueError('truncated client netchan packet')
         sequence, server_id, ack, reliable_ack = struct.unpack_from('<IBII', packet)
-        if not 0 < sequence < 0x20000000 or server_id not in (255, self.server_id):
+        # The real client sends zero before it has received a map epoch.
+        initial_epoch = (server_id == 0 and ack == 0 and reliable_ack == 0
+                         and self.phase in ('connected', 'primed'))
+        if not 0 < sequence < 0x20000000 or (server_id not in (255, self.server_id) and not initial_epoch):
             raise ValueError('invalid client sequence or server id')
         if ack not in self.input_bases or reliable_ack > self.published_command or reliable_ack not in self.server_commands:
             raise ValueError('client acknowledged an unsent message')
