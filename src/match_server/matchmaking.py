@@ -59,11 +59,11 @@ class IndependentMatchmaking:
                 rotations=[c for c in commands if c[0]=='start_map_rotate_once']
                 if playlists or rotations:
                     # 0x6e6bf0 has a playlist-rotation branch without a map command.
-                    # Only our single-map FFA entry (240) has an implemented world.
-                    if (self.map_name!='mp_nuked' or maps or playlists!=[['playlist','240']]
+                    # Existing Nuketown entry 110 now uses our single-map DM rules.
+                    if (self.map_name!='mp_nuked' or maps or playlists!=[['playlist','110']]
                             or len(rotations)!=1 or len(rotations[0])!=2
                             or not rotations[0][1].isdecimal() or not 0<int(rotations[0][1])<1<<32):
-                        raise ValueError('only the Nuketown test playlist 240 can rotate')
+                        raise ValueError('only the Nuketown playlist 110 can rotate')
                 elif maps != [['map',self.map_name]]:
                     raise ValueError(f'this instance only runs {self.map_name}')
                 for command in commands:

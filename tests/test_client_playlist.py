@@ -6,17 +6,20 @@ from client_playlist423 import ClientPlaylist423
 
 
 class PlaylistTests(unittest.TestCase):
-    def test_nuketown_bot_entry_has_one_map_and_keeps_stock_catalogue(self):
+    def test_nuketown_reuses_existing_team_category_without_new_tab(self):
         reader=ClientPlaylist423()
         content=(Path(__file__).resolve().parents[1]/'data/match-playlist.info').read_text('utf-8').encode('gbk')
         visible={item['id']:item for item in reader.parse(content) if item['playlists']}
-        self.assertEqual(visible[6]['name'],'本地人机测试')
-        self.assertEqual(visible[6]['playlists'],[240])
-        entry=reader.playlist(240)
-        self.assertEqual(entry['name'],'核弹小镇 · 1对1人机')
+        self.assertNotIn(6,visible)
+        self.assertFalse(any(240 in item['playlists'] for item in visible.values()))
+        self.assertEqual(visible[1]['name'],'冲锋团队竞技')
+        self.assertIn(110,visible[1]['playlists'])
+        entry=reader.playlist(110)
+        self.assertEqual(entry['name'],'-核弹小镇')
         self.assertEqual(entry['maps'],[('mp_nuked','ffa')])
         self.assertIn('一名真人',entry['description'])
-        self.assertIn(110,visible[1]['playlists'])
+        self.assertIn('自由混战',entry['description'])
+        self.assertNotIn('9V9',entry['description'])
 
     def test_stock_categories_and_map_choices_reach_client(self):
         reader=ClientPlaylist423()

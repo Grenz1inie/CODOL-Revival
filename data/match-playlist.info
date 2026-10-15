@@ -1,12 +1,11 @@
-version 800
+version 801
 
 // UI review catalogue adapted from the user-provided Server playlist (version 796).
-// Published playlist IDs, map rows and rules retained; unused gametypes omitted to fit the 32-type client limit.
+// Published IDs retained; Nuketown 110 uses the local DM rules. Unused gametypes omitted to fit the 32-type limit.
 // Category rows use this client's five fields. No global engine tuning.
 // Chinese text restored; obsolete online activity schedules omitted for local menu review.
 // Source is UTF-8; the publisher encodes this file as CP936 for the game menu.
 
-catinfo 6     1     0 "本地人机测试" "本地人机测试"
 catinfo 11    1     0 "狼人行动" "狼人行动"
 catinfo 2     1     1 "经典爆破模式" "经典爆破模式"
 catinfo 1     1     0 "冲锋团队竞技" "冲锋团队竞技"
@@ -184,23 +183,6 @@ gametype nftbl
 name MPUI_NFTBL
 script nftbl
 
-// Independent server: fixed map, one human and one AI. FFA maps to script dm.
-playlist 240
-displayorder 0
-category 6
-name chinese "核弹小镇 · 1对1人机"
-name english "核弹小镇 · 1对1人机"
-description chinese "本地测试：一名真人与一个AI，固定ACR步枪，自由混战。验证出生、移动、射击与死亡重生。"
-description english "本地测试：一名真人与一个AI，固定ACR步枪，自由混战。验证出生、移动、射击与死亡重生。"
-buildversion default cb3 release
-minparty 1
-maxparty 1
-unlocklevelend 70
-vsrule "1V1"
-rule 1011 1
-rule 3265 2
-mp_nuked,ffa,1
-
 playlist 1
 displayorder 1
 category 1
@@ -305,20 +287,16 @@ displayorder 7
 category 1
 name chinese "-核弹小镇"
 name english "-核弹小镇"
-description chinese "人数9V9，死亡后固定复活点复活，在20分钟内，率先达到150击杀的队伍或时间结束击杀数最高的队伍获胜。"
-description english "人数9V9，死亡后固定复活点复活，在20分钟内，率先达到150击杀的队伍或时间结束击杀数最高的队伍获胜。"
+description chinese "一名真人与一个AI，固定ACR步枪，自由混战。"
+description english "一名真人与一个AI，固定ACR步枪，自由混战。"
 buildversion default cb3 release
-ranked
 minparty 1
-maxparty 3
+maxparty 1
 unlocklevelend 70
-vsrule "9V9"
-rule scr_ground_war 1
-rule 1011 12
-rule 3265 18
-rule scr_cha_scorelimit 150
-rule scr_cha_timelimit 20
-mp_nuked,cha,1
+vsrule "1V1"
+rule 1011 1
+rule 3265 2
+mp_nuked,ffa,1
 
 playlist 238
 displayorder 6
