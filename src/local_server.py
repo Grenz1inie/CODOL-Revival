@@ -1,5 +1,7 @@
 """Loopback-only CODOL local protocol service; local artifacts live in runtime/."""
 import json
+import atexit
+import os
 import socket
 import ssl
 import threading
@@ -10,10 +12,13 @@ from dw_lobby import handle_lobby, stun_reply
 from dw_profiles import ProfileStore
 from dw_marketplace import MarketplaceStore
 from dw_progression import PrivateProfileStore
+from dw_matchmaking import StoryMatchmaking
+from native_server import NativeServer
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNTIME = ROOT / 'runtime'
 LOCK = threading.Lock()
+MATCHMAKING = None
 
 def record(kind, **fields):
     event = {'time': datetime.now(timezone.utc).isoformat(), 'event': kind, **fields}
@@ -75,7 +80,8 @@ def lobby_client(sock, peer):
             handle_lobby(sock, peer, record, save_capture,
                          profiles=ProfileStore(RUNTIME / 'data/public-profiles'),
                          private_profiles=PrivateProfileStore(RUNTIME / 'data/private-profiles', RUNTIME / 'backups/private-profiles'),
-                         marketplace=MarketplaceStore(RUNTIME / 'data/marketplace', RUNTIME / 'backups/marketplace'))
+                         marketplace=MarketplaceStore(RUNTIME / 'data/marketplace', RUNTIME / 'backups/marketplace'),
+                         matchmaking=MATCHMAKING)
     except OSError as error:
         record('lobby_error', peer=peer, error=str(error))
 
@@ -106,6 +112,18 @@ if __name__ == '__main__':
     context.set_ciphers('ALL:@SECLEVEL=0')
     context.options |= ssl.OP_NO_TICKET
     context.load_cert_chain(RUNTIME / 'certs/server.pem', RUNTIME / 'certs/server-key.pem')
+    native = NativeServer(ROOT)
+    atexit.register(native.close)
+    MATCHMAKING = StoryMatchmaking(native,
+        PrivateProfileStore(RUNTIME / 'data/private-profiles', RUNTIME / 'backups/private-profiles'),
+        RUNTIME / 'native' / str(os.getpid()))
+    try:
+        MATCHMAKING.start()
+        instance = {'pid': native.process.pid, 'home': str(native.home), 'ready': native.ready}
+        (RUNTIME / 'logs/native-instance.json').write_text(json.dumps(instance), encoding='utf-8')
+        record('native_server_ready', **instance)
+    except (OSError, ValueError, RuntimeError, AssertionError) as error:
+        record('native_server_failed', error=str(error), home=str(native.home))
     threading.Thread(target=listen_stun, daemon=True).start()
     threading.Thread(target=listen, args=(3074, lobby_client), daemon=True).start()
     listen(443, lambda sock, peer: auth_client(sock, peer, context))

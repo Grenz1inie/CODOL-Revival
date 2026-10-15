@@ -3,7 +3,7 @@ import struct
 import unittest
 
 from client_matchmaking423 import ClientMatchmaking423
-from dw_matchmaking import server_result
+from dw_matchmaking import server_result, booking_push
 
 
 class MatchmakingResultTests(unittest.TestCase):
@@ -36,6 +36,14 @@ class MatchmakingResultTests(unittest.TestCase):
             with self.subTest(length=length):
                 ok, _, _ = self.client.candidate(wire[:length])
                 self.assertFalse(ok)
+
+    def test_booking_reply_reaches_real_room_router(self):
+        sender = 0x3333000000000001
+        wire = booking_push(sender, b'mmbook accepted')
+        self.assertEqual(self.client.booking_push(wire), (sender, b'mmbook accepted'))
+        for bad in (wire[:-1], wire[:20], b'\x08\x06\0\0\0'+wire[5:]):
+            with self.subTest(wire=bad.hex()):
+                self.assertIsNone(self.client.booking_push(bad))
 
     def test_invalid_connection_material_is_not_serialized(self):
         valid = dict(port=28970, server_id=1, security_id=b'12345678',

@@ -91,7 +91,7 @@ def _encrypted_reply(keys, payload, sequence, message_type):
 
 
 def handle_lobby(sock, peer, record, save_capture, *, session_key=SESSION_KEY, profiles=None, marketplace=None,
-                 private_profiles=None, publisher_files=None):
+                 private_profiles=None, publisher_files=None, matchmaking=None):
     """Handle one accepted socket; caller owns localhost binding, timeout and close.
 
     Callbacks match local_server.py: record(kind, **fields),
@@ -191,8 +191,20 @@ def handle_lobby(sock, peer, record, save_capture, *, session_key=SESSION_KEY, p
             results = ()
             error_code = 0
             push = None
+            push_record = None
             operation = 'bdStorage.getPublisherFile' if publisher_file else 'unimplemented'
-            if (service_id, task_id) == (11, 13):
+            if matchmaking is not None and (service_id, task_id) in ((21, 5), (6, 14)):
+                operation = 'bdMatchMaking.findSessions' if service_id == 21 else 'bdMessaging.sendGlobalInstantMessage'
+                try:
+                    if service_id == 21:
+                        results = matchmaking.find(profile_owner, parameters)
+                    else:
+                        push = matchmaking.message(profile_owner, parameters)
+                        push_record = dict(event='lobby_booking_message', push_event=21)
+                except (OSError, ValueError) as error:
+                    error_code = 2
+                    record('lobby_booking_rejected', peer=peer, error=str(error))
+            elif (service_id, task_id) == (11, 13):
                 if profile_owner is None or parameters != b'\0':
                     raise ProtocolError('create channel expects current owner and no fields')
                 # Single local room on this connection. REA 0xa55a40 reads
@@ -219,6 +231,8 @@ def handle_lobby(sock, peer, record, save_capture, *, session_key=SESSION_KEY, p
                 push = b'\x08' + struct.pack('<I', 8)
                 push += b'\x0a' + struct.pack('<Q', profile_owner) + b'\x10\0' + parameters[:-1]
                 operation = 'bdMessaging.sendToChannel'
+                push_record = dict(event='lobby_room_message', push_event=8,
+                                   channel_id=struct.unpack_from('<Q', parameters, 1)[0], message_size=size)
             elif profiles is not None and service_id == 8 and task_id == 1:
                 if not parameters or parameters[-1] != 0 or (len(parameters) - 1) % 9:
                     raise ProtocolError('getPublicInfos expects typed user IDs and terminator')
@@ -317,9 +331,7 @@ def handle_lobby(sock, peer, record, save_capture, *, session_key=SESSION_KEY, p
             if push is not None:
                 sequence += 1
                 send(_encrypted_reply(keys, push, sequence, 2))
-                record('lobby_room_message', peer=peer, profile_owner=profile_owner,
-                       channel_id=struct.unpack_from('<Q', parameters, 1)[0],
-                       message_size=size, push_event=8)
+                record(push_record.pop('event'), peer=peer, profile_owner=profile_owner, **push_record)
     except (OSError, ProtocolError, ProfileError) as exc:
         record('lobby_error', peer=peer, phase=phase, error=str(exc))
 

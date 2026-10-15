@@ -146,7 +146,7 @@ class ClientReader423:
                           for off in (0x6b8,0x6c0,0x6d0)) for row in rows]
         finally:cpu.hook_del(hook)
 
-    def usercmd(self, values, *, key, base=None):
+    def usercmd(self, values, *, key, base=None, move=False):
         """Run the shipped 0x5a1be0 writer; inputs use its real usercmd layout."""
         cpu = self.cpu
         msg, data, source, dest = 0x30000000, 0x30001000, 0x30280000, 0x30290000
@@ -163,7 +163,10 @@ class ClientReader423:
             for field, value in command.items():
                 offset, form = offsets[field]
                 cpu.mem_write(address + offset, struct.pack('<' + form, value))
-        cpu.mem_write(msg, struct.pack('<12I', 0, 0, data, 0, 4096, 0, 0, 0, 0, 0, 0, 0))
+        cpu.mem_write(msg, struct.pack('<12I', 0, 0, data, 0, 4096, 2 if move else 0,
+                                      0, 0, 3 if move else 0, 0, 0, 0))
+        if move:
+            cpu.mem_write(data, b'\x01\x01')  # moveNoDelta (3 bits), one command.
         cpu.mem_write(stack, struct.pack('<III', end, key, source))
         cpu.reg_write(UC_X86_REG_ESP, stack)
         cpu.reg_write(UC_X86_REG_EAX, msg)
@@ -173,6 +176,17 @@ class ClientReader423:
         if overflow or cpu.reg_read(UC_X86_REG_EIP) != end:
             raise ValueError('client failed to encode usercmd')
         size, = struct.unpack('<I', cpu.mem_read(msg + 20, 4))
+        if move:
+            packet = bytearray(cpu.mem_read(data, size))
+            packet.extend(struct.pack('<3fII', 0, 0, 0, values['time'], 0))
+            bit, = struct.unpack('<I', cpu.mem_read(msg+32, 4))
+            for i in range(3):  # EOF, retaining the writer's interleaved bit pool.
+                if bit % 8 == 0:
+                    bit = len(packet)*8
+                    packet.append(0)
+                packet[bit//8] |= ((3 >> i)&1) << (bit%8)
+                bit += 1
+            return bytes(packet)
         return bytes(cpu.mem_read(data, size))
 
     def default_usercmd(self, fields):
