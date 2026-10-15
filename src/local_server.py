@@ -113,11 +113,11 @@ if __name__ == '__main__':
     context.set_ciphers('ALL:@SECLEVEL=0')
     context.options |= ssl.OP_NO_TICKET
     context.load_cert_chain(RUNTIME / 'certs/server.pem', RUNTIME / 'certs/server-key.pem')
-    match_package = RUNTIME / 'match/killhouse'
+    match_package = RUNTIME / 'match/nuketown'
     try:
         MATCHMAKING = load_matchmaking(match_package, record=record)
         atexit.register(MATCHMAKING.close)
-        record('independent_match_ready', package=str(match_package), map='mp_killhouse_sh',
+        record('independent_match_ready', package=str(match_package), map=MATCHMAKING.map_name,
                gametype='dm', players=2, checksum=MATCHMAKING.options['netconst_checksum'])
     except (OSError, ValueError, KeyError) as error:
         record('independent_match_failed', error=str(error), package=str(match_package))

@@ -26,13 +26,31 @@ class Navigation:
             if (len(position)!=3 or not all(map(math.isfinite,position))
                     or any(n<0 or n>=count for n in links) or len(links)>48):
                 raise ValueError('invalid waypoint position or link')
-            # Standing locomotion cannot use links requiring crouch or ladders.
-            nodes.append(dict(position=position,links=links,standing=row[2] in ('stand','grenade','claymore','javelin')))
+            # The old graph supplies XY/connectivity, not the current floor.
+            # Only settle within one step; reject occupied/unsupported nodes.
+            standing=row[2] in ('stand','grenade','claymore','javelin')
+            if standing and collision is not None:
+                x,y,z=position
+                ground=collision.trace_box([x,y,z+18],[x,y,z-18])
+                standing=(ground['hit'] and not ground['start_solid']
+                          and ground['normal'][2] >= .7 and not ground.get('unresolved_static_models'))
+                if standing:
+                    position=[x,y,ground['position'][2]+.125]
+            nodes.append(dict(position=position,links=links,standing=standing))
         return cls(nodes,collision)
 
     def _clear(self, a, b):
-        trace=self.collision.trace_box(a,b)
-        return trace['fraction'] >= 1 and not trace['start_solid'] and not trace.get('unresolved_static_models')
+        def clear(start,end):
+            trace=self.collision.trace_box(start,end)
+            return trace['fraction'] >= 1 and not trace['start_solid'] and not trace.get('unresolved_static_models')
+        if clear(a,b):
+            return True
+        # World._move can step 18 units. A flat sweep alone rejects curbs and
+        # slight terrain rises in the reference graph. Check both end lifts
+        # as edges are cached bidirectionally; walls/ceilings still obstruct.
+        up_a=[a[0],a[1],a[2]+18]
+        up_b=[b[0],b[1],b[2]+18]
+        return clear(a,up_a) and clear(b,up_b) and clear(up_a,up_b)
 
     def _nearest(self, position):
         order=sorted(range(len(self.nodes)),key=lambda i:math.dist(position,self.nodes[i]['position']))
@@ -53,7 +71,12 @@ class Navigation:
                 while index is not None:
                     path.append(self.nodes[index]['position'])
                     index=parents[index]
-                return path[::-1]
+                path.reverse()
+                # Replanning must not revisit the nearest node behind the bot
+                # when the next node is already reachable from its position.
+                while len(path)>1 and self._clear(start,path[1]):
+                    path.pop(0)
+                return path
             node=self.nodes[index]
             for other in node['links']:
                 target=self.nodes[other]
