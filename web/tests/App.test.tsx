@@ -45,6 +45,21 @@ async function ready() {
 }
 
 describe('控制器原有操作契约', () => {
+  it('横向指挥台将导航和工具集中到顶栏，余额分区可独立定位', async () => {
+    await ready();
+    const header = within(screen.getByRole('banner'));
+    expect(header.getByRole('navigation', {name: '主导航'})).toBeTruthy();
+    expect(header.getByRole('button', {name: '刷新状态'})).toBeTruthy();
+    expect(header.getByRole('button', {name: '切换浅色'})).toBeTruthy();
+    expect(header.getByText('CODOL')).toBeTruthy();
+    expect(header.queryByText('CO', {exact: true})).toBeNull();
+    expect(within(screen.getByRole('region', {name: '游戏币', exact: true})).getByLabelText('增加数量')).toBeTruthy();
+    expect(within(screen.getByRole('region', {name: '点券', exact: true})).getByLabelText('增加点券数量')).toBeTruthy();
+    fireEvent.click(header.getByRole('button', {name: '开发 WIKI'}));
+    await screen.findByRole('heading', {name: '控制器文档'});
+    expect(within(screen.getByRole('banner')).getByRole('button', {name: '刷新状态'})).toBeTruthy();
+  });
+
   it('紧凑操作区提供可访问的档案选择、分区名称和当前导航状态', async () => {
     await ready();
     expect(screen.getByRole('combobox', {name: '当前档案'})).toBeTruthy();
