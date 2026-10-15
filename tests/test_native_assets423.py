@@ -75,6 +75,7 @@ class NativeAssets423Tests(unittest.TestCase):
         for name in ('ak104_mp', 'deserteagle_mp', 'white_phosphorus_grenade_mp', 'flash_grenade_mp'):
             self.assertIn(f'runtime_weapon name={name} source=1 animations=1 effects=1 '
                 'sounds=1 visuals=1 ammo=1 tail=1 tags=1 slots=168', result.stdout)
+            self.assertIn(f'runtime_weapon_image name={name} ready=1 animations=168 effects=35 visuals=18',result.stdout)
         self.assertEqual(result.returncode, 0, result.stdout[-2600:]+result.stderr[-1600:])
         self.assertIn('runtime_complete ok=1', result.stdout)
         self.assertIn('engine_started=0 network_started=0', result.stdout)

@@ -28,15 +28,32 @@
      }
  }
  
-@@ -518,6 +520,7 @@
+@@ -518,6 +520,24 @@
          printf("runtime_weapon name=%s source=%d animations=%d effects=%d sounds=%d visuals=%d ammo=%d tail=%d tags=%d slots=%u bytes=%zu consumed=%zu\n",
              names[w],a,b,c,e,f,g,h,t,anim.count,weapon.asset.size,tail.dependency_offset);
          if(a!=1 || b!=1 || c!=1 || e!=1 || f!=1 || g!=1 || h!=1 || t!=1) { ok=0; continue; }
-+        if(getenv("CODOL_WEAPON_SOURCE_ONLY")) continue;
++        if(getenv("CODOL_WEAPON_SOURCE_ONLY")) {
++            codol_weapon_source_image_t image={0};
++            codol_weapon_animation_source_t source_anim={0};
++            codol_weapon_effects_t source_fx={0}; codol_weapon_visuals_t source_visuals={0};
++            codol_weapon_sounds_t source_sounds={0}; codol_weapon_ammo_names_t source_ammo={0};
++            codol_weapon_tail_t source_tail={0};
++            int owned=CODOL_BeginWeaponSourceImage(names[w],&image)==1 &&
++                CODOL_WeaponSourceAnimationSource(&image,&source_anim)==1 &&
++                CODOL_WeaponSourceEffects(&image,&source_fx)==1 &&
++                CODOL_WeaponSourceVisuals(&image,&source_visuals)==1 &&
++                CODOL_WeaponSourceSounds(&image,&source_sounds)==1 &&
++                CODOL_WeaponSourceAmmoNames(&image,&source_ammo)==1 &&
++                CODOL_WeaponSourceTail(&image,&source_tail)==1;
++            printf("runtime_weapon_image name=%s ready=%d animations=%u effects=%u visuals=%u tail=%u\n",
++                names[w],owned,source_anim.count,source_fx.count,source_visuals.count,source_tail.count);
++            if(!owned) ok=0;
++            CODOL_FreeWeaponSourceImage(&image); continue;
++        }
          {
              codol_weapon_source_image_t image={0};
              if(CODOL_BeginWeaponSourceImage(names[w],&image)!=1 ||
-@@ -596,6 +599,7 @@
+@@ -596,6 +616,7 @@
          for(unsigned array=0;array<2;++array)
              for(i=0;i<31;++i) if(!runtime_weapon_asset(context,11,sounds.arrays[array][i])) ok=0;
      }
@@ -44,7 +61,7 @@
      {
          {
              static const char *tables[]={"mp/coweapmodels/ak104_mp.csv","mp/coweapitems/sto.csv","mp/coweapitems/for.csv"};
-@@ -676,7 +680,7 @@
+@@ -676,7 +697,7 @@
          unsigned v;for(v=0;v<tables[i].count;++v)
              printf("runtime_ncs_input\t%s\t%u\t%s\n",tables[i].name,v,tables[i].values[v]);
      }
@@ -53,7 +70,7 @@
      for(k=0;k<CODOL2697_NCS_KINDS;++k)
          printf("runtime_netconst kind=%u base=%u count=%u capacity=%u\n",k,index.kinds[k].base,index.kinds[k].count,index.kinds[k].capacity);
      if(getenv("CODOL_NCS_TRACE"))for(k=0;k<CODOL2697_NCS_KINDS;++k)
-@@ -1027,6 +1031,15 @@
+@@ -1027,6 +1048,15 @@
      printf("runtime_collision native=%d static_models=%u materials=%u brushes=%u terrain_triangles=%u leaves=%u\n",
          ok,assets.model_count,assets.material_count,brushes.brush_count,terrain.triangle_count,leaves.leaf_count);
      ok=runtime_dynamic(map_name,&map,&runtime);
@@ -5460,6 +5477,201 @@
         !CODOL_BuildWeapon2697Registry(&index,CODOL_LoadMountedWeapon2697Keys,NULL,&result,&failed)) {
          fail("target registry",failed);goto done;
      }
+--- a/src/codol/weapon/codol_weapon_attachment.c
++++ b/src/codol/weapon/codol_weapon_attachment.c
+@@ -112,6 +112,14 @@
+     image->names[*count].owned=NULL;
+     ++*count;
+ }
++/* Current loader 0x4915b0 has two 16-FX banks plus three ordinary FX.
++ * Preserve source slots here; their runtime roles are a separate conversion. */
++static unsigned effect_offset(unsigned version,unsigned index)
++{
++    if(version==423) return index<16 ? 0x3b8+4*index :
++        index<32 ? 0x418+4*(index-16) : 0x498+4*(index-32);
++    return 0x35c+(version==365 ? 0x30 : 0)+4*index;
++}
+ int CODOL_BeginWeaponSourceImage(const char *name,codol_weapon_source_image_t *out)
+ {
+     codol_mounted_weapon_t source; codol_weapon_animation_source_t animations;
+@@ -119,12 +127,13 @@
+     codol_weapon_ammo_names_t ammo; codol_weapon_visuals_t visuals;
+     codol_weapon_tail_t tail; codol_weapon_hide_tags_t tags;
+     codol_weapon_source_image_t image={0};
+-    size_t capacity=0,count=0,i,length; unsigned header,shift; int status;
++    size_t capacity=0,count=0,i,length; unsigned header,shift,current,models; int status;
+     if(!name || !*name || !out) return -1;
+     status=CODOL_LoadMountedWeapon(name,&source);
+     if(status!=1) return status;
+-    if(source.asset.format_version!=0 && source.asset.format_version!=334 && source.asset.format_version!=365) return -1;
+-    header=source.asset.format_version==365 ? 0xc34 : CODOL_WEAPON_SOURCE_HEADER;
++    if(source.asset.format_version!=0 && source.asset.format_version!=334 && source.asset.format_version!=365 && source.asset.format_version!=423) return -1;
++    current=source.asset.format_version==423; models=current ? 10 : 11;
++    header=current ? 0xe28 : source.asset.format_version==365 ? 0xc34 : CODOL_WEAPON_SOURCE_HEADER;
+     shift=source.asset.format_version==365 ? 0x30 : 0;
+     if(!source.asset.data || source.asset.size<header ||
+        !source.strings[0] || !*source.strings[0]) return -1;
+@@ -135,8 +144,9 @@
+        CODOL_LoadMountedWeaponVisuals(name,&visuals)!=1 ||
+        CODOL_LoadMountedWeaponTail(name,&tail)!=1 ||
+        CODOL_LoadMountedWeaponHideTags(name,&tags)!=1) return -1;
+-    if(tail.count>64) return -1;
+-    capacity=4+11+animations.count+2+53+3+14+tail.count;
++    if(tail.count>72 || animations.count!=(current ? 168 : source.asset.format_version==365 ? 156 : 144) ||
++       effects.count!=(current ? 35 : 2) || visuals.count!=(current ? 18 : 14)) return -1;
++    capacity=4+models+animations.count+effects.count+53+3+visuals.count+tail.count;
+     image.names=calloc(capacity,sizeof(*image.names));
+     image.data=malloc(source.asset.size);
+     image.scalar=calloc(1,source.asset.size);
+@@ -148,7 +158,7 @@
+     image.dependency_offset=source.dependency_offset;
+     image.tail=tail; image.visuals=visuals; image.effects=effects;
+     for(i=0;i<4;++i) push_name(&image,&count,(uint32_t)(4*i),source.strings[i]);
+-    for(i=0;i<11;++i) {
++    for(i=0;i<models;++i) {
+         codol_weapon_model_t model={0};
+         status=CODOL_LoadMountedWeaponModel(name,(unsigned)i,&model);
+         if(status<0) { free_image(&image); return -1; }
+@@ -156,14 +166,14 @@
+         image.models[i]=model;
+         push_name(&image,&count,(uint32_t)(0x10+4*i),status==1 ? model.name : NULL);
+     }
+-    for(i=0;i<animations.count;++i) push_name(&image,&count,(uint32_t)(0x7c+4*i),animations.names[i]);
+-    for(i=0;i<2;++i) push_name(&image,&count,(uint32_t)(0x35c+shift+4*i),effects.names[i]);
+-    for(i=0;i<53;++i) push_name(&image,&count,(uint32_t)(0x364+shift+4*i),sounds.names[i]);
++    for(i=0;i<animations.count;++i) push_name(&image,&count,(uint32_t)((current ? 0x78 : 0x7c)+4*i),animations.names[i]);
++    for(i=0;i<effects.count;++i) push_name(&image,&count,effect_offset(image.format_version,(unsigned)i),effects.names[i]);
++    for(i=0;i<53;++i) push_name(&image,&count,(uint32_t)((current ? 0x4a4 : 0x364+shift)+4*i),sounds.names[i]);
+     memcpy(image.sound_arrays,sounds.arrays,sizeof(image.sound_arrays));
+-    push_name(&image,&count,0x564+shift,ammo.ammo);
+-    push_name(&image,&count,0x56c+shift,ammo.clip);
+-    push_name(&image,&count,0x57c+shift,ammo.shared_cap);
+-    for(i=0;i<14;++i) push_name(&image,&count,visuals.entries[i].offset,visuals.entries[i].name);
++    push_name(&image,&count,(current ? 0x6b4 : 0x564+shift),ammo.ammo);
++    push_name(&image,&count,(current ? 0x6bc : 0x56c+shift),ammo.clip);
++    push_name(&image,&count,(current ? 0x6cc : 0x57c+shift),ammo.shared_cap);
++    for(i=0;i<visuals.count;++i) push_name(&image,&count,visuals.entries[i].offset,visuals.entries[i].name);
+     for(i=0;i<tail.count;++i)
+         if(tail.entries[i].kind!=CODOL_WEAPON_DEP_POINTS)
+             push_name(&image,&count,tail.entries[i].offset,tail.entries[i].name);
+@@ -172,10 +182,10 @@
+      * mounted readers resolve: those dwords are serialized references, and the
+      * 32 halfwords at +0x3c are zone-local script-string indices. */
+     memset(image.scalar,1,header);
+-    memset(image.scalar+0x3c,0,0x40);
++    memset(image.scalar+(current ? 0x38 : 0x3c),0,0x40);
+     /* These are pointers to 31 sound references, not scalar fields or single
+      * name slots. Preserve their resolved contents separately above. */
+-    memset(image.scalar+0x438+shift,0,8);
++    memset(image.scalar+(current ? 0x578 : 0x438+shift),0,8);
+     /* Graph arrays have no name to override, but their pointers must also
+      * remain protected from scalar writes. */
+     for(i=0;i<tail.count;++i) if(tail.entries[i].kind==CODOL_WEAPON_DEP_POINTS) {
+@@ -209,7 +219,7 @@
+ int CODOL_WeaponSourceAnimations(const codol_weapon_source_image_t *image,codol_weapon_animations_t *out)
+ {
+     codol_weapon_animations_t result={0}; unsigned i;
+-    if(!image || !out || image->format_version==365) return -1;
++    if(!image || !out || (image->format_version!=0 && image->format_version!=334)) return -1;
+     for(i=0;i<144;++i)
+         if(CODOL_WeaponSourceName(image,0x7c+4*i,result.names+i)!=1) return -1;
+     *out=result; return 1;
+@@ -217,21 +227,21 @@
+ int CODOL_WeaponSourceAnimationSource(const codol_weapon_source_image_t *image,codol_weapon_animation_source_t *out)
+ {
+     codol_weapon_animation_source_t result={0}; unsigned i;
+-    if(!image || !out || (image->format_version!=0 && image->format_version!=334 && image->format_version!=365)) return -1;
++    if(!image || !out || (image->format_version!=0 && image->format_version!=334 && image->format_version!=365 && image->format_version!=423)) return -1;
+     result.format_version=image->format_version;
+-    result.slots_per_hand=image->format_version==365 ? 52 : 48;
++    result.slots_per_hand=image->format_version==423 ? 56 : image->format_version==365 ? 52 : 48;
+     result.count=3*result.slots_per_hand;
+     for(i=0;i<result.count;++i)
+-        if(CODOL_WeaponSourceName(image,0x7c+4*i,result.names+i)!=1) return -1;
++        if(CODOL_WeaponSourceName(image,(image->format_version==423 ? 0x78 : 0x7c)+4*i,result.names+i)!=1) return -1;
+     *out=result; return 1;
+ }
+ int CODOL_WeaponSourceAmmoNames(const codol_weapon_source_image_t *image,codol_weapon_ammo_names_t *out)
+ {
+     codol_weapon_ammo_names_t result={0}; unsigned shift=image && image->format_version==365 ? 0x30 : 0;
+     if(!image || !out ||
+-       CODOL_WeaponSourceName(image,0x564+shift,&result.ammo)!=1 ||
+-       CODOL_WeaponSourceName(image,0x56c+shift,&result.clip)!=1 ||
+-       CODOL_WeaponSourceName(image,0x57c+shift,&result.shared_cap)!=1) return -1;
++       CODOL_WeaponSourceName(image,image->format_version==423 ? 0x6b4 : 0x564+shift,&result.ammo)!=1 ||
++       CODOL_WeaponSourceName(image,image->format_version==423 ? 0x6bc : 0x56c+shift,&result.clip)!=1 ||
++       CODOL_WeaponSourceName(image,image->format_version==423 ? 0x6cc : 0x57c+shift,&result.shared_cap)!=1) return -1;
+     *out=result; return 1;
+ }
+ int CODOL_WeaponSourceSounds(const codol_weapon_source_image_t *image,codol_weapon_sounds_t *out)
+@@ -239,7 +249,7 @@
+     codol_weapon_sounds_t result={0}; unsigned i,shift=image && image->format_version==365 ? 0x30 : 0;
+     if(!image || !out) return -1;
+     for(i=0;i<53;++i)
+-        if(CODOL_WeaponSourceName(image,0x364+shift+4*i,result.names+i)!=1) return -1;
++        if(CODOL_WeaponSourceName(image,(image->format_version==423 ? 0x4a4 : 0x364+shift)+4*i,result.names+i)!=1) return -1;
+     memcpy(result.arrays,image->sound_arrays,sizeof(result.arrays));
+     *out=result; return 1;
+ }
+@@ -252,7 +262,7 @@
+ int CODOL_WeaponSourceModel(const codol_weapon_source_image_t *image,unsigned index,codol_weapon_model_t *out)
+ {
+     codol_weapon_model_t result; const char *name;
+-    if(!image || !image->data || !out || index>=11 ||
++    if(!image || !image->data || !out || index>=(image->format_version==423 ? 10 : 11) ||
+        CODOL_WeaponSourceName(image,0x10+4*index,&name)!=1) return -1;
+     if(!name) return 0;
+     if(!*name) return -1;
+@@ -262,12 +272,13 @@
+ }
+ int CODOL_WeaponSourceEffects(const codol_weapon_source_image_t *image,codol_weapon_effects_t *out)
+ {
+-    codol_weapon_effects_t result; unsigned i,shift=image && image->format_version==365 ? 0x30 : 0;
++    codol_weapon_effects_t result; unsigned i;
+     if(!image || !image->data || !out) return -1;
+     result=image->effects; result.dependency_offset=0;
+-    for(i=0;i<2;++i) {
++    if(result.count>35) return -1;
++    for(i=0;i<result.count;++i) {
+         const char *name;
+-        if(CODOL_WeaponSourceName(image,0x35c+shift+4*i,&name)!=1) return -1;
++        if(CODOL_WeaponSourceName(image,effect_offset(image->format_version,i),&name)!=1) return -1;
+         invalidate_renamed_asset(result.names[i],name,result.assets+i);
+         result.assets[i].type=30; result.names[i]=name;
+     }
+@@ -278,7 +289,12 @@
+     const char *name=NULL;
+     if(entry->kind==CODOL_WEAPON_DEP_POINTS) {
+         unsigned count_offset,count;
+-        if(image->format_version==365) switch(entry->offset) {
++        if(image->format_version==423) switch(entry->offset) {
++        case 0xb2c: case 0xd60: count_offset=0xd5c; break;
++        case 0xb30: case 0xd64: count_offset=0xd5e; break;
++        default: return 0;
++        }
++        else if(image->format_version==365) switch(entry->offset) {
+         case 0x9dc: case 0xbec: count_offset=0xbe8; break;
+         case 0x9e0: case 0xbf0: count_offset=0xbea; break;
+         default: return 0;
+@@ -306,7 +322,7 @@
+ int CODOL_WeaponSourceTail(const codol_weapon_source_image_t *image,codol_weapon_tail_t *out)
+ {
+     codol_weapon_tail_t result; unsigned i;
+-    if(!image || !image->data || !out || image->tail.count>64) return -1;
++    if(!image || !image->data || !out || image->tail.count>72) return -1;
+     result=image->tail; result.dependency_offset=0;
+     for(i=0;i<result.count;++i)
+         if(!image_dependency(image,result.entries+i)) return -1;
+@@ -317,7 +333,8 @@
+     codol_weapon_visuals_t result; unsigned i;
+     if(!image || !image->data || !out) return -1;
+     result=image->visuals; result.dependency_offset=0;
+-    for(i=0;i<14;++i)
++    if(result.count>18) return -1;
++    for(i=0;i<result.count;++i)
+         if(!image_dependency(image,result.entries+i)) return -1;
+     *out=result; return 1;
+ }
 --- a/src/codol/weapon/codol_weapon_registry.c
 +++ b/src/codol/weapon/codol_weapon_registry.c
 @@ -4,8 +4,7 @@
