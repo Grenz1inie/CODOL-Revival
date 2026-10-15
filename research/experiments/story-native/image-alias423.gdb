@@ -9,4 +9,3 @@ x/12wx $c[3]+0x1f4ad0
 dump binary memory E:/Games/CODOL_Experience_V3.3.3.3_FULL.7z/CODOL-Revival/research/experiments/story-native/image-alias-context.bin $c ((char*)$c)+720
 dump binary memory E:/Games/CODOL_Experience_V3.3.3.3_FULL.7z/CODOL-Revival/research/experiments/story-native/image-alias-records.bin $c[165] $c[165]+$c[166]*20
 quit
-

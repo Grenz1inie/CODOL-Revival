@@ -153,3 +153,14 @@ class NativeAssets423Tests(unittest.TestCase):
                 self.assertEqual(entries['grenadedeath'], '2')
                 self.assertEqual(entries['laststand'], '1')
         self.assertIn('runtime_animation_tokens lookup=1 casefold=1 missing_rejected=1 event_bounds=1', result.stdout)
+
+    def test_missing_animation_keeps_its_name_without_mutating_void(self):
+        result = self.run_probe('--codol-runtime-probe', CLIENT, 'mp_cargoship',
+            STAGE/'startup-assets/chinese/code_post_gfx_default_mp.ff',
+            STAGE/'startup-assets/chinese/code_post_gfx_mp.ff',
+            STAGE/'startup-assets/chinese/common_mp.ff',
+            STAGE/'startup-assets/chinese/mp_cargoship.ff',
+            STAGE/'startup-assets/chinese/coop_training_mp_cargoship.ff',
+            options={'CODOL_DEFAULT_XANIM_PROBE':'1'})
+        self.assertEqual(result.returncode, 0, result.stdout[-2200:]+result.stderr[-1200:])
+        self.assertIn('runtime_default_xanim named=1 cached=1 distinct=1 source_unchanged=1', result.stdout)

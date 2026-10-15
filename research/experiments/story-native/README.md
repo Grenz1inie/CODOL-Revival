@@ -1,6 +1,6 @@
 # 首关原生适配研究归档
 
-当前构建入口是项目根目录的 `tools/build_native_server.py`，当前有界启动探针是 `tools/probe_native_server.py`。实现以 `tools/native/server3333.patch` 为准；详见 [移植记录](../../../docs/reports/20261015-server-port.md)。当前未完成客户端出生和移动、射击验收。
+当前构建入口是项目根目录的 `tools/build_native_server.py`，当前有界启动探针是 `tools/probe_native_server.py`。实现以 `tools/native/server3333.patch` 为准；详见 [移植记录](../../../docs/reports/20261015-server-port.md)。最简首关服务端初始化和资源发布校验已通过，尚未完成大厅接入、客户端出生和移动、射击验收。
 
 本目录提交的文件用于保存历史实验方法：
 

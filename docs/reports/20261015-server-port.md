@@ -135,3 +135,12 @@ REA `0x409040` 确认新版在一次定义初始化后先解析 `mp/playeranim_d
 
 新的[隔离启动](../../research/evidence/server3333-startup-anim-tokens.log)越过上述解析错误，随后因 `pb_team_jug_spawn_kingpin` 名称查找失败而停止：13个缺失的特殊动画被旧服共用同一个 `void` 对象，未保留请求名称。下一步检查缺省动画身份与建树编号；当前仍未完成地图初始化或客户端出生。
 
+## 最简首关初始化通过（第九批）
+
+当前客户端 `0x406a90` 从叶节点动画资源读取名称，随后再次解析玩家动画脚本；旧服 `DB_CreateDefaultEntry` 的正常契约也会保留请求名称。CoDOL专用缺省分支却直接返回共享 `void`，导致所有缺失动作丢失身份。现为每个缺失名称缓存独立头部和名字，借用已验证的空动画载荷，并随其资源归档释放；原始 `void` 不变，损坏资源仍报错。13个特殊动作仍是空动画，不能宣称这些动作已恢复。
+
+[失败用例](../../research/evidence/server3333-default-xanim-red.log)记录两次不同名称都返回 `void`、`distinct=0`；[修复后](../../research/evidence/server3333-default-xanim-green.log)验证独立名称、同名复用、不同名隔离及源载荷不变，1项7.488秒。涉及档案、控制器、协议与资源的集中回归 **125项通过，106.063秒**，见[日志](../../research/evidence/server3333-animation-stage-tests.log)。
+
+[真实隔离启动](../../research/evidence/server3333-startup-named-xanim.log)首次完成最简首关初始化：`Calculate referenced files checksums...` 后资源注册CRC为 `9eaffd84`、种子为 `cdb31851`，`publication dry encode=1 bytes=353 actual_client_crc=1`，可靠配置审计无失败。探针随后按设计停止自身服务端，结果 `ready=true`；未启动旧版启动器或客户端。
+
+这证明服务端地图初始化和资源发布检查通过。**大厅21/5仍未接入此实例，客户端连接、出生、移动与射击尚未验收。** 后续只推进真实就绪实例的预订/连接，不发布虚构候选，不扩大到原版剧情或复杂装备。

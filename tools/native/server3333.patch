@@ -199,10 +199,20 @@
      for(k=0;k<CODOL2697_NCS_KINDS;++k)
          printf("runtime_netconst kind=%u base=%u count=%u capacity=%u\n",k,index.kinds[k].base,index.kinds[k].count,index.kinds[k].capacity);
      if(getenv("CODOL_NCS_TRACE"))for(k=0;k<CODOL2697_NCS_KINDS;++k)
-@@ -957,6 +1005,44 @@
+@@ -957,6 +1005,54 @@
          mounted,count,failed_index,failed_asset);
      if (!mounted) goto done;
  
++    if(getenv("CODOL_DEFAULT_XANIM_PROBE")) {
++        const struct XAnimParts *parts=NULL;
++        codol_mounted_xanim_t source={0};
++        ok=CODOL_LoadMountedXAnim("pb_team_jug_spawn_kingpin",&source)==0 &&
++            CODOL_LoadMountedNativeXAnim("void",runtime_string,runtime_release,&runtime,&parts)==1 &&
++            CODOL_CheckDefaultXAnim(parts);
++        if(ok) puts("runtime_default_xanim named=1 cached=1 distinct=1 source_unchanged=1");
++        goto done;
++    }
++
 +    if(getenv("CODOL_ANIMATION_TEXT_PROBE")) {
 +        typedef struct { const char *name; int hash; } anim_token_t;
 +        extern anim_token_t animEventTypesStr[],animPerkStateStr[];
@@ -244,7 +254,7 @@
      if(getenv("CODOL_STOCK_KEYS_TRACE")) {
          const char *name=getenv("CODOL_STOCK_KEYS_TRACE");codol_mounted_weapon_t w={0};
          codol_weapon_ammo_names_t a={0};codol_weapon_tail_t t={0};codol_weapon_2697_keys_source_t k={0};
-@@ -1027,6 +1113,15 @@
+@@ -1027,6 +1123,15 @@
      printf("runtime_collision native=%d static_models=%u materials=%u brushes=%u terrain_triangles=%u leaves=%u\n",
          ok,assets.model_count,assets.material_count,brushes.brush_count,terrain.triangle_count,leaves.leaf_count);
      ok=runtime_dynamic(map_name,&map,&runtime);
@@ -289,7 +299,36 @@
      }
 --- a/src/codol/assets/codol_asset_registry.c
 +++ b/src/codol/assets/codol_asset_registry.c
-@@ -293,11 +293,13 @@
+@@ -18,6 +18,7 @@
+ #include "codol_material_native.h"
+ #include "codol_xmodel_native.h"
+ #include "codol_xanim_native.h"
++#include "xassets/xanims.h"
+ #include "codol_weapon_native.h"
+ #include "codol_weapon_compose.h"
+ #include "codol_weapon_2697_runtime.h"
+@@ -111,6 +112,7 @@
+     struct common_world_cache_s *worlds;
+     struct glass_world_cache_s *glass_worlds;
+     struct xanim_strings_s *xanim_strings;
++    struct named_xanim_s *named_xanims;
+     struct weapon_tags_s *weapon_tags;
+     codol_native_weapon_core_t *null_weapon;
+     struct native_weapon_cache_s *native_weapons;
+@@ -138,6 +140,12 @@
+     void *context;
+     struct xanim_strings_s *next;
+ } xanim_strings_t;
++typedef struct named_xanim_s {
++    struct XAnimParts parts;
++    const struct XAnimParts *source;
++    struct named_xanim_s *next;
++    char name[];
++} named_xanim_t;
+ typedef struct weapon_tags_s {
+     const uint8_t *definition;
+     codol_weapon_hide_tag_handles_t handles;
+@@ -293,11 +301,13 @@
   * 1 = loaded, 0 = no zone carries it, -1 = present but unreadable. */
  static const char *addon_map_ents_name(const archive_t *archive, const codol_asset_t *asset)
  {
@@ -306,7 +345,7 @@
      else {
          if (!archive->prepared) return NULL;
          return CODOL_LoadBlockString(&archive->blocks, reference);
-@@ -311,7 +313,7 @@
+@@ -311,7 +321,7 @@
      archive_t *entry;codol_netconst_t *result=NULL;size_t count=0,i,j;
      if(!out || !out_count)return 0;
      for(entry=archives;entry;entry=entry->next){
@@ -315,7 +354,7 @@
          for(i=entry->zone.asset_count;i;--i){
              codol_asset_t source;const codol_asset_t *asset=&source;
              codol_netconst_t table={0},*next;
-@@ -394,13 +396,13 @@
+@@ -394,13 +404,13 @@
              CODOL_OpenZoneFile(&entry->zone, paths[i]))) {
              free(entry); goto fail;
          }
@@ -333,7 +372,7 @@
              CODOL_CloseZone(&entry->zone); free(entry); goto fail;
          }
          if (prepare && !CODOL_ReplayZone(&entry->zone,&entry->blocks,failed_asset)) {
-@@ -447,11 +449,11 @@
+@@ -447,11 +457,11 @@
                                  unsigned group,size_t *failed_index,unsigned *failed_asset)
  {
      archive_t *entry;
@@ -347,7 +386,7 @@
  int CODOL_ReplaceRuntimeArchives(const char *const *paths,size_t count,const char *client_exe,
                                  unsigned group,size_t *failed_index,unsigned *failed_asset)
  {
-@@ -697,8 +699,13 @@
+@@ -697,8 +707,13 @@
      header=asset->type==0 ? 68 : asset->type==1 ? 72 : asset->type==2 ? 88 : asset->type==3 ? 48 : asset->type==4 ? 360 : asset->type==11 ? 12 : asset->type==12 ? 136 : asset->type==13 ? 48 : asset->type==16 ? 16 : asset->type==18 ? 84 : asset->type==20 ? 116 : asset->type==28 ? 0xbfc : asset->type==30 ? 32 : asset->type==39 ? 12 : asset->type==40 ? 112 : asset->type==41 ? 0x314 : asset->type==43 ? 12 : 96;
      if (asset->size<header) return NULL;
      if (asset->type==28 && asset->format_version==365) header=0xc34;
@@ -362,7 +401,32 @@
      ref=(uint32_t)p[0]|(uint32_t)p[1]<<8|(uint32_t)p[2]<<16|(uint32_t)p[3]<<24;
      p=asset->data;
      if (ref==UINT32_MAX) { p+=header; available=asset->size-header; }
-@@ -1020,8 +1027,8 @@
+@@ -914,6 +929,24 @@
+         *out=cached->native.parts; return 1;
+     }
+     return -1;
++}
++const struct XAnimParts *CODOL_NameDefaultXAnim(const char *name,const struct XAnimParts *parts)
++{
++    codol_asset_t definition; archive_t *owner; named_xanim_t *entry; size_t length;
++    if(!name || !*name || !parts || !parts->name) return NULL;
++    /* Match DB_CreateDefaultEntry: preserve the requested identity, borrowing
++     * the null payload from its archive. Never rename the shared void asset. */
++    owner=find_dependency_definition(2,parts->name,&definition);
++    if(!owner) return NULL;
++    for(entry=owner->named_xanims;entry;entry=entry->next)
++        if(entry->source==parts && !strcmp(entry->name,name)) return &entry->parts;
++    length=strlen(name)+1;
++    if(length>CODOL_ASSET_LIMIT-sizeof(*entry)) return NULL;
++    entry=malloc(sizeof(*entry)+length); if(!entry) return NULL;
++    memcpy(entry->name,name,length); entry->parts=*parts;
++    entry->parts.name=entry->name; entry->source=parts;
++    entry->next=owner->named_xanims; owner->named_xanims=entry;
++    return &entry->parts;
+ }
+ static int weapon_sound(const archive_t *,const codol_asset_t *,size_t *,int,uint32_t,const char **);
+ static int vehicle_dependency(const archive_t *archive,const codol_asset_t *vehicle,
+@@ -1020,8 +1053,8 @@
      size_t pos;
      if (!name || !*name || !out) return -1;
      archive=find_dependency_definition(28,name,&result.asset); if (!archive) return 0;
@@ -373,7 +437,7 @@
      if (result.asset.size<pos) return -1;
      for (i=0;i<4;++i)
          if (!weapon_string(archive,&result.asset,&pos,world_u32(result.asset.data+4*i),result.strings+i)) return -1;
-@@ -1039,7 +1046,7 @@
+@@ -1039,7 +1072,7 @@
      /* C1 hide-tag consumer 0x422847/0x422852 selects def+3c. Serialized
       * script-string IDs belong to this zone, not the engine's SL table. */
      for(i=0;i<32;++i) {
@@ -382,7 +446,7 @@
          unsigned index=(unsigned)p[0]|(unsigned)p[1]<<8;
          if(!index) continue;
          if(!archive->script_strings && !CODOL_ReadScriptStrings(&archive->zone,&archive->script_strings)) return -1;
-@@ -1353,6 +1360,7 @@
+@@ -1353,6 +1386,7 @@
      if (!out || index>=11) return -1;
      status=CODOL_LoadMountedWeapon(name,&weapon); if (status!=1) return status;
      archive=find_dependency_definition(28,name,&definition); if (!archive) return -1;
@@ -390,7 +454,7 @@
      pos=weapon.dependency_offset;
      for (i=0;i<=index;++i) {
          uint32_t ref=world_u32(weapon.asset.data+0x10+4*i);
-@@ -1386,7 +1394,7 @@
+@@ -1386,7 +1420,7 @@
      status=CODOL_LoadMountedWeapon(name,&weapon); if (status!=1) return status;
      archive=find_dependency_definition(28,name,&definition); if (!archive) return -1;
      pos=weapon.dependency_offset;
@@ -399,7 +463,7 @@
          codol_asset_t model; size_t extent;
          if (pos>weapon.asset.size) return -1;
          model=(codol_asset_t){4,weapon.asset.data+pos,weapon.asset.size-pos,weapon.asset.format_version};
-@@ -1394,10 +1402,10 @@
+@@ -1394,10 +1428,10 @@
          pos+=extent;
      }
      result.format_version=weapon.asset.format_version;
@@ -412,7 +476,7 @@
      result.dependency_offset=pos; *out=result; return 1;
  }
  int CODOL_LoadMountedWeaponAnimations(const char *name,codol_weapon_animations_t *out)
-@@ -1419,8 +1427,11 @@
+@@ -1419,8 +1453,11 @@
      status=CODOL_LoadMountedWeaponAnimationSource(name,&animations); if (status!=1) return status;
      archive=find_dependency_definition(28,name,&definition); if (!archive) return -1;
      pos=animations.dependency_offset;
@@ -426,7 +490,7 @@
          codol_asset_t effect={0}; const char *effect_name;
          if (!ref) continue;
          if (ref>=UINT32_MAX-1) {
-@@ -1443,7 +1454,7 @@
+@@ -1443,7 +1480,7 @@
               * weapon. Metadata readers must retain its name so ammo keys can
               * register without loading an unused map vehicle's visual FX.
               * Runtime effect providers still validate it when instantiated. */
@@ -435,7 +499,7 @@
              result.assets[i]=effect;result.names[i]=effect_name+1;
          } else result.names[i]=dependency_asset_name(owner,result.assets+i);
          if (!result.names[i] || !*result.names[i]) return -1;
-@@ -1481,9 +1492,9 @@
+@@ -1481,9 +1518,9 @@
      archive=find_dependency_definition(28,name,&definition); if(!archive) return -1;
      pos=effects.dependency_offset;
      for(i=0;i<53;++i)
@@ -447,7 +511,7 @@
          codol_asset_t array=weapon.asset; size_t cursor=pos,start; unsigned j; int pooled=ref!=UINT32_MAX;
          if(!ref) continue;
          if(pooled) {
-@@ -1500,7 +1511,10 @@
+@@ -1500,7 +1537,10 @@
  }
  int CODOL_LoadMountedWeaponVisuals(const char *name,codol_weapon_visuals_t *out)
  {
@@ -459,7 +523,7 @@
      codol_mounted_weapon_t weapon; codol_weapon_sounds_t sounds;
      codol_weapon_visuals_t result={0}; archive_t *archive; codol_asset_t definition;
      size_t pos; unsigned i,j,index=0; int status;
-@@ -1509,7 +1523,10 @@
+@@ -1509,7 +1549,10 @@
      status=CODOL_LoadMountedWeaponSounds(name,&sounds); if(status!=1) return status;
      archive=find_dependency_definition(28,name,&definition); if(!archive) return -1;
      pos=sounds.dependency_offset;
@@ -471,7 +535,7 @@
          for(j=0;j<dependencies[i][1];++j) {
              codol_weapon_dependency_t *entry=result.entries+index++;
              archive_t *owner; const char *asset_name;
-@@ -1534,7 +1551,7 @@
+@@ -1534,7 +1577,7 @@
              asset_name=dependency_asset_name(archive,&asset); if(!asset_name || !*asset_name) return -1;
              owner=find_dependency_definition(dependencies[i][2],asset_name[0]==',' ? asset_name+1 : asset_name,&entry->asset);
              if(!owner) {
@@ -480,7 +544,7 @@
                  entry->asset=asset;entry->name=asset_name+1;
              } else entry->name=dependency_asset_name(owner,&entry->asset);
              if(!entry->name || !*entry->name) return -1;
-@@ -1551,7 +1568,7 @@
+@@ -1551,7 +1594,7 @@
      status=CODOL_LoadMountedWeaponVisuals(name,&visuals); if(status!=1) return status;
      archive=find_dependency_definition(28,name,&definition); if(!archive) return -1;
      pos=visuals.dependency_offset;
@@ -489,7 +553,7 @@
      if(!weapon_string(archive,&weapon.asset,&pos,world_u32(weapon.asset.data+0x564+shift),&result.ammo) ||
         !weapon_string(archive,&weapon.asset,&pos,world_u32(weapon.asset.data+0x56c+shift),&result.clip) ||
         !weapon_string(archive,&weapon.asset,&pos,world_u32(weapon.asset.data+0x57c+shift),&result.shared_cap)) return -1;
-@@ -1582,20 +1599,31 @@
+@@ -1582,20 +1625,31 @@
          {0xb7c,6,N,0},{0xbac,1,S,0},{0xbbc,2,S,0},
          {0xbc8,3,A,5},{0xbec,2,P,0xbe8}
      };
@@ -524,7 +588,7 @@
          entry=result.entries+result.count++; entry->offset=fields[i][0]+4*j; entry->kind=fields[i][2];
          if(entry->kind==A) entry->asset.type=fields[i][3];
          ref=world_u32(weapon.asset.data+entry->offset);
-@@ -1632,7 +1660,7 @@
+@@ -1632,7 +1686,7 @@
              asset_name=dependency_asset_name(archive,&original); if(!asset_name || !*asset_name) return -1;
              owner=find_dependency_definition(fields[i][3],asset_name[0]==',' ? asset_name+1 : asset_name,&entry->asset);
              if(!owner) {
@@ -533,7 +597,7 @@
                  entry->asset=original;entry->name=asset_name+1;
              } else entry->name=dependency_asset_name(owner,&entry->asset);
              if(!entry->name || !*entry->name) return -1;
-@@ -1672,12 +1700,12 @@
+@@ -1672,12 +1726,12 @@
      codol_asset_t game,fx;
      if (!name || !*name || !out) return -1;
      ga=find_dependency_definition(18,name,&game);
@@ -549,7 +613,7 @@
          return -1;
      }
      return 1;
-@@ -2050,7 +2078,14 @@
+@@ -2050,7 +2104,14 @@
          if(!status) return -1;
          result.name=dependency_asset_name(archive,&result.asset);
          if(!result.name || !*result.name) return -1;
@@ -565,7 +629,7 @@
          if(!archive) return -1;
          result.name=dependency_asset_name(archive,&result.asset);
          CODOL_LoadBlockViews(&archive->blocks,result.blocks); result.blocks[0]=(codol_model_block_t){0};
-@@ -2361,6 +2396,27 @@
+@@ -2361,6 +2422,27 @@
          }
      }
      return 0;
@@ -593,6 +657,17 @@
  }
  
  int CODOL_LoadEngineStringTable(const char *name, const codol_engine_table_t **out)
+@@ -2572,6 +2654,10 @@
+             table_miss_t *miss = entry->table_misses; entry->table_misses = miss->next;
+             free(miss);
+         }
++        while(entry->named_xanims) {
++            named_xanim_t *named=entry->named_xanims;
++            entry->named_xanims=named->next; free(named);
++        }
+         while(entry->xanim_strings) {
+             xanim_strings_t *strings=entry->xanim_strings; unsigned i;
+             entry->xanim_strings=strings->next;
 --- a/src/codol/assets/codol_asset_stream.c
 +++ b/src/codol/assets/codol_asset_stream.c
 @@ -61,8 +61,8 @@
@@ -1741,6 +1816,47 @@
  } codol_netconst_kind_t;
  typedef struct {
      codol_netconst_kind_t kinds[CODOL2697_NCS_KINDS];
+--- a/src/codol/assets/codol_sv_xanim.cpp
++++ b/src/codol/assets/codol_sv_xanim.cpp
+@@ -7,9 +7,25 @@
+ #include "dobj.h"
+ #include <cstring>
+ #include <cmath>
++#include <cstdio>
+ extern "C" void CODOL_DispatchXAnimLeaf(XAnimInfo *,float,void *,float *);
+ extern "C" void __cdecl SL_RemoveRefToStringOfSize(unsigned int stringValue,unsigned int len);
+ extern "C" void _GLOBAL__I__Z13XAnim_SetTimefiP9XAnimTime();
++int CODOL_CheckDefaultXAnim(const XAnimParts *original)
++{
++    const char *name="pb_team_jug_spawn_kingpin",*other="__missing_xanim_probe__";
++    if(!original) return 0;
++    XAnimParts before=*original;
++    const XAnimParts *first=CODOL_NameDefaultXAnim(name,original);
++    const XAnimParts *again=CODOL_NameDefaultXAnim(name,original);
++    const XAnimParts *second=CODOL_NameDefaultXAnim(other,original);
++    std::printf("runtime_default_xanim_lookup original=%s first=%s second=%s cached=%d distinct=%d\n",
++        original->name,first ? first->name : "<null>",second ? second->name : "<null>",first==again,first!=second);
++    return first && first==again && second && first!=second && first!=original && second!=original &&
++        !std::strcmp(first->name,name) && !std::strcmp(second->name,other) &&
++        !std::memcmp(original,&before,sizeof(before)) &&
++        !std::memcmp((const char *)first+sizeof(first->name),(const char *)original+sizeof(original->name),sizeof(before)-sizeof(before.name));
++}
+ int CODOL_CheckEngineXAnim(const char *name,unsigned *bones)
+ {
+     codol_mounted_xanim_t source={}; const XAnimParts *native=NULL,*again=NULL;
+--- a/src/codol/assets/codol_xanim_native.h
++++ b/src/codol/assets/codol_xanim_native.h
+@@ -25,6 +25,10 @@
+ /* Diagnostic: resolves the persistent asset through DB lookup and evaluates
+  * five finite-transform samples with an identity map; no client pose comparison. */
+ int CODOL_CheckEngineXAnim(const char *,unsigned *bones);
++/* Named null-animation header; cached until its source archive is freed.
++ * Borrows the source payload, owns the requested name. NULL on failure. */
++const struct XAnimParts *CODOL_NameDefaultXAnim(const char *,const struct XAnimParts *);
++int CODOL_CheckDefaultXAnim(const struct XAnimParts *);
+ #ifdef __cplusplus
+ }
+ #endif
 --- a/src/codol/assets/codol_xmodel_collision.c
 +++ b/src/codol/assets/codol_xmodel_collision.c
 @@ -61,7 +61,7 @@
@@ -6554,7 +6670,18 @@
  #include "codol_xanim_native.h"
  #include "codol_xmodel_native.h"
  #include "codol_weapon_native.h"
-@@ -3602,6 +3606,29 @@
+@@ -3571,7 +3575,9 @@
+             Com_PrintWarning(CON_CHANNEL_FILES, "CoDOL xanim '%s' is not in any mounted zone; using the null animation '%s' (whatever plays it stays static; reported once)\n", name, nullAnims[i]);
+           }
+         }
+-        translated.parts = const_cast<XAnimParts *>(nullParts);
++        translated.parts = const_cast<XAnimParts *>(CODOL_NameDefaultXAnim(name,nullParts));
++        if(!translated.parts)
++          Com_Error(ERR_DROP, "CoDOL could not retain missing animation name %s", name);
+         return translated;
+       }
+     }
+@@ -3602,6 +3608,29 @@
      } else if (type == ASSET_TYPE_RAWFILE) {
        const codol_engine_rawfile_t *raw = NULL;
        status = CODOL_LoadEngineRawFile(name, &raw);
