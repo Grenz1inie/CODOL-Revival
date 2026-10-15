@@ -6,7 +6,22 @@
 #include "codol_2697_resources.h"
 #include "codol_usercmd.h"
 #include "codol_wire.h"
+#include "codol_weapon_registry.h"
+#include "codol_weapon_2697_registry.h"
+#include "codol_glass_map.h"
 #include <string.h>
+
+__declspec(dllexport) int native_weapon_keys(unsigned count,const char **names,
+    const char **ammo,const char **clips,const unsigned *flags,const unsigned *no_clip,int *out)
+{
+    codol_weapon_registry_t *r=CODOL_CreateWeaponRegistry();unsigned i;int ok=1;
+    if(!r)return 0;
+    for(i=0;i<count;++i) {
+        if(!CODOL_RegisterWeaponKeys(r,i,names[i],ammo[i],clips[i],flags[i],no_clip[i],-1) ||
+           !CODOL_GetWeaponKeys(r,i,out+2*i,out+2*i+1)) {ok=0;break;}
+    }
+    CODOL_DestroyWeaponRegistry(r);return ok;
+}
 
 __declspec(dllexport) int native_resource_slots(unsigned kind,unsigned *out)
 {
@@ -303,4 +318,42 @@ __declspec(dllexport) size_t native_gamestate(void *out, unsigned capacity,
     CODOL_MsgWriteInit(&msg,out,capacity);
     return CODOL2697_WriteGamestate(&msg,&state,&constants,&row,1,0,0,0,0)
         ? msg.size : 0;
+}
+
+__declspec(dllexport) int native_glass_source(unsigned variant,unsigned *out)
+{
+    uint8_t bytes[116+52]={0};uint32_t count=1;codol_glass_map_source_t result={77,NULL,NULL};
+    codol_asset_t asset={0};codol_load_blocks_t blocks={0};codol_glass_span_t span={0};
+    memcpy(bytes+24,&count,4);asset.type=20;asset.format_version=423;asset.data=bytes;asset.size=sizeof(bytes);
+    span.world=bytes;span.group=UINT32_MAX-1;span.pieces=bytes+116;span.piece_count=1;
+    blocks.source=bytes;blocks.source_size=sizeof(bytes);blocks.glass_records=&span;
+    blocks.glass_record_count=blocks.glass_record_capacity=1;
+    if(variant==1)blocks.glass_record_count=0;
+    if(variant==2)asset.size--;
+    if(variant==3)span.piece_count=2;
+    if(variant==4){count=2048;memcpy(bytes+24,&count,4);span.piece_count=count;}
+    if(variant==5)span.pieces=bytes+115;
+    int ok=CODOL_ReadGlassMap(NULL,NULL,&blocks,&asset,&result);
+    out[0]=result.count;out[1]=result.initial_pieces==bytes+116;
+    return ok;
+}
+
+static int registry_source(void *context,const char *name,codol_weapon_2697_keys_source_t *out)
+{
+    const codol_weapon_2697_keys_source_t *rows=context;
+    for(unsigned i=0;rows[i].name;++i)if(!strcmp(rows[i].name,name)){*out=rows[i];return 1;}
+    return 0;
+}
+__declspec(dllexport) int native_weapon_registry(unsigned count,void *rows,const char **names,int *out)
+{
+    codol_netconst_t table={"ncs_weapons",13,0,count-1,names+1};codol_netconst_index_t index={0};
+    codol_weapon_2697_registry_t *r=NULL;int ok=0;
+    if(!count || !CODOL_BuildNetConstIndex(&table,1,"chi",&index) ||
+       !CODOL_BuildWeapon2697Registry(&index,registry_source,rows,&r,NULL))goto done;
+    const codol_weapon_registry_t *keys=CODOL_Weapon2697RegistryKeys(r);
+    for(unsigned i=0;i<count;++i)if(!CODOL_GetWeaponKeys(keys,i,out+3*i,out+3*i+1) ||
+        !CODOL_Weapon2697SharedKey(r,i,out+3*i+2,NULL))goto done;
+    ok=1;
+done:
+    CODOL_FreeWeapon2697Registry(r);CODOL_FreeNetConstIndex(&index);return ok;
 }

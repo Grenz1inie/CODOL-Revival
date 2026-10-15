@@ -1,17 +1,34 @@
 --- a/src/codol/assets/codol_archive_probe.c
 +++ b/src/codol/assets/codol_archive_probe.c
-@@ -130,8 +130,8 @@
+@@ -2,6 +2,7 @@
+ #include "codol_assets.h"
+ #include "codol_load_blocks.h"
+ #include "codol_collision.h"
++#include "codol_glass_map.h"
+ #include "codol_netconst.h"
+ #include "codol_xmodel_native.h"
+ #include "codol_material_native.h"
+@@ -129,15 +130,16 @@
+     for(i=0;i<blocks->asset_alias_count;++i) {
          const codol_asset_t *asset=&blocks->asset_aliases[i].asset;
          unsigned header,offset; uint32_t ref; const char *name;
-         if(asset->type!=0 && asset->type!=5 && asset->type!=43) continue;
+-        if(asset->type!=0 && asset->type!=5 && asset->type!=43) continue;
 -        header=asset->type==0 ? 68 : asset->type==43 ? 12 : 96;
 -        offset=asset->type==5 && asset->format_version==365 ? 8 : 0;
-+        header=asset->type==0 ? 68 : asset->type==43 ? 12 : asset->format_version==423 ? 104 : 96;
++        if(asset->type!=0 && asset->type!=5 && asset->type!=43 && asset->type!=20) continue;
++        header=asset->type==20 ? 116 : asset->type==0 ? 68 : asset->type==43 ? 12 : asset->format_version==423 ? 104 : 96;
 +        offset=asset->type==5 ? (asset->format_version==423 ? 16 : asset->format_version==365 ? 8 : 0) : 0;
          if(asset->size<header) continue;
          memcpy(&ref,asset->data+offset,4);
          name=ref==UINT32_MAX ?
-@@ -518,6 +518,7 @@
+             (memchr(asset->data+header,0,asset->size-header) ? (const char *)asset->data+header : NULL) :
+             CODOL_LoadBlockString(blocks,ref);
+         if(name) printf("dependency_catalog type=%u name=%s\n",asset->type,name);
++        if(asset->type==20) { uint32_t count;memcpy(&count,asset->data+24,4);printf("glass_source pieces=%u\n",count); }
+     }
+ }
+ 
+@@ -518,6 +520,7 @@
          printf("runtime_weapon name=%s source=%d animations=%d effects=%d sounds=%d visuals=%d ammo=%d tail=%d tags=%d slots=%u bytes=%zu consumed=%zu\n",
              names[w],a,b,c,e,f,g,h,t,anim.count,weapon.asset.size,tail.dependency_offset);
          if(a!=1 || b!=1 || c!=1 || e!=1 || f!=1 || g!=1 || h!=1 || t!=1) { ok=0; continue; }
@@ -19,7 +36,7 @@
          {
              codol_weapon_source_image_t image={0};
              if(CODOL_BeginWeaponSourceImage(names[w],&image)!=1 ||
-@@ -596,6 +597,7 @@
+@@ -596,6 +599,7 @@
          for(unsigned array=0;array<2;++array)
              for(i=0;i<31;++i) if(!runtime_weapon_asset(context,11,sounds.arrays[array][i])) ok=0;
      }
@@ -27,6 +44,31 @@
      {
          {
              static const char *tables[]={"mp/coweapmodels/ak104_mp.csv","mp/coweapitems/sto.csv","mp/coweapitems/for.csv"};
+@@ -676,7 +680,7 @@
+         unsigned v;for(v=0;v<tables[i].count;++v)
+             printf("runtime_ncs_input\t%s\t%u\t%s\n",tables[i].name,v,tables[i].values[v]);
+     }
+-    if(!CODOL_BuildNetConstIndex(tables,table_count,"chinese",&index))goto done;
++    if(!CODOL_BuildNetConstIndex(tables,table_count,"chi",&index))goto done;
+     for(k=0;k<CODOL2697_NCS_KINDS;++k)
+         printf("runtime_netconst kind=%u base=%u count=%u capacity=%u\n",k,index.kinds[k].base,index.kinds[k].count,index.kinds[k].capacity);
+     if(getenv("CODOL_NCS_TRACE"))for(k=0;k<CODOL2697_NCS_KINDS;++k)
+@@ -1027,6 +1031,15 @@
+     printf("runtime_collision native=%d static_models=%u materials=%u brushes=%u terrain_triangles=%u leaves=%u\n",
+         ok,assets.model_count,assets.material_count,brushes.brush_count,terrain.triangle_count,leaves.leaf_count);
+     ok=runtime_dynamic(map_name,&map,&runtime);
++    if (ok && getenv("CODOL_MAP_STATE_PROBE")) {
++        codol_map_entities_t addon={0};codol_glass_map_source_t glass={0};char bsp[256];
++        int entity_status=CODOL_LoadMountedAddonMapEntities(getenv("CODOL_MAP_STATE_PROBE"),&addon);
++        snprintf(bsp,sizeof(bsp),"maps/mp/%s.d3dbsp",map_name);
++        int glass_status=CODOL_LoadMountedGlassMap(bsp,&glass);
++        printf("runtime_map_state addon=%d bytes=%zu triggers=%u glass=%d pieces=%u\n",
++            entity_status,addon.text_size,addon.model_count,glass_status,glass.count);
++        CODOL_FreeMapEntities(&addon);ok=entity_status==1 && glass_status==1;
++    }
+     if (ok && getenv("CODOL_WEAPON_PROBE")) ok=runtime_weapons(&runtime);
+     if (ok && getenv("CODOL_REGISTRY_PROBE")) ok=runtime_target_registry();
+     if (ok && getenv("CODOL_RUNTIME_WEAPONS2697")) ok=runtime_target_cache(&runtime);
 --- a/src/codol/assets/codol_asset_commands.c
 +++ b/src/codol/assets/codol_asset_commands.c
 @@ -474,7 +474,12 @@
@@ -56,7 +98,24 @@
      }
 --- a/src/codol/assets/codol_asset_registry.c
 +++ b/src/codol/assets/codol_asset_registry.c
-@@ -311,7 +311,7 @@
+@@ -293,11 +293,13 @@
+  * 1 = loaded, 0 = no zone carries it, -1 = present but unreadable. */
+ static const char *addon_map_ents_name(const archive_t *archive, const codol_asset_t *asset)
+ {
+-    const uint8_t *p; size_t available; uint32_t reference;
+-    if (!asset || asset->type != CODOL_ASSET_ADDON_MAP_ENTS || asset->size < 36) return NULL;
++    const uint8_t *p; size_t available,header; uint32_t reference;
++    if (!asset || !asset->data || asset->type != CODOL_ASSET_ADDON_MAP_ENTS) return NULL;
++    header=asset->format_version==423?52:36;
++    if(asset->size<header)return NULL;
+     p = asset->data;
+     reference = (uint32_t)p[0]|(uint32_t)p[1]<<8|(uint32_t)p[2]<<16|(uint32_t)p[3]<<24;
+-    if (reference == UINT32_MAX) { p += 36; available = asset->size-36; }
++    if (reference == UINT32_MAX) { p += header; available = asset->size-header; }
+     else {
+         if (!archive->prepared) return NULL;
+         return CODOL_LoadBlockString(&archive->blocks, reference);
+@@ -311,7 +313,7 @@
      archive_t *entry;codol_netconst_t *result=NULL;size_t count=0,i,j;
      if(!out || !out_count)return 0;
      for(entry=archives;entry;entry=entry->next){
@@ -65,7 +124,7 @@
          for(i=entry->zone.asset_count;i;--i){
              codol_asset_t source;const codol_asset_t *asset=&source;
              codol_netconst_t table={0},*next;
-@@ -394,13 +394,13 @@
+@@ -394,13 +396,13 @@
              CODOL_OpenZoneFile(&entry->zone, paths[i]))) {
              free(entry); goto fail;
          }
@@ -83,7 +142,7 @@
              CODOL_CloseZone(&entry->zone); free(entry); goto fail;
          }
          if (prepare && !CODOL_ReplayZone(&entry->zone,&entry->blocks,failed_asset)) {
-@@ -447,11 +447,11 @@
+@@ -447,11 +449,11 @@
                                  unsigned group,size_t *failed_index,unsigned *failed_asset)
  {
      archive_t *entry;
@@ -97,7 +156,7 @@
  int CODOL_ReplaceRuntimeArchives(const char *const *paths,size_t count,const char *client_exe,
                                  unsigned group,size_t *failed_index,unsigned *failed_asset)
  {
-@@ -697,8 +697,13 @@
+@@ -697,8 +699,13 @@
      header=asset->type==0 ? 68 : asset->type==1 ? 72 : asset->type==2 ? 88 : asset->type==3 ? 48 : asset->type==4 ? 360 : asset->type==11 ? 12 : asset->type==12 ? 136 : asset->type==13 ? 48 : asset->type==16 ? 16 : asset->type==18 ? 84 : asset->type==20 ? 116 : asset->type==28 ? 0xbfc : asset->type==30 ? 32 : asset->type==39 ? 12 : asset->type==40 ? 112 : asset->type==41 ? 0x314 : asset->type==43 ? 12 : 96;
      if (asset->size<header) return NULL;
      if (asset->type==28 && asset->format_version==365) header=0xc34;
@@ -112,7 +171,7 @@
      ref=(uint32_t)p[0]|(uint32_t)p[1]<<8|(uint32_t)p[2]<<16|(uint32_t)p[3]<<24;
      p=asset->data;
      if (ref==UINT32_MAX) { p+=header; available=asset->size-header; }
-@@ -1020,8 +1025,8 @@
+@@ -1020,8 +1027,8 @@
      size_t pos;
      if (!name || !*name || !out) return -1;
      archive=find_dependency_definition(28,name,&result.asset); if (!archive) return 0;
@@ -123,7 +182,7 @@
      if (result.asset.size<pos) return -1;
      for (i=0;i<4;++i)
          if (!weapon_string(archive,&result.asset,&pos,world_u32(result.asset.data+4*i),result.strings+i)) return -1;
-@@ -1039,7 +1044,7 @@
+@@ -1039,7 +1046,7 @@
      /* C1 hide-tag consumer 0x422847/0x422852 selects def+3c. Serialized
       * script-string IDs belong to this zone, not the engine's SL table. */
      for(i=0;i<32;++i) {
@@ -132,7 +191,7 @@
          unsigned index=(unsigned)p[0]|(unsigned)p[1]<<8;
          if(!index) continue;
          if(!archive->script_strings && !CODOL_ReadScriptStrings(&archive->zone,&archive->script_strings)) return -1;
-@@ -1353,6 +1358,7 @@
+@@ -1353,6 +1360,7 @@
      if (!out || index>=11) return -1;
      status=CODOL_LoadMountedWeapon(name,&weapon); if (status!=1) return status;
      archive=find_dependency_definition(28,name,&definition); if (!archive) return -1;
@@ -140,7 +199,7 @@
      pos=weapon.dependency_offset;
      for (i=0;i<=index;++i) {
          uint32_t ref=world_u32(weapon.asset.data+0x10+4*i);
-@@ -1386,7 +1392,7 @@
+@@ -1386,7 +1394,7 @@
      status=CODOL_LoadMountedWeapon(name,&weapon); if (status!=1) return status;
      archive=find_dependency_definition(28,name,&definition); if (!archive) return -1;
      pos=weapon.dependency_offset;
@@ -149,7 +208,7 @@
          codol_asset_t model; size_t extent;
          if (pos>weapon.asset.size) return -1;
          model=(codol_asset_t){4,weapon.asset.data+pos,weapon.asset.size-pos,weapon.asset.format_version};
-@@ -1394,10 +1400,10 @@
+@@ -1394,10 +1402,10 @@
          pos+=extent;
      }
      result.format_version=weapon.asset.format_version;
@@ -162,7 +221,7 @@
      result.dependency_offset=pos; *out=result; return 1;
  }
  int CODOL_LoadMountedWeaponAnimations(const char *name,codol_weapon_animations_t *out)
-@@ -1419,8 +1425,11 @@
+@@ -1419,8 +1427,11 @@
      status=CODOL_LoadMountedWeaponAnimationSource(name,&animations); if (status!=1) return status;
      archive=find_dependency_definition(28,name,&definition); if (!archive) return -1;
      pos=animations.dependency_offset;
@@ -176,7 +235,7 @@
          codol_asset_t effect={0}; const char *effect_name;
          if (!ref) continue;
          if (ref>=UINT32_MAX-1) {
-@@ -1443,7 +1452,7 @@
+@@ -1443,7 +1454,7 @@
               * weapon. Metadata readers must retain its name so ammo keys can
               * register without loading an unused map vehicle's visual FX.
               * Runtime effect providers still validate it when instantiated. */
@@ -185,7 +244,7 @@
              result.assets[i]=effect;result.names[i]=effect_name+1;
          } else result.names[i]=dependency_asset_name(owner,result.assets+i);
          if (!result.names[i] || !*result.names[i]) return -1;
-@@ -1481,9 +1490,9 @@
+@@ -1481,9 +1492,9 @@
      archive=find_dependency_definition(28,name,&definition); if(!archive) return -1;
      pos=effects.dependency_offset;
      for(i=0;i<53;++i)
@@ -197,7 +256,7 @@
          codol_asset_t array=weapon.asset; size_t cursor=pos,start; unsigned j; int pooled=ref!=UINT32_MAX;
          if(!ref) continue;
          if(pooled) {
-@@ -1500,7 +1509,10 @@
+@@ -1500,7 +1511,10 @@
  }
  int CODOL_LoadMountedWeaponVisuals(const char *name,codol_weapon_visuals_t *out)
  {
@@ -209,7 +268,7 @@
      codol_mounted_weapon_t weapon; codol_weapon_sounds_t sounds;
      codol_weapon_visuals_t result={0}; archive_t *archive; codol_asset_t definition;
      size_t pos; unsigned i,j,index=0; int status;
-@@ -1509,7 +1521,10 @@
+@@ -1509,7 +1523,10 @@
      status=CODOL_LoadMountedWeaponSounds(name,&sounds); if(status!=1) return status;
      archive=find_dependency_definition(28,name,&definition); if(!archive) return -1;
      pos=sounds.dependency_offset;
@@ -221,7 +280,7 @@
          for(j=0;j<dependencies[i][1];++j) {
              codol_weapon_dependency_t *entry=result.entries+index++;
              archive_t *owner; const char *asset_name;
-@@ -1534,7 +1549,7 @@
+@@ -1534,7 +1551,7 @@
              asset_name=dependency_asset_name(archive,&asset); if(!asset_name || !*asset_name) return -1;
              owner=find_dependency_definition(dependencies[i][2],asset_name[0]==',' ? asset_name+1 : asset_name,&entry->asset);
              if(!owner) {
@@ -230,7 +289,7 @@
                  entry->asset=asset;entry->name=asset_name+1;
              } else entry->name=dependency_asset_name(owner,&entry->asset);
              if(!entry->name || !*entry->name) return -1;
-@@ -1551,7 +1566,7 @@
+@@ -1551,7 +1568,7 @@
      status=CODOL_LoadMountedWeaponVisuals(name,&visuals); if(status!=1) return status;
      archive=find_dependency_definition(28,name,&definition); if(!archive) return -1;
      pos=visuals.dependency_offset;
@@ -239,7 +298,7 @@
      if(!weapon_string(archive,&weapon.asset,&pos,world_u32(weapon.asset.data+0x564+shift),&result.ammo) ||
         !weapon_string(archive,&weapon.asset,&pos,world_u32(weapon.asset.data+0x56c+shift),&result.clip) ||
         !weapon_string(archive,&weapon.asset,&pos,world_u32(weapon.asset.data+0x57c+shift),&result.shared_cap)) return -1;
-@@ -1582,20 +1597,31 @@
+@@ -1582,20 +1599,31 @@
          {0xb7c,6,N,0},{0xbac,1,S,0},{0xbbc,2,S,0},
          {0xbc8,3,A,5},{0xbec,2,P,0xbe8}
      };
@@ -274,7 +333,7 @@
          entry=result.entries+result.count++; entry->offset=fields[i][0]+4*j; entry->kind=fields[i][2];
          if(entry->kind==A) entry->asset.type=fields[i][3];
          ref=world_u32(weapon.asset.data+entry->offset);
-@@ -1632,7 +1658,7 @@
+@@ -1632,7 +1660,7 @@
              asset_name=dependency_asset_name(archive,&original); if(!asset_name || !*asset_name) return -1;
              owner=find_dependency_definition(fields[i][3],asset_name[0]==',' ? asset_name+1 : asset_name,&entry->asset);
              if(!owner) {
@@ -283,7 +342,23 @@
                  entry->asset=original;entry->name=asset_name+1;
              } else entry->name=dependency_asset_name(owner,&entry->asset);
              if(!entry->name || !*entry->name) return -1;
-@@ -2050,7 +2076,14 @@
+@@ -1672,12 +1700,12 @@
+     codol_asset_t game,fx;
+     if (!name || !*name || !out) return -1;
+     ga=find_dependency_definition(18,name,&game);
+-    if (!ga) return 0;
+     fa=find_dependency_definition(20,name,&fx);
+-    if (!CODOL_ReadGlassMap(&ga->blocks,&game,fa?&fa->blocks:NULL,
++    if (!ga && (!fa || fx.format_version!=423)) return 0;
++    if (!CODOL_ReadGlassMap(ga?&ga->blocks:NULL,ga?&game:NULL,fa?&fa->blocks:NULL,
+         fa?&fx:NULL,out)) {
+         Com_PrintWarning(CON_CHANNEL_SERVER,"CoDOL glass map %s: %s (game size %u, fx size %u)\n",
+-            name,CODOL_GlassMapFailure(),(unsigned)game.size,fa?(unsigned)fx.size:0u);
++            name,CODOL_GlassMapFailure(),ga?(unsigned)game.size:0u,fa?(unsigned)fx.size:0u);
+         return -1;
+     }
+     return 1;
+@@ -2050,7 +2078,14 @@
          if(!status) return -1;
          result.name=dependency_asset_name(archive,&result.asset);
          if(!result.name || !*result.name) return -1;
@@ -470,6 +545,36 @@
      body_size = file_size - FF_HEADER;
      if (!body_size || (!unsigned_file && (body_size % FF_BLOCK || body_size < 3 * FF_BLOCK))) goto done;
      open_failure = "RSA material/version mismatch";
+--- a/src/codol/assets/codol_glass_map.c
++++ b/src/codol/assets/codol_glass_map.c
+@@ -38,6 +38,17 @@
+     const codol_glass_span_t *gs,*fs;
+     unsigned count;
+     glass_failure=NULL;
++    /* Current client 49a320 nulls GameWorldMp; FxWorld 48c7b0 retains
++     * real placements. Only new-match damage starts intact; no group names or
++     * previous server state are reconstructed from missing GameWorld data. */
++    if(out && !g && f && f->format_version==423) {
++        if(f->type!=20 || !f->data || f->size<116)return GLASS_FAIL("FxWorld header");
++        fs=marker(fb,f,UINT32_MAX-1);count=word(f->data+24);
++        if(!fs || count>CODOL_GLASS_MAX_PIECES || fs->piece_count!=count ||
++           (count && (!extent(f->data+116,f->size-116,fs->pieces,(size_t)count*52))))
++            return GLASS_FAIL("FxWorld piece marker/count/extent");
++        *out=(codol_glass_map_source_t){count,NULL,fs->pieces,1};return 1;
++    }
+     if (!out || !g || g->type!=18 || g->size<84) return GLASS_FAIL("GameWorld header");
+     gs=marker(gb,g,UINT32_MAX);
+     if (!gs || (!!gs->glass != !!word(g->data+80))) return GLASS_FAIL("GameWorld owned marker");
+--- a/src/codol/assets/codol_glass_map.h
++++ b/src/codol/assets/codol_glass_map.h
+@@ -8,6 +8,7 @@
+     unsigned count;
+     const uint8_t *server_pieces; /* GameWorldMp: count * 12 */
+     const uint8_t *initial_pieces; /* FxWorld: count * 52 */
++    unsigned pristine; /* 423 new match: server owns intact damage state. */
+ } codol_glass_map_source_t;
+ /* 1 valid, 0 absent, -1 invalid. Borrowed spans last until archive unmount. */
+ int CODOL_LoadMountedGlassMap(const char *, codol_glass_map_source_t *);
 --- a/src/codol/assets/codol_load_blocks.c
 +++ b/src/codol/assets/codol_load_blocks.c
 @@ -240,7 +240,7 @@
@@ -1649,6 +1754,27 @@
          if(!result.count[category]) continue;
          if(!CODOL_ResolveDynamicRecords(blocks,collision,category,&records) ||
              records.count!=result.count[category] || !records.reference ||
+--- a/src/codol/collision/codol_glass_world.c
++++ b/src/codol/collision/codol_glass_world.c
+@@ -96,14 +96,15 @@
+ {
+     piece_t *copy;
+     unsigned i,j;
+-    if (!source || source->count>CODOL_GLASS_MAX_PIECES ||
+-        (source->count && (!source->initial_pieces || !source->server_pieces))) return 0;
++    if (!source || source->count>CODOL_GLASS_MAX_PIECES || source->pristine>1 ||
++        (source->count && (!source->initial_pieces || (!source->server_pieces && !source->pristine)))) return 0;
+     copy=source->count?calloc(source->count,sizeof(*copy)):NULL;
+     if (source->count && !copy) return 0;
+     register_dvars();
+     for (i=0;i<source->count;++i) {
+         const unsigned char *p=source->initial_pieces+52*i;
+-        const unsigned char *s=source->server_pieces+12*i;
++        static const unsigned char intact[12]={0};
++        const unsigned char *s=source->pristine?intact:source->server_pieces+12*i;
+         float quaternion[4],length=0;
+         for (j=0;j<4;++j) {
+             quaternion[j]=f32(p+4*j);
 --- a/src/codol/collision/codol_map_entities.c
 +++ b/src/codol/collision/codol_map_entities.c
 @@ -176,8 +176,38 @@
@@ -5128,6 +5254,297 @@
          if(!msg||!msg->data||msg->overflowed||msg->splitData||msg->cursize<0||msg->maxsize<msg->cursize||
             !max_clients||max_clients>32||client_number>=max_clients||
             !CODOL_ServerMapIdentityMatches(map,zone_type)||!CODOL_SetServerInfo(map,gametype,max_clients,hostname)||
+--- a/src/codol/weapon/codol_sv_weapons.c
++++ b/src/codol/weapon/codol_sv_weapons.c
+@@ -90,6 +90,7 @@
+ }
+ static char error[256];
+ static int append_native_weapons(void);
++static int register_stock(codol_weapon_registry_t *,const char **,unsigned *,const char *);
+ extern int BG_GetWeaponIndexForName(const char *,void (*)(unsigned));
+ extern void G_RegisterWeapon(unsigned);
+ static int replay_weapon(codol_weapon_registry_t *r,unsigned slot,const char *name)
+@@ -168,7 +169,7 @@
+     codol_weapon_registry_t *next;
+     const codol_configstrings_t *published=CODOL_ServerConfigstrings();
+     const codol_configstrings_t *inherited=CODOL_ServerInheritedConfigstrings();
+-    unsigned slot; int gap=0;
++    unsigned slot,count=0;const char *names[CODOL_WEAPON_SLOTS]={0};int gap=0;
+     valid=0; error[0]=0; ++registry_generation;
+     if(!inherited) { strcpy(error,"inherited configstrings not installed"); return 0; }
+     if(!(next=CODOL_CreateWeaponRegistry())) { strcpy(error,"registry allocation failed"); return 0; }
+@@ -185,7 +186,9 @@
+         /* CG_Init validates each name's registered index against its slot.
+          * Empty override strings suppress inherited names, they do not fall back. */
+         if(gap) { snprintf(error,sizeof(error),"registration gap before slot %u: '%s'",slot,name); goto fail; }
+-        if(!replay_weapon(next,slot,name)) {
++        if(!(CODOL_Target2697ArchivesActive()?
++            register_stock(next,names,&count,name) && CODOL_FindRegisteredWeapon(next,name)==(int)slot:
++            replay_weapon(next,slot,name))) {
+             snprintf(error,sizeof(error),"cannot register mounted slot %u: '%s'",slot,name); goto fail;
+         }
+     }
+@@ -293,9 +296,9 @@
+ }
+ static int register_stock(codol_weapon_registry_t *r,const char **names,unsigned *count,const char *name)
+ {
+-    codol_weapon_tail_t tail; unsigned i,j;
++    codol_weapon_tail_t tail; unsigned i,j,parent_slot;
+     const unsigned char *p;
+-    const unsigned partners[]={CODOL_Target2697ArchivesActive()?0xbac:0xb78,CODOL_Target2697ArchivesActive()?0xbc0:0xb88};
++    const unsigned partners[]={CODOL_Target2697ArchivesActive()?0xd20:0xb78,CODOL_Target2697ArchivesActive()?0xd34:0xb88};
+     if(!name || !*name) return 1;
+     if(name[0]=='*') {
+         if(CODOL_Target2697ArchivesActive()) {
+@@ -319,31 +322,35 @@
+         const codol2697_runtime_weapon_t *runtime=CODOL_FindWeapon2697RuntimeName(name);
+         const char *descriptor=NULL;
+         if(!runtime)return 0;
+-        if(CODOL_WeaponSourceName(&runtime->image,0xbac,&descriptor)==1 && descriptor &&
++        if(CODOL_WeaponSourceName(&runtime->image,0xd20,&descriptor)==1 && descriptor &&
+            (strstr(descriptor,"*a ") || strstr(descriptor,"*b "))) {
+             const char *alternate=runtime->core.native.definition.szAltWeaponName;
+             if(!alternate || !*alternate || !strcmp(alternate,name) ||
+                !register_stock(r,names,count,alternate))return 0;
+         }
+     }
++    parent_slot=*count;
+     if(*count>=CODOL_WEAPON_SLOTS || !replay_weapon(r,*count,name) ||
+-       (name[0]=='*' ? CODOL_ComposedWeaponTail(name,&tail) : CODOL_LoadMountedWeaponTail(name,&tail))!=1 || tail.count>64) {
++       (name[0]=='*' ? CODOL_ComposedWeaponTail(name,&tail) : CODOL_LoadMountedWeaponTail(name,&tail))!=1 || tail.count>72) {
+         snprintf(error,sizeof(error),"cannot register weapon '%s'",name); return 0;
+     }
+     names[(*count)++]=name;
++    if(!parent_slot)return 1; /* none is reset state, without partner recursion. */
+     /* C1 registrar resolves +b78 then +b88 after appending the current def.
+      * Already registered names (including cycles) reuse their original slot. */
+     for(j=0;j<2;++j) for(i=0;i<tail.count;++i) if(tail.entries[i].offset==partners[j]) {
+         const char *partner=tail.entries[i].name;
+         /* Retail custom +bac descriptors are expanded by 4230d0 before both
+          * registries see them. Use the owned runtime recipe, not raw "*a". */
+-        if(CODOL_Target2697ArchivesActive() && name[0]=='*' && partners[j]==0xbac) {
++        if(CODOL_Target2697ArchivesActive() && name[0]=='*' && partners[j]==0xd20) {
+             const codol2697_runtime_weapon_t *runtime=CODOL_FindWeapon2697RuntimeName(name);
+             if(!runtime)return 0;
+             partner=runtime->core.native.definition.szAltWeaponName;
+         }
+         if(tail.entries[i].kind!=CODOL_WEAPON_DEP_STRING ||
+            !register_stock(r,names,count,partner)) return 0;
++        if(CODOL_Target2697ArchivesActive() && !j && partner && *partner &&
++           !CODOL_BindAlternateClipKey(r,parent_slot,(unsigned)CODOL_FindRegisteredWeapon(r,partner)))return 0;
+     }
+     return 1;
+ }
+--- a/src/codol/weapon/codol_weapon_2697_keys.c
++++ b/src/codol/weapon/codol_weapon_2697_keys.c
+@@ -6,17 +6,23 @@
+     codol_mounted_weapon_t weapon;codol_weapon_ammo_names_t ammo;codol_weapon_tail_t tail;
+     codol_weapon_2697_keys_source_t result={0};unsigned i,seen=0;(void)context;
+     if(!name || !*name || !out || CODOL_LoadMountedWeapon(name,&weapon)!=1 ||
+-       weapon.asset.format_version!=365 || weapon.asset.size<0xc34 || !weapon.asset.data ||
++       weapon.asset.format_version!=423 || weapon.asset.size<0xe28 || !weapon.asset.data ||
+        !weapon.strings[0] || strcmp(weapon.strings[0],name) ||
+        CODOL_LoadMountedWeaponAmmoNames(name,&ammo)!=1 ||
+-       CODOL_LoadMountedWeaponTail(name,&tail)!=1 || tail.count>64)return 0;
++       CODOL_LoadMountedWeaponTail(name,&tail)!=1 || tail.count>72)return 0;
+     result.name=weapon.strings[0];result.ammo=ammo.ammo;result.clip=ammo.clip;result.shared=ammo.shared_cap;
+-    result.deduplicate=weapon.asset.data[0xbf4];result.no_clip=weapon.asset.data[0x590];
+-    if(result.deduplicate>1 || result.no_clip>1)return 0;
++    /* REA current registrars 42bfa0, 42c1b0 and alternate consumer 42c270. */
++    if(weapon.asset.data[0xd68]>1 || weapon.asset.data[0xd69]>1 ||
++       weapon.asset.data[0xd6a]>1 || weapon.asset.data[0xdad]>1)return 0;
++    result.deduplicate=weapon.asset.data[0xd68] | (weapon.asset.data[0xd69]<<1) |
++        (weapon.asset.data[0xd6a]<<2) | (weapon.asset.data[0xdad]<<3);
++    result.no_clip=weapon.asset.data[0x6b0];
++    memcpy(&result.shared_capacity,weapon.asset.data+0x6d4,4);
++    if(result.no_clip>1)return 0;
+     for(i=0;i<tail.count;++i){
+         const codol_weapon_dependency_t *d=tail.entries+i;unsigned bit;
+-        if(d->offset!=0xbac && d->offset!=0xbc0)continue;
+-        bit=d->offset==0xbac?1:2;if(seen&bit || d->kind!=CODOL_WEAPON_DEP_STRING)return 0;
++        if(d->offset!=0xd20 && d->offset!=0xd34)continue;
++        bit=d->offset==0xd20?1:2;if(seen&bit || d->kind!=CODOL_WEAPON_DEP_STRING)return 0;
+         seen|=bit;result.partners[bit==1?0:1]=d->name;
+     }
+     if(seen!=3)return 0;
+--- a/src/codol/weapon/codol_weapon_2697_registry.c
++++ b/src/codol/weapon/codol_weapon_2697_registry.c
+@@ -3,8 +3,8 @@
+ #include <string.h>
+ struct codol_weapon_2697_registry_s {
+     codol_weapon_registry_t *keys;
+-    char *shared_names[700];int shared_keys[700];unsigned shared_owners[700];
+-    unsigned count,shared_count;
++    char *shared_names[900];int shared_keys[900];unsigned shared_capacity[900];
++    unsigned count;
+ };
+ static int same_casefold(const char *a,const char *b)
+ {
+@@ -28,33 +28,40 @@
+     if(!name || !*name)return 1;
+     if(CODOL_FindRegisteredWeapon(r->keys,name)>=0)return 1;
+     *failed=name;
+-    if(depth>=700 || slot>=700 || name[0]=='*' || !load(context,name,&source) ||
++    if(depth>=900 || slot>=900 || name[0]=='*' || !load(context,name,&source) ||
+        !source.name || strcmp(source.name,name) || !source.ammo || !source.clip || !source.shared ||
+-       source.deduplicate>1 || source.no_clip>1)return 0;
++       source.deduplicate>15 || source.no_clip>1)return 0;
+     shared=malloc(strlen(source.shared)+1);if(!shared)return 0;strcpy(shared,source.shared);
+-    /* Reset routine 421890 seeds none in ALL three pools, even if its cap
+-     * string is empty. Subsequent empty cap names receive -1 (421600). */
++    /* 423 shared-cap registrar 42c0a0 uses the first matching weapon slot
++     * (case-insensitive), and rejects inconsistent capacities. */
+     if(!slot)cap=0;
+     else if(*source.shared){
+-        for(i=0;i<r->shared_count;++i)
+-            if(same_casefold(source.shared,r->shared_names[r->shared_owners[i]])){cap=(int)i;break;}
+-        if(cap<0)cap=(int)r->shared_count;
++        for(i=1;i<slot;++i)if(same_casefold(source.shared,r->shared_names[i])) {
++            if(source.shared_capacity!=r->shared_capacity[i]){free(shared);return 0;}
++            cap=(int)i;break;
++        }
++        if(cap<0)cap=(int)slot;
+     }
+     if(!CODOL_RegisterWeaponKeys(r->keys,slot,name,source.ammo,source.clip,
+         slot?source.deduplicate:0,slot?source.no_clip:0,-1)){free(shared);return 0;}
+     r->shared_names[slot]=shared;r->shared_keys[slot]=cap;
+-    if(cap==(int)r->shared_count)r->shared_owners[r->shared_count++]=slot;
++    r->shared_capacity[slot]=source.shared_capacity;
+     ++r->count;
+     /* none is a reset seed, not passed through the ordinary registrar. */
+-    if(slot)for(i=0;i<2;++i)if(!append(r,source.partners[i],load,context,failed,depth+1))return 0;
++    if(slot)for(i=0;i<2;++i) {
++        const char *partner=source.partners[i];
++        if(!append(r,partner,load,context,failed,depth+1))return 0;
++        if(!i && partner && *partner && !CODOL_BindAlternateClipKey(r->keys,slot,
++            (unsigned)CODOL_FindRegisteredWeapon(r->keys,partner)))return 0;
++    }
+     return 1;
+ }
+ int CODOL_BuildWeapon2697Registry(const codol_netconst_index_t *index,codol_weapon_2697_keys_loader_t load,
+     void *context,codol_weapon_2697_registry_t **out,const char **failed_name)
+ {
+     codol_weapon_2697_registry_t *r;const char *failed=NULL,*name;unsigned i,n;
+-    if(!index || !load || !out || index->kinds[13].base!=0x1852 ||
+-       !(n=index->kinds[13].count) || n>=700)return 0;
++    if(!index || !load || !out || index->kinds[13].base!=0x1543 || index->kinds[13].capacity!=900 ||
++       !(n=index->kinds[13].count) || n>=900)return 0;
+     r=calloc(1,sizeof(*r));if(!r)return 0;
+     r->keys=CODOL_CreateWeaponRegistry();if(!r->keys)goto fail;
+     if(!append(r,"none",load,context,&failed,0))goto fail;
+--- a/src/codol/weapon/codol_weapon_2697_registry.h
++++ b/src/codol/weapon/codol_weapon_2697_registry.h
+@@ -4,12 +4,12 @@
+ #include "codol_weapon_registry.h"
+ typedef struct {
+     const char *name,*ammo,*clip,*shared,*partners[2];
+-    unsigned deduplicate,no_clip;
++    unsigned deduplicate,no_clip,shared_capacity;
+ } codol_weapon_2697_keys_source_t;
+ typedef int (*codol_weapon_2697_keys_loader_t)(void *,const char *,codol_weapon_2697_keys_source_t *);
+ typedef struct codol_weapon_2697_registry_s codol_weapon_2697_registry_t;
+ /* Stock registration is replayed with implicit none at zero and recursive
+- * alt/companion registration (+bac then +bc0). Every resulting slot must agree
++ * alt/companion registration (423: +d20 then +d34). Every resulting slot must agree
+  * with kind-13 constants. No fallback or arbitrary index substitution. */
+ int CODOL_BuildWeapon2697Registry(const codol_netconst_index_t *,codol_weapon_2697_keys_loader_t,
+     void *,codol_weapon_2697_registry_t **out,const char **failed_name);
+--- a/src/codol/weapon/codol_weapon_2697_runtime.c
++++ b/src/codol/weapon/codol_weapon_2697_runtime.c
+@@ -80,7 +80,7 @@
+     codol_weapon_2697_registry_t *result=NULL;const char *failed=NULL;int ok=0;
+     if(registry)return 1;
+     if(!CODOL_LoadMountedNetConsts(&tables,&count) || !count ||
+-       !CODOL_BuildNetConstIndex(tables,count,"chinese",&index) ||
++       !CODOL_BuildNetConstIndex(tables,count,"chi",&index) ||
+        !CODOL_BuildWeapon2697Registry(&index,CODOL_LoadMountedWeapon2697Keys,NULL,&result,&failed)) {
+         fail("target registry",failed);goto done;
+     }
+--- a/src/codol/weapon/codol_weapon_registry.c
++++ b/src/codol/weapon/codol_weapon_registry.c
+@@ -4,8 +4,7 @@
+ struct weapon_record { char *name,*ammo,*clip; int ammo_key,clip_key; unsigned char deduplicate,no_clip; };
+ struct codol_weapon_registry_s {
+     struct weapon_record weapons[1024];
+-    unsigned ammo_owners[1024],clip_owners[1023];
+-    unsigned count,ammo_count,clip_count;
++    unsigned count;
+ };
+ static char *copy_name(const char *name)
+ {
+@@ -51,36 +50,34 @@
+     const char *ammo,const char *clip,unsigned deduplicate,unsigned no_clip,int base)
+ {
+     struct weapon_record next={0}; unsigned i; int a=-1,c=-1;
+-    if(!r || wire!=r->count || wire>=1024 || !name || !*name || deduplicate>1 || no_clip>1 ||
++    if(!r || wire!=r->count || wire>=900 || !name || !*name || deduplicate>15 || no_clip>1 ||
+        base< -1 || (base>=0 && (unsigned)base>=r->count) || ((name[0]=='*')!=(base>=0))) return 0;
+     for(i=0;i<r->count;++i) if(!strcmp(name,r->weapons[i].name)) return 0;
+-    /* The linked asset's strings are compared verbatim, empty included.
+-     * dog_bite (gate set, ammo/clip both the zone's shared "" string,
+-     * common_gametype_mp +0x564/+0x56c = 0x3002f501) de-duplicates on the
+-     * client onto the first ""-named pool entry, so it takes no index:
+-     * live C1 pools read 137 clips / 115 ammo against this registry's
+-     * 138 / 116 and every composed magazine after wire 98 was keyed one
+-     * high (2026-09-16). Substituting the internal name for "" was the
+-     * raw weapon-file parser rule, which never runs for zone assets. */
++    /* 423 registrars 0x42bfa0/0x42c1b0 use weapon slots, not dense pool
++     * counters. A prior definition must also enable the matching dedup gate.
++     * none (slot 0) is never considered by the name-search loops. */
+     if(!ammo) ammo="";
+     if(!clip) clip="";
+-    /* C1 41f200: optional name search precedes the custom-base branch. */
+-    if(deduplicate) for(i=0;i<r->ammo_count;++i)
+-        if(!strcmp(ammo,r->weapons[r->ammo_owners[i]].ammo)) { a=(int)i; break; }
++    if(deduplicate&3) for(i=1;i<r->count;++i)
++        if((r->weapons[i].deduplicate&3) && !strcmp(ammo,r->weapons[i].ammo)) { a=(int)i; break; }
+     if(a<0 && base>=0) a=r->weapons[base].ammo_key;
+-    if(a<0) a=(int)r->ammo_count;
+-    /* C1 41f3f0 has no custom-base inheritance for magazines. */
++    if(a<0) a=(int)wire;
+     if(!no_clip) {
+-        if(deduplicate) for(i=0;i<r->clip_count;++i)
+-            if(!strcmp(clip,r->weapons[r->clip_owners[i]].clip)) { c=(int)i; break; }
+-        if(c<0) c=(int)r->clip_count;
++        if(deduplicate&8)c=0; /* Assigned by the alternate's parent registrar. */
++        else if(deduplicate&5) for(i=1;i<r->count;++i)
++            if((r->weapons[i].deduplicate&5) && !strcmp(clip,r->weapons[i].clip)) { c=(int)i; break; }
++        if(c<0) c=(int)wire;
+     }
+-    if(a>1023 || c>1022) return 0;
+     next.name=copy_name(name); next.ammo=copy_name(ammo); next.clip=copy_name(clip);
+     if(!next.name || !next.ammo || !next.clip) { free(next.name);free(next.ammo);free(next.clip);return 0; }
+     next.ammo_key=a; next.clip_key=c; next.deduplicate=(unsigned char)deduplicate; next.no_clip=(unsigned char)no_clip;
+     r->weapons[wire]=next;
+-    if(a==(int)r->ammo_count) r->ammo_owners[r->ammo_count++]=wire;
+-    if(!no_clip && c==(int)r->clip_count) r->clip_owners[r->clip_count++]=wire;
+     ++r->count; return 1;
+ }
++
++int CODOL_BindAlternateClipKey(codol_weapon_registry_t *r,unsigned parent,unsigned child)
++{
++    if(!r || parent>=r->count || child>=r->count)return 0;
++    if(r->weapons[child].deduplicate&8)r->weapons[child].clip_key=r->weapons[parent].clip_key;
++    return 1;
++}
+--- a/src/codol/weapon/codol_weapon_registry.h
++++ b/src/codol/weapon/codol_weapon_registry.h
+@@ -6,12 +6,14 @@
+ codol_weapon_registry_t *CODOL_CreateWeaponRegistry(void);
+ void CODOL_DestroyWeaponRegistry(codol_weapon_registry_t *);
+ /* wire must be the next sequential slot. base=-1 for stock, an earlier slot
+- * for a '*' custom definition. Flags are serialized booleans. Failure leaves
++ * for a '*' custom definition. Flags: 1 common dedup, 2 ammo-only, 4 clip-only,
++ * 8 deferred clip inherited from the parent's alternate registration. Failure leaves
+  * the entire registry unchanged. Ammo/clip names are compared verbatim (an
+  * empty zone string stays empty, as on the client). */
+ int CODOL_RegisterWeaponKeys(codol_weapon_registry_t *,unsigned wire,const char *name,
+     const char *ammo,const char *clip,unsigned deduplicate,unsigned no_clip,int base);
+ int CODOL_GetWeaponKeys(const codol_weapon_registry_t *,unsigned wire,int *ammo,int *clip);
++int CODOL_BindAlternateClipKey(codol_weapon_registry_t *,unsigned parent,unsigned child);
+ int CODOL_FindRegisteredWeapon(const codol_weapon_registry_t *,const char *name);
+ /* Borrowed until registry destruction; output unchanged for an absent slot. */
+ int CODOL_RegisteredWeaponName(const codol_weapon_registry_t *,unsigned,const char **);
 --- a/src/db_load.cpp
 +++ b/src/db_load.cpp
 @@ -48,6 +48,10 @@

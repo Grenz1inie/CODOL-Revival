@@ -24,6 +24,12 @@ class NetConst(ctypes.Structure):
                 ('values', ctypes.POINTER(ctypes.c_char_p))]
 
 
+class WeaponKeysSource(ctypes.Structure):
+    _fields_=[('name',ctypes.c_char_p),('ammo',ctypes.c_char_p),('clip',ctypes.c_char_p),
+              ('shared',ctypes.c_char_p),('partners',ctypes.c_char_p*2),
+              ('flags',ctypes.c_uint),('no_clip',ctypes.c_uint),('capacity',ctypes.c_uint)]
+
+
 class NativeServer423Tests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -74,6 +80,11 @@ class NativeServer423Tests(unittest.TestCase):
         cls.lib.native_engine_snapshot.restype = ctypes.c_size_t
         cls.lib.native_obituary.argtypes = [ctypes.c_void_p,ctypes.c_uint,ctypes.c_uint]
         cls.lib.native_obituary.restype = ctypes.c_size_t
+        cls.lib.native_weapon_keys.argtypes = [ctypes.c_uint] + [ctypes.POINTER(ctypes.c_char_p)]*3 + [
+            ctypes.POINTER(ctypes.c_uint)]*2 + [ctypes.POINTER(ctypes.c_int)]
+        cls.lib.native_weapon_keys.restype = ctypes.c_int
+        cls.lib.native_weapon_registry.argtypes = [ctypes.c_uint,ctypes.c_void_p,ctypes.POINTER(ctypes.c_char_p),ctypes.POINTER(ctypes.c_int)]
+        cls.lib.native_glass_source.argtypes = [ctypes.c_uint,ctypes.POINTER(ctypes.c_uint)]
 
     def setUp(self):
         self.buffer = ctypes.create_string_buffer(0x20000)
@@ -89,6 +100,66 @@ class NativeServer423Tests(unittest.TestCase):
         ok = self.lib.native_registry(tables, len(tables), seed, summary,
                                      self.buffer, len(self.buffer))
         return ok, list(summary), self.buffer.raw
+
+    def test_weapon_keys_match_current_client_sparse_slots_and_independent_flags(self):
+        rows=[('none','','',0,0), ('first','shared','shared',0,0),
+              ('both','shared','shared',1,0), ('ammo','shared','other',2,0),
+              ('clip','unused','shared',4,0), ('unique','new','new',0,0),
+              ('empty','','',1,0), ('empty2','','',1,0),
+              ('no_clip','shared','shared',1,1), ('deferred','shared','shared',8,0),
+              ('case','SHARED','SHARED',1,0)]
+        expected=self.client.weapon_keys(rows)
+        self.assertEqual(expected,[(0,0),(1,1),(2,2),(2,3),(4,2),(5,5),
+                                  (6,6),(6,6),(2,-1),(9,0),(10,10)])
+        count=len(rows)
+        arrays=[(ctypes.c_char_p*count)(*[row[i].encode() for row in rows]) for i in range(3)]
+        flags=[(ctypes.c_uint*count)(*[row[i] for row in rows]) for i in (3,4)]
+        out=(ctypes.c_int*(count*2))()
+        self.assertEqual(self.lib.native_weapon_keys(count,*arrays,*flags,out),1)
+        self.assertEqual(list(zip(out[::2],out[1::2])),expected)
+
+    def test_weapon_slot_limit_and_invalid_flags_are_rejected(self):
+        for count,flag,valid in ((900,0,True),(901,0,False),(2,16,False)):
+            rows=[('none','','',0,0)]+[(f'weapon{i}',f'a{i}',f'c{i}',flag,0) for i in range(1,count)]
+            arrays=[(ctypes.c_char_p*count)(*[row[i].encode() for row in rows]) for i in range(3)]
+            flags=[(ctypes.c_uint*count)(*[row[i] for row in rows]) for i in (3,4)]
+            out=(ctypes.c_int*(count*2))()
+            self.assertEqual(bool(self.lib.native_weapon_keys(count,*arrays,*flags,out)),valid)
+            if valid:self.assertEqual(list(out[-2:]),[899,899])
+
+    def test_recursive_weapon_registration_matches_client_shared_caps_and_alternate_clips(self):
+        rows=[('none','','',0,0,'',0,'',''),
+              ('primary','a','c',0,0,'bucket',100,'alternate','companion'),
+              ('alternate','a','c',8,1,'BUCKET',100,'nested',''),
+              ('nested','a','c',8,0,'',0,'',''),
+              ('companion','a','c',8,0,'other',5,'',''),
+              ('last','a','c',0,0,'OTHER',5,'','')]
+        for invalid in (False,True):
+            with self.subTest(invalid_capacity=invalid):
+                data=list(rows)
+                if invalid:data[-1]=(*data[-1][:6],6,*data[-1][7:])
+                expected=self.client.weapon_registry(data)
+                source=(WeaponKeysSource*(len(data)+1))()
+                names=(ctypes.c_char_p*len(data))()
+                for i,(name,ammo,clip,flags,noclip,shared,cap,alt,comp) in enumerate(data):
+                    source[i]=WeaponKeysSource(name.encode(),ammo.encode(),clip.encode(),shared.encode(),
+                        (ctypes.c_char_p*2)(alt.encode(),comp.encode()),flags,noclip,cap)
+                    names[i]=name.encode()
+                out=(ctypes.c_int*(len(data)*3))()
+                ok=self.lib.native_weapon_registry(len(data),source,names,out)
+                self.assertEqual(bool(ok),expected is not None)
+                if expected is not None:
+                    self.assertEqual(expected,[(0,0,0),(1,1,1),(2,1,1),(3,-1,-1),(4,0,4),(5,5,4)])
+                    self.assertEqual([tuple(out[i:i+3]) for i in range(0,len(out),3)],expected)
+
+    def test_current_glass_source_requires_owned_complete_placements(self):
+        out=(ctypes.c_uint*2)()
+        self.assertEqual(self.lib.native_glass_source(0,out),1)
+        self.assertEqual(list(out),[1,1])
+        for variant in range(1,6):
+            with self.subTest(variant=variant):
+                self.assertEqual(self.lib.native_glass_source(variant,out),0)
+                self.assertEqual(out[0],77)
 
     def test_native_publication_uses_current_client_banks(self):
         expected = {0: 0, 25: 25, 224: 344, 225: 345,

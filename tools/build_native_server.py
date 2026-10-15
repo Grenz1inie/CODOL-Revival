@@ -57,8 +57,9 @@ def build_wire_probe(source, output):
         'codol_2697_anim.c', 'codol_glass_snapshot.c', 'codol_2697_adapter.c',
         'codol_playerstate.c', 'codol_2697_resources.c', 'codol_configstrings.c',
         'codol_entities.c', 'codol_clients.c', 'codol_actors.c')]
-    files += [areas[2] / name for name in ('codol_netconst_index.c', 'codol_netconst.c')]
+    files += [areas[2] / name for name in ('codol_netconst_index.c', 'codol_netconst.c', 'codol_glass_map.c')]
     files += [areas[3] / 'codol_usercmd.c']
+    files += [areas[4] / name for name in ('codol_weapon_registry.c', 'codol_weapon_2697_registry.c')]
     env = dict(os.environ, PATH=str(compiler) + os.pathsep + os.environ['SystemRoot'] + '/System32')
     subprocess.run([str(compiler / 'gcc.exe'), '-shared', '-O1', '-std=gnu11',
                     '-static-libgcc', '-ffunction-sections', '-fno-asynchronous-unwind-tables',

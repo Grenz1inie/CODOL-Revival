@@ -78,3 +78,14 @@ class NativeAssets423Tests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout[-2600:]+result.stderr[-1600:])
         self.assertIn('runtime_complete ok=1', result.stdout)
         self.assertIn('engine_started=0 network_started=0', result.stdout)
+
+    def test_current_map_entities_and_glass_are_available_to_native_world(self):
+        archives = [STAGE / name for name in ('resources-common-gfx/2.bin',
+            'resources-common-gfx/5.bin', 'resources-common/ff_init_common_mp_V43/5.bin',
+            'resources-base/ff_init_mp_cargoship_V32/2.bin',
+            'resources/ff_init_coop_training_mp_cargoship_V29/2.bin')]
+        result = self.run_probe('--codol-runtime-probe', CLIENT, 'mp_cargoship', *archives,
+            options={'CODOL_MAP_STATE_PROBE': 'coop_training_mp_cargoship','CODOL_REGISTRY_PROBE':'1'})
+        self.assertIn('runtime_registry complete=1 weapons=297 engine_registered=0',result.stdout)
+        self.assertRegex(result.stdout, r'runtime_map_state addon=1 bytes=174339 triggers=142 glass=1 pieces=12')
+        self.assertEqual(result.returncode, 0, result.stdout[-2000:]+result.stderr[-1200:])

@@ -51,6 +51,79 @@ class ClientReader423:
             self.cpu.mem_write(address, struct.pack('<I', 0x303fe000))
         self.error = False
 
+    def weapon_keys(self, rows):
+        """Execute stock ammo/clip registrars 0x42bfa0 and 0x42c1b0."""
+        cpu=self.cpu
+        stack,end=0x303ff000,0x303ffff0
+        strings=0x303a0000
+        for i,(name,ammo,clip,flags,no_clip) in enumerate(rows):
+            source=0x30010000+0x1000*i
+            cpu.mem_write(source,bytes(0xe28))
+            cpu.mem_write(0x17f5a40+4*i,struct.pack('<I',source))
+            for offset,value in ((0,name),(0x6b4,ammo),(0x6bc,clip)):
+                text=value.encode()+b'\0'
+                cpu.mem_write(strings,text)
+                cpu.mem_write(source+offset,struct.pack('<I',strings))
+                strings+=len(text)
+            for offset,value in ((0xd68,flags&1),(0xd69,bool(flags&2)),
+                                 (0xd6a,bool(flags&4)),(0xdad,bool(flags&8)),(0x6b0,no_clip)):
+                cpu.mem_write(source+offset,bytes([value]))
+        result=[]
+        self.error=False
+        for i in range(len(rows)):
+            source=0x30010000+0x1000*i
+            if i:  # Slot zero is initialized by the client's reset routine.
+                for address in (0x42bfa0,0x42c1b0):
+                    cpu.mem_write(stack,struct.pack('<II',end,i))
+                    cpu.reg_write(UC_X86_REG_ESP,stack)
+                    cpu.emu_start(address,end,count=200000)
+                    if self.error or cpu.reg_read(UC_X86_REG_EIP)!=end:
+                        raise ValueError('client weapon registrar did not finish')
+            result.append((struct.unpack('<i',cpu.mem_read(source+0x6b8,4))[0],
+                           struct.unpack('<i',cpu.mem_read(source+0x6c0,4))[0]))
+        return result
+
+    def weapon_registry(self, rows):
+        """Run the current recursive registrar; replace only asset lookup."""
+        cpu=self.cpu;stack,end=0x303ff000,0x303ffff0;strings=0x303a0000
+        pointers={row[0]:0x30010000+i*0x1000 for i,row in enumerate(rows)}
+        for name,ammo,clip,flags,noclip,shared,capacity,alt,companion in rows:
+            source=pointers[name];cpu.mem_write(source,bytes(0xe28))
+            for offset,value in ((0,name),(0x6b4,ammo),(0x6bc,clip),(0x6cc,shared),(0xd20,alt),(0xd34,companion)):
+                text=value.encode()+b'\0';cpu.mem_write(strings,text)
+                cpu.mem_write(source+offset,struct.pack('<I',strings));strings+=len(text)
+            cpu.mem_write(source+0x6d4,struct.pack('<I',capacity))
+            for offset,value in ((0xd68,flags&1),(0xd69,bool(flags&2)),(0xd6a,bool(flags&4)),(0xdad,bool(flags&8)),(0x6b0,noclip)):
+                cpu.mem_write(source+offset,bytes([value]))
+        cpu.mem_write(0x17f5a40,struct.pack('<I',pointers['none']))
+        cpu.mem_write(0x7817b88,bytes(4));self.error=False
+        def existing(pointer):
+            count=struct.unpack('<I',cpu.mem_read(0x7817b88,4))[0]
+            for i in range(count+1):
+                if struct.unpack('<I',cpu.mem_read(0x17f5a40+4*i,4))[0]==pointer:return i
+            return None
+        def lookup(cpu,address,size,context):
+            sp=cpu.reg_read(UC_X86_REG_ESP);ret,nameptr=struct.unpack('<II',cpu.mem_read(sp,8))
+            name=bytes(cpu.mem_read(nameptr,128)).split(b'\0',1)[0].decode()
+            pointer=pointers[name];slot=existing(pointer)
+            if slot is None:
+                cpu.reg_write(UC_X86_REG_EAX,pointer);cpu.reg_write(UC_X86_REG_EIP,0x42c3e0)
+            else:
+                cpu.reg_write(UC_X86_REG_EAX,slot);cpu.reg_write(UC_X86_REG_ESP,sp+4);cpu.reg_write(UC_X86_REG_EIP,ret)
+        hook=cpu.hook_add(UC_HOOK_CODE,lookup,begin=0x42c5c0,end=0x42c5c0)
+        try:
+            for row in rows[1:]:
+                pointer=pointers[row[0]]
+                if existing(pointer) is not None:continue
+                cpu.mem_write(stack,struct.pack('<I',end));cpu.reg_write(UC_X86_REG_ESP,stack)
+                cpu.reg_write(UC_X86_REG_EAX,pointer);cpu.reg_write(UC_X86_REG_EDI,0)
+                cpu.emu_start(0x42c3e0,end,count=200000)
+                if self.error:return None
+                if cpu.reg_read(UC_X86_REG_EIP)!=end:raise ValueError('client recursive registration did not finish')
+            return [tuple(struct.unpack('<i',cpu.mem_read(pointers[row[0]]+off,4))[0]
+                          for off in (0x6b8,0x6c0,0x6d0)) for row in rows]
+        finally:cpu.hook_del(hook)
+
     def usercmd(self, values, *, key, base=None):
         """Run the shipped 0x5a1be0 writer; inputs use its real usercmd layout."""
         cpu = self.cpu
