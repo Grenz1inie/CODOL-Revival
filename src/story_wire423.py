@@ -6,9 +6,12 @@ without aligning the bit cursor (client MSG_ReadBit/MSG_ReadBits).
 import json
 from pathlib import Path
 import struct
+import math
 
 PLAYER_FIELDS = json.loads((Path(__file__).resolve().parents[1] /
                             'data/story-player-fields423.json').read_text())['fields']
+MATCH_FIELDS = json.loads((Path(__file__).resolve().parents[1] /
+                          'data/match-fields423.json').read_text())
 
 
 def encode_packets(payload, *, sequence, acknowledgement, challenge, command=b''):
@@ -58,7 +61,32 @@ class _Message:
 
 
 def _player_value(message, bits, previous, value):
-    if bits in (-70, -97):
+    if bits == -94:
+        old_event, old_parameter = previous & 0xffffffff, previous >> 32
+        event, parameter = value & 0xffffffff, value >> 32
+        width = MATCH_FIELDS['event_widths'][event]
+        message.bits(event != old_event, 1)
+        if event != old_event:
+            message.data.append(event)
+            if not width:
+                return
+            changed = width == 32 or (old_parameter & ((1 << width)-1)) != parameter
+            message.bits(changed, 1)
+            if not changed:
+                return
+        if width == 32:
+            message.data.extend(struct.pack('<I', parameter))
+        else:
+            message.bits(parameter, width)
+    elif bits in (-87, -100):
+        if bits == -100:
+            message.bits(0, 2)
+        angle = struct.unpack('<f', struct.pack('<I', value))[0]
+        message.data.extend(struct.pack('<H', round(angle * 182.04444885253906) & 65535))
+    elif bits == -98:
+        message.bits(1, 1)
+        message.bits(value, 30)
+    elif bits in (-70, -97):
         message.bits(1, 1)  # Absolute time, independent of server-time delta.
         message.data.extend(struct.pack('<I', value))
     elif bits == -88:
@@ -89,16 +117,25 @@ def _player_value(message, bits, previous, value):
             message.data.append((delta >> shift) & 255)
 
 
-def _write_playerstate(message, values, base, server_time):
+def _write_player_fields(message, values, base, server_time):
     if type(server_time) is not int or not 0 <= server_time <= 0xffffffff:
         raise ValueError('server time must be uint32')
     for state in (base, values):
         for index, value in state.items():
             if type(index) is not int or not 0 <= index < 235:
                 raise ValueError('player field index out of range')
-            if type(value) is not int or not 0 <= value <= 0xffffffff:
-                raise ValueError('player field must be uint32')
             bits = PLAYER_FIELDS[index][1]
+            if type(value) is not int or not 0 <= value < 1 << (64 if bits == -94 else 32):
+                raise ValueError('player field exceeds its word size')
+            if bits == -94:
+                event, parameter = value & 0xffffffff, value >> 32
+                if event < len(MATCH_FIELDS['event_widths']) and parameter < 1 << MATCH_FIELDS['event_widths'][event]:
+                    continue
+            if bits in (-87, -100):
+                if math.isfinite(struct.unpack('<f', struct.pack('<I', value))[0]):
+                    continue
+            if bits == -98 and value < 1 << 30:
+                continue
             if bits in (-70, -97, -88, 0):
                 continue
             if bits in (-75, -57, -101):
@@ -137,14 +174,18 @@ def _write_playerstate(message, values, base, server_time):
         _, bits, hint = PLAYER_FIELDS[index]
         if hint == 2:
             _player_value(message, bits, base.get(index, 0), values.get(index, 0))
+
+
+def _write_playerstate(message, values, base, server_time):
+    _write_player_fields(message, values, base, server_time)
     message.bits(0, 14)  # 14 unchanged array sections in 0x5a4230.
 
 
 def encode_playerstate(values, *, server_time, base=None):
     """Sparse complete states, keyed by current field index; unspecified = zero.
 
-    Supports measured integer/time/float/protected-byte fields. Event/angle
-    codecs and array updates remain unimplemented and cannot be published.
+    Supports measured integer/time/float, view-angle and event-pair fields.
+    Array sections remain unchanged; match_server.snapshot supplies inventory.
     """
     message = _Message()
     _write_playerstate(message, values, base or {}, server_time)

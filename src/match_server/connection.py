@@ -8,6 +8,7 @@ import re
 import secrets
 
 from story_wire423 import encode_gamestate, encode_packets
+from .input import Reader, read_move, usercmd_key, default_usercmd
 
 
 class StatsTransfer:
@@ -52,7 +53,8 @@ class StatsTransfer:
 
 class Connection:
     """One admitted human, through stats and the map-loading handoff."""
-    def __init__(self, uid, *, netconst_checksum, configstrings=(), aliases=(), recipes=()):
+    def __init__(self, uid, *, netconst_checksum, configstrings=(), aliases=(), recipes=(),
+                 position_base=(0,0,0)):
         if type(uid) is not int or not 0 < uid < 1 << 64:
             raise ValueError('invalid admitted identity')
         self.uid = uid
@@ -60,12 +62,23 @@ class Connection:
         self.server_id = secrets.randbelow(254)+1
         self.checksum_feed = secrets.randbits(32)
         self.phase = 'reserved'
+        self.loading_status = 0
         self.stats = StatsTransfer()
         self.received = self.sent = self.reliable = 0
         self.command = b''
+        self.pending_commands = []
+        self.server_commands = {0:b''}
+        self.server_ack = self.published_command = 0
+        self.input_bases = {0:{}}
+        self.default_input = {}
         rows = dict(configstrings)
         rows[0] = r'\mapname\mp_killhouse_sh\g_gametype\dm\sv_maxclients\2'
         rows[3] = str(self.server_id)
+        if len(position_base) != 3 or any(type(v) is not int or not -32767 <= v <= 32768
+                                          for v in position_base):
+            raise ValueError('invalid map position base')
+        self.position_base = tuple(position_base)
+        rows[16] = ' '.join(map(str,position_base))
         self.gamestate = encode_gamestate('mp_killhouse_sh', 'dm', netconst_checksum,
             command_sequence=0, client_number=0, checksum_feed=self.checksum_feed,
             ordinary=sorted(rows.items()), aliases=aliases, recipes=recipes)
@@ -93,6 +106,12 @@ class Connection:
             text = packet.removesuffix(b'\0').decode('ascii')
         except UnicodeDecodeError as error:
             raise ValueError('invalid connection text') from error
+        loading = re.fullmatch(r'gamestateupdate ([0-3])', text)
+        if loading:
+            if self.phase not in ('primed','active'):
+                raise ValueError('loading update before gamestate')
+            self.loading_status = int(loading[1])
+            return None
         challenge = re.fullmatch(r'getchallenge ([0-9a-fA-F]{16})', text)
         if challenge:
             if int(challenge[1], 16) != self.uid:
@@ -111,15 +130,32 @@ class Connection:
         return (b'\xff'*4+b'connectResponse \\mapname\\mp_killhouse_sh\\gametype\\dm'
                 b'\\sv_maxclients\\2\\protocol\\1\\shortversion\\3.3.3.3\0')
 
-    def send(self, payload):
-        packets = encode_packets(payload, sequence=self.sent+1,
+    def queue_command(self, command):
+        if not isinstance(command,bytes) or not command or b'\0' in command or len(command)>1023:
+            raise ValueError('invalid reliable server command')
+        sequence = max(self.server_commands)+1
+        if sequence-self.server_ack > 32:
+            raise ValueError('too many unacknowledged server commands')
+        self.server_commands[sequence] = command
+        return sequence
+
+    def send(self, payload, *, player_fields=None):
+        prefix = b''.join(b'\x01'+struct.pack('<I',n)+text+b'\0'
+                          for n,text in self.server_commands.items() if n > self.server_ack)
+        packets = encode_packets(prefix+payload, sequence=self.sent+1,
             acknowledgement=self.reliable, challenge=self.challenge, command=self.command)
         self.sent += 1
+        self.published_command = max(self.server_commands)
+        if player_fields is not None:
+            self.default_input = default_usercmd(player_fields)
+        self.input_bases[self.sent] = self.default_input
+        self.input_bases = {n:b for n,b in self.input_bases.items() if n > self.sent-64}
         return packets
 
     def receive(self, packet):
         if packet.startswith(b'\xff'*4):
-            return [self._oob(packet[4:])]
+            reply = self._oob(packet[4:])
+            return [reply] if reply is not None else []
         if self.stats.profile is None:
             raise ValueError('valid stats required before gamestate')
         if len(packet) < 14:
@@ -127,28 +163,41 @@ class Connection:
         sequence, server_id, ack, reliable_ack = struct.unpack_from('<IBII', packet)
         if not 0 < sequence < 0x20000000 or server_id not in (255, self.server_id):
             raise ValueError('invalid client sequence or server id')
-        if ack > self.sent or reliable_ack:
+        if ack not in self.input_bases or reliable_ack > self.published_command or reliable_ack not in self.server_commands:
             raise ValueError('client acknowledged an unsent message')
         if sequence <= self.received:
             return []
         key = (self.challenge ^ server_id ^ ack)&255
-        body = bytes(value ^ key for value in packet[13:])
-        cursor, reliable, command = 0, self.reliable, self.command
-        while cursor < len(body) and body[cursor] == 26:
-            if cursor+5 > len(body) or b'\0' not in body[cursor+5:]:
-                raise ValueError('truncated reliable client command')
-            number, = struct.unpack_from('<I', body, cursor+1)
-            end = body.index(0, cursor+5)
-            candidate = body[cursor+5:end]
-            if number > reliable:
-                if number != reliable+1 or not candidate.startswith(b'userinfo "') or not candidate.endswith(b'"'):
-                    raise ValueError('unsupported or missing reliable client command')
-                self._userinfo(candidate[10:-1].decode('ascii'))
-                reliable, command = number, candidate
-            cursor = end+1
-        if body[cursor:] not in (b'', b'\x03'):
-            raise ValueError('unsupported client message')
+        server_command = self.server_commands[reliable_ack]
+        body = bytearray(packet[13:])
+        for i in range(len(body)):
+            if server_command:
+                key ^= (server_command[i%len(server_command)] << (i&1))&255
+            body[i] ^= key
+        body = bytes(body)
+        reader, reliable, command = Reader(body), self.reliable, self.command
+        commands = []
+        while True:
+            opcode = reader.bits(3)
+            if opcode == 3:
+                break
+            if opcode == 2:
+                number, candidate = reader.number(4), reader.string()
+                if number > reliable:
+                    if number != reliable+1 or not candidate.startswith(b'userinfo "') or not candidate.endswith(b'"'):
+                        raise ValueError('unsupported or missing reliable client command')
+                    self._userinfo(candidate[10:-1].decode('ascii'))
+                    reliable, command = number, candidate
+            elif opcode in (0,1) and not commands:
+                commands = read_move(reader,usercmd_key(ack,self.checksum_feed,server_command),self.input_bases[ack])
+            else:
+                raise ValueError('unsupported client message')
+        if reader.cursor != len(body):
+            raise ValueError('trailing client message bytes')
         self.received, self.reliable, self.command = sequence, reliable, command
+        self.server_ack = max(self.server_ack,reliable_ack)
+        self.server_commands = {n:c for n,c in self.server_commands.items() if n >= self.server_ack-32}
+        self.pending_commands = commands
         if self.phase == 'connected' or not ack:
             self.phase = 'primed'
             return self.send(self.gamestate)

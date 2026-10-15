@@ -23,3 +23,13 @@ Handshake and DATA framing are a Python adaptation of the following AGPL-3.0-or-
 - `codol_wire.c`: SHA-256 `516c28d6b237554b4205ae4e652f12c1af24fa94952112b5213f59f7ff59f6f8`
 
 Connection/userinfo parsing follows `codol_connect.c` and the current-client OOB evidence at `0x466790`. Stats assembly follows the current 423 adaptation of `codol_stats.c` in the archived `server3333` source; the fragment format is tested using the shipped client's `0x6d81a0` writer. Reference hashes: connect `4e0de96c02584aa67d3f1797aac010ec61d8cb07b607ab963fec2245d3c2aba9`; stats `ce86943bdc895136b0e75050ca2b13ef1ea1cef4f6152f8e837b7fdde4964c36`.
+
+Input and snapshot algorithms selectively translated from the archived 423 adaptation under the same AGPL-3.0-or-later license. These modules encode independent Python state directly; they do not use the old engine or its layout adapter. Source SHA-256:
+
+- `codol_usercmd.c`: `58e778941162b38179c35a89c03ebc4f7e19f84e54fd17e3e00811406477eb5c`
+- `codol_2697_arrays.c`: `465b3bfc9cb0843d0ee3f0c99d32329f32f966fdeed96133454d72e302937351`
+- `codol_2697_entities.c`: `306e9c4400b0fc4af9f4448eefffd95e85a33da4ec8bb4ef8c2f544b67df2bac`
+- `codol_2697_clients.c`: `8c212c973694e0da7c1d142809e004d182d27b00c2ee92a0e67fdc2269fc8e5d`
+- `codol_2697_delta.c`: `74e73807a7349dc9eaa9b3170f9d11c9c4e43f8f08427bd7493b591ba9ce63a5`
+
+The field tables in `data/match-fields423.json` are extracted from the current client, identified by the recorded SHA-256 and addresses. The input writer and snapshot reader tests execute that client code; source portability alone is not a compatibility claim.

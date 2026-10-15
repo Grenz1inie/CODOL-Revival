@@ -118,7 +118,7 @@ class ConnectionTests(unittest.TestCase):
         self.assertEqual(self.connection.receive(self.packet(b'\x03', 1)), [])
         # Latest userinfo is acknowledged and keys the downstream XOR encoder.
         command = f'userinfo "{self.info}"'.encode()
-        packet = self.packet(b'\x1a'+struct.pack('<I',1)+command+b'\0\x03', 2,
+        packet = self.packet(b'\x1a'+struct.pack('<I',1)+command+b'\0', 2,
                              ack=sequence, server_id=self.connection.server_id)
         replies = self.connection.receive(packet)
         self.assertEqual(reader.packet(replies[0], challenge=self.challenge, command=command)[1:],
@@ -141,6 +141,76 @@ class ConnectionTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.connection.receive(packet)
         self.assertTrue(self.connection.receive(self.packet(b'\x03', 1)))
+
+    def test_batched_reliables_and_real_move_bits_do_not_shift_the_payload(self):
+        from story_wire423 import _Message
+        self.connect()
+        self.upload()
+        self.connection.receive(self.packet(b'\x03',1))
+        message = _Message()
+        command = f'userinfo "{self.info}"'.encode()
+        for number in (1,2):
+            message.bits(2,3)
+            message.data.extend(struct.pack('<I',number)+command+b'\0')
+        message.bits(3,3)
+        self.connection.receive(self.packet(bytes(message.data),2,ack=1,server_id=self.connection.server_id))
+        self.assertEqual(self.connection.reliable,2)
+        key = 2 ^ self.connection.checksum_feed
+        move = self.client.usercmd({'time':100,'buttons':1,'weapon':7,'forward':127},key=key,move=True)
+        malformed = self.packet(move[:-1],3,ack=2,server_id=self.connection.server_id)
+        with self.assertRaises(ValueError):
+            self.connection.receive(malformed)
+        self.assertEqual(self.connection.pending_commands,[])
+        self.connection.receive(self.packet(move,3,ack=2,server_id=self.connection.server_id))
+        self.assertEqual(len(self.connection.pending_commands),1)
+        self.assertEqual(self.connection.pending_commands[0]['weapon'],7)
+        self.assertEqual(self.connection.pending_commands[0]['buttons'],1)
+
+    def test_weapon_command_and_acknowledged_snapshot_key_the_next_input(self):
+        from match_server.input import usercmd_key
+        from match_server.snapshot import encode_snapshot,Inventory
+        self.connect()
+        self.upload()
+        self.connection.receive(self.packet(b'\x03',1))
+        state={0:1000,39:7}
+        reliable=self.connection.queue_command(b'a 7')
+        self.connection.send(encode_snapshot(state,server_time=1000,health=100,
+                                            inventory=Inventory(7,1,1,30,90)),player_fields=state)
+        # The game carries weapon 7 from the acknowledged snapshot, omitting
+        # its unchanged value from this usercmd's delta encoding.
+        native_base={'time':0,'weapon':7}
+        key=usercmd_key(2,self.connection.checksum_feed,b'a 7')
+        body=self.client.usercmd(native_base|{'time':1050,'buttons':1},key=key,base=native_base,move=True)
+        encoded=bytearray(body)
+        xor=(self.challenge ^ self.connection.server_id ^ 2)&255
+        for i in range(len(encoded)):
+            xor ^= (b'a 7'[i%3] << (i&1))&255
+            encoded[i] ^= xor
+        packet=struct.pack('<IBII',2,self.connection.server_id,2,reliable)+encoded
+        self.connection.receive(packet)
+        self.assertEqual(self.connection.pending_commands[0]['weapon'],7)
+        self.assertEqual(self.connection.pending_commands[0]['buttons'],1)
+        self.assertEqual(self.connection.server_ack,reliable)
+
+    def test_loading_status_and_position_center_are_bound_to_the_map_state(self):
+        from match_server.connection import Connection
+        self.connection=Connection(self.uid,netconst_checksum=0x11223344,
+                                   position_base=(3926,-925,8440))
+        self.connect()
+        self.upload()
+        self.connection.receive(self.packet(b'\x03',1))
+        for status in (2,3,3):
+            self.assertEqual(self.connection.receive(b'\xff'*4+f'gamestateupdate {status}\0'.encode()),[])
+        self.assertEqual(self.connection.loading_status,3)
+        # No spawn claim from a loading notification alone.
+        self.assertEqual(self.connection.phase,'primed')
+        reader=ClientReader423()
+        reader.gamestate(self.connection.gamestate,checksum=0x11223344)
+        offset,=struct.unpack('<I',reader.cpu.mem_read(0x796f2dc+16*4,4))
+        center=bytes(reader.cpu.mem_read(0x7976124+offset,64)).split(b'\0',1)[0]
+        self.assertEqual(center,b'3926 -925 8440')
+        with self.assertRaises(ValueError):
+            self.connection.receive(b'\xff'*4+b'gamestateupdate 99\0')
 
 
 if __name__ == '__main__':

@@ -169,7 +169,7 @@ class Configstrings423Tests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.client.playerstate(wire[:8], server_time=1000)
         for values in ({235: 0}, {-1: 0}, {7: 2048}, {3: 32768},
-                       {0: 0x100000000}, {0: -1}, {21: 1}):
+                       {0: 0x100000000}, {0: -1}, {21: 162}):
             with self.subTest(values=values), self.assertRaises(ValueError):
                 story_wire423.encode_playerstate(values, server_time=1000)
 

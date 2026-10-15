@@ -79,6 +79,21 @@ $env:PYTHONPATH='src;tests;tools'
 python -m unittest test_match_transport test_match_connection test_match_server test_story_wire423 -q
 ```
 
-下一处实际缺口是当前资源的 NCS/基线/出生点导出、完整碰撞和玩家快照；连接阶段通过不满足人工对战验收条件。
+## 输入与玩家快照（2026-10-15）
+
+`input.py` 直接反解3.3.3.3的3位消息类型、键控usercmd和末尾标签，支持一包多条可靠命令。首条输入的省略字段来自**已确认的快照**；不能拿服务器最新位置、视角或武器作解码基准。畸形批次不更新连接状态，重发批次不重复处理。
+
+`snapshot.py` 直接编码当前玩家字段、生命值、单武器弹药、两名玩家的entity/client记录；没有旧引擎布局中转。`data/match-fields423.json` 保存当前EXE的实体字段、客户端字段与事件参数宽度。连接中加入可靠服务端命令及其确认记录，后续可发送武器选择和对局状态。
+
+坐标中心不是必须猜出的地图常量：REA `client-gamestate-instructions423.json` 的 `0x46e0e1..0x46e0ec` 读取配置串16并按 `%f %f %f` 写入 `0x78b0a78/7c/80`。新服可选覆盖本图坐标的中心，配置串和实体编码必须使用同一值。`test_map_center_is_server_supplied_configstring_16` 执行实际gamestate读取器，只替换CRT的sscanf，并再用实际实体读取器验证非零中心的位置。
+
+定向测试共39项通过：
+
+```powershell
+$env:PYTHONPATH='src;tests;tools'
+python -m unittest test_match_transport test_match_connection test_match_server test_match_input test_match_snapshot test_story_wire423 -q
+```
+
+验证边界仍是协议消费：真实客户端writer `0x5a1be0`、默认输入 `0x5a18e0`、snapshot reader `0x46d170`；没有执行完整渲染或开图。地图包已有本地导出，实际NCS挂载集合、碰撞闭包、权威模拟与出生尚在接线，当前没有发布可人工对战的实例。
 
 **完成条件**：原版3.3.3.3客户端的上述操作由独立服维护，关掉/移走旧服安装后仍能完成同一验收。旧服协议探针通过与独立服通过分开记录。
