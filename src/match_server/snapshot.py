@@ -151,12 +151,14 @@ def baseline_entities(data):
     return result
 
 
-def _inventory(m, health, inventory):
+def _inventory(m, health, inventory, spawn_count):
     if type(health) is not int or not 0 <= health <= 32767:
         raise ValueError('health out of range')
+    if type(spawn_count) is not int or not 0 <= spawn_count <= 255:
+        raise ValueError('spawn count out of range')
     m.bits(1,1)
-    m.bits(5,4)  # Current stats[0] health and stats[2] max health.
-    m.data.extend(struct.pack('<hh',health,100))
+    m.bits(13,4)  # Health, max health, byte spawn count (0x5a490d..0x5a4967).
+    m.data.extend(struct.pack('<hhB',health,100,spawn_count))
     if inventory is None:
         m.bits(0,13)
         return
@@ -193,7 +195,7 @@ def _number(m, number, previous):
         m.bits(number if delta >= 512 else delta,11 if delta >= 512 else 9)
 
 
-def encode_snapshot(player, *, server_time, health, inventory=None, entities=(),clients=(),
+def encode_snapshot(player, *, server_time, health, inventory=None, spawn_count=0, entities=(),clients=(),
                     position_base=(0,0,0)):
     for rows,limit in ((entities,2047),(clients,32)):
         numbers = [number for number,_ in rows]
@@ -205,7 +207,7 @@ def encode_snapshot(player, *, server_time, health, inventory=None, entities=(),
     m.data.extend(b'\0'+struct.pack('<I',server_time)+b'\0\0')
     m.bits(0,1)
     _write_player_fields(m,player,{},server_time)
-    _inventory(m,health,inventory)
+    _inventory(m,health,inventory,spawn_count)
     m.bits(0,2)  # No animation commands or actors.
     previous = -1
     for number,values in entities:

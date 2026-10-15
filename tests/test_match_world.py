@@ -143,6 +143,57 @@ class MatchWorldTests(unittest.TestCase):
         self.assertEqual(fields[0],1050)
         self.assertEqual(struct.unpack_from('<I',result['entities_data'][1],208)[0],5 | (5 << 16))
 
+    def test_native_prediction_gets_full_size_standing_player(self):
+        from client_reader423 import ClientReader423
+        from story_wire423 import encode_snapshot as encode_baseline
+        from unicorn.x86_const import UC_X86_REG_EAX, UC_X86_REG_ECX, UC_X86_REG_EDX, UC_X86_REG_ESP
+        client=ClientReader423()
+        client.snapshot(encode_baseline({},server_time=0),sequence=0)
+        data=client.snapshot(self.world().snapshot()[0],sequence=1)['player_data']
+        cpu=client.cpu
+        state,bounds,stack,end=0x30200000,0x30210000,0x303ff000,0x303ffff0
+        cpu.mem_write(state,bytes(data))
+        cpu.mem_write(stack,struct.pack('<I',end))
+        cpu.reg_write(UC_X86_REG_ESP,stack)
+        cpu.reg_write(UC_X86_REG_EAX,state)
+        # Native standing-height consumer: snapshot height alone is insufficient.
+        cpu.emu_start(0x4124d0,end,count=10000)
+        self.assertEqual(cpu.reg_read(UC_X86_REG_EAX),60)
+        cpu.reg_write(UC_X86_REG_ESP,stack)
+        cpu.reg_write(UC_X86_REG_EDX,state)
+        cpu.reg_write(UC_X86_REG_ECX,bounds)
+        cpu.emu_start(0x412560,end,count=10000)
+        self.assertEqual(struct.unpack('<6f',cpu.mem_read(bounds,24)),(0,0,35,15,15,35))
+
+    def test_spawn_counter_and_time_change_only_on_respawn_and_counter_wraps(self):
+        from client_reader423 import ClientReader423
+        from story_wire423 import encode_snapshot as encode_baseline
+        world=self.world()
+        player=world.players[0]
+        client=ClientReader423()
+        client.snapshot(encode_baseline({},server_time=0),sequence=0)
+        sequence=0
+        def spawn_state():
+            nonlocal sequence
+            sequence+=1
+            data=client.snapshot(world.snapshot()[0],sequence=sequence)['player_data']
+            return (struct.unpack_from('<I',data,0x19c)[0],struct.unpack_from('<I',data,0x3350)[0])
+        self.assertEqual(spawn_state(),(1,1000))
+        world.step([command(1050)],milliseconds=50)
+        self.assertEqual(spawn_state(),(1,1000))
+        for expected in (2,3):
+            player.health=0
+            player.respawn_at=world.time+3000
+            world.step(milliseconds=2999)
+            self.assertEqual(spawn_state()[0],expected-1)
+            world.step(milliseconds=1)
+            self.assertEqual(spawn_state(),(expected,world.time))
+        player.spawn_count=255
+        player.health=0
+        player.respawn_at=world.time+3000
+        world.step(milliseconds=3000)
+        self.assertEqual(spawn_state(),(0,world.time))
+
     def test_current_death_mode_and_event_ring_survive_a_long_duel(self):
         from client_reader423 import ClientReader423
         from story_wire423 import encode_snapshot as encode_baseline

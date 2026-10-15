@@ -68,6 +68,8 @@ class Player:
     animation: int = 0
     kills: int = 0
     deaths: int = 0
+    spawn_count: int = 0
+    spawn_time: int = 0
 
     def event(self, number, parameter=0):
         self.events[self.event_sequence%4] = number | parameter << 32
@@ -105,6 +107,8 @@ class World:
         player.health,player.ground=100,2046
         player.clip,player.reserve=self.weapon.clip_size,self.weapon.clip_size*3
         player.command_time=self.time
+        player.spawn_count=(player.spawn_count+1)&255
+        player.spawn_time=self.time
         player.next_fire=self.time
         player.reload_at=player.respawn_at=player.last_buttons=0
         player.animation=0
@@ -315,7 +319,8 @@ class World:
                 18:_word(player.yaw),19:_word(player.pitch),28:0 if player.health else 0x20000,
                 30:_word(1),34:_word(60),38:60,
                 39:self.weapon.index,47:player.ground,54:0x1000,56:self.hands_model,59:0,
-                60:SPEED,63:GRAVITY,68:2047,83:0 if player.health else 8}
+                60:SPEED,63:GRAVITY,68:2047,83:0 if player.health else 8,
+                85:player.spawn_time,217:_word(1)}
         for i,event in enumerate(player.events):
             fields[21+i]=event
         entities=[]
@@ -330,7 +335,7 @@ class World:
         entities.extend(self.static_entities)
         entities.sort(key=lambda row:row[0])
         clients=[(p.number,{20:self.body_model}) for p in self.players]
-        wire=encode_snapshot(fields,server_time=self.time,health=player.health,
+        wire=encode_snapshot(fields,server_time=self.time,health=player.health,spawn_count=player.spawn_count,
             inventory=Inventory(self.weapon.index,self.weapon.ammo_type,self.weapon.clip_type,player.clip,player.reserve),
             entities=entities,clients=clients,position_base=self.position_base)
         return wire,fields
