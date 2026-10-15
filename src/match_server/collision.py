@@ -16,6 +16,23 @@ def _sub(a, b):
     return tuple(x-y for x,y in zip(a,b))
 
 
+def _segment_bounds(start, end, low, high, half=(0,0,0)):
+    """Conservative segment/AABB candidate test, including box expansion."""
+    near,far=0.0,1.0
+    for i in range(3):
+        lo,hi=low[i]-half[i]-1e-8,high[i]+half[i]+1e-8
+        delta=end[i]-start[i]
+        if delta == 0:
+            if start[i] < lo or start[i] > hi:
+                return False
+            continue
+        a,b=(lo-start[i])/delta,(hi-start[i])/delta
+        near,far=max(near,min(a,b)),min(far,max(a,b))
+        if near > far:
+            return False
+    return True
+
+
 def _cross(a, b):
     return (a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0])
 
@@ -291,7 +308,7 @@ class CollisionWorld:
                       material=None,start_solid=False,complete=self.complete,contents_mask=contents_mask)
 
         def overlaps(lo, hi):
-            return all(query_hi[i] >= lo[i] and query_lo[i] <= hi[i] for i in range(3))
+            return _segment_bounds(start,end,lo,hi)
 
         result['unresolved_static_models'] = [i for i in instances if self.geometry['static_models'][i]['geometry'] is None
                                                and overlaps(self.geometry['static_models'][i]['mins'],self.geometry['static_models'][i]['maxs'])]
@@ -371,7 +388,7 @@ class CollisionWorld:
                       material=None,start_solid=False,complete=self.complete,contents_mask=contents_mask)
 
         def overlaps(low, high):
-            return all(hi[i] >= low[i] and lo[i] <= high[i] for i in range(3))
+            return _segment_bounds(a,b,low,high,half)
 
         result['unresolved_static_models'] = [i for i in instances if self.geometry['static_models'][i]['geometry'] is None
                                                and overlaps(self.geometry['static_models'][i]['mins'],self.geometry['static_models'][i]['maxs'])]

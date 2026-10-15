@@ -253,6 +253,28 @@ class MatchCollisionTests(unittest.TestCase):
             self.assertEqual(first,second)
             self.assertEqual(projections.call_count,count)
 
+    def test_long_diagonal_only_expands_geometry_on_the_swept_segment(self):
+        import match_server.collision as collision
+        vertices=[]
+        for x,y in [(20+i,300+i) for i in range(40)]+[(249,249)]:
+            vertices.extend(((x,y,0),(x+3,y,0),(x,y+3,0)))
+        geometry=dict(materials=[dict(contents=1)],world_brushes=[],vertices=vertices,
+            triangles=[[i,i+1,i+2] for i in range(0,len(vertices),3)],
+            partitions=[dict(first_tri=0,tri_count=41)],world_partitions=[[0,0]],
+            static_models=[],closure=dict(blockers=[]))
+        world=collision.CollisionWorld(geometry)
+        with patch.object(collision,'_projections',wraps=collision._projections) as projections:
+            hit=world.trace_box([0,0,1],[500,500,-1],mins=(-.1,)*3,maxs=(.1,)*3)
+            self.assertTrue(hit['hit'])
+            self.assertEqual(hit['index'],40)
+            self.assertEqual(projections.call_count,1)
+        hit=world.trace_point([0,0,1],[500,500,-1],contents_mask=1)
+        self.assertEqual(hit['index'],40)
+        self.assertAlmostEqual(hit['fraction'],.5)
+        # Stationary overlap and exact tangency remain candidates too.
+        self.assertTrue(world.trace_box([250,250,0],[250,250,0],mins=(-.1,)*3,maxs=(.1,)*3)['start_solid'])
+        self.assertFalse(world.trace_box([250,250,.1],[251,251,.1],mins=(-.1,)*3,maxs=(.1,)*3)['hit'])
+
     @unittest.skipUnless((PACKAGE / 'gfxworld.bin').is_file(), 'local map export unavailable')
     def test_first_static_model_is_recovered_from_existing_gfxworld(self):
         from match_xmodel423 import read_static_models
