@@ -7,6 +7,7 @@ sys.path.insert(0,str(root))
 from lsg_codec import decode,encode,empty_task_reply,empty_task_reply_total
 if "--reply-total" in sys.argv: empty_task_reply=empty_task_reply_total
 import local_profile319
+from playlist319 import nuketown_rules
 def emit(event,**values):
     with (root/'lsg-handshake.jsonl').open('a',encoding='utf-8') as out:out.write(json.dumps(dict(event=event,time=time.time(),**values))+'\n')
 def exact(c,n):
@@ -153,6 +154,8 @@ while time.monotonic()<deadline:
                             # Ayria-parity files: activities_v1, broadcast, tlogconfig, market-down, whitelist_tester.
                             if filename.endswith('.info') and '/' not in filename and chr(92) not in filename and not filename.startswith('.') and (root/'publisher-files'/filename).is_file():
                                 data=(root/'publisher-files'/filename).read_bytes()
+                                if filename == 'mp_playlists_shipRetail_release.info':
+                                    data = nuketown_rules(data)
                                 error=0
                                 response=(b'\x0a'+struct.pack("<Q",txn)+b'\x08'+struct.pack('<I',0)+b'\x03'+bytes([task])+b'\x08'+struct.pack('<I',1)+b'\x08'+struct.pack('<I',1)+b'\x13\x08'+struct.pack('<I',len(data))+data)
                                 emit('publisher_file_reply',filename=filename,content_bytes=len(data),source='native 3.19 embedded playlist' if filename.startswith('mp_playlists') else 'diagnostic local config with native defaults')
