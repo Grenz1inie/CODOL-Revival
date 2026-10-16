@@ -1,6 +1,6 @@
 # 网页启动设置进度 — 2026-10-17
 
-用户因电脑电量不足要求保存进度，当前暂停开发。
+用户因电脑电量不足暂停后，已于2026-10-17继续并完成本次功能及限定范围验证；游戏画面效果保留给下次启动人工验收。
 
 ## 已保存
 
@@ -20,11 +20,18 @@
 - 全量 Python 回归在运行中收到暂停要求，已终止本次测试 Python PID 42464；不能宣称全套通过。日志：runtime/logs/launch-settings-tests.log。
 - 窄屏 DOM 的字段保持单列且未越界；窄屏截图超时，尚未完成视觉验收。已恢复浏览器原尺寸与英文网页。
 
-## 下次继续
+## 恢复后的验证结果
 
-1. 先查看当前 Git 状态及并行任务变化，保留其他工作；核对日志是否足够定位全量测试进度，不盲目重复全套。
-2. 完成剩余 Python 集中回归、窄屏视觉检查；runtime/logs/launch-settings-desktop.jpg 的裁剪不正确，不可作为最终交付截图。
-3. 更新 GitNexus / CodeGraph 索引（本次实现后尚未刷新）：gitnexus analyze . --skip-git --index-only --name CODOL-Revival；codegraph sync .。
-4. 游戏实际全屏/分辨率及中文菜单，需用户方便时退出并下次启动验收。不得为验证而打断用户现有游戏。
+- 两次功能提交的启动设置源码与前端未被后续提交改动；保留了其他任务的并行改动。
+- 补跑集中回归，日志 `runtime/logs/launch-settings-regression.log`：HTTP启动设置用例通过；两项已有3.3初始快照断言失败；随后在 `NativeInventory319Tests.test_client_consumes_complete_registry_with_inherited_owner_and_wallet` 中以 `0xC0000005` 退出，日志停在Unicorn寄存器写入。未再重复全套，也未扩展修复范围。
+- 尚未执行到的本次模块另行集中验证：`test_launch319`、`test_preparation319`、`test_settings319` 共19项通过，见 `runtime/logs/launch-settings-focused.log`。前端源码未变，沿用已通过的36项测试和构建结果。
+- 控制器重新启动；当前游戏未运行，网页新设置可编辑。桌面中文效果已检查并重新保存完整截图 `runtime/logs/launch-settings-desktop.jpg`，替换了之前的错误裁剪。
+- 窄屏视口585 CSS像素、页面宽562像素；六个字段为单列，边界34～528像素。窄屏截图接口超时，未声称完成截图验收；已恢复网页原语言及浏览器尺寸。
+- GitNexus与CodeGraph已同步，并复核设置到准备/启动的消费者。
+- 未修改真实启动设置，未启动游戏。
+
+## 留给人工验收
+
+在网页选择所需显示模式、分辨率和游戏语言并保存，下次启动后确认实际全屏/窗口画面和中文菜单。自动化已验证资源切换及加载器参数，不能代替游戏画面验收。
 
 当前控制器：http://127.0.0.1:8765/。当前实例 codol-3.19.26.22-911c42a0027c；实际游戏版本 3.19.26.22，不是工具默认工作目录名中的 3.3.3.3。
