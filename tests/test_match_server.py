@@ -1,6 +1,7 @@
 """Real loopback UDP with current DATA framing and native client consumers."""
 import struct
 import socket
+import threading
 import time
 import unittest
 import zlib
@@ -128,6 +129,34 @@ class MatchServerTests(unittest.TestCase):
                 self.assertIsNone(server.last_error)
                 self.assertTrue(any(k=='match_phase' and v['phase']=='active' for k,v in events))
                 self.assertTrue(any(k=='match_state' and v['players'][1]['health']==70 for k,v in events))
+                # A route calculation can outlast a tick. Inputs arriving during
+                # it must be drained together, not wait behind one tick per packet.
+                paused,release,applied=threading.Event(),threading.Event(),threading.Event()
+                step=world.step
+                batches=[]
+                def slow_step(commands,**kwargs):
+                    if not paused.is_set():
+                        paused.set()
+                        release.wait(3)
+                        time.sleep(.06)
+                    result=step(commands,**kwargs)
+                    if commands:
+                        batches.append([command['time'] for command in commands])
+                        applied.set()
+                    return result
+                world.step=slow_step
+                try:
+                    self.assertTrue(paused.wait(3))
+                    times=[target_time+50*i for i in (1,2,3)]
+                    for command_time in times:
+                        send_move({'time':command_time,'forward':127,'weapon':5},base=base)
+                    release.set()
+                    self.assertTrue(applied.wait(3))
+                    self.assertEqual(batches[0],times)
+                    self.assertIsNone(server.last_error)
+                finally:
+                    release.set()
+                    world.step=step
             finally:
                 peer.socket.close()
 

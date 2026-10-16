@@ -2,6 +2,7 @@
 
 SPDX-License-Identifier: AGPL-3.0-or-later
 """
+import select
 import socket
 import threading
 import time
@@ -38,7 +39,10 @@ class MatchServer:
 
     def _serve(self):
         while not self.stopping.is_set():
-            self._tick()
+            # Drain queued input before another potentially slow route/physics
+            # tick; otherwise the client's ACK falls behind the input-base ring.
+            if not select.select([self.socket],[],[],0)[0]:
+                self._tick()
             try:
                 packet, address = self.socket.recvfrom(65535)
             except socket.timeout:
