@@ -118,12 +118,20 @@ while time.monotonic()<deadline:
                         # --wallet-rotate cycles result variants per 80/130 request (variant logged).
                         # Purchases (93/131 with an item id) are recorded as owned (permanent); the
                         # inventory (80/203) serves them. --inventory-keyed adds the u64+string key.
-                        if (service,task)==(93,131):
+                        purchase_error=0
+                        if (service,task) in ((93,131),(80,154)):
                             bought=local_profile319.purchase_item_id(body)
-                            if bought:
+                            if (service,task)==(80,154):
+                                local_profile319.record_purchase(body)
+                            if bought is not None or (service,task)==(80,154):
                                 # The id is a shop SKU: charge its price, own exactly its items (sku-items319.txt).
-                                granted,result=local_profile319.buy_sku(bought)
-                                emit('item_owned',sku=bought,items=granted,result=result,wallet=local_profile319.wallet())
+                                try:
+                                    granted,result=local_profile319.buy_sku(bought)
+                                except local_profile319.PurchaseError as exc:
+                                    purchase_error=exc.code
+                                    emit('purchase_rejected',sku=bought,error=exc.code,reason=str(exc))
+                                else:
+                                    emit('item_owned',sku=bought,items=granted,result=result,wallet=local_profile319.wallet())
                         if (service,task)==(80,230):
                             response=local_profile319.player_assets_reply(task,txn)
                             emit('player_assets_reply',items=len(local_profile319.owned_items()),bytes=len(response))
@@ -135,7 +143,9 @@ while time.monotonic()<deadline:
                             else:
                                 response=local_profile319.inventory_reply(task,txn,'--inventory-keyed' in sys.argv);count=len(local_profile319.owned_items())
                             emit('inventory_reply',items=count,bytes=len(response))
-                        if (service,task) in ((80,130),(93,131)) and '--no-wallet' not in sys.argv:
+                        if purchase_error:
+                            response=empty_task_reply(task,txn,purchase_error)
+                        elif (service,task) in ((80,130),(93,131)) and '--no-wallet' not in sys.argv:
                             if '--wallet-rotate' in sys.argv:
                                 if (service,task)==(80,130):
                                     wallet_variant=globals().get('wallet_variant',-1)+1
@@ -147,11 +157,6 @@ while time.monotonic()<deadline:
                             response=local_profile319.wallet_reply(task,txn,*variant)
                             emit('wallet_reply',service=service,variant=list(variant),request=body.hex())
                         elif service==80 and task==154:
-                            local_profile319.record_purchase(body)
-                            bought=local_profile319.purchase_item_id(body)
-                            if bought:
-                                granted,result=local_profile319.buy_sku(bought)
-                                emit('item_owned',sku=bought,items=granted,result=result,wallet=local_profile319.wallet())
                             response=empty_task_reply(task,txn,0)
                             emit('purchase_recorded',request=body.hex())
                         if service==10 and task==21 and body[3:4]==b'\x10':

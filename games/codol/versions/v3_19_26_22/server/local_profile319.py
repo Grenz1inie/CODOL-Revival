@@ -34,8 +34,11 @@ def player_name():
 def _atomic_write(path, data):
     path.parent.mkdir(parents=True, exist_ok=True)
     temp = path.with_suffix(path.suffix + '.tmp')
-    temp.write_bytes(data)
-    os.replace(temp, path)
+    try:
+        temp.write_bytes(data)
+        os.replace(temp, path)
+    finally:
+        temp.unlink(missing_ok=True)
 
 
 def save_public_info(uid, payload):
@@ -228,19 +231,33 @@ def sku_price(sku):
     return _sku_prices.get(sku)
 
 
+class PurchaseError(ValueError):
+    def __init__(self, message, code):
+        super().__init__(message)
+        self.code = code
+
+
 def buy_sku(sku):
     """Charge the SKU's price and own its items. Returns (granted items, message)."""
-    if sku in owned_skus():
-        return sku_items(sku), 'already owned'
+    items = sku_items(sku)
     price = sku_price(sku)
-    if price and not economy()['unlimited']:
+    if not items or price is None:
+        raise PurchaseError('incomplete SKU catalog', 0x1f43)
+    if sku in owned_skus() or set(items).issubset(owned_items()):
+        # The console grants permanent item IDs, not SKU purchase history.
+        raise PurchaseError('already owned', 0x1f97)
+    w = None
+    if not economy()['unlimited']:
         cid, cost, _days = price
         w = wallet()
         if w.get(str(cid), 0) < cost:
-            return [], 'not enough currency %d (%d < %d)' % (cid, w.get(str(cid), 0), cost)
+            raise PurchaseError('not enough currency %d (%d < %d)' % (cid, w.get(str(cid), 0), cost), 0x1f47)
         w[str(cid)] = w.get(str(cid), 0) - cost
-        save_wallet(w)
-    return add_purchase(sku), 'bought for %s' % (price,)
+    try:
+        granted = add_purchase(sku, charged_wallet=w)
+    except OSError as exc:
+        raise PurchaseError('purchase storage error', 0x1f45) from exc
+    return granted, 'bought for %s' % (price,)
 
 
 def rank_table():
@@ -348,7 +365,7 @@ def owned_skus():
         return owned_items() if OWNED.exists() else []
 
 
-def add_purchase(sku):
+def add_purchase(sku, *, charged_wallet=None):
     """Record a bought SKU without discarding items granted by the local console."""
     skus = owned_skus()
     if sku and sku not in skus:
@@ -358,9 +375,27 @@ def add_purchase(sku):
         for it in sku_items(s):
             if it not in items:
                 items.append(it)
-    OWNED.parent.mkdir(parents=True, exist_ok=True)
-    OWNED_SKUS.write_text(json.dumps(skus), encoding='utf-8')
-    OWNED.write_text(json.dumps(items), encoding='utf-8')
+    updates = {OWNED_SKUS: skus, OWNED: items}
+    if charged_wallet is not None:
+        updates[WALLET] = charged_wallet
+    before = {p: p.read_bytes() if p.exists() else None for p in updates}
+    backup = ROOT.parent / 'backups' / ('purchase-%d' % __import__('time').time_ns())
+    backup.mkdir(parents=True)
+    for path, data in before.items():
+        if data is not None:
+            (backup / path.name).write_bytes(data)
+    written = []
+    try:
+        for path, value in updates.items():
+            _atomic_write(path, json.dumps(value).encode('utf-8'))
+            written.append(path)
+    except OSError:
+        for path in reversed(written):
+            if before[path] is None:
+                path.unlink()
+            else:
+                _atomic_write(path, before[path])
+        raise
     return sku_items(sku)
 
 
