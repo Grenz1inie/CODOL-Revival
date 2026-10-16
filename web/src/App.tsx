@@ -5,7 +5,7 @@ import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import {savedLanguage, translate, type Language} from './i18n';
 
-type LaunchSettings = {player_name: string; fov: number; max_fps: number};
+type LaunchSettings = {player_name: string; fov: number; max_fps: number; display_mode: string; resolution: string};
 type Settings = {skip_tutorial: boolean; launch?: LaunchSettings};
 type Profile = {user_id: string; level?: number; prestige?: number; currency?: number; premium?: number};
 type Installation = {state:string; path:string; version:string|null; reason:string; instance_id?:string};
@@ -33,9 +33,13 @@ function LaunchOptions({value, disabled, onSave, t}: {value: LaunchSettings; dis
   const [name, setName] = useState(value.player_name);
   const [fov, setFov] = useState(String(value.fov));
   const [fps, setFps] = useState(String(value.max_fps));
-  return <form onSubmit={event=>{event.preventDefault();void onSave({player_name:name, fov:Number(fov), max_fps:Number(fps)});}}>
+  const [displayMode, setDisplayMode] = useState(value.display_mode);
+  const [resolution, setResolution] = useState(value.resolution);
+  return <form onSubmit={event=>{event.preventDefault();void onSave({player_name:name, fov:Number(fov), max_fps:Number(fps), display_mode:displayMode, resolution});}}>
     <div className="launch-options">
       <div><label className="field-label" htmlFor="launch-name">{t('玩家名')}</label><TextField.Root id="launch-name" required minLength={3} maxLength={15} value={name} disabled={disabled} onChange={e=>setName(e.target.value)}/></div>
+      <div><label className="field-label" htmlFor="launch-display-mode">{t('显示模式')}</label><Select.Root value={displayMode} disabled={disabled} onValueChange={setDisplayMode}><Select.Trigger id="launch-display-mode"/><Select.Content><Select.Item value="windowed">{t('窗口化')}</Select.Item><Select.Item value="fullscreen">{t('全屏')}</Select.Item></Select.Content></Select.Root></div>
+      <div><label className="field-label" htmlFor="launch-resolution">{t('分辨率')}</label><Select.Root value={resolution} disabled={disabled} onValueChange={setResolution}><Select.Trigger id="launch-resolution"/><Select.Content>{['1280x720','1366x768','1600x900','1920x1080','2560x1440','3840x2160'].map(size=><Select.Item key={size} value={size}>{size.replace('x',' × ')}</Select.Item>)}</Select.Content></Select.Root></div>
       <div><label className="field-label" htmlFor="launch-fov">FOV</label><TextField.Root id="launch-fov" type="number" required min={60} max={120} step={1} value={fov} disabled={disabled} onChange={e=>setFov(e.target.value)}/></div>
       <div><label className="field-label" htmlFor="launch-fps">{t('帧率上限')}</label><TextField.Root id="launch-fps" type="number" required min={0} max={400} step={1} value={fps} disabled={disabled} onChange={e=>setFps(e.target.value)}/></div>
     </div>
@@ -176,6 +180,13 @@ export default function App() {
               <table><thead><tr><th>{t('版本号')}</th><th>{t('适配状态')}</th></tr></thead><tbody>{versions.map(version=><tr key={version.game_id+version.version}><td className="mono">{version.version}</td><td>{t(version.supported?'已接入':'尚未接入')}</td></tr>)}</tbody></table>
             </details>
           </section>
+          <section className="panel startup-panel" aria-labelledby="startup-title">
+            <div className="section-title"><SlidersHorizontal size={20}/><h2 id="startup-title">{t('启动选项')}</h2><span className="section-code">{t('下次启动生效')}</span></div>
+            {capability('launch_settings')?.available && settings?.launch ? <LaunchOptions key={status?.installation.instance_id} value={settings.launch} disabled={busy || !matched || !!status?.game_running} onSave={launch=>act('settings',{launch},'启动选项已保存')} t={t}/> : <>
+              <div className="switch-row"><label htmlFor="skip">{t('跳过新手引导')}</label><Switch id="skip" checked={settings?.skip_tutorial ?? true} disabled={busy || !settings || !matched || !capability('skip_tutorial')?.available} onCheckedChange={value=>act('settings',{skip_tutorial:value},'启动选项已保存')}/></div>
+              <p className="helper">{t('默认开启。训练服务尚未恢复；更改在下一次启动生效。')}</p>
+            </>}
+          </section>
           <section className="profile-strip" aria-label={t('玩家概况')}>
             <div><label className="label" htmlFor="account">{t('当前档案')}</label><Select.Root value={account} onValueChange={setAccount}><Select.Trigger id="account" placeholder={t('尚无档案')}/><Select.Content>{status?.profiles.map(p=><Select.Item key={p.user_id} value={p.user_id}>{p.user_id}</Select.Item>)}</Select.Content></Select.Root></div>
             <div><span className="label">{t('等级')}</span><strong>{profile?.level ?? t('待读取')}</strong></div>
@@ -241,13 +252,6 @@ export default function App() {
                 {serverError && <p className="helper server-error">{t(serverError)}</p>}
               </section>
             </aside>
-              <section className="panel startup-panel" aria-labelledby="startup-title">
-                <div className="section-title"><SlidersHorizontal size={20}/><h2 id="startup-title">{t('启动选项')}</h2><span className="section-code">{t('下次启动生效')}</span></div>
-                {capability('launch_settings')?.available && settings?.launch ? <LaunchOptions key={status?.installation.instance_id} value={settings.launch} disabled={busy || !matched || !!status?.game_running} onSave={launch=>act('settings',{launch},'启动选项已保存')} t={t}/> : <>
-                  <div className="switch-row"><label htmlFor="skip">{t('跳过新手引导')}</label><Switch id="skip" checked={settings?.skip_tutorial ?? true} disabled={busy || !settings || !matched || !capability('skip_tutorial')?.available} onCheckedChange={value=>act('settings',{skip_tutorial:value},'启动选项已保存')}/></div>
-                  <p className="helper">{t('默认开启。训练服务尚未恢复；更改在下一次启动生效。')}</p>
-                </>}
-              </section>
           </div>
           <footer className="usage"><ShieldCheck size={18}/><p>{t('先退出游戏，再修改数据，随后重新启动读取。写入前保留原档案备份。')}</p><button className="text-link" onClick={()=>{setPage('wiki');void openDoc('wiki/06-onboarding-profile.md');}}>{t('查看档案与引导说明')}<CaretRight/></button></footer>
         </div> : <div className="wiki-layout"><aside className="wiki-tree"><div className="tree-title">docs <span>{files.length} {t('个文件')}</span></div><FileTree files={files} active={doc.path} onSelect={openDoc}/></aside><article className="document"><div className="document-path"><FileText/>{doc.path || t('选择文档')}</div><p className="helper">{t('文档按原文显示。')}</p>{doc.path.endsWith('.md') ? <Markdown remarkPlugins={[remarkGfm]} components={{a:({href='',children})=>{

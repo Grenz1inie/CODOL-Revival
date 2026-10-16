@@ -18,7 +18,7 @@ from games.codol.versions.v3_19_26_22.client.preparation import CLIENT, LOADER, 
 from games.codol.versions.v3_19_26_22.client.settings import apply_options
 from games.codol.versions.v3_19_26_22.client.match import MatchSession
 
-LOADER_ARGS = ['--metadata', '--local-lobby', '--observe', '--windowed', '--local-http', '--english-resources']
+LOADER_ARGS = ['--metadata', '--local-lobby', '--observe', '--local-http', '--english-resources']
 
 
 def save(runtime, state):

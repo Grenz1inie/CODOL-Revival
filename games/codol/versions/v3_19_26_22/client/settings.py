@@ -5,10 +5,15 @@ import re
 import shutil
 import time
 
+DISPLAY_DEFAULTS = {'display_mode': 'windowed', 'resolution': '1280x720'}
+RESOLUTIONS = ('1280x720', '1366x768', '1600x900', '1920x1080', '2560x1440', '3840x2160')
+
 
 def validate(options):
-    if not isinstance(options, dict) or set(options) != {'player_name', 'fov', 'max_fps'}:
+    required = {'player_name', 'fov', 'max_fps'}
+    if not isinstance(options, dict) or not required <= set(options) or set(options) - required - DISPLAY_DEFAULTS.keys():
         raise ValueError('需要玩家名、FOV 和帧率上限')
+    options = {**DISPLAY_DEFAULTS, **options}
     name = options['player_name']
     # Match local_profile319.player_name, whose actual limit is 15, not the GUI's 16.
     if not isinstance(name, str) or not re.fullmatch(r'[A-Za-z0-9_\-\[\]]{3,15}', name):
@@ -16,7 +21,11 @@ def validate(options):
     for field, low, high in (('fov', 60, 120), ('max_fps', 0, 400)):
         if type(options[field]) is not int or not low <= options[field] <= high:
             raise ValueError(f'{field} 需为 {low}–{high} 的整数')
-    return dict(options)
+    if options['display_mode'] not in ('windowed', 'fullscreen'):
+        raise ValueError('显示模式需为窗口化或全屏')
+    if options['resolution'] not in RESOLUTIONS:
+        raise ValueError('请选择支持的分辨率')
+    return options
 
 
 def read_options(runtime):
@@ -55,4 +64,7 @@ def apply_options(runtime):
         temporary.write_text(json.dumps(profile) + '\n', encoding='utf-8')
         temporary.replace(path)
     # 3.19 0x62ca80 copies dvar 3291 into the room's automatic-start flag.
-    return f"+set cg_fov {options['fov']} +set com_maxfps {options['max_fps']} +set 3291 0"
+    width, height = options['resolution'].split('x')
+    return (f"+set cg_fov {options['fov']} +set com_maxfps {options['max_fps']} +set 3291 0 "
+            f"+set r_fullscreen {int(options['display_mode'] == 'fullscreen')} +set r_mode {options['resolution']} "
+            f"+set r_customWidth {width} +set r_customHeight {height}")

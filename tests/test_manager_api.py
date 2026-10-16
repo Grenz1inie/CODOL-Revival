@@ -147,14 +147,18 @@ class ManagerApiTests(unittest.TestCase):
         self.manager.catalog[0].update(version='3.19.26.22', adapter='games.codol.versions.v3_19_26_22.adapter')
         (self.game / 'IIPS/IIPSVersion.ini').write_text('3.19.26.22')
         self.call('installation/select', {'path': str(self.game)})
-        defaults = {'player_name': 'Player', 'fov': 90, 'max_fps': 0}
+        defaults = {'player_name': 'Player', 'fov': 90, 'max_fps': 0,
+                    'display_mode': 'windowed', 'resolution': '1280x720'}
         self.assertEqual(self.call('settings')['launch'], defaults)
         self.assertTrue(self.call('status')['capabilities']['launch_settings']['available'])
-        options = {'player_name': 'Tester_319', 'fov': 120, 'max_fps': 400}
+        options = {'player_name': 'Tester_319', 'fov': 120, 'max_fps': 400,
+                   'display_mode': 'fullscreen', 'resolution': '1920x1080'}
         self.assertEqual(self.call('settings', {'launch': options})['launch'], options)
         for field, values in [('player_name', ['', 'ab', 'x' * 16, '玩家', 'a b']),
                               ('fov', [59, 121, 90.5, True, '90']),
-                              ('max_fps', [-1, 401, False, None])]:
+                              ('max_fps', [-1, 401, False, None]),
+                              ('display_mode', ['borderless', '', True, None, [], {}]),
+                              ('resolution', ['1920x1080 +quit', '0x0', '123x456', '', 1080, None, [], {}])]:
             for value in values:
                 with self.subTest(field=field, value=value), self.assertRaises(HTTPError) as error:
                     self.call('settings', {'launch': {**options, field: value}})
