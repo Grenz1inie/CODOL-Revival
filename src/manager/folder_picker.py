@@ -13,7 +13,12 @@ $dialog.Description = 'Select the game installation directory'
 $dialog.ShowNewFolderButton = $false
 $owner = New-Object System.Windows.Forms.Form
 $owner.TopMost = $true
+$owner.ShowInTaskbar = $false
+$owner.Opacity = 0
 try {
+    # Realize and activate the owner so the native dialog inherits its z-order.
+    $owner.Show()
+    $owner.Activate()
     $path = if ($dialog.ShowDialog($owner) -eq [Windows.Forms.DialogResult]::OK) { $dialog.SelectedPath } else { $null }
     @{path=$path} | ConvertTo-Json -Compress
 } finally { $dialog.Dispose(); $owner.Dispose() }
