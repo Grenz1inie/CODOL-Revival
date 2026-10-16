@@ -1,6 +1,6 @@
 import unittest
 
-from benchmark_match import compare_states, percentiles, scenario
+from benchmark_match import compare_frames, compare_states, percentiles, scenario
 
 
 class MatchBenchmarkTests(unittest.TestCase):
@@ -26,6 +26,14 @@ class MatchBenchmarkTests(unittest.TestCase):
             compare_states({'origin': [1.0]}, {'origin': [1.1]})
         with self.assertRaises(AssertionError):
             compare_states({'health': 100}, {})
+
+    def test_wire_float_words_are_numeric_but_event_ids_remain_exact(self):
+        before = dict(time=1050, players=[], fields={'13': 2822545336, '1': 3}, wire='00')
+        after = dict(time=1050, players=[], fields={'13': 2822544928, '1': 3}, wire='01')
+        self.assertEqual(compare_frames([before], [after]), 0)
+        after['fields']['1'] = 4
+        with self.assertRaisesRegex(AssertionError, 'fields.1'):
+            compare_frames([before], [after])
 
 
 if __name__ == '__main__':

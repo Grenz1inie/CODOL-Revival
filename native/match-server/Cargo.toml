@@ -20,4 +20,3 @@ hex = "0.4"
 
 [profile.release]
 debug = 1
-

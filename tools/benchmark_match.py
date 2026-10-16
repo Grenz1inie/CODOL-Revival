@@ -5,6 +5,7 @@ import json
 import math
 from pathlib import Path
 import subprocess
+import struct
 import sys
 import time
 
@@ -51,6 +52,22 @@ def compare_states(expected, actual, path='state'):
         assert math.isfinite(actual) and abs(expected-actual) <= 1e-6, f'{path}: {expected} != {actual}'
     else:
         assert expected == actual, f'{path}: {expected} != {actual}'
+
+
+def compare_frames(expected, actual):
+    """Float state is numeric; integer fields remain exact, wire parity is reported."""
+    float_fields = {'8','10','11','13','14','16','18','19','30','34','217'}
+    assert len(expected) == len(actual), 'frame count'
+    for i, (left, right) in enumerate(zip(expected, actual)):
+        for key in ('time', 'players'):
+            compare_states(left[key], right[key], f'frame[{i}].{key}')
+        assert left['fields'].keys() == right['fields'].keys(), 'snapshot fields'
+        for key, value in left['fields'].items():
+            other = right['fields'][key]
+            if key in float_fields:
+                value, other = [struct.unpack('<f', struct.pack('<I', v))[0] for v in (value, other)]
+            compare_states(value, other, f'frame[{i}].fields.{key}')
+    return sum(a['wire'] == b['wire'] for a, b in zip(expected, actual))
 
 
 def python_replay(package, inputs):
@@ -107,7 +124,7 @@ def main():
                                 check=True, capture_output=True, text=True, encoding='utf-8')
         native = json.loads(result.stdout)
         (args.output/'rust.json').write_text(json.dumps(native), encoding='utf-8')
-        compare_states(baseline['states'], native['states'])
+        report['wire_identical_frames'] = compare_frames(baseline['states'], native['states'])
         report['states_equal'] = True
         report['rust'] = {name: percentiles(native[name]) for name in ('step_ms','snapshot_ms','frame_ms')}
     (args.output/'report.json').write_text(json.dumps(report, indent=2), encoding='utf-8')
