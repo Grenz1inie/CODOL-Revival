@@ -5,6 +5,7 @@
 | 当前可用范围、启动方式、目录 | [项目 README](../README.md) |
 | 从启动到大厅、引导和对局的技术说明 | [生命周期 Wiki](wiki/README.md) |
 | Web 控制器的启动、设计与接口边界 | [控制器说明](controller.md) |
+| 3.19.26.22启动包导入、隔离副本与验证状态 | [3.19启动接入](wiki/v3_19_26_22-startup.md) |
 | 环境、测试、协作与文档维护约定 | [CONTRIBUTING](../CONTRIBUTING.md) |
 | 认证阶段的原始验证记录 | [认证报告](reports/20261014-auth-verification.md) |
 | 首次选角及训练报错的原始记录 | [选角报告](reports/20261014-character-selection.md) |
