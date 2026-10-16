@@ -17,7 +17,7 @@ class MatchServerTests(unittest.TestCase):
     def test_late_tick_preserves_elapsed_simulation_time(self):
         from types import SimpleNamespace
         from unittest.mock import patch
-        from match_server.server import MatchServer
+        from reference_match.server import MatchServer
         from test_match_world import MatchWorldTests
         world = MatchWorldTests().world()
         with socket.socket(socket.AF_INET,socket.SOCK_DGRAM) as peer:
@@ -29,7 +29,7 @@ class MatchServerTests(unittest.TestCase):
                 server.next_tick = 10.05
                 for now,expected in ((10.04,1000),(10.05,1050),(10.25,1250),
                                      (10.25,1250),(10.30,1300)):
-                    with self.subTest(now=now),patch('match_server.server.time.monotonic',return_value=now):
+                    with self.subTest(now=now),patch('reference_match.server.time.monotonic',return_value=now):
                         server._tick()
                         self.assertEqual(world.time,expected)
             finally:
@@ -37,7 +37,7 @@ class MatchServerTests(unittest.TestCase):
 
     @unittest.skipUnless(sys.platform == 'win32', 'Windows UDP reset behavior')
     def test_closed_client_does_not_kill_endpoint_or_block_new_client_port(self):
-        from match_server.server import MatchServer
+        from reference_match.server import MatchServer
         reset = threading.Event()
         uid, sid, security = 1, b'12345678', bytes(16)
         def record(event, **fields):
@@ -64,7 +64,7 @@ class MatchServerTests(unittest.TestCase):
                 second.socket.close()
 
     def test_nat_intro_reply_precedes_dtls_without_claiming_a_reservation(self):
-        from match_server.server import MatchServer
+        from reference_match.server import MatchServer
         # bdNAT v2 INTRO: id, opaque client MAC, and two endpoints.
         intro=bytes.fromhex('0d020078563412001122334455667788997f00000131757f0000012a71')
         with MatchServer(1,b'12345678',bytes(16),netconst_checksum=55) as server:
@@ -86,8 +86,8 @@ class MatchServerTests(unittest.TestCase):
                 self.assertEqual(len(ack),38)
 
     def test_current_client_input_changes_independent_world_over_encrypted_udp(self):
-        from match_server.server import MatchServer
-        from match_server.input import usercmd_key, FIELDS
+        from reference_match.server import MatchServer
+        from reference_match.input import usercmd_key, FIELDS
         from test_match_world import MatchWorldTests
         world=MatchWorldTests().world()
         uid,sid,security=0x1234567812345678,b'12345678',bytes(range(16))
@@ -211,7 +211,7 @@ class MatchServerTests(unittest.TestCase):
                 peer.socket.close()
 
     def test_independent_udp_server_reaches_current_client_map_loading_context(self):
-        from match_server.server import MatchServer
+        from reference_match.server import MatchServer
         uid, sid, security = 0x1234567812345678, b'12345678', bytes(range(16))
         with MatchServer(uid, sid, security, netconst_checksum=0x11223344) as server:
             client, reader = ClientConnection423(), ClientReader423()

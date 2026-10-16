@@ -79,6 +79,7 @@ const english: Record<string, string> = {
   '未监听': 'Not listening',
   '认证': 'Auth',
   '大厅': 'Lobby',
+  '对局': 'Match',
   '随游戏自动启停。监听状态仅用于调试，不代表对局可玩。': 'Starts and stops with the game. Listeners are for debugging, not gameplay readiness.',
   '自动刷新 · 10 秒间隔': 'Auto refresh · 10s interval',
   '游戏状态读取失败': 'Game status unavailable',

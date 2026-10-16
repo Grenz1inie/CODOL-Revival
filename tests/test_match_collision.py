@@ -24,7 +24,7 @@ def actual_geometry():
 
 class MatchCollisionTests(unittest.TestCase):
     def test_visibility_query_can_stop_at_any_obstacle_without_changing_nearest_hits(self):
-        from match_server.collision import CollisionWorld
+        from reference_match.collision import CollisionWorld
         from test_match_world import room
         # Far obstacle comes first in the exported order. Shooting and ground
         # queries still need the nearer obstacle; visibility needs only a hit.
@@ -43,7 +43,7 @@ class MatchCollisionTests(unittest.TestCase):
                 self.assertAlmostEqual(world.trace_point(start,end,contents_mask=1)['fraction'],.3)
 
     def test_box_on_sloped_contact_cannot_round_through_the_surface(self):
-        from match_server.collision import CollisionWorld
+        from reference_match.collision import CollisionWorld
         # Reduced from the first Nuketown AI stall: the preceding sweep lands
         # on a slope, whose next contact time rounds a few ulps below zero.
         geometry = dict(materials=[dict(contents=1)],world_brushes=[],
@@ -76,7 +76,7 @@ class MatchCollisionTests(unittest.TestCase):
         self.assertTrue({15, 28, 65}.issubset({p['submodel'] for p in instances}))
         self.assertEqual(next(p for p in report['placements'] if p['submodel']==17)['activation'],
                          'baseline_has_no_collision_geometry')
-        from match_server.collision import CollisionWorld
+        from reference_match.collision import CollisionWorld
         ceiling = next(p for p in instances if p['submodel']==65)
         world = CollisionWorld(dict(g, world_brushes=[], world_partitions=[], static_models=[],
                                     submodel_instances=[ceiling]))
@@ -94,8 +94,8 @@ class MatchCollisionTests(unittest.TestCase):
             self.assertTrue(any('*65' in b for b in current['blockers']))
 
     def test_actual_frozen_export_is_ready_and_player_spawn_boxes_still_land(self):
-        from match_server.mapdata import load_map
-        from match_server.collision import CollisionWorld
+        from reference_match.mapdata import load_map
+        from reference_match.collision import CollisionWorld
         package = PACKAGE.parent/'killhouse-dm-v5'
         if not (package/'manifest.json').is_file():
             self.skipTest('local frozen-world export unavailable')
@@ -119,7 +119,7 @@ class MatchCollisionTests(unittest.TestCase):
             self.assertFalse(hit['start_solid'])
 
     def test_ready_is_scoped_to_the_frozen_world_not_optional_dynamics(self):
-        from match_server.collision import CollisionWorld
+        from reference_match.collision import CollisionWorld
         g = dict(world_brushes=[],world_partitions=[],static_models=[],
                  closure=dict(frozen_world_ready=True,blockers=[],
                               excluded=['glass destruction','scripted moving objects','capsule parity']))
@@ -133,7 +133,7 @@ class MatchCollisionTests(unittest.TestCase):
 
     @unittest.skipUnless((PACKAGE/'baseline.bin').is_file(), 'local map export unavailable')
     def test_dm_placed_brush_and_gate_terrain_have_real_world_collision(self):
-        from match_server.collision import CollisionWorld
+        from reference_match.collision import CollisionWorld
         g = actual_geometry()
         report = exporter.classify_submodels((PACKAGE/'entities.txt').read_bytes(),g)
         instances = exporter.select_dm_submodels(report,(PACKAGE/'baseline.bin').read_bytes(),g)
@@ -157,7 +157,7 @@ class MatchCollisionTests(unittest.TestCase):
         self.assertFalse(gate.trace_point([-853.6,-1192.4,32],[-853.6,-1191.4,32],contents_mask=1)['hit'])
 
     def test_rotated_submodel_keeps_oblique_brush_faces(self):
-        from match_server.collision import CollisionWorld
+        from reference_match.collision import CollisionWorld
         n = math.sqrt(.5)
         g = dict(planes=[[-n,0,n,0]],sides=[dict(plane=0,material=0)],materials=[dict(contents=1)],
             brushes=[dict(mins=[0,0,0],maxs=[2,2,2],first_side=0,side_count=1,
@@ -198,7 +198,7 @@ class MatchCollisionTests(unittest.TestCase):
         self.assertEqual(sum(len(g['submodels'][i['submodel']]['partitions']) for i in instances),93)
         self.assertEqual(sum(g['partitions'][p]['tri_count'] for i in instances
                              for p,_ in g['submodels'][i['submodel']]['partitions']),868)
-        from match_server.collision import CollisionWorld,_cross,_sub,_dot
+        from reference_match.collision import CollisionWorld,_cross,_sub,_dot
         for instance in instances:
             model = g['submodels'][instance['submodel']]
             if model['brushes']:
@@ -237,7 +237,7 @@ class MatchCollisionTests(unittest.TestCase):
 
     @unittest.skipUnless((PACKAGE/'gfxworld.bin').is_file(), 'local map export unavailable')
     def test_spatial_candidates_preserve_actual_map_results_and_reduce_work(self):
-        from match_server.collision import CollisionWorld
+        from reference_match.collision import CollisionWorld
         world = CollisionWorld(actual_geometry())
         # An exhaustive candidate provider is the old scan path: compare
         # public query results, including ties, normals and start_solid flags.
@@ -257,7 +257,7 @@ class MatchCollisionTests(unittest.TestCase):
         self.assertLess(sum(map(len,candidates)),sum(map(len,exhaustive))//20)
 
     def test_repeated_triangle_box_queries_reuse_sat_projections(self):
-        import match_server.collision as collision
+        import reference_match.collision as collision
         geometry = dict(materials=[dict(contents=1)],world_brushes=[],
             vertices=[[0,0,0],[4,0,0],[0,4,0]],triangles=[[0,1,2]],
             partitions=[dict(first_tri=0,tri_count=1)],world_partitions=[[0,0]],
@@ -273,7 +273,7 @@ class MatchCollisionTests(unittest.TestCase):
             self.assertEqual(projections.call_count,count)
 
     def test_long_diagonal_only_expands_geometry_on_the_swept_segment(self):
-        import match_server.collision as collision
+        import reference_match.collision as collision
         vertices=[]
         for x,y in [(20+i,300+i) for i in range(40)]+[(249,249)]:
             vertices.extend(((x,y,0),(x+3,y,0),(x,y+3,0)))
@@ -308,7 +308,7 @@ class MatchCollisionTests(unittest.TestCase):
         self.assertEqual(len(model['surfaces'][0]['triangles']), 142)
         # Independent expected surface height comes from the serialized plane,
         # not its AABB (top is 279.93147). The true water-tank lid is lower.
-        from match_server.collision import CollisionWorld
+        from reference_match.collision import CollisionWorld
         instance = dict(g['static_models'][0],geometry=str(0x3259a729))
         world = CollisionWorld(dict(g,world_brushes=[],world_partitions=[],
                                     static_models=[instance],xmodels={str(0x3259a729):model}))
@@ -331,7 +331,7 @@ class MatchCollisionTests(unittest.TestCase):
         with patch.object(world,'_candidates',return_value=([],[],[0])), \
              patch.object(spatial,'query',return_value=list(range(len(rows)))):
             self.assertEqual(world.trace_point([x,y,z+3],[x,y,z-3],contents_mask=1),hit)
-            import match_server.collision as collision
+            import reference_match.collision as collision
             with patch.object(collision,'_projections',wraps=collision._projections) as projections:
                 repeated = world.trace_box([x,y,z+3],[x,y,z-3],mins=(-.1,-.1,0),maxs=(.1,.1,.2),contents_mask=1)
                 self.assertEqual(repeated,box)
@@ -375,7 +375,7 @@ class MatchCollisionTests(unittest.TestCase):
                                             for i in range(3)))
         # Exercise one actual placement for EVERY resolved reference, including
         # rotated/scaled and multi-bone models, through both public consumers.
-        from match_server.collision import CollisionWorld,model_to_world,_cross,_sub,_dot
+        from reference_match.collision import CollisionWorld,model_to_world,_cross,_sub,_dot
         for key,model in g['xmodels'].items():
             instance = next(m for m in g['static_models'] if m['geometry'] == key)
             surface = next(s for s in model['surfaces'] if s['triangles'] and s['contents'])
@@ -392,7 +392,7 @@ class MatchCollisionTests(unittest.TestCase):
                                                  contents_mask=surface['contents'])['kind'],'static_model')
 
     def test_static_triangle_transform_rotation_scale_and_not_bounds(self):
-        from match_server.collision import CollisionWorld
+        from reference_match.collision import CollisionWorld
         geometry = dict(materials=[],world_brushes=[],world_partitions=[],closure=dict(blockers=[]),
             static_models=[dict(model_reference=123,geometry='123',origin=[10,20,30],
                                 inverse_scaled_axis=[0,.5,0,-.5,0,0,0,0,.5],
@@ -412,7 +412,7 @@ class MatchCollisionTests(unittest.TestCase):
 
     @unittest.skipUnless((PACKAGE / 'gfxworld.bin').is_file(), 'local map export unavailable')
     def test_existing_package_gets_hashed_geometry_grounding_and_selected_center(self):
-        from match_server.mapdata import load_map
+        from reference_match.mapdata import load_map
         with tempfile.TemporaryDirectory(dir=PACKAGE.parent) as folder:
             output = Path(folder) / 'map'
             report = exporter.export_geometry_package(PACKAGE, output)
@@ -452,7 +452,7 @@ class MatchCollisionTests(unittest.TestCase):
                 load_map(output)
 
     def test_point_trace_clips_oblique_planes_and_triangle_interior(self):
-        from match_server.collision import CollisionWorld
+        from reference_match.collision import CollisionWorld
         n = math.sqrt(.5)
         geometry = dict(physics_ready=False, planes=[[-n,0,n,0]], sides=[dict(plane=0,material=0)],
             materials=[dict(contents=1)],
@@ -495,7 +495,7 @@ class MatchCollisionTests(unittest.TestCase):
 
     @unittest.skipUnless((PACKAGE / 'gfxworld.bin').is_file(), 'local map export unavailable')
     def test_actual_brush_ground_and_triangle_surface_are_consumed(self):
-        from match_server.collision import CollisionWorld
+        from reference_match.collision import CollisionWorld
         g = actual_geometry()
         world = CollisionWorld(g)
         # Authored DM spawn 79, supported by world brush 7537's z=4 face.

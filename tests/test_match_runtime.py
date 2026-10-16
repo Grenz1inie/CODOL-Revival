@@ -42,7 +42,7 @@ def package(directory, map_name='mp_killhouse_sh', weapon_capacity=900):
 
 class MatchRuntimeTests(unittest.TestCase):
     def test_full_weapon_registry_is_rejected_before_publishing_a_recipe(self):
-        from match_server.runtime import load_matchmaking
+        from reference_match.runtime import load_matchmaking
         with tempfile.TemporaryDirectory() as temp:
             path=Path(temp)/'match'
             package(path,weapon_capacity=352)
@@ -50,7 +50,7 @@ class MatchRuntimeTests(unittest.TestCase):
                 load_matchmaking(path,port=0)
 
     def test_composed_acr_reaches_client_config_selection_and_separate_ammo_keys(self):
-        from match_server.runtime import load_matchmaking
+        from reference_match.runtime import load_matchmaking
         from client_reader423 import ClientReader423
         from story_wire423 import encode_snapshot as baseline
         with tempfile.TemporaryDirectory() as temp:
@@ -84,7 +84,7 @@ class MatchRuntimeTests(unittest.TestCase):
                 service.close()
 
     def test_nuketown_package_drives_both_connection_and_client_map_identity(self):
-        from match_server.runtime import load_matchmaking
+        from reference_match.runtime import load_matchmaking
         from client_reader423 import ClientReader423
         with tempfile.TemporaryDirectory() as temp:
             path=Path(temp)/'nuketown'
@@ -103,7 +103,7 @@ class MatchRuntimeTests(unittest.TestCase):
                 service.close()
 
     def test_package_registration_reaches_the_independent_udp_endpoint(self):
-        from match_server.runtime import load_matchmaking
+        from reference_match.runtime import load_matchmaking
         with tempfile.TemporaryDirectory() as temp:
             path=Path(temp)/'match'
             package(path)
@@ -117,7 +117,7 @@ class MatchRuntimeTests(unittest.TestCase):
                 service.close()
 
     def test_standalone_package_creates_grounded_two_player_world(self):
-        from match_server.runtime import load_world
+        from reference_match.runtime import load_world
         with tempfile.TemporaryDirectory() as temp:
             path=Path(temp)/'match'
             package(path)
@@ -134,7 +134,7 @@ class MatchRuntimeTests(unittest.TestCase):
                 load_world(path)
 
     def test_unready_map_is_not_published(self):
-        from match_server.runtime import load_world
+        from reference_match.runtime import load_world
         with tempfile.TemporaryDirectory() as temp:
             path=Path(temp)/'match'
             package(path)

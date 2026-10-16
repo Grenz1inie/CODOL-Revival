@@ -386,7 +386,7 @@ def triangle_vertices(record):
     accept s>=0, t>=0, s+t<=1. Static triangles are already model-space,
     even when boneIdx!=0; only XModelTraceLineAnimated applies bone motion.
     """
-    from match_server.collision import _cross, _dot
+    from reference_match.collision import _cross, _dot
     n,s,t = record[:3],record[4:7],record[8:11]
     st,tn,ns = _cross(s,t),_cross(t,n),_cross(n,s)
     det = _dot(n,st)
@@ -404,7 +404,7 @@ def install_static_models(geometry, world, model_zones=None):
     are replayed; unsupported shared references fail rather than invent data.
     """
     from index_story_zone import read_assets
-    from match_server.collision import model_to_world
+    from reference_match.collision import model_to_world
     from itertools import product
     aliases = read_static_models(world,geometry['provenance']['plane_offset'],
                                  geometry['provenance']['plane_reference'])

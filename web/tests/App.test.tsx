@@ -26,6 +26,7 @@ beforeEach(() => {
     {name: 'auth', protocol: 'TCP', port: 443, listening: false, conflict: false},
     {name: 'lobby', protocol: 'TCP', port: 3074, listening: false, conflict: false},
     {name: 'stun', protocol: 'UDP', port: 3074, listening: false, conflict: false},
+    {name: 'match', protocol: 'UDP', port: 28970, listening: false, conflict: false},
   ]};
   running = false;
   profiles = [profile];
@@ -52,12 +53,14 @@ beforeEach(() => {
 });
 
 describe('服务器控制与语言切换', () => {
-  it('服务器只读显示 PID 与三个监听状态，不提供启停按钮', async () => {
+  it('服务器只读显示 PID 与四个监听状态，区分对局和STUN', async () => {
     serverState = {...serverState,running:true,pid:123,ready:true,ports:serverState.ports.map(p=>({...p,listening:true}))};
     await ready();
     const panel = screen.getByRole('region',{name:'模拟服务器'});
     expect(within(panel).getByText('PID 123')).toBeTruthy();
-    expect(within(panel).getAllByText('监听中')).toHaveLength(3);
+    expect(within(panel).getAllByText('监听中')).toHaveLength(4);
+    expect(within(panel).getByText('对局')).toBeTruthy();
+    expect(within(panel).getByText('UDP 28970')).toBeTruthy();
     expect(within(panel).queryByRole('button')).toBeNull();
   });
 

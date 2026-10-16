@@ -4,9 +4,9 @@
 
 ## 当前进度
 
-**2026-10-15核弹小镇人机验收版**：复用原有“冲锋团队竞技 → 核弹小镇”，不新增分类或赛单。独立服使用本版本隔离资源包，一名真人、一个AI、固定ACR、自由混战；握手/快照读取和离线导航检查已通过，完整游戏的加载、出生、互射及重生待用户验收。入口与边界见 [独立服 Wiki](docs/wiki/11-independent-match-server.md#核弹小镇人工验收)；9V9等其他玩法尚未接入独立服。
+**2026-10-16 Rust独立对局服**：碰撞、移动、AI和UDP协议已迁入独立Rust进程，Python保留网页、认证、大厅和档案，现有启停流程已接入并重载。核弹小镇同输入400帧的整帧P99由91.60ms降至1.62ms，状态在约定精度内一致；这是离线性能结果，Rust版游戏手感待人工验收。仍从“冲锋团队竞技 → 核弹小镇”进入，一名真人、一个AI、固定ACR、自由混战，不新增赛单。构建、证据与验收步骤见 [Rust迁移 Wiki](docs/wiki/12-rust-match-server.md)。9V9等其他玩法未接入。
 
-2026-10-14 12:40 已实际进入游戏大厅，13:03在整理目录并重新启动游戏、服务后再次验证成功，显示用户选择的第二个角色“马库斯”和昵称 johnClient。组合修复包括命令行引导覆盖及本地公开档案读取，详情见 [新手引导与角色资料](docs/wiki/06-onboarding-profile.md)。训练、匹配、对局服务器仍未实现；大厅部分内容区为空。
+2026-10-14 12:40 已实际进入游戏大厅，13:03在整理目录并重新启动游戏、服务后再次验证成功，显示用户选择的第二个角色“马库斯”和昵称 johnClient。组合修复包括命令行引导覆盖及本地公开档案读取，详情见 [新手引导与角色资料](docs/wiki/06-onboarding-profile.md)。训练和原版剧情仍未恢复。
 
 已验证：TLS 认证 → 协议210加密大厅 → 发布文件 → 公开档案读取 → 游戏大厅。服务端实现了公开档案保存/读取，21项单元及内存协议测试通过。初次大厅验证使用选角时抓到的原始档案；真实客户端后续修改的保存验收单独记录，不把测试通过当作全部游戏数据持久化完成。
 
@@ -46,16 +46,20 @@ python -B tools/check-doc-links.py
 
 Python 依赖见 [requirements.txt](requirements.txt)。启动脚本优先使用 `.venv`，否则使用 PATH；也可给 `Start-Services.ps1` 传 `-PythonPath`。新环境安装、协作和验收规则见 [CONTRIBUTING](CONTRIBUTING.md)。本机已有依赖和本地证书，整理目录没有重新安装依赖或替换证书。
 
+首次运行或修改Rust源码后，在根目录运行 `powershell -NoProfile -File scripts/Invoke-MatchCargo.ps1 build --release`。工具链和构建产物位于项目`runtime/`；运行已构建的对局服不需要临时编译。缺少Rust产物不会回退到Python对局实现。
+
 ## 目录
 
 ```text
 src/                         认证、大厅、档案、货币与控制器 HTTP 服务
+native/match-server/          Rust对局服、协议、碰撞、移动与AI
 data/                        有来源哈希的商城静态目录，不参与代码索引
 web/                         控制器前端源码、构建配置与依赖锁文件
 scripts/                     游戏和服务的启动/停止入口
 Start.ps1                    一键预检查、启动服务、控制器和游戏
 tests/fixtures/               独立测试及受控样本
 tools/                       REA、证书、文档校验工具
+  reference_match/           冻结的Python离线对照与资源导出依赖
 docs/wiki/                   按游戏流程组织的技术 Wiki
 docs/reports/                带日期的验证、目录搬迁记录
 research/evidence/           本机反编译、快照、原始档案样本

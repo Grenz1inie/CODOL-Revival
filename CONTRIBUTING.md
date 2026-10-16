@@ -17,9 +17,26 @@ python -m venv .venv
 
 `python -B tools/check-startup.py` 只读检查 Python 依赖、启动文件、前端产物、游戏地址配置和本地证书，失败返回非零退出码。缺少依赖或前端产物时按输出命令补齐；证书与游戏配置的准备见 [地址重定向与 TLS](docs/wiki/03-redirection-tls-auth.md)。该检查不会安装依赖或修改配置。
 
+Rust对局服使用项目内1.99.1 GNU工具链；`scripts/Invoke-MatchCargo.ps1`设置本次进程环境，
+构建产物写入`runtime/build/rust-match/`，不更改系统PATH。依赖已经缓存时可加`--offline`：
+
+```powershell
+powershell -NoProfile -File scripts/Invoke-MatchCargo.ps1 build --release
+powershell -NoProfile -File scripts/Invoke-MatchCargo.ps1 test --offline --release
+$env:PYTHONPATH='src;tools;tests'
+python -B -m unittest test_match_process test_rust_match_runtime test_independent_matchmaking test_controller_services
+```
+
+当前生产只运行Rust对局服；`tools/reference_match/`是冻结的迁移对照和资源导出依赖。
+不要在其中继续开发对局行为或增加生产回退。基准、浮点容差和人工验收边界见
+[Rust迁移](docs/wiki/12-rust-match-server.md)。原生UDP集成`test_rust_match_server`另需本机
+3.3.3.3客户端、核弹小镇隔离资源包与已构建Rust程序，只读资源并使用临时端口，
+不操作正式游戏或存档。
+
 ## 文件归属
 
 - `src/`：协议与本地服务实现。导入模块不得启动监听器。
+- `native/match-server/`：Rust独立对局进程、Cargo锁文件与合成测试；游戏资源和生成二进制不入Git。
 - `data/`：当前客户端提取并解码的商城静态目录；保留来源哈希，不参与代码索引。`tools/export-marketplace.py` 从本地只读证据重建，运行服务无需管理员读取。
 - `web/`：控制器前端；`npm ci` 安装锁定依赖，`npm run build` 同时做 TypeScript 检查和生产构建。`node_modules/`、`dist/` 不进入版本控制。
 - `scripts/`：面向操作者的 PowerShell 启停入口，路径从项目位置推导。
@@ -35,7 +52,7 @@ python -m venv .venv
 
 游戏侧另有 [客户端逆向代码索引](research/client-code-index/README.md)，注册名 `CODOL-Client-RE`。它索引随包脚本和已有 REA 伪代码，独立于下面的自研服务索引。
 
-索引根目录是 `CODOL-Revival`，不是相邻的游戏目录。GitNexus 的 `.gitnexusignore` 仅放行 `src/`、`tests/`、`tools/`、`scripts/`、`web/`，排除前端依赖和产物；CodeGraph 的 `codegraph.json` 排除运行数据、归档、研究材料、文档及测试二进制样本。新增顶层目录时检查这两份配置，避免引入第三方源码或数据。
+索引根目录是 `CODOL-Revival`，不是相邻的游戏目录。GitNexus 的 `.gitnexusignore` 仅放行 `src/`、`native/`、`tests/`、`tools/`、`scripts/`、`web/`，排除前端依赖和产物；CodeGraph 的 `codegraph.json` 排除运行数据、归档、研究材料、文档及测试二进制样本。新增顶层目录时检查这两份配置，避免引入第三方源码或数据。
 
 索引数据库位于 `.gitnexus/` 和 `.codegraph/`，已加入 `.gitignore`；保留配置文件即可在其他机器重建。项目已初始化Git并分阶段提交，可按当前提交刷新索引；索引未更新时以当前源码为准。
 

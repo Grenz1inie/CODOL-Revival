@@ -1,11 +1,12 @@
 import base64
 from pathlib import Path
 import struct
+import tempfile
 import unittest
 
 from client_matchmaking423 import ClientMatchmaking423
 from client_playlist423 import ClientPlaylist423
-import test_match_world as fixture
+from test_match_runtime import package
 
 
 def message(recipient,text):
@@ -14,10 +15,18 @@ def message(recipient,text):
 
 
 class IndependentMatchmakingTests(unittest.TestCase):
+    def service(self,map_name='mp_killhouse_sh'):
+        from match_server.runtime import load_matchmaking
+        temp=tempfile.TemporaryDirectory()
+        self.addCleanup(temp.cleanup)
+        path=Path(temp.name)/'match'
+        package(path,map_name)
+        service=load_matchmaking(path,port=0)
+        self.addCleanup(service.close)
+        return service
+
     def test_nuketown_accepts_fixed_playlist_rotation_and_rejects_other_maps(self):
-        from match_server.matchmaking import IndependentMatchmaking
-        service=IndependentMatchmaking(fixture.MatchWorldTests().world(),netconst_checksum=55,
-                                      map_name='mp_nuked',port=0)
+        service=self.service('mp_nuked')
         try:
             service.find(1,bytes.fromhex('08010000000800000000080a000000079b1ff0d600'))
             reader=ClientPlaylist423()
@@ -41,14 +50,13 @@ class IndependentMatchmakingTests(unittest.TestCase):
             service.close()
 
     def test_live_independent_endpoint_is_published_and_room_is_bound_to_killhouse(self):
-        from match_server.matchmaking import IndependentMatchmaking
-        service=IndependentMatchmaking(fixture.MatchWorldTests().world(),netconst_checksum=55,port=0)
+        service=self.service()
         reader=ClientMatchmaking423()
         query=bytes.fromhex('08010000000800000000080a000000079b1ff0d600')
         uid=0x1234567812345678
         try:
             candidate,=service.find(uid,query)
-            self.assertTrue(service.server.thread.is_alive())
+            self.assertTrue(service.server.is_alive())
             ok,state,_=reader.candidate(candidate)
             self.assertTrue(ok)
             self.assertEqual(struct.unpack_from('<H',state,0x1c)[0],service.server.port)
@@ -69,12 +77,11 @@ class IndependentMatchmakingTests(unittest.TestCase):
         finally:
             service.close()
 
-    def test_invalid_query_never_creates_or_publishes_a_socket(self):
-        from match_server.matchmaking import IndependentMatchmaking
-        service=IndependentMatchmaking(fixture.MatchWorldTests().world(),netconst_checksum=55,port=0)
+    def test_invalid_query_never_reserves_or_publishes_the_process(self):
+        service=self.service()
         with self.assertRaises(ValueError):
             service.find(1,b'invalid')
-        self.assertIsNone(service.server)
+        self.assertIsNone(service.owner)
         service.close()
 
 

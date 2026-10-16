@@ -11,7 +11,7 @@ import time
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'src'))
-from match_server.transport import Association
+from reference_match.transport import Association
 
 
 def main():

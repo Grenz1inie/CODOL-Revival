@@ -3,7 +3,7 @@ import math
 import struct
 import unittest
 
-from match_server.collision import CollisionWorld
+from reference_match.collision import CollisionWorld
 
 
 def room(*boxes):
@@ -23,7 +23,7 @@ def command(time, *, direction=0, buttons=0, yaw=0, pitch=0):
 
 class MatchWorldTests(unittest.TestCase):
     def world(self, *, geometry=None, bot=False, second=(200,0,40)):
-        from match_server.world import World, Weapon
+        from reference_match.world import World, Weapon
         return World(geometry or room(),
                      [dict(origin=(0,0,40),angles=(0,0,0)),
                       dict(origin=second,angles=(0,180,0))],

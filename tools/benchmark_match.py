@@ -71,7 +71,7 @@ def compare_frames(expected, actual):
 
 
 def python_replay(package, inputs):
-    from match_server.runtime import load_world
+    from reference_match.runtime import load_world
     start = time.perf_counter()
     world = load_world(package)
     startup = (time.perf_counter()-start)*1000

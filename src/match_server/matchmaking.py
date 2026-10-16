@@ -1,25 +1,21 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
-"""Publish and book one independent map through the existing lobby."""
+"""Lobby admission for the independent Rust process; room wire behavior is unchanged."""
 import base64
 import secrets
 import threading
 
 from dw_matchmaking import booking_push, server_result, parse_query, parse_room_message
-from .server import MatchServer
 
 
 class IndependentMatchmaking:
     server_id=0x3333000000000001
 
-    def __init__(self, world, *, netconst_checksum, configstrings=(), aliases=(), recipes=(), port=28970, record=None,
-                 map_name='mp_killhouse_sh'):
-        self.world=world
-        self.map_name=map_name
-        self.options=dict(netconst_checksum=netconst_checksum,configstrings=configstrings,
-            aliases=aliases,recipes=recipes,position_base=world.position_base,port=port,record=record,
-            map_name=map_name)
+    def __init__(self, process, *, record=None):
+        self.server=process
+        self.map_name=process.map_name
+        self.options=dict(netconst_checksum=process.netconst_checksum,record=record)
         self.security_id,self.security_key=secrets.token_bytes(8),secrets.token_bytes(16)
-        self.owner,self.server=None,None
+        self.owner=None
         self.lock=threading.Lock()
 
     def find(self, owner, parameters):
@@ -31,12 +27,11 @@ class IndependentMatchmaking:
         with self.lock:
             if self.owner not in (None,owner):
                 raise ValueError('local instance already belongs to another player')
-            if self.server is None:
-                self.server=MatchServer(owner,self.security_id,self.security_key,world=self.world,**self.options)
-                self.server.__enter__()
-                self.owner=owner
-            if not self.server.thread.is_alive():
+            if not self.server.is_alive():
                 return ()
+            if self.owner is None:
+                self.server.reserve(owner,self.security_id,self.security_key)
+                self.owner=owner
             return (server_result(port=self.server.port,server_id=self.server_id,
                                   security_id=self.security_id,security_key=self.security_key),)
 
@@ -44,7 +39,7 @@ class IndependentMatchmaking:
         recipient,text=parse_room_message(parameters)
         with self.lock:
             if (owner is None or owner != self.owner or recipient != self.server_id
-                    or self.server is None or not self.server.thread.is_alive()):
+                    or not self.server.is_alive()):
                 raise ValueError('no live reservation for this sender/recipient')
             if text.startswith('mmbook '):
                 fields=text.split()
@@ -58,9 +53,7 @@ class IndependentMatchmaking:
                 playlists=[c for c in commands if c[0]=='playlist']
                 rotations=[c for c in commands if c[0]=='start_map_rotate_once']
                 if playlists or rotations:
-                    # 0x6e6bf0 has a playlist-rotation branch without a map command.
-                    # 0x613330 compacts published ID 110 to wire index 25 in our
-                    # catalogue. The native-parser regression protects that mapping.
+                    # Published ID 110 -> native wire playlist 25; rotation zero is valid.
                     if (self.map_name!='mp_nuked' or maps or playlists!=[['playlist','25']]
                             or len(rotations)!=1 or len(rotations[0])!=2
                             or not rotations[0][1].isdecimal() or not 0<=int(rotations[0][1])<1<<32):
@@ -71,12 +64,10 @@ class IndependentMatchmaking:
                     setting=command[1:] if command[0]=='set' else command
                     if setting[0:1]==['g_gametype'] and setting!=['g_gametype','dm']:
                         raise ValueError('this instance only runs dm')
-                # Other client text is never executed as console commands.
                 if self.options['record']:
                     self.options['record']('match_start',map=self.map_name,gametype='dm',command=text)
                 return None
             raise ValueError('unsupported local booking command')
 
     def close(self):
-        if self.server is not None:
-            self.server.close()
+        self.server.close()

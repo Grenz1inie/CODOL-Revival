@@ -39,7 +39,7 @@ def zone_fixture(assets):
 
 class MatchMapExportTests(unittest.TestCase):
     def test_network_position_window_ignores_scenery_but_rejects_wide_entity_positions(self):
-        from match_server.snapshot import encode_player_entity
+        from reference_match.snapshot import encode_player_entity
         state = bytearray(272)
         struct.pack_into('<ii', state, 0, 99, 6)
         struct.pack_into('<3f', state, 24, 100, 200, 300)
@@ -105,7 +105,7 @@ class MatchMapExportTests(unittest.TestCase):
     @unittest.skipUnless(CLIENT.is_file() and (STAGE / 'startup-assets/chinese/mp_killhouse_sh_const.ff').is_file(),
                          'local licensed Killhouse resources unavailable')
     def test_export_is_self_contained_and_never_claims_client_ncs_or_complete_collision(self):
-        spec = importlib.util.spec_from_file_location('mapdata', ROOT / 'src/match_server/mapdata.py')
+        spec = importlib.util.spec_from_file_location('mapdata', ROOT / 'tools/reference_match/mapdata.py')
         loader = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(loader)
         zones = {n: actual_zone(n) for n in ('mp_killhouse_sh', 'mp_killhouse_sh_const')}

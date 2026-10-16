@@ -43,8 +43,8 @@ class MatchLoadoutTests(unittest.TestCase):
 
     def test_nuketown_bundle_requires_its_registry_and_preserves_navigation(self):
         from export_match_loadout import export_loadout
-        from match_server.mapdata import load_map
-        from match_server.navigation import Navigation
+        from reference_match.mapdata import load_map
+        from reference_match.navigation import Navigation
         base = ROOT / 'research/experiments/independent-match'
         package = base / 'nuketown-dm-v1'
         registration = base / 'nuketown-registration-v1'
@@ -70,7 +70,7 @@ class MatchLoadoutTests(unittest.TestCase):
 
     def test_bundle_extracts_current_header_by_its_real_name_and_keeps_sources_unchanged(self):
         from export_match_loadout import export_loadout
-        from match_server.mapdata import load_map
+        from reference_match.mapdata import load_map
         import hashlib
         package=ROOT/'research/experiments/independent-match/killhouse-dm-v3'
         zone=ROOT/'research/experiments/story-native/zone-assets/common_mp/zone.bin'
@@ -100,7 +100,7 @@ class MatchLoadoutTests(unittest.TestCase):
 
     @unittest.skipUnless(HEADERS.is_file(),'local current-client weapon fixture unavailable')
     def test_current_acr_header_supplies_combat_parameters_without_legacy_layout(self):
-        from match_server.loadout import read_weapon
+        from reference_match.loadout import read_weapon
         header=bytes.fromhex(json.loads(HEADERS.read_text())['acr_mp'])
         weapon=read_weapon(header,index=5)
         self.assertEqual((weapon.index,weapon.ammo_type,weapon.clip_type),(5,5,5))

@@ -195,8 +195,8 @@ export default function App() {
               <section className="panel server-panel" aria-labelledby="server-title" aria-busy={serverLoading}>
                 <div className="section-title"><HardDrives size={20}/><h2 id="server-title">{t('模拟服务器')}</h2><span className="section-code mono">{server?.pid ? `PID ${server.pid}` : 'PID —'}</span></div>
                 <div className={'server-state ' + (server?.ready?'ready':'')}><span className="state-dot"/>{t(serverLoading && !server && !serverError ? '读取中' : serverError ? '状态读取失败' : server?.ports.some(p=>p.conflict) ? '端口被占用' : server?.ready ? '运行中' : server?.running ? '部分未监听' : '已停止')}<span className="section-code">{t('自动刷新 · 10 秒间隔')}</span></div>
-                <div className="server-ports">{(server?.ports || [{name:'auth',protocol:'TCP',port:443},{name:'lobby',protocol:'TCP',port:3074},{name:'stun',protocol:'UDP',port:3074}]).map(port=><div key={port.name}>
-                  <span>{t(port.name==='auth'?'认证':port.name==='lobby'?'大厅':'STUN')} <small className="mono">{port.protocol} {port.port}</small></span>
+                <div className="server-ports">{(server?.ports || [{name:'auth',protocol:'TCP',port:443},{name:'lobby',protocol:'TCP',port:3074},{name:'stun',protocol:'UDP',port:3074},{name:'match',protocol:'UDP',port:28970}]).map(port=><div key={port.name}>
+                  <span>{t(port.name==='auth'?'认证':port.name==='lobby'?'大厅':port.name==='match'?'对局':'STUN')} <small className="mono">{port.protocol} {port.port}</small></span>
                   <span className={'port-state ' + ('listening' in port && port.listening ? 'listening':'')}>{t(!server ? '—' : 'conflict' in port && port.conflict ? '端口被占用' : 'listening' in port && port.listening ? '监听中':'未监听')}</span>
                 </div>)}</div>
                 <p className="helper">{t('随游戏自动启停。监听状态仅用于调试，不代表对局可玩。')}</p>

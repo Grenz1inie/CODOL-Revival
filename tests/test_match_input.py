@@ -10,7 +10,7 @@ class MatchInputTests(unittest.TestCase):
         cls.client = ClientReader423()
 
     def test_unchanged_short_and_full_commands_match_client_writer(self):
-        from match_server.input import decode_usercmd
+        from reference_match.input import decode_usercmd
         cases = [({'time':5}, {'time':5}),
                  ({'time':20,'buttons':1,'forward':127,'right':-127,'pitch':65535,'yaw':16384},
                   {'time':20,'buttons':1,'direction':9,'pitch':65535,'yaw':16384}),
@@ -31,7 +31,7 @@ class MatchInputTests(unittest.TestCase):
                 base, previous = command, result
 
     def test_move_message_preserves_interleaved_bits_and_trailer(self):
-        from match_server.input import decode_move
+        from reference_match.input import decode_move
         values={'time':1000,'buttons':1,'forward':127,'weapon':7}
         wire=self.client.usercmd(values,key=55,move=True)
         commands=decode_move(wire,key=55)
@@ -45,7 +45,7 @@ class MatchInputTests(unittest.TestCase):
 
     def test_snapshot_default_command_matches_actual_client(self):
         import struct
-        from match_server.input import default_usercmd, FIELDS
+        from reference_match.input import default_usercmd, FIELDS
         word=lambda n:struct.unpack('<I',struct.pack('<f',n))[0]
         for state in ({},{39:7,40:9,53:4,19:word(90),18:word(-45)},
                       {54:0x1000,28:8,41:word(0.5),70:word(30),45:word(15)}):

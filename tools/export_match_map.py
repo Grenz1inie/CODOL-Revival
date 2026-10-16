@@ -593,7 +593,7 @@ def select_dm_submodels(report, baseline, geometry):
     This is a declared frozen-mode selection, not proof of script execution or
     live visibility. Original model contents remain authoritative for masks.
     """
-    from match_server.collision import placement_axis,transform_vector
+    from reference_match.collision import placement_axis,transform_vector
     by_model = {}
     for row in read_baselines(baseline):
         state = row['state']
@@ -831,7 +831,7 @@ def select_position(geometry, spawns, *, baseline, navigation=()):
 
 
 def enrich_geometry(manifest, collision, data, world, spawns, save_json, *, model_zones=None, baseline, navigation=()):
-    from match_server.collision import CollisionWorld
+    from reference_match.collision import CollisionWorld
     from match_xmodel423 import install_static_models
     inputs = {i['name']:i['zone_sha256'] for i in manifest['inputs']}
     for name,zone in (model_zones or {}).items():
@@ -917,7 +917,7 @@ def enrich_geometry(manifest, collision, data, world, spawns, save_json, *, mode
 
 def export_geometry_package(source, output, *, model_zones=None):
     """Enrich a hash-verified existing export: no zone decrypt or EXE access."""
-    from match_server.mapdata import load_map
+    from reference_match.mapdata import load_map
     source,output = Path(source).resolve(),Path(output).resolve()
     if not output.is_relative_to(OUTPUT_ROOT.resolve()) or output == OUTPUT_ROOT.resolve() or output.exists():
         raise ValueError('output must be a new directory under research/experiments/independent-match')
@@ -933,7 +933,7 @@ def export_geometry_package(source, output, *, model_zones=None):
 
     navigation = []
     if 'waypoints.csv' in files:
-        from match_server.navigation import Navigation
+        from reference_match.navigation import Navigation
         navigation = [n['position'] for n in Navigation.from_csv(files['waypoints.csv'].decode('ascii'),None).nodes]
     enrich_geometry(manifest,loaded['collision'],files['collision.bin'],files['gfxworld.bin'],loaded['spawns'],save_json,
                     model_zones=model_zones,baseline=files['baseline.bin'],navigation=navigation)

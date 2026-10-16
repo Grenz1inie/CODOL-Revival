@@ -16,7 +16,7 @@ class MatchTransportTests(unittest.TestCase):
         cls.transport = ClientTransport423()
 
     def test_tiger_matches_current_client_at_padding_and_block_boundaries(self):
-        from match_server.crypto import tiger
+        from reference_match.crypto import tiger
         for length in (0, 3, 4, 44, 55, 56, 63, 64, 65, 128, 255):
             with self.subTest(length=length):
                 data = bytes(range(length))
@@ -24,7 +24,7 @@ class MatchTransportTests(unittest.TestCase):
         self.assertEqual(tiger(b'abc').hex(), '2aab1484e8c158f2bfb8c5ff41b57a525129131c957b5f93')
 
     def test_handshake_and_encrypted_records_reach_a_current_client_peer(self):
-        from match_server.transport import Association
+        from reference_match.transport import Association
         sid, security = b'12345678', bytes(range(16))
         server = Association(sid, security, ('127.0.0.1', 42000))
         init = struct.pack('<BBHHH', 1, 2, 0, 0, 713)+sid
@@ -80,7 +80,7 @@ class MatchTransportTests(unittest.TestCase):
             server.decrypt(valid)
 
     def test_invalid_handshake_never_opens_a_data_channel(self):
-        from match_server.transport import Association
+        from reference_match.transport import Association
         s = Association(b'12345678', bytes(16), ('127.0.0.1', 42000))
         for value in (b'', bytes(16), struct.pack('<BBHHH',1,2,0,0,1)+b'bad-sid!', bytes(189)):
             with self.subTest(value=value[:8]), self.assertRaises(ValueError):
@@ -89,7 +89,7 @@ class MatchTransportTests(unittest.TestCase):
             s.encrypt(b'not established')
 
     def test_invalid_cookie_does_not_open_a_data_channel(self):
-        from match_server.transport import Association
+        from reference_match.transport import Association
         s = Association(b'12345678', bytes(16), ('127.0.0.1', 42000))
         ack = s.handshake(struct.pack('<BBHHH',1,2,0,0,1)+b'12345678')
         echo = struct.pack('<BBHH',3,2,struct.unpack_from('<H',ack,16)[0],0)+ack+bytes(37)+b'12345678'+bytes(100)

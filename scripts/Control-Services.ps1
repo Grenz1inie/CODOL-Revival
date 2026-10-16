@@ -22,17 +22,22 @@ function Get-OwnedServer {
 
 function Get-ServerState {
     $owned = Get-OwnedServer
+    $matchFile = Join-Path $projectRoot 'runtime\build\rust-match\release\codol-match.exe'
+    $match = if ($owned) { @(Get-CimInstance Win32_Process | Where-Object {
+        $_.Name -eq 'codol-match.exe' -and $_.ExecutablePath -eq $matchFile -and $_.ParentProcessId -eq $owned.ProcessId
+    }) }
     $tcp = @(Get-NetTCPConnection -State Listen)
     $udp = @(Get-NetUDPEndpoint)
-    $ports = @(foreach ($endpoint in @(@('auth','TCP',443), @('lobby','TCP',3074), @('stun','UDP',3074))) {
+    $ports = @(foreach ($endpoint in @(@('auth','TCP',443), @('lobby','TCP',3074), @('stun','UDP',3074), @('match','UDP',28970))) {
+        $ownerPid = if ($endpoint[0] -eq 'match') { if (@($match).Count -eq 1) { $match[0].ProcessId } } elseif ($owned) { $owned.ProcessId }
         $listeners = if ($endpoint[1] -eq 'TCP') { $tcp } else { $udp }
         $listeners = @($listeners | Where-Object {
             $_.LocalPort -eq $endpoint[2] -and $_.LocalAddress -in @('127.0.0.1','0.0.0.0','::','::1')
         })
         @{
             name = $endpoint[0]; protocol = $endpoint[1]; port = $endpoint[2]
-            listening = [bool]($owned -and @($listeners | Where-Object OwningProcess -eq $owned.ProcessId).Count)
-            conflict = [bool]@($listeners | Where-Object { !$owned -or $_.OwningProcess -ne $owned.ProcessId }).Count
+            listening = [bool]($ownerPid -and @($listeners | Where-Object OwningProcess -eq $ownerPid).Count)
+            conflict = [bool]@($listeners | Where-Object { !$ownerPid -or $_.OwningProcess -ne $ownerPid }).Count
         }
     })
     return @{

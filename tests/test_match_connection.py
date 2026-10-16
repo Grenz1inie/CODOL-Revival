@@ -19,7 +19,7 @@ class StatsTests(unittest.TestCase):
         cls.client = ClientConnection423()
 
     def test_current_client_fragments_complete_only_after_all_data(self):
-        from match_server.connection import StatsTransfer
+        from reference_match.connection import StatsTransfer
         profile = profile_bytes()
         for compressed in (False, True):
             source = zlib.compress(profile) if compressed else profile
@@ -34,7 +34,7 @@ class StatsTests(unittest.TestCase):
                 self.assertEqual(transfer.profile, None if missing else profile)
 
     def test_match_upload_preserves_crc_from_before_native_profile_preparation(self):
-        from match_server.connection import StatsTransfer
+        from reference_match.connection import StatsTransfer
         # CDB at 0x6d81c4/0x6d81ca: 0x6d8a70 changes the body after CRC.
         # Match stats retain that word; they are not a lobby save envelope.
         profile = bytearray(profile_bytes())
@@ -48,7 +48,7 @@ class StatsTests(unittest.TestCase):
             self.assertEqual(transfer.profile, bytes(profile))
 
     def test_invalid_fragments_do_not_replace_accepted_fragments(self):
-        from match_server.connection import StatsTransfer
+        from reference_match.connection import StatsTransfer
         source = zlib.compress(profile_bytes())
         fragments = [self.client.stats_fragment(source, i)
                      for i in range((len(source)+1237)//1238)]
@@ -69,7 +69,7 @@ class StatsTests(unittest.TestCase):
         self.assertEqual(transfer.profile, profile_bytes())
 
     def test_bad_zlib_or_size_never_publishes_a_profile(self):
-        from match_server.connection import StatsTransfer
+        from reference_match.connection import StatsTransfer
         valid = profile_bytes()
         damaged = bytearray(zlib.compress(valid))
         damaged[-1] ^= 1
@@ -91,7 +91,7 @@ class ConnectionTests(unittest.TestCase):
         cls.client = ClientConnection423()
 
     def setUp(self):
-        from match_server.connection import Connection
+        from reference_match.connection import Connection
         self.uid = 0x1234567812345678
         self.connection = Connection(self.uid, netconst_checksum=0x11223344)
 
@@ -142,7 +142,7 @@ class ConnectionTests(unittest.TestCase):
         self.assertEqual(self.connection.phase, 'primed')  # No claim of spawn yet.
 
     def test_initial_gamestate_keeps_native_frame_clock_at_normal_speed(self):
-        from match_server.connection import Connection
+        from reference_match.connection import Connection
         reader = ClientConnection423()
         for map_name in ('mp_nuked', 'mp_killhouse_sh'):
             connection = Connection(self.uid, netconst_checksum=55, map_name=map_name)
@@ -250,7 +250,7 @@ class ConnectionTests(unittest.TestCase):
         self.assertEqual(self.connection.pending_commands[0]['buttons'],1)
 
     def test_score_and_action_notifications_preserve_bundled_move_and_reliable_ack(self):
-        from match_server.input import usercmd_key
+        from reference_match.input import usercmd_key
         self.connect()
         self.upload()
         self.connection.receive(self.packet(b'\x03',1))
@@ -287,7 +287,7 @@ class ConnectionTests(unittest.TestCase):
             self.assertEqual(self.connection.pending_commands,[])
 
     def test_menu_response_does_not_block_bundled_movement(self):
-        from match_server.input import usercmd_key
+        from reference_match.input import usercmd_key
         self.connect()
         self.upload()
         self.connection.receive(self.packet(b'\x03',1))
@@ -321,8 +321,8 @@ class ConnectionTests(unittest.TestCase):
             self.assertEqual(self.connection.pending_commands,[])
 
     def test_weapon_command_and_acknowledged_snapshot_key_the_next_input(self):
-        from match_server.input import usercmd_key
-        from match_server.snapshot import encode_snapshot,Inventory
+        from reference_match.input import usercmd_key
+        from reference_match.snapshot import encode_snapshot,Inventory
         self.connect()
         self.upload()
         self.connection.receive(self.packet(b'\x03',1))
@@ -348,8 +348,8 @@ class ConnectionTests(unittest.TestCase):
         self.assertEqual(self.connection.server_ack,reliable)
 
     def test_confirmed_snapshot_remains_input_base_while_client_lags(self):
-        from match_server.input import usercmd_key
-        from match_server.snapshot import encode_snapshot
+        from reference_match.input import usercmd_key
+        from reference_match.snapshot import encode_snapshot
         self.connect()
         self.upload()
         self.connection.receive(self.packet(b'\x03',1))
@@ -379,7 +379,7 @@ class ConnectionTests(unittest.TestCase):
             self.connection.receive(self.packet(body,5,ack=acknowledged),reply=False)
 
     def test_loading_status_and_position_center_are_bound_to_the_map_state(self):
-        from match_server.connection import Connection
+        from reference_match.connection import Connection
         self.connection=Connection(self.uid,netconst_checksum=0x11223344,
                                    position_base=(3926,-925,8440))
         self.connect()

@@ -15,7 +15,7 @@ CSV='''4
 class MatchNavigationTests(unittest.TestCase):
     def test_long_route_uses_graph_instead_of_map_wide_collision_sweeps(self):
         import math
-        from match_server.navigation import Navigation
+        from reference_match.navigation import Navigation
         geometry=room(((350,-100,0),(360,100,200)))
         trace_box=geometry.trace_box
         distances=[]
@@ -36,7 +36,7 @@ class MatchNavigationTests(unittest.TestCase):
             self.assertEqual(trace_box(a,b)['fraction'],1)
 
     def test_unreachable_endpoint_does_not_probe_distant_waypoints(self):
-        from match_server.navigation import Navigation
+        from reference_match.navigation import Navigation
         geometry=room(((80,-1000,0),(90,1000,200)))
         trace_box=geometry.trace_box
         queries=[]
@@ -55,7 +55,7 @@ class MatchNavigationTests(unittest.TestCase):
         self.assertLessEqual(len(queries),baseline)
 
     def test_reference_node_heights_follow_current_ground_and_reject_blocked_nodes(self):
-        from match_server.navigation import Navigation
+        from reference_match.navigation import Navigation
         text='3\n0 0 -.5,1,stand,,,\n200 0 -.25,0,stand,,,\n400 0 0,1,stand,,,\n'
         navigation=Navigation.from_csv(text,room(((390,-20,0),(410,20,100))))
         self.assertEqual(navigation.nodes[0]['position'],[0,0,.125])
@@ -64,14 +64,14 @@ class MatchNavigationTests(unittest.TestCase):
         self.assertTrue(navigation.route([0,0,0],[200,0,0]))
 
     def test_replanning_does_not_send_bot_back_to_a_passed_waypoint(self):
-        from match_server.navigation import Navigation
+        from reference_match.navigation import Navigation
         geometry=room(((80,-100,0),(90,100,200)))
         path=Navigation.from_csv(CSV,geometry).route([150,160,.125],[0,0,0])
         self.assertTrue(path)
         self.assertLess(path[0][0],150)
 
     def test_route_uses_movement_step_height_without_crossing_walls_or_low_ceilings(self):
-        from match_server.navigation import Navigation
+        from reference_match.navigation import Navigation
         start,end=[0,0,0],[200,0,0]
         curb=((80,-100,0),(90,100,12))
         navigation=Navigation([],room(curb))
@@ -82,7 +82,7 @@ class MatchNavigationTests(unittest.TestCase):
             self.assertEqual(Navigation([],geometry).route(start,end),[])
 
     def test_reference_waypoints_are_only_links_after_current_collision_validation(self):
-        from match_server.navigation import Navigation
+        from reference_match.navigation import Navigation
         geometry=room(((80,-100,0),(90,100,200)))
         navigation=Navigation.from_csv(CSV,geometry)
         path=navigation.route([200,0,0],[0,0,0])
@@ -97,7 +97,7 @@ class MatchNavigationTests(unittest.TestCase):
                 Navigation.from_csv(text,geometry)
 
     def test_ai_routes_around_cover_before_shooting(self):
-        from match_server.navigation import Navigation
+        from reference_match.navigation import Navigation
         geometry=room(((80,-100,0),(90,100,200)))
         world=fixture.MatchWorldTests().world(geometry=geometry,bot=True)
         world.navigation=Navigation.from_csv(CSV,geometry)

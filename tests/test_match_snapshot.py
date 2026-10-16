@@ -18,7 +18,7 @@ class MatchSnapshotTests(unittest.TestCase):
         self.client.snapshot(encode_baseline({},server_time=0),sequence=0)
 
     def test_world_frames_pass_native_draw_gate_but_baseline_does_not(self):
-        from match_server.snapshot import encode_snapshot
+        from reference_match.snapshot import encode_snapshot
         self.pin_baseline()
         self.assertFalse(self.client.snapshot_frame_ready(0))
         wire=encode_snapshot({0:1000},server_time=1000,health=100)
@@ -26,7 +26,7 @@ class MatchSnapshotTests(unittest.TestCase):
         self.assertTrue(self.client.snapshot_frame_ready(1))
 
     def test_nuketown_defers_fx_but_keeps_all_static_baseline_entities(self):
-        from match_server.snapshot import baseline_entities, encode_snapshot
+        from reference_match.snapshot import baseline_entities, encode_snapshot
         path=Path(__file__).resolve().parents[1]/'research/experiments/independent-match/nuketown-loadout-v2/baseline.bin'
         if not path.exists():
             self.skipTest('local current Nuketown fixture unavailable')
@@ -44,7 +44,7 @@ class MatchSnapshotTests(unittest.TestCase):
             baseline_entities(data+unknown)
 
     def test_health_weapon_ammo_and_two_players_reach_current_snapshot(self):
-        from match_server.snapshot import encode_snapshot, Inventory
+        from reference_match.snapshot import encode_snapshot, Inventory
         state={0:1000,8:word(100),10:word(25),11:word(-50),39:7,83:0}
         players=[(0,{24:word(100),28:word(-50),32:word(25)}),
                  (1,{24:word(200),28:word(80),32:word(25)})]
@@ -64,7 +64,7 @@ class MatchSnapshotTests(unittest.TestCase):
         self.assertEqual([struct.unpack_from('<I',d,20)[0] for d in result['clients_data']],[5,6])
 
     def test_player_entity_positions_and_angles_match_current_reader(self):
-        from match_server.snapshot import encode_player_entity
+        from reference_match.snapshot import encode_player_entity
         wire=encode_player_entity({24:word(-1024),28:word(2048),32:word(37),64:word(90)})
         result,tail=self.client.entity(wire,base_type=0xffffffff)
         self.assertEqual(tail,b'\x06')
@@ -72,7 +72,7 @@ class MatchSnapshotTests(unittest.TestCase):
             self.assertEqual(struct.unpack('<f',struct.pack('<I',result[offset]))[0],value)
 
     def test_authored_current_dm_baselines_are_visible_static_movers(self):
-        from match_server.snapshot import baseline_entities, encode_snapshot
+        from reference_match.snapshot import baseline_entities, encode_snapshot
         path=Path(__file__).resolve().parents[1]/'research/experiments/independent-match/killhouse-dm-v3/baseline.bin'
         if not path.exists():
             self.skipTest('local current baseline fixture unavailable')
@@ -90,7 +90,7 @@ class MatchSnapshotTests(unittest.TestCase):
             baseline_entities(path.read_bytes()[:-1])
 
     def test_invalid_inventory_and_duplicate_players_are_rejected(self):
-        from match_server.snapshot import encode_snapshot, Inventory
+        from reference_match.snapshot import encode_snapshot, Inventory
         for inv in (Inventory(1024,1,1,1,1),Inventory(1,1,1,512,1),Inventory(1,1,1,1,2048)):
             with self.assertRaises(ValueError):
                 encode_snapshot({},server_time=1000,health=100,inventory=inv)
@@ -113,7 +113,7 @@ class MatchSnapshotTests(unittest.TestCase):
 
     def test_map_center_is_server_supplied_configstring_16(self):
         from story_wire423 import encode_gamestate
-        from match_server.snapshot import encode_player_entity
+        from reference_match.snapshot import encode_player_entity
         from unicorn import UC_HOOK_CODE
         from unicorn.x86_const import UC_X86_REG_ESP,UC_X86_REG_EIP,UC_X86_REG_EAX
         captured=[]

@@ -25,12 +25,15 @@ $ErrorActionPreference = 'Stop'
 $global:source = Join-Path $PSScriptRoot 'src\local_server.py'
 $global:started = 0
 $global:stopped = @()
-$global:live = $Scenario -in @('running', 'partial', 'venv', 'duplicate', 'stop-failure')
+$global:live = $Scenario -in @('running', 'partial', 'venv', 'duplicate', 'stop-failure', 'missing-match', 'foreign-match')
 function Get-CimInstance {
     param($ClassName, $Filter)
     $items = @([pscustomobject]@{Name='python.exe';ProcessId=999;ParentProcessId=0;CommandLine='python other.py'})
     if ($global:live) {
         $items += [pscustomobject]@{Name='python.exe';ProcessId=101;ParentProcessId=100;CommandLine=('python "'+$global:source+'"')}
+        if ($Scenario -ne 'missing-match') {
+            $items += [pscustomobject]@{Name='codol-match.exe';ProcessId=103;ParentProcessId=$(if ($Scenario -eq 'foreign-match') {999} else {101});CommandLine='codol-match serve';ExecutablePath=(Join-Path $PSScriptRoot 'runtime\build\rust-match\release\codol-match.exe')}
+        }
         if ($Scenario -eq 'venv') { $items += [pscustomobject]@{Name='python.exe';ProcessId=100;ParentProcessId=0;CommandLine=('python "'+$global:source+'"')} }
         if ($Scenario -eq 'duplicate') { $items += [pscustomobject]@{Name='python.exe';ProcessId=102;ParentProcessId=0;CommandLine=('python "'+$global:source+'"')} }
     }
@@ -47,6 +50,7 @@ function Get-NetTCPConnection {
 }
 function Get-NetUDPEndpoint {
     if ($global:live -and $Scenario -ne 'partial') { [pscustomobject]@{LocalPort=3074;LocalAddress='127.0.0.1';OwningProcess=101} }
+    if ($global:live -and $Scenario -ne 'missing-match') { [pscustomobject]@{LocalPort=28970;LocalAddress='127.0.0.1';OwningProcess=103} }
 }
 function Start-Process {
     param($FilePath,$ArgumentList,$WorkingDirectory,$WindowStyle,$RedirectStandardOutput,$RedirectStandardError,[switch]$PassThru)
@@ -83,7 +87,7 @@ try {
                 self.assertEqual(result['state']['running'], running)
                 self.assertEqual(result['state']['ready'], ready)
                 self.assertEqual(result['state']['pid'], 101 if running else None)
-                self.assertEqual(len(result['state']['ports']), 3)
+                self.assertEqual(len(result['state']['ports']), 4)
                 self.assertEqual(any(p['conflict'] for p in result['state']['ports']), scenario == 'conflict')
                 self.assertEqual(result['started'], 0)
                 self.assertEqual(result['stopped'], [])
@@ -117,6 +121,16 @@ try {
         result = self.probe('editor')
         self.assertFalse(result['state']['running'])
         self.assertEqual(result['stopped'], [])
+
+    def test_match_child_must_be_owned_and_listening_before_ready(self):
+        for scenario in ('missing-match','foreign-match'):
+            with self.subTest(scenario=scenario):
+                result=self.probe(scenario)
+                self.assertTrue(result['state']['running'])
+                self.assertFalse(result['state']['ready'])
+                match=next(p for p in result['state']['ports'] if p['name']=='match')
+                self.assertFalse(match['listening'])
+                self.assertEqual(match['conflict'],scenario=='foreign-match')
 
 
 if __name__ == '__main__':

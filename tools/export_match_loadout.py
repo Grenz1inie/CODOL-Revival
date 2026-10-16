@@ -14,9 +14,9 @@ ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'src'))
 from export_match_map import OUTPUT_ROOT, read_ncs_prefix_block3, read_block3_string
 from index_story_zone import read_assets
-from match_server.loadout import read_weapon
-from match_server.mapdata import load_map
-from match_server.navigation import Navigation
+from reference_match.loadout import read_weapon
+from reference_match.mapdata import load_map
+from reference_match.navigation import Navigation
 
 
 def export_loadout(source, output, common_zone, waypoints, registration):

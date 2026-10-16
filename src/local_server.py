@@ -118,8 +118,9 @@ if __name__ == '__main__':
         MATCHMAKING = load_matchmaking(match_package, record=record)
         atexit.register(MATCHMAKING.close)
         record('independent_match_ready', package=str(match_package), map=MATCHMAKING.map_name,
-               gametype='dm', players=2, checksum=MATCHMAKING.options['netconst_checksum'])
-    except (OSError, ValueError, KeyError) as error:
+               gametype='dm', players=2, checksum=MATCHMAKING.options['netconst_checksum'],
+               engine='rust', pid=MATCHMAKING.server.pid, port=MATCHMAKING.server.port)
+    except (OSError, ValueError, KeyError, RuntimeError) as error:
         record('independent_match_failed', error=str(error), package=str(match_package))
     threading.Thread(target=listen_stun, daemon=True).start()
     threading.Thread(target=listen, args=(3074, lobby_client), daemon=True).start()
