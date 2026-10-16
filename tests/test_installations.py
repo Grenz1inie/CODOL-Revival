@@ -85,6 +85,25 @@ class InstallationsTests(unittest.TestCase):
         self.assertEqual(self.manager.current()['state'], 'invalid')
         self.assertFalse(first_runtime.exists())
 
+    def test_final_client_matches_recorded_metadata_pair_and_still_checks_fingerprint(self):
+        self.catalog.append({'game_id': 'codol', 'version': '3.19.26.22',
+            'adapter': 'games.codol.versions.v3_19_26_22.adapter', 'executable': 'client.exe',
+            'sha256': hashlib.sha256(b'known client').hexdigest(),
+            'version_files': {'iips': 'V1.2.1.13', 'tcls': '3.19.26.22'}})
+        ini = self.game / 'IIPS/IIPSVersion.ini'
+        xml = self.game / 'TCLS/mmog_data.xml'
+        ini.write_text('V1.2.1.13')
+        xml.write_text('<VersionUpdateData><ClientConf><VersionData><Version>3.19.26.22</Version></VersionData></ClientConf></VersionUpdateData>')
+        matched = self.manager.select(str(self.game))
+        self.assertEqual(matched['state'], 'matched')
+        self.assertEqual(matched['version'], '3.19.26.22')
+        self.assertTrue(matched['instance_id'].startswith('codol-3.19.26.22-'))
+        ini.write_text('V1.2.1.14')
+        self.assertEqual(self.manager.current()['state'], 'invalid')
+        ini.write_text('V1.2.1.13')
+        (self.game / 'client.exe').write_bytes(b'another build')
+        self.assertEqual(self.manager.current()['state'], 'fingerprint_mismatch')
+
     def test_invalid_api_values_and_corrupt_saved_selection_are_safe(self):
         for path in (None, 1, '', '  '):
             with self.subTest(path=path), self.assertRaises(ValueError):

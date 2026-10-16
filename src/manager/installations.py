@@ -32,28 +32,30 @@ class Installations:
                   'state': 'invalid', 'reason': '请选择包含游戏主程序的目录'}
         if not game.is_dir():
             return result
-        versions = []
+        versions = {}
         try:
             ini = game / 'IIPS/IIPSVersion.ini'
             xml = game / 'TCLS/mmog_data.xml'
             if ini.is_file():
-                versions.append(ini.read_text(encoding='utf-8-sig').strip())
+                versions['iips'] = ini.read_text(encoding='utf-8-sig').strip()
             if xml.is_file():
                 raw = xml.read_bytes()
                 encoding = 'gb18030' if re.search(br'encoding=[\"\'](?:gb2312|gbk|gb18030)[\"\']', raw[:150], re.I) else 'utf-8-sig'
                 document = ElementTree.fromstring(raw.decode(encoding))
-                versions.append(document.findtext('./ClientConf/VersionData/Version', '').strip())
+                versions['tcls'] = document.findtext('./ClientConf/VersionData/Version', '').strip()
         except (OSError, UnicodeError, ElementTree.ParseError):
             result['reason'] = '版本文件无法读取或格式损坏'
             return result
-        if not versions or any(not re.fullmatch(r'\d+\.\d+\.\d+\.\d+', v) for v in versions):
+        definition = next((v for v in self.catalog if versions and all(
+            v.get('version_files', {'iips': v['version'], 'tcls': v['version']}).get(source) == value
+            for source, value in versions.items())), None)
+        if definition is None and (not versions or any(not re.fullmatch(r'\d+\.\d+\.\d+\.\d+', v) for v in versions.values())):
             result['reason'] = '未找到有效的版本号'
             return result
-        if len(set(versions)) != 1:
+        if definition is None and len(set(versions.values())) != 1:
             result['reason'] = '两个版本文件的版本号不一致'
             return result
-        result['version'] = versions[0]
-        definition = next((v for v in self.catalog if v['version'] == versions[0]), None)
+        result['version'] = definition['version'] if definition else next(iter(versions.values()))
         if definition is None:
             return {**result, 'state': 'unknown', 'reason': '该版本尚未收录'}
         executable = game / definition['executable']
@@ -75,7 +77,7 @@ class Installations:
             return {**result, 'state': 'fingerprint_mismatch', 'reason': '主程序指纹与已适配客户端不一致'}
         identity = hashlib.sha256(os.path.normcase(str(game)).encode('utf-8')).hexdigest()[:12]
         return {**result, 'state': 'matched', 'reason': '已匹配',
-                'instance_id': f"codol-{versions[0]}-{identity}"}
+                'instance_id': f"codol-{result['version']}-{identity}"}
 
     def current(self, *, fresh=False):
         if not self.file.is_file():
