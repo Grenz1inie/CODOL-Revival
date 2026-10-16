@@ -196,7 +196,7 @@ class ClientReader423:
             cpu.mem_write(pointer,bytes(0x200))
             cpu.mem_write(pointer,struct.pack('<I',pointer+0x180))
             cpu.mem_write(pointer+0x180,name.encode('ascii')+b'\0')
-        asset(hand,'viewhands_player_tf141');asset(fallback,'tag_origin')
+        asset(hand,'viewhands_tf141');asset(fallback,'tag_origin')
         entries=[(view_model,'wea_acr_acr_blk',0),*attachments] if view_model else []
         # Current composition: tags +f48, world +f68, view +fac; +92 is count.
         cpu.mem_write(record+0x92,bytes([len(entries)]))

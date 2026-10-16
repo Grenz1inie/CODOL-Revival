@@ -28,8 +28,12 @@ if ($ViewAnimation) {
         '.echo WEAPON_DEFINITIONS; .foreach (slot { .echo 5 160 }) { r @$t10=poi(codoMP_client_shipRetail+0x13f5a40+${slot}*4); dd @$t10 L1; da poi(@$t10); da poi(@$t10+0x7c); da poi(@$t10+0x154); dd @$t10+0x480 L1; db @$t10+0xd83 L1 }',
         'r @$t0 = poi(codoMP_client_shipRetail+0x1619510+4*poi(codoMP_client_shipRetail+0x7417bb8)) ^ 0x39641402',
         'r @$t1 = poi(@$t0); r @$t2 = poi(@$t1+0xc0); .echo MODEL_BONES; dw poi(poi(@$t2)+0x2c) L42; dw poi(poi(@$t2+4)+0x2c) L19',
+        '.echo DUPLICATE_BONES; db poi(codoMP_client_shipRetail+0x2b37164)+wo(@$t1+4)*0x14+4 La0; .echo SKELETON_MASKS; dd @$t1+0x14 L20',
+        '.echo HAND_BIND; r @$t10=poi(@$t2); df poi(@$t10+0x40) L210; .echo LIVE_POSE; df poi(@$t1+0x98) L318',
+        '.echo HAND_NAMES; .for (r @$t11=0; @$t11<0x42; r @$t11=@$t11+1) { da poi(codoMP_client_shipRetail+0x2b37164)+wo(poi(@$t10+0x2c)+2*@$t11)*0x14+4 }',
         'r @$t5 = poi(@$t1); .echo TREE; dd @$t5 L4; dd poi(@$t5) L10; r @$t6 = wo(@$t5+4)',
         '.for (r @$t7=0; (@$t6!=0) & (@$t7<0x40); r @$t7=@$t7+1) { r @$t8=codoMP_client_shipRetail+0x334db08+@$t6*0x38; .echo NODE; dd @$t8 Le; .if ((wo(@$t8+0x12)!=0) & (poi(@$t8+0x14)!=0)) { r @$t9=poi(@$t8+0x14); .echo ANIM; da poi(@$t9); db @$t9+0x1a L1; dw poi(@$t9+0x30) L60; .echo BIND; db poi(codoMP_client_shipRetail+0x2b37164)+wo(@$t8+0x12)*0x14+4 La0 }; .if (wo(@$t8+0xc)!=0) { r @$t6=wo(@$t8+0xc) } .else { .while ((@$t6!=0) & (wo(@$t8+0xa)==0)) { r @$t6=wo(@$t8+0xe); r @$t8=codoMP_client_shipRetail+0x334db08+@$t6*0x38 }; .if (@$t6!=0) { r @$t6=wo(@$t8+0xa) } } }',
+        '.echo IDLE_HEADER; r @$t9=poi(poi(@$t5)+0x10); db @$t9 L58; .echo IDLE_DATA; db poi(@$t9+0x34) L100; dw poi(@$t9+0x38) L100; dd poi(@$t9+0x3c) L80',
         'q'
     )
     'q' | & $cdb -pv -p $game[0].ProcessId -c ($commands -join '; ') *> $outputPath

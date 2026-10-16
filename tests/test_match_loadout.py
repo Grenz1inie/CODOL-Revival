@@ -9,6 +9,38 @@ HEADERS=ROOT/'research/experiments/story-native/reference-zone-assets/current-co
 
 
 class MatchLoadoutTests(unittest.TestCase):
+    def test_native_view_hand_translation_does_not_double_the_forearm(self):
+        from client_reader423 import ClientReader423, UC_X86_REG_EAX, UC_X86_REG_ESP, UC_X86_REG_EIP
+        cpu = ClientReader423().cpu
+        obj, model, matrices = 0x30001000, 0x30002000, 0x30003000
+        offsets, parents, mask, zero = 0x30004000, 0x30004100, 0x30004200, 0x30004300
+        stack, end = 0x303ff000, 0x303ffff0
+        # One parent/child isolates shipped 0x6478f0. Captured hand bone 13:
+        # player_tf141 local X=12.093893; tf141 local XYZ=0. Same idle clip
+        # supplies ~12.094 units itself. Sampling/rendering are outside this seam.
+        length = 12.093893051147461
+        cpu.mem_write(model+4, bytes([2, 1]))
+        cpu.mem_write(model+8, struct.pack('<f', 1))
+        cpu.mem_write(model+0x30, struct.pack('<I', parents))
+        cpu.mem_write(model+0x38, struct.pack('<I', offsets))
+        cpu.mem_write(parents, b'\x01')
+        cpu.mem_write(obj+0x98, struct.pack('<I', matrices))
+        cpu.mem_write(obj+0xc8, struct.pack('<f', 1))
+        results = []
+        for local in (0.0, length):
+            cpu.mem_write(offsets, struct.pack('<3f', local, 0, 0))
+            cpu.mem_write(matrices, struct.pack('<16f',
+                0,0,0,1,0,0,0,2, 0,0,0,1,length,0,0,1))
+            cpu.mem_write(mask, struct.pack('<8I', 0x40000000, 0,0,0,0,0,0,0))
+            cpu.mem_write(stack, struct.pack('<7I', end, obj, model, obj+0x14, 1, zero, zero))
+            cpu.reg_write(UC_X86_REG_EAX, mask)
+            cpu.reg_write(UC_X86_REG_ESP, stack)
+            cpu.emu_start(0x6478f0, end, count=5000)
+            self.assertEqual(cpu.reg_read(UC_X86_REG_EIP), end)
+            results.append(struct.unpack('<f', cpu.mem_read(matrices+0x30, 4))[0])
+        self.assertAlmostEqual(results[0], length, places=5)
+        self.assertAlmostEqual(results[1], length*2, places=5)
+
     def test_nuketown_bundle_requires_its_registry_and_preserves_navigation(self):
         from export_match_loadout import export_loadout
         from match_server.mapdata import load_map
@@ -29,6 +61,7 @@ class MatchLoadoutTests(unittest.TestCase):
             loadout = json.loads(data['files']['loadout.json'])
             self.assertEqual(data['manifest']['map'], 'mp_nuked')
             self.assertEqual(loadout['weapon']['name'], 'acr_mp')
+            self.assertEqual(loadout['hands'], {'name': 'viewhands_tf141', 'index': 54})
             self.assertEqual(data['files']['waypoints.csv'], waypoint.read_bytes())
             self.assertEqual(len(Navigation.from_csv(waypoint.read_text(), None).nodes), 235)
             self.assertEqual(loadout['provenance']['waypoint_source'], str(waypoint.resolve()))
@@ -55,7 +88,7 @@ class MatchLoadoutTests(unittest.TestCase):
             self.assertEqual(loadout['weapon']['index'],5)
             self.assertEqual(loadout['body']['name'],'mp_fullbody_juggernaut_explosive_so')
             self.assertEqual(loadout['body']['index'],109)
-            self.assertEqual(loadout['hands']['index'],53)
+            self.assertEqual(loadout['hands'],{'name':'viewhands_tf141','index':54})
             self.assertEqual(data['ncs']['client_checksum'],3852334052)
             self.assertFalse(data['ncs']['mounted_set_verified'])
             self.assertEqual(data['files']['baseline.bin'],(package/'baseline.bin').read_bytes())

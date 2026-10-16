@@ -276,7 +276,26 @@ runtime原生gamestate回归先复现空部件配方，再验证完整配方、�
 
 证据：`research/evidence/acr-model-pairing-20261016.json`、`acr-model-pose-20261016.txt`、`acr-animation-pose-20261016.txt`、`acr-animation-source-20261016.txt`。`Read-PlayerSchema.ps1 -WeaponModels` 复用限定只读采集；`tools/Read-MatchDebug.ps1 -ViewAnimation` 读取当前枪模动作树，最多64节点。REA已存证据继续复用；本次新指令查询返回 `Ghidra client is already started`，没有反复重扫，新增地址结论以本版本缓存汇编和实机读取交叉核对。
 
-10:28服务重载为PID61288，同时带入输入排队及UDP退出修复，确认 `mp_nuked / dm`、NCS校验和1765105316。默认部件完整性和枪手姿态交由人工检查；目前没有证据宣称错位已修复，也未替换原始客户端的模型、骨骼或动作文件。
+10:28服务重载为PID61288，同时带入输入排队及UDP退出修复，确认 `mp_nuked / dm`、NCS校验和1765105316。用户随后确认能进入，但枪手仍错位。PID59232动态读取确认七个模型均已加载为view版本，不能再把默认部件遗漏作为全部原因。
+
+### 枪手错位：手模局部平移与动作不配套（2026-10-16）
+
+用户再次截图指出手腕断开、枪械脱离握持位置，并授权动态调试。非暂停读取当前DObj、XAnim树及两个原始手模后，发现先前只比骨名与bind矩阵漏掉了关键差异：
+
+| 手模 | NCS索引 | 骨数／父链／局部旋转 | XModel `+38` 局部平移 |
+|---|---:|---|---|
+| `viewhands_player_tf141`（原选择） | 53 | 66骨，与下一行父链、局部旋转相同 | 非零；肘骨13的X为12.093893，`tag_view`含Z=60 |
+| `viewhands_tf141`（修正） | 54 | 同上 | 65个非根骨的局部平移全部为零 |
+
+当前第一人称动作 `viewmodel_m4a1tech_idle` 已包含手臂局部平移。原生 `0x6478f0` 的 `0x647ca1..0x647cc2` 计算 `采样平移 × modelScale + 模型局部平移`，两手模scale均为1。原选择因此重复叠加位置，导致手臂骨段拉长、枪与手错位；它不是通过皮肤字段修复，也不能仅据名字把当前枪体判为第三人称。主枪仍使用原生view列 `wea_acr_acr_blk_vmgun`，保留已有五部件及挂接规则。
+
+原生骨平移回归使用当前EXE真实 `0x6478f0` 和最小父子骨输入：同一12.093893采样在零局部位移时保持原长，旧手模位移使结果变为24.187786。测试不替代完整动作混合、蒙皮或渲染验收。两个资源导出用例先复现旧手模53，再改用54；loadout/runtime/composed共13项通过，保护名称与NCS索引、现有枪体部件、弹药键及快照行为。
+
+修改仅在独立资源包导出时选择匹配手模，不写原游戏模型、动作、EXE或正式存档。资源版本 `research/experiments/independent-match/nuketown-loadout-v3/`，与现用包相比仅 `loadout.json` 内容及manifest元数据改变。证据：`research/evidence/acr-hand-rig-translation-20261016.json`、`acr-full-pose-20261016.txt`、`acr-complete-animation-20261016.txt`。只读工具补采局部旋转／平移，避免后续只看资源名和bind矩阵。
+
+实机状态：旧手模的问题已由用户截图及动态数据复现；新手模需退出旧客户端后重新进入核弹小镇，人工检查手腕、枪体握持、开火和换弹。此处尚不宣称画面已修复或AI互射已验收。
+
+11:29项目服务重载为PID44448，日志确认 `mp_nuked / dm`、校验和1765105316；已部署手模54，旧包两份元数据备份在 `runtime/backups/match-hands-20261016-112923/`。用户随后补充一直无法移动、相机高度异常；这两项另行追踪输入接收和原生相机状态，不能把手模更正当作移动验收。
 
 ### 保留已确认的输入基准帧（2026-10-16）
 
@@ -381,7 +400,7 @@ python -m unittest test_match_world test_match_navigation test_match_loadout tes
 
 `build_match_registration.py` 校验当前客户端和签名FF，按实际加载器选择重建54张地图NCS表。商城lite表在卸载UI后仍保留，原52表候选391859916不再用于启动；最终地图候选CRC为 **3852334052**，大厅候选为962763178，seed为3451066449。`probe_match_registration.py` 执行当前机器码核对算法，**所选集合仍是加载器推导，尚非实机挂载捕获**。清单保留 `mounted_set_verified=false`，最终是否一致由客户端正常CRC比较反馈。
 
-对应角色/手部/ACR编号为109/53/5。`export_match_loadout.py` 将注册表、武器头、路点与地图文件放入独立包；不借用旧编号或旧安装目录。生成命令：
+对应角色/手部/ACR编号为109/54/5（手模已按上述动作兼容性修正）。`export_match_loadout.py` 将注册表、武器头、路点与地图文件放入独立包；不借用旧编号或旧安装目录。生成命令：
 
 ```powershell
 $env:PYTHONPATH='src;tests;tools'

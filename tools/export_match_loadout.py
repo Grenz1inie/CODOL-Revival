@@ -67,8 +67,10 @@ def export_loadout(source, output, common_zone, waypoints, registration):
     parameters=read_weapon(header,index=weapon['index'])
     navigation=Path(waypoints).read_bytes()
     Navigation.from_csv(navigation.decode('ascii'),None)  # Format only; edges are checked against geometry at runtime.
+    # ACR's view animation contains local translations. The player_ rig adds
+    # bind translations again; viewhands_tf141 has the matching zero offsets.
     loadout=dict(weapon=weapon,body=resource(0,'mp_fullbody_juggernaut_explosive_so'),
-        hands=resource(0,'viewhands_player_tf141'),parameters=asdict(parameters),
+        hands=resource(0,'viewhands_tf141'),parameters=asdict(parameters),
         provenance=dict(format_version=423,zone='common_mp',zone_sha256=zone_hash,
             asset_index=asset_index,weapon_header_sha256=hashlib.sha256(header).hexdigest(),
             waypoint_sha256=hashlib.sha256(navigation).hexdigest(),

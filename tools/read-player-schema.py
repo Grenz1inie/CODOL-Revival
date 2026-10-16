@@ -151,10 +151,13 @@ def capture(pid, image_base, marketplace=False, weapon_progression=False, pve=Fa
                 pointer = asset(4, name)
                 header = read(pointer, 0x48)
                 bones, roots = header[4:6]
-                names, parents, _, _, _, matrices = struct.unpack_from('<6I', header, 0x2c)
+                names, parents, quaternions, translations, _, matrices = struct.unpack_from('<6I', header, 0x2c)
                 result['models'][name] = dict(address=pointer, bones=bones, roots=roots,
+                    translation_scale=struct.unpack_from('<f', header, 8)[0],
                     bone_ids=list(struct.unpack('<'+'H'*bones, read(names, 2*bones))),
                     parents=list(read(parents, bones-roots)),
+                    local_quaternions=list(struct.iter_unpack('<4h', read(quaternions, 8*(bones-roots)))),
+                    local_translations=list(struct.iter_unpack('<3f', read(translations, 12*(bones-roots)))),
                     bind_matrices=[list(struct.unpack('<8f', read(matrices+32*i, 32))) for i in range(bones)])
         if marketplace:
             # REA 0x5840a0 / 0x7070b0: read the loaded catalogue, never execute game code.

@@ -26,7 +26,7 @@ class MatchComposedWeaponTests(unittest.TestCase):
     def test_composed_viewmodel_is_appended_instead_of_tag_origin(self):
         result = self.client.register_composed_weapon(base=5, name='** 5 0 0')
         missing = self.client.composed_viewmodels(result['definition'], view_model=None)
-        self.assertEqual(missing['models'], ['viewhands_player_tf141'])
+        self.assertEqual(missing['models'], ['viewhands_tf141'])
         self.assertFalse(missing['appended'])
         # Live CSV camo 0: acr_mp,0,wea_acr_acr_blk,wea_acr_acr_blk_vmgun.
         # This supplies the resolved asset boundary, not a mock CSV consumer.
@@ -35,7 +35,7 @@ class MatchComposedWeaponTests(unittest.TestCase):
         self.assertTrue(selected['appended'])
         self.assertEqual(selected['fallback'], 'tag_origin')
         self.assertEqual(selected['models'],
-                         ['viewhands_player_tf141', 'wea_acr_acr_blk_vmgun'])
+                         ['viewhands_tf141', 'wea_acr_acr_blk_vmgun'])
         self.assertNotIn('tag_origin', selected['models'])
         self.assertNotIn('wea_acr_acr_blk', selected['models'])
         self.assertEqual(selected['tags'], [0, 0x32d])
@@ -50,7 +50,7 @@ class MatchComposedWeaponTests(unittest.TestCase):
         selected = self.client.composed_viewmodels(
             result['definition'], view_model='wea_acr_acr_blk_vmgun', attachments=parts)
         self.assertEqual(selected['models'],
-                         ['viewhands_player_tf141', 'wea_acr_acr_blk_vmgun',
+                         ['viewhands_tf141', 'wea_acr_acr_blk_vmgun',
                           *(part[0] for part in parts)])
         self.assertEqual(selected['tags'], [0, 0x32d, *range(0x501, 0x506)])
         self.assertTrue(set(world).isdisjoint(selected['models']))
