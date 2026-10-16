@@ -1,4 +1,4 @@
-param([switch]$Stats, [switch]$Connection, [switch]$Clock)
+param([switch]$Stats, [switch]$Connection, [switch]$Clock, [switch]$ViewWeapon)
 $ErrorActionPreference = 'Stop'
 $rootPath = Split-Path $PSScriptRoot -Parent
 $expectedExe = Join-Path (Split-Path $rootPath -Parent) 'CODOL_Experience_V3.3.3.3_FULL.7z/codoMP_client_shipRetail.exe'
@@ -9,6 +9,7 @@ if (!$principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
     if ($Stats) { $arguments += '-Stats' }
     if ($Connection) { $arguments += '-Connection' }
     if ($Clock) { $arguments += '-Clock' }
+    if ($ViewWeapon) { $arguments += '-ViewWeapon' }
     Start-Process powershell.exe -Verb RunAs -WindowStyle Hidden -ArgumentList $arguments
     return
 }
@@ -19,6 +20,11 @@ if ($game.Count -ne 1) { throw 'Expected one verified CODOL process.' }
 if ((Get-FileHash -LiteralPath $expectedExe -Algorithm SHA256).Hash -ne 'e3823fd6afc80fb25fa84747e6e9634707b9a0b189357a5466921cda354af37b') { throw 'Client hash mismatch.' }
 $cdb = 'C:/Program Files (x86)/Windows Kits/10/Debuggers/x86/cdb.exe'
 $outputPath = Join-Path $rootPath 'runtime/logs/match-debug.txt'
+if ($ViewWeapon) {
+    # Current DObj layout: hide mask +a0, model pointers +c0, then parent bytes.
+    & $cdb -pv -p $game[0].ProcessId -c 'r @$t0 = poi(codoMP_client_shipRetail+0x1619510+4*poi(codoMP_client_shipRetail+0x7417bb8)) ^ 0x39641402; r @$t1 = poi(@$t0); .echo DOBJ; dd @$t1 L4; dd @$t1+0x94 L4; .echo HIDDEN_PARTS; dd @$t1+0xa0 L8; r @$t2 = poi(@$t1+0xc0); .echo MODELS_AND_PARENTS; dd @$t2 L2; db @$t2+8 L2; r @$t3 = poi(@$t2); r @$t4 = poi(@$t2+4); .echo HANDS; da poi(@$t3); db @$t3+4 L3; .echo GUN; da poi(@$t4); db @$t4+4 L3; .echo TAG_WEAPON; dw codoMP_client_shipRetail+0x2824990 L1; .if (by(@$t2+9) < by(@$t3+4)) { .echo PARENT_BONE_NAME; dw poi(@$t3+0x2c)+2*by(@$t2+9) L1 }; q' *> $outputPath
+    return
+}
 if ($Clock) {
     # Read only the frame-clock multipliers and their native dvar names.
     & $cdb -pv -p $game[0].ProcessId -c '.echo FRAME_SCALE; dd codoMP_client_shipRetail+0x2a8cf70 L7; dd codoMP_client_shipRetail+0x2a8a96c L3; dd codoMP_client_shipRetail+0x8dcd3c L1; .echo FIXED_MSEC; dd poi(codoMP_client_shipRetail+0x2a8a98c) L8; da poi(poi(codoMP_client_shipRetail+0x2a8a98c)); .echo TIMESCALE; dd poi(codoMP_client_shipRetail+0x2a8a998) L8; da poi(poi(codoMP_client_shipRetail+0x2a8a998)); .echo SECOND_SCALE; dd poi(codoMP_client_shipRetail+0x2a8cfc0) L8; da poi(poi(codoMP_client_shipRetail+0x2a8cfc0)); .echo MAX_FPS; dd poi(codoMP_client_shipRetail+0x2a8cfe8) L8; da poi(poi(codoMP_client_shipRetail+0x2a8cfe8)); q' *> $outputPath

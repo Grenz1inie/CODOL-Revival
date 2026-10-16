@@ -148,6 +148,82 @@ class ClientReader423:
                           for off in (0x6b8,0x6c0,0x6d0)) for row in rows]
         finally:cpu.hook_del(hook)
 
+    def register_composed_weapon(self, *, base, name):
+        """Register one resolved recipe fixture after weapon_registry().
+
+        Seed the record layout produced by 0x42e3b0; execute 0x42c3e0 and its
+        real ammo/clip registrars. Recipe parsing and asset loading are outside
+        this seam. The fixture owns the first composed-record slot.
+        """
+        cpu=self.cpu;stack,end=0x303ff000,0x303ffff0
+        record=0x18178c0;definition=record+0xa0
+        def word(address):
+            return struct.unpack('<I',cpu.mem_read(address,4))[0]
+        def text(address):
+            return bytes(cpu.mem_read(address,128)).split(b'\0',1)[0].decode('ascii')
+        source=word(0x17f5a40+4*base)
+        cpu.mem_write(record,bytes(0x1254))
+        cpu.mem_write(record,name.encode('ascii')+b'\0')
+        cpu.mem_write(definition,bytes(cpu.mem_read(source,0xe28)))
+        # 0x42e4bd/+94 base ID, 0x42e4db/+9c base pointer, +a0 cloned Def.
+        for address,value in ((record+0x94,base),(record+0x9c,source),
+                              (definition,record),(0x17f5844,1)):
+            cpu.mem_write(address,struct.pack('<I',value))
+        cpu.mem_write(stack,struct.pack('<I',end));self.error=False
+        cpu.reg_write(UC_X86_REG_ESP,stack)
+        cpu.reg_write(UC_X86_REG_EAX,definition);cpu.reg_write(UC_X86_REG_EDI,0)
+        cpu.emu_start(0x42c3e0,end,count=200000)
+        if self.error or cpu.reg_read(UC_X86_REG_EIP)!=end:
+            raise ValueError('client composed registration did not finish')
+        weapon=cpu.reg_read(UC_X86_REG_EAX)
+        registered=word(0x17f5a40+4*weapon)
+        return dict(weapon=weapon,definition=registered,name=text(word(registered)),
+                    ammo=word(registered+0x6b8),clip=word(registered+0x6c0),
+                    base_name=text(word(source)),
+                    base_keys=(word(source+0x6b8),word(source+0x6c0)))
+
+    def composed_viewmodels(self, definition, *, view_model):
+        """Execute 0x42e800's real lookup and model-list selection.
+
+        Supply name-only XModel fixtures at the resolved-asset boundary. Stop
+        before 0x49b120's hierarchy processing; no bones or renderer execute.
+        None represents an unpopulated composition, which must return false.
+        """
+        cpu=self.cpu;stack,end=0x303ff000,0x303ffff0
+        record=0x18178c0;models,count=0x30360000,0x30368000
+        hand,fallback,gun=0x30370000,0x30371000,0x30372000
+        for pointer,name in ((hand,'viewhands_player_tf141'),(fallback,'tag_origin'),
+                             (gun,view_model or '')):
+            cpu.mem_write(pointer,bytes(0x200))
+            cpu.mem_write(pointer,struct.pack('<I',pointer+0x180))
+            cpu.mem_write(pointer+0x180,name.encode('ascii')+b'\0')
+        # 0x42dcac stores the resolved viewmodel at record+fac; +92 is count.
+        cpu.mem_write(record+0x92,bytes([int(view_model is not None)]))
+        cpu.mem_write(record+0xfac,struct.pack('<I',gun if view_model is not None else 0))
+        cpu.mem_write(definition+0x10,struct.pack('<I',fallback))
+        cpu.mem_write(models,bytes(0x58))
+        cpu.mem_write(models,struct.pack('<I',hand))
+        cpu.mem_write(count,struct.pack('<H',1))
+        cpu.mem_write(stack,struct.pack('<5I',end,0x32d,models,count,0))
+        cpu.reg_write(UC_X86_REG_ESP,stack);cpu.reg_write(UC_X86_REG_EAX,definition)
+        def before_hierarchy(cpu,address,size,context):
+            cpu.emu_stop()
+        hook=cpu.hook_add(UC_HOOK_CODE,before_hierarchy,begin=0x42e8ed,end=0x42e8ed)
+        self.error=False
+        try:
+            cpu.emu_start(0x42e800,end,count=200000)
+            stopped=cpu.reg_read(UC_X86_REG_EIP)
+            if self.error or stopped not in (end,0x42e8ed):
+                raise ValueError('client composed model selection did not finish')
+        finally:cpu.hook_del(hook)
+        def model_name(pointer_address):
+            pointer,=struct.unpack('<I',cpu.mem_read(pointer_address,4))
+            name,=struct.unpack('<I',cpu.mem_read(pointer,4))
+            return bytes(cpu.mem_read(name,128)).split(b'\0',1)[0].decode('ascii')
+        size,=struct.unpack('<H',cpu.mem_read(count,2))
+        return dict(models=[model_name(models+i*0x2c) for i in range(size)],
+                    fallback=model_name(definition+0x10),appended=size>1)
+
     def usercmd(self, values, *, key, base=None, move=False, reliables=()):
         """Run the shipped 0x5a1be0 writer; inputs use its real usercmd layout."""
         cpu = self.cpu

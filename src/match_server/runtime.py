@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """Construct the one-map simulation from a self-contained, verified package."""
 import json
+from dataclasses import replace
 from pathlib import Path
 
 from .collision import CollisionWorld
@@ -28,6 +29,12 @@ def load_world(directory):
     collision=CollisionWorld(package['geometry'])
     navigation=Navigation.from_csv(files['waypoints.csv'].decode('ascii'),collision)
     weapon=read_weapon(files[loadout['weapon']['header']],index=loadout['weapon']['index'])
+    registry=package['ncs']['registry']['kinds']['13']
+    composed=registry['reserved']+len(registry['strings'])
+    if composed>=registry['capacity']:
+        raise ValueError('no composed weapon slot after the stock registry')
+    # 0x42c05a inherits the base ammo key; 0x42c253 gives this rifle its own clip.
+    weapon=replace(weapon,index=composed,clip_type=composed)
     world=World(collision,[s for s in package['spawns'] if s['classname']=='mp_dm_spawn'],weapon,
         body_model=loadout['body']['index'],hands_model=loadout['hands']['index'],
         position_base=package['position']['position_base'],navigation=navigation,
@@ -42,5 +49,7 @@ def load_matchmaking(directory, *, port=28970, record=None):
     world=load_world(directory)
     manifest=json.loads((Path(directory)/'manifest.json').read_text(encoding='utf-8'))
     ncs=json.loads((Path(directory)/'ncs.json').read_text(encoding='utf-8'))
+    # Stock acr_mp renders tag_origin. The native ** recipe selects its model table.
+    recipe=(ncs['registry']['kinds']['13']['base']+world.weapon.index,world.weapon.ammo_type,0,0,())
     return IndependentMatchmaking(world,netconst_checksum=ncs['registry']['checksum'],
-                                  port=port,record=record,map_name=manifest['map'])
+                                  recipes=(recipe,),port=port,record=record,map_name=manifest['map'])

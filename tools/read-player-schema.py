@@ -24,7 +24,7 @@ kernel.QueryFullProcessImageNameW.argtypes = [wintypes.HANDLE, wintypes.DWORD,
                                             wintypes.LPWSTR, ctypes.POINTER(wintypes.DWORD)]
 
 
-def capture(pid, image_base, marketplace=False, weapon_progression=False, pve=False, commands=False, netconst=False):
+def capture(pid, image_base, marketplace=False, weapon_progression=False, pve=False, commands=False, netconst=False, weapon_models=False):
     handle = kernel.OpenProcess(0x1010, False, pid)  # QUERY_LIMITED_INFORMATION | VM_READ
     if not handle:
         raise ctypes.WinError(ctypes.get_last_error())
@@ -97,7 +97,7 @@ def capture(pid, image_base, marketplace=False, weapon_progression=False, pve=Fa
             raise ValueError('Loaded asset not found: ' + name)
 
         result = {'exe_sha256': SHA256, 'pid': pid, 'image_base': image_base, 'schemas': {}, 'tables': {}}
-        for name in (() if marketplace or weapon_progression or pve else ('mp/playerdata.def', 'mp/playersecuredata.def')):
+        for name in (() if marketplace or weapon_progression or pve or weapon_models else ('mp/playerdata.def', 'mp/playersecuredata.def')):
             address = asset(0x27, name)
             asset_header = words(address, 3)
             definition = asset_header[2]
@@ -126,6 +126,8 @@ def capture(pid, image_base, marketplace=False, weapon_progression=False, pve=Fa
             tables = ('mp/coWeaponPrimaryRankTable.csv', 'mp/coWeaponSecondaryRankTable.csv')
         if pve:
             tables = ('mp/coMapList.csv', 'mp/coGameTypesTable.csv')
+        if weapon_models:
+            tables = ('mp/coweapmodels/acr_mp.csv', 'mp/coweapitemswea.csv')
         for name in tables:
             header = words(asset(0x25, name), 4)
             columns, rows, cells = header[1:]
@@ -162,6 +164,8 @@ def capture(pid, image_base, marketplace=False, weapon_progression=False, pve=Fa
             output = ROOT / 'research/evidence/live-weapon-progression.json'
         if pve:
             output = ROOT / 'research/evidence/live-pve-tables.json'
+        if weapon_models:
+            output = ROOT / 'research/evidence/live-acr-models.json'
         output.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding='utf-8')
         print(output)
     finally:
@@ -177,7 +181,8 @@ if __name__ == '__main__':
     parser.add_argument('--pve', action='store_true', help='Read only the map and game type tables')
     parser.add_argument('--commands', action='store_true', help='Read only the registered console command names and callbacks')
     parser.add_argument('--netconst', action='store_true', help='Read only network registration names and verify their CRC seed')
+    parser.add_argument('--weapon-models', action='store_true', help='Read only ACR model recipes and default weapon parts')
     args = parser.parse_args()
-    if sum((args.marketplace, args.weapon_progression, args.pve, args.commands, args.netconst)) > 1:
+    if sum((args.marketplace, args.weapon_progression, args.pve, args.commands, args.netconst, args.weapon_models)) > 1:
         parser.error('Choose one bounded capture scope')
-    capture(args.pid, args.base, args.marketplace, args.weapon_progression, args.pve, args.commands, args.netconst)
+    capture(args.pid, args.base, args.marketplace, args.weapon_progression, args.pve, args.commands, args.netconst, args.weapon_models)
