@@ -83,6 +83,9 @@ class Connection:
         rows[0] = f'\\mapname\\{map_name}\\g_gametype\\dm\\2485\\2'
         rows[2] = 'cod'
         rows[3] = str(self.server_id)
+        # 0x579f30 parses CS_SLOWMOTION without checking sscanf's result.
+        # An absent value corrupts the native frame clock and send cadence.
+        rows[6415] = '0 0 1 1'
         if len(position_base) != 3 or any(type(v) is not int or not -32767 <= v <= 32768
                                           for v in position_base):
             raise ValueError('invalid map position base')

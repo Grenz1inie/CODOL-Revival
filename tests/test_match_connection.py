@@ -141,6 +141,16 @@ class ConnectionTests(unittest.TestCase):
                          (1, b'\x06'))
         self.assertEqual(self.connection.phase, 'primed')  # No claim of spawn yet.
 
+    def test_initial_gamestate_keeps_native_frame_clock_at_normal_speed(self):
+        from match_server.connection import Connection
+        reader = ClientConnection423()
+        for map_name in ('mp_nuked', 'mp_killhouse_sh'):
+            connection = Connection(self.uid, netconst_checksum=55, map_name=map_name)
+            reader.gamestate(connection.gamestate, checksum=55)
+            for elapsed in (16, 50, 1000):
+                with self.subTest(map=map_name, elapsed=elapsed):
+                    self.assertEqual(reader.frame_milliseconds(elapsed), elapsed)
+
     def test_captured_first_netchan_uses_zero_server_id_until_gamestate(self):
         # Authenticated 2026-10-16 DATA; 0x4602a0 sends the unset map epoch as 0.
         self.connection.challenge = 535873589
