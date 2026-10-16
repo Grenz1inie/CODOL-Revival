@@ -35,3 +35,25 @@ only the documented ready bits in expected bytes; the native writer/reader
 replay independently verifies ready=0. Host admission and Bot01-Bot17 names
 have since been confirmed in the real waiting room; the new start policy and
 gameplay still require separate live acceptance.
+
+## Synthetic UDP stats fixtures
+
+The three `stats-*-zlib.bin` files contain Python `zlib.compress` output from
+`bytes(i % 251 for i in range(length))`, with lengths 32768 (`stats-zlib.bin`),
+32767 (`stats-short-zlib.bin`) and 32769 (`stats-long-zlib.bin`). They contain
+no player data or game assets. SHA-256, in that order:
+
+- `40a07178ba94810350c389c5571f9c639e2dff20c36101b8076d1ae994f3fa20`
+- `63a4aa500da7846e20e4755c20f303da559f73a9bc2034807406f0aed1acb239`
+- `14d9b4db1975a01024bc4897fc94a920e91e876458c514de87c45b77fe3ba513`
+
+`tests/client_transport319.py` executes native `0x7f6ec0` to generate raw and
+compressed upload fragments; the compressed input is precomputed by Python,
+so this does not validate the game's compression routine. It also executes
+native `0x470a60` to consume Rust server envelopes with four command cases.
+The original EXE identity is the hash above. REA analysis image `udp319.exe`
+SHA-256 is `f4f06040b1c6fe03b3e24c9aeb927a4fcbc581c37edc3ada6d941564fbd3fc68`;
+local evidence and snapshot are `work/codol319-nuketown/udp-rea.evidence.json`
+and `udp-rea.snapshot.json`. Set `CODOL319_NATIVE_PYTHON` to run these replays;
+without that variable native checks are skipped. Live Nuketown UDP, game
+state, movement and AI remain unverified.
