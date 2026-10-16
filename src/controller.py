@@ -6,6 +6,7 @@ import mimetypes
 from pathlib import Path
 import re
 import subprocess
+import sys
 import threading
 from urllib.parse import parse_qs, urlsplit
 from dw_profiles import validate_profile
@@ -107,6 +108,24 @@ def create_server(root, port=8765, *, game_status=game_running):
                                              'premium': marketplace.balance(int(path.stem, 16), currency_id=2),
                                              **progression.summary(int(path.stem, 16))})
                     self.reply({'profiles': profiles, 'game_running': game_status(), 'capabilities': CAPABILITIES})
+                elif ((url.path == '/api/server/status' and not writing)
+                      or (url.path in ('/api/server/start', '/api/server/stop') and writing)):
+                    action = url.path.rsplit('/', 1)[1]
+                    if writing and body:
+                        raise ValueError('服务器操作不接受参数')
+                    with mutation_lock:
+                        if action == 'stop' and game_status():
+                            self.reply({'error': '请先停止游戏，再停止服务器'}, 409)
+                            return
+                        result = subprocess.run(['powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass',
+                                                 '-File', str(root / 'scripts/Control-Services.ps1'),
+                                                 '-Action', action, '-PythonPath', sys.executable],
+                                                capture_output=True, creationflags=subprocess.CREATE_NO_WINDOW, timeout=40)
+                        if result.returncode:
+                            self.reply({'error': '服务器操作失败',
+                                        'detail': result.stderr.decode('utf-8', errors='replace')}, 500)
+                            return
+                        self.reply(json.loads(result.stdout.decode('utf-8-sig')))
                 elif url.path == '/api/game/launch' and writing:
                     with mutation_lock:
                         if game_status():
