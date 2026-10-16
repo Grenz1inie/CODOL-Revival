@@ -18,7 +18,7 @@
     "game_id": "codol",
     "version": "3.19.26.22",
     "label": "3.19.26.22",
-    "adapter": null,
+    "adapter": "games.codol.versions.v3_19_26_22.adapter",
     "executable": "codoMP_client_shipRetail.exe",
     "sha256": "36997674b18f2896de5e9d755686f6922af10708f355175714058d0a0172b537",
     "version_files": {"iips": "V1.2.1.13", "tcls": "3.19.26.22"}

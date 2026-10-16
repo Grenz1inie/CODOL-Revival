@@ -53,7 +53,8 @@ def create_server(root, port=8765, *, game_status=game_running, installations=No
         return subprocess.run(['powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File',
                                str(Path(adapter.environment()['CODOL_VERSION_ROOT']) / 'scripts' / name),
                                '-Action', action, '-PythonPath', sys.executable], env=adapter.environment(),
-                              capture_output=True, creationflags=subprocess.CREATE_NO_WINDOW, timeout=120)
+                              capture_output=True, creationflags=subprocess.CREATE_NO_WINDOW,
+                              timeout=getattr(adapter, 'command_timeout', 120))
 
     def session_adapter():
         saved = root / 'config/session.json'

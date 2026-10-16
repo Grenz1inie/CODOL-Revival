@@ -46,7 +46,10 @@ function Start-Process {
 }
 function Invoke-RestMethod {
     param($Uri,$TimeoutSec,$Method,$ContentType,$Body)
-    if ($Uri -like '*/api/game/launch') {$global:events += 'selected-game'; return}
+    if ($Uri -like '*/api/game/launch') {
+        if ($TimeoutSec -lt 600) { throw 'Launch must allow the supported client copy and login timeout' }
+        $global:events += 'selected-game'; return
+    }
     [pscustomobject]@{profiles=@();game_running=$false;installation=@{state=$(if($Mode -eq 'matched'){'matched'}else{'unselected'})}}
 }
 function Invoke-WebRequest { param($Uri,$TimeoutSec,[switch]$UseBasicParsing) [pscustomobject]@{StatusCode=200;Content='test'} }

@@ -90,6 +90,27 @@ class ManagerApiTests(unittest.TestCase):
             self.assertEqual(error.exception.code, 409)
             run.assert_not_called()
 
+    def test_final_version_routes_startup_without_enabling_unverified_profile_tools(self):
+        self.manager.catalog[0].update(version='3.19.26.22', adapter='games.codol.versions.v3_19_26_22.adapter')
+        (self.game / 'IIPS/IIPSVersion.ini').write_text('3.19.26.22')
+        selected = self.call('installation/select', {'path': str(self.game)})['installation']
+        status = self.call('status')
+        self.assertEqual(status['profiles'], [])
+        self.assertTrue(status['capabilities']['launch']['available'])
+        self.assertFalse(status['capabilities']['progression']['available'])
+        self.assertFalse(status['capabilities']['skip_tutorial']['available'])
+        with self.assertRaises(HTTPError) as error:
+            self.call('profile/currency', {'user_id': '00000000000f4241', 'amount': 10})
+        self.assertEqual(error.exception.code, 409)
+        def launch(command, **options):
+            self.assertIn('v3_19_26_22', ' '.join(command))
+            self.assertEqual(options['env']['CODOL_RUNTIME'], str(self.manager.runtime(selected)))
+            self.assertGreater(options['timeout'], 240)
+            self.running = True
+            return subprocess.CompletedProcess(command, 0, b'', b'')
+        with patch('controller.subprocess.run', side_effect=launch):
+            self.call('game/launch', {})
+
     def test_selection_api_rejects_foreign_origin_and_extra_fields(self):
         for body, headers, code in [({'path': str(self.game)}, {'Origin': 'https://example.com'}, 403),
                                     ({'path': str(self.game), 'adapter': 'evil'}, {}, 400)]:

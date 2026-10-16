@@ -128,7 +128,7 @@ try {
     if (!$NoGame) {
         $status = Invoke-RestMethod ($controllerUrl + 'api/status') -TimeoutSec 5
         if ($status.installation.state -eq 'matched' -and !$status.game_running) {
-            Invoke-RestMethod ($controllerUrl + 'api/game/launch') -Method Post -ContentType 'application/json' -Body '{}' -TimeoutSec 120 | Out-Null
+            Invoke-RestMethod ($controllerUrl + 'api/game/launch') -Method Post -ContentType 'application/json' -Body '{}' -TimeoutSec 660 | Out-Null
             Write-Output 'Selected game launch requested. Confirm Windows UAC if prompted.'
         } elseif ($status.installation.state -ne 'matched') {
             Write-Output 'Choose a supported game directory in the web console.'

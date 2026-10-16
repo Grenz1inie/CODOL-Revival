@@ -1,0 +1,12 @@
+{
+  "source": "CODOL319-TestBuild/server (user-supplied local package)",
+  "scope": "Startup, loopback authentication, lobby and web resources only",
+  "files": {
+    "auth_capture.py": "0c9dfe9dba73e921e5e46ec54b6eb8dd78254d92ffc488aa01e3f243cd16b316",
+    "local_auth_ticket.py": "f49822850b7f2108ca0e1e089b1bd8fb48a79f36d7678e4eca8b2cf00b110141",
+    "lsg_codec.py": "6803d44afa31fbc2f079444d93b851a6d36bc434834ae2abab151d71f800d688",
+    "lsg_handshake.py": "832295f84aee2d7b20f45641fbecd145594c7019131d3b5a9b59b1cc96fbaa9f",
+    "local_profile319.py": "6776fc241a7c8717b67b2c8e03935f2d596d74f92bf7f2a44e6d15c6166b89c0",
+    "match-host/nfs_http319.py": "f663b2741a3b336bc2b30c35b1fca3653e832b0a8cb75330618e98dc17b96656"
+  }
+}
