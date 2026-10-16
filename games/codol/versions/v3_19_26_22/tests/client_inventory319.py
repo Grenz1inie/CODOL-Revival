@@ -21,6 +21,11 @@ class InventoryReader319:
             if hashlib.sha256(data).hexdigest() != digest:
                 raise ValueError('3.19 inventory snapshot hash mismatch: ' + name)
             self.cpu.mem_write(address, data)
+        exe = (CAPTURE / 'codoMP_client_shipRetail.exe').read_bytes()
+        if hashlib.sha256(exe).hexdigest() != '36997674b18f2896de5e9d755686f6922af10708f355175714058d0a0172b537':
+            raise ValueError('3.19 inventory executable hash mismatch')
+        # File-backed data includes the native inflate masks/tables at 00E4FF48.
+        self.cpu.mem_write(0xe16000, exe[0x702000:0x764000])
         self.cpu.mem_map(0x10000000, 0x100000)
         self.cpu.mem_map(0x20000000, 0x2000000)
         self.next = 0x20100000
@@ -30,7 +35,8 @@ class InventoryReader319:
         self.logs = 0
         self.write32(0xca8128, 0xf00000)
         self.write32(0xca8114, 0xf00010)
-        for a in (0xf00000, 0xf00010, 0xb74220, 0xb74240, 0xc427f0, 0xc3e400, 0xc42de0, 0xc3c20f, 0x8435d0):
+        for a in (0xf00000, 0xf00010, 0xb74220, 0xb74240, 0xc3d280, 0xc3d246,
+                  0xc427f0, 0xc3e400, 0xc42de0, 0x769840, 0xc3c20f, 0x8435d0):
             self.cpu.hook_add(UC_HOOK_CODE, self.hook, begin=a, end=a)
 
     def u32(self, a): return struct.unpack('<I', self.cpu.mem_read(a,4))[0]
@@ -42,12 +48,12 @@ class InventoryReader319:
         if address in (0xf00000,0xf00010):
             result=(self.u32(arg(1))+(1 if address==0xf00000 else -1))&0xffffffff
             self.write32(arg(1),result); pop=4
-        elif address==0xb74220:
+        elif address in (0xb74220,0xc3d280):
             result=self.next; self.next+=(arg(1)+15)&~15
             assert self.next<self.data
         elif address in (0xc427f0,0xc3e400):
             result=arg(1); cpu.mem_write(result,bytes(cpu.mem_read(arg(2),arg(3))))
-        elif address==0xc42de0:
+        elif address in (0xc42de0,0x769840):
             result=arg(1); cpu.mem_write(result,bytes([arg(2)&255])*arg(3))
         elif address==0x8435d0:
             self.logs+=1
@@ -71,9 +77,9 @@ class InventoryReader319:
         self.logs=0
         self.call(0xb8ba90,self.object,1)
         self.cpu.mem_write(self.data,data)
-        self.cpu.mem_write(self.buffer,struct.pack('<6I',0,100,len(data),self.data,self.data,self.data+len(data))+b'\1\0\0\0')
+        self.cpu.mem_write(self.buffer,struct.pack('<6I',0xdb7154,100,len(data),self.data,self.data,self.data+len(data))+b'\1\0\0\0')
         ok=self.call(0xb8bb90,self.object,self.buffer)
-        return {'ok':ok,'consumed':self.u32(self.buffer+0x10)-self.data,
+        return {'ok':ok,'consumed':self.u32(self.buffer+0x10)-self.u32(self.buffer+0xc),
                 'length':len(data),'count':self.u32(self.object+0x368),'logs':self.logs,
                 'items':self.u32(self.object+0x36c)}
 

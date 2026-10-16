@@ -383,6 +383,7 @@ def inventory_item(item_id, keyed=False):
 
 def player_assets_reply(task, transaction):
     """80/230 login result (00B87C00 -> 00B8BB90), with inherited account owners."""
+    import zlib
     items = owned_items()
     owner = b'\x0a' + struct.pack('<Q', UID) + b'\x10\x00'
     currencies = b''.join(WALLET_LAYOUTS['G'](cid, balance(cid)) for cid in (1, 2))
@@ -390,6 +391,12 @@ def player_assets_reply(task, transaction):
               + b'\x08' + struct.pack('<I', len(items))
               + b''.join(inventory_item(item) for item in items)
               + b'\x08' + struct.pack('<I', 0))  # No entitlements (00B8D6A0).
+    # Native readType (00B76310) expands tag 0x16 using zlib (00B76220/00794380).
+    # The full registry is about 1 MB raw and disconnects this client during login.
+    packed = zlib.compress(assets)
+    if len(packed) + 16 < len(assets):
+        assets = (b'\x16' + b''.join(b'\x08' + struct.pack('<I', n)
+                                   for n in (50, len(assets), len(packed))) + packed)
     head = b'\x0a' + struct.pack('<Q', transaction) + b'\x08' + struct.pack('<I', 0) + b'\x03' + bytes([task])
     return head + b'\x08' + struct.pack('<I', 1) + b'\x08' + struct.pack('<I', 1) + assets
 

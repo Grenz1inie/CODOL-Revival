@@ -11,9 +11,11 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import zlib
 from unittest.mock import patch
 
 from games.codol.versions.v3_19_26_22.server import console_store
+from games.codol.versions.v3_19_26_22.server import lsg_codec
 
 
 SERVER = Path(__file__).resolve().parents[1] / 'server'
@@ -39,6 +41,21 @@ class InventoryFixture(unittest.TestCase):
 
 
 class Inventory319Tests(InventoryFixture):
+    def test_full_inventory_fits_small_lobby_frame_without_dropping_items(self):
+        ids = list(range(100, 21840))
+        (self.data / 'owned_items.json').write_text(json.dumps(ids))
+        reply = self.profile.player_assets_reply(230, 9)
+        # Conservative regression budget, not a claim about the client's exact limit.
+        self.assertLessEqual(len(lsg_codec.encode(1, reply, bytes(72), 1)), 65536)
+        self.assertEqual(reply[26:28], b'\x16\x08')
+        self.assertEqual(struct.unpack_from('<I', reply, 28)[0], 50)
+        raw_size = struct.unpack_from('<I', reply, 33)[0]
+        packed_size = struct.unpack_from('<I', reply, 38)[0]
+        raw = zlib.decompress(reply[42:])
+        self.assertEqual((raw_size, packed_size), (len(raw), len(reply)-42))
+        self.assertEqual(struct.unpack_from('<I', raw, 31)[0], len(ids))
+        self.assertEqual([struct.unpack_from('<I', raw, 36+48*i)[0] for i in range(len(ids))], ids)
+
     def test_assets_reply_is_one_composite_result_even_for_empty_inventory(self):
         reply = self.profile.player_assets_reply(230, 9)
         expected = (b'\x0a' + struct.pack('<Q', 9) + b'\x08' + bytes(4) + b'\x03\xe6'
@@ -69,9 +86,10 @@ class NativeInventory319Tests(InventoryFixture):
         (self.data / 'owned_items.json').write_text(json.dumps(ids))
         before = (self.data / 'owned_items.json').read_bytes()
         payload = self.profile.player_assets_reply(230, 9)[26:]
+        self.assertEqual(payload[0], 0x16)
         result = self.reader.parse(payload)
-        self.assertEqual((result['ok'], result['consumed'], result['count'], result['logs']),
-                         (1, len(payload), len(ids), 0))
+        self.assertEqual((result['ok'], result['consumed'], result['count']),
+                         (1, 40+48*len(ids), len(ids)))
         for index in (0, 19999, 20000, len(ids)-1):
             self.assertEqual(self.reader.item(result['items'] + index*0xb8), {
                 'owner': 1000001, 'id': ids[index], 'quantity': 1, 'experience': 0,
@@ -84,6 +102,23 @@ class NativeInventory319Tests(InventoryFixture):
         self.assertEqual(bytes(cpu.mem_read(obj+0xd8, 1)), b'\x02')
         self.assertEqual(self.reader.u32(obj+0xdc), 57)
         self.assertEqual((self.data / 'owned_items.json').read_bytes(), before)
+
+    def test_native_zlib_wrapper_matches_bytes_and_rejects_corrupt_checksum(self):
+        raw = self.profile.player_assets_reply(230, 1)[26:]
+        packed = zlib.compress(raw)
+        block = b'\x16' + b''.join(b'\x08'+struct.pack('<I', n)
+                                  for n in (50, len(raw), len(packed))) + packed
+        result = self.reader.parse(block)
+        self.assertEqual((result['ok'], result['consumed'], result['count']), (1, len(raw), 0))
+        for data, expected in ((packed, 1), (packed[:-1]+bytes([packed[-1]^1]), 0), (packed[:-1], 0)):
+            reader = self.reader
+            reader.cpu.mem_write(reader.data, data)
+            reader.write32(reader.buffer, reader.data+0x10000)
+            reader.write32(reader.buffer+4, reader.data)
+            self.assertEqual(reader.call(0xb75ed0, reader.buffer,
+                             reader.buffer, len(raw), reader.buffer+4, len(data)), expected)
+            if expected:
+                self.assertEqual(bytes(reader.cpu.mem_read(reader.data+0x10000, len(raw))), raw)
 
     def test_client_consumes_empty_inventory_and_rejects_truncated_or_wrong_tags(self):
         empty = self.profile.player_assets_reply(230, 1)[26:]
@@ -98,7 +133,7 @@ class NativeInventory319Tests(InventoryFixture):
 
 class LobbyInventory319Tests(InventoryFixture):
     def test_login_task_230_reads_persisted_items_through_real_lobby_dispatch(self):
-        (self.data / 'owned_items.json').write_text('[114,31403]')
+        (self.data / 'owned_items.json').write_text(json.dumps(list(range(100, 21840))))
         # Only the test listener's port changes. Execute the production handshake/dispatch.
         script = '''
 import runpy, socket
@@ -151,7 +186,9 @@ runpy.run_path('lsg_handshake.py', run_name='__main__')
             client_keys = keys[20:40]+keys[:20]+keys[56:72]+keys[40:56]
             self.assertEqual(codec.decode(frame()[4:], client_keys)[0], 4)
             connection.sendall(codec.encode(0x86, b'\x50\x03\xe6\x10\0\0', client_keys, 1))
-            kind, reply = codec.decode(frame()[4:], client_keys)
+            encrypted = frame()
+            self.assertLessEqual(len(encrypted), 65536)
+            kind, reply = codec.decode(encrypted[4:], client_keys)
             self.assertEqual(kind, 1)
             self.assertEqual(reply[14:16], b'\x03\xe6')
             self.assertEqual(struct.unpack_from('<I', reply, 17)[0], 1,
