@@ -313,6 +313,37 @@ class ConnectionTests(unittest.TestCase):
         self.assertEqual(self.connection.pending_commands[0]['buttons'],1)
         self.assertEqual(self.connection.server_ack,reliable)
 
+    def test_confirmed_snapshot_remains_input_base_while_client_lags(self):
+        from match_server.input import usercmd_key
+        from match_server.snapshot import encode_snapshot
+        self.connect()
+        self.upload()
+        self.connection.receive(self.packet(b'\x03',1))
+        state={0:1000,39:5}
+        self.connection.send(encode_snapshot(state,server_time=1000,health=100),player_fields=state)
+        acknowledged=self.connection.sent
+        self.connection.receive(self.packet(b'\x03',2,ack=acknowledged),reply=False)
+        # Rendering/background stalls can leave the client using its last
+        # confirmed snapshot while the server publishes more than 64 frames.
+        for time in range(1050,5050,50):
+            newer=state|{0:time,39:7}
+            self.connection.send(encode_snapshot(newer,server_time=time,health=100),player_fields=newer)
+        base={'time':0,'weapon':5}
+        body=self.client.usercmd(base|{'time':5050,'buttons':1,'forward':127},
+            key=usercmd_key(acknowledged,self.connection.checksum_feed),base=base,move=True)
+        packet=self.packet(body,3,ack=acknowledged)
+        self.connection.receive(packet,reply=False)
+        command,=self.connection.pending_commands
+        self.assertEqual((command['weapon'],command['buttons'],command['direction']),(5,1,1))
+        self.assertEqual(self.connection.receive(packet,reply=False),[])
+        with self.assertRaisesRegex(ValueError,'unsent message'):
+            self.connection.receive(self.packet(body,4,ack=self.connection.sent+1),reply=False)
+        # Advancing to a new confirmed frame retires the old base normally.
+        self.connection.receive(self.packet(b'\x03',4,ack=self.connection.sent),reply=False)
+        self.connection.send(b'\x06')
+        with self.assertRaisesRegex(ValueError,'expired input base'):
+            self.connection.receive(self.packet(body,5,ack=acknowledged),reply=False)
+
     def test_loading_status_and_position_center_are_bound_to_the_map_state(self):
         from match_server.connection import Connection
         self.connection=Connection(self.uid,netconst_checksum=0x11223344,

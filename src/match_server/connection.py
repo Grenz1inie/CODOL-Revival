@@ -75,6 +75,7 @@ class Connection:
         self.pending_commands = []
         self.server_commands = {0:b''}
         self.server_ack = self.published_command = 0
+        self.message_ack = 0
         self.input_bases = {0:{}}
         self.default_input = {}
         self.world_baseline_sent = False
@@ -172,7 +173,10 @@ class Connection:
         if player_fields is not None:
             self.default_input = default_usercmd(player_fields)
         self.input_bases[self.sent] = self.default_input
-        self.input_bases = {n:b for n,b in self.input_bases.items() if n > self.sent-64}
+        # Keep the last confirmed base across a client pause; it remains the
+        # native usercmd delta source until a newer snapshot is acknowledged.
+        self.input_bases = {n:b for n,b in self.input_bases.items()
+                            if n > self.sent-64 or n == self.message_ack}
         return packets
 
     def receive(self, packet, *, reply=True):
@@ -189,8 +193,10 @@ class Connection:
                          and self.phase in ('connected', 'primed'))
         if not 0 < sequence < 0x20000000 or (server_id not in (255, self.server_id) and not initial_epoch):
             raise ValueError('invalid client sequence or server id')
-        if ack not in self.input_bases or reliable_ack > self.published_command or reliable_ack not in self.server_commands:
+        if ack > self.sent or reliable_ack > self.published_command or reliable_ack not in self.server_commands:
             raise ValueError('client acknowledged an unsent message')
+        if ack not in self.input_bases:
+            raise ValueError(f'expired input base: acknowledged={ack}, sent={self.sent}')
         if sequence <= self.received:
             return []
         key = (self.challenge ^ server_id ^ ack)&255
@@ -227,6 +233,7 @@ class Connection:
         if reader.cursor != len(body):
             raise ValueError('trailing client message bytes')
         self.received, self.reliable, self.command = sequence, reliable, command
+        self.message_ack = max(self.message_ack,ack)
         self.server_ack = max(self.server_ack,reliable_ack)
         self.server_commands = {n:c for n,c in self.server_commands.items() if n >= self.server_ack-32}
         self.pending_commands = commands
