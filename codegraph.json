@@ -1,6 +1,10 @@
 {
   "exclude": [
     "data/",
+    "games/**/resources/definitions/",
+    "games/**/tests/fixtures/",
+    "games/**/reverse/recovered-code/evidence/",
+    "games/**/target/",
     "runtime/",
     "archive/",
     "research/",

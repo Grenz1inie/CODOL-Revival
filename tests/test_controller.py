@@ -1,4 +1,5 @@
 """Control API contract: temp state/docs, no game processes or real saves."""
+import hashlib
 import json
 import subprocess
 from pathlib import Path
@@ -12,7 +13,9 @@ from urllib.request import Request, urlopen
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 from controller import create_server
-from dw_marketplace import MarketplaceStore
+from manager.installations import Installations
+ROOT = Path(__file__).resolve().parents[1]
+from games.codol.versions.v3_3_3_3.server.dw_marketplace import MarketplaceStore
 
 
 class ControllerTests(unittest.TestCase):
@@ -24,7 +27,16 @@ class ControllerTests(unittest.TestCase):
         (self.root / 'docs/report.json').write_text('{"result": 1}', encoding='utf-8')
         (self.root / 'secret.txt').write_text('outside docs', encoding='utf-8')
         self.running = False
-        self.server = create_server(self.root, port=0, game_status=lambda: self.running)
+        game = self.root / 'game'
+        (game / 'IIPS').mkdir(parents=True)
+        (game / 'IIPS/IIPSVersion.ini').write_text('3.3.3.3')
+        (game / 'client.exe').write_bytes(b'client')
+        installations = Installations(self.root, catalog=[{'game_id':'codol', 'version':'3.3.3.3',
+            'adapter':'games.codol.versions.v3_3_3_3.adapter', 'executable':'client.exe',
+            'sha256':hashlib.sha256(b'client').hexdigest()}])
+        selected = installations.select(str(game))
+        self.runtime = installations.prepare(selected)
+        self.server = create_server(self.root, port=0, game_status=lambda: self.running, installations=installations)
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
         self.thread.start()
         self.url = f'http://127.0.0.1:{self.server.server_port}'
@@ -45,7 +57,7 @@ class ControllerTests(unittest.TestCase):
         self.assertEqual(self.call('/api/settings'), {'skip_tutorial': True})
         self.call('/api/settings', {'skip_tutorial': False})
         self.assertEqual(self.call('/api/settings'), {'skip_tutorial': False})
-        saved = json.loads((self.root / 'runtime/data/controller.json').read_text())
+        saved = json.loads((self.runtime / 'data/controller.json').read_text())
         self.assertEqual(saved, {'skip_tutorial': False})
         for bad in [{'skip_tutorial': 'false'}, {'skip_tutorial': 1}, {'unknown': True}]:
             with self.subTest(bad=bad), self.assertRaises(HTTPError) as caught:
@@ -57,7 +69,7 @@ class ControllerTests(unittest.TestCase):
         state = {'running': True, 'pid': 123, 'ready': True, 'ports': []}
         with patch('controller.subprocess.run', return_value=subprocess.CompletedProcess([], 0, json.dumps(state).encode(), b'')) as run:
             self.assertEqual(self.call('/api/server/status'), state)
-            self.assertIn(str(self.root / 'scripts/Control-Services.ps1'), run.call_args.args[0])
+            self.assertIn(str(ROOT / 'games/codol/versions/v3_3_3_3/scripts/Control-Services.ps1'), run.call_args.args[0])
         with patch('controller.subprocess.run') as run:
             for path, data in [('/api/server/start', {}), ('/api/server/stop', {}), ('/api/server/status', {})]:
                 with self.subTest(path=path), self.assertRaises(HTTPError) as caught:
@@ -69,7 +81,7 @@ class ControllerTests(unittest.TestCase):
         for action in ('launch', 'stop'):
             self.running = action == 'stop'
             def execute(command, **kwargs):
-                self.assertIn(str(self.root / 'scripts/Control-Game.ps1'), command)
+                self.assertIn(str(ROOT / 'games/codol/versions/v3_3_3_3/scripts/Control-Game.ps1'), command)
                 self.assertEqual(command[command.index('-Action') + 1], 'start' if action == 'launch' else 'stop')
                 self.running = action == 'launch'
                 return subprocess.CompletedProcess(command, 0, b'', b'')
@@ -109,12 +121,12 @@ class ControllerTests(unittest.TestCase):
         run.assert_not_called()
 
     def test_story_unlock_api_rejects_live_game_and_preserves_other_profile_fields(self):
-        from dw_progression import PrivateProfileStore
-        directory = self.root / 'runtime/data/public-profiles'
+        from games.codol.versions.v3_3_3_3.server.dw_progression import PrivateProfileStore
+        directory = self.runtime / 'data/public-profiles'
         directory.mkdir(parents=True)
         uid = 'e94a180c65d3c23b'
-        (directory / (uid + '.bin')).write_bytes((Path(__file__).parent / 'fixtures/public-profile.bin').read_bytes())
-        store = PrivateProfileStore(self.root / 'runtime/data/private-profiles', self.root / 'runtime/backups/private-profiles')
+        (directory / (uid + '.bin')).write_bytes((ROOT / 'games/codol/versions/v3_3_3_3/tests/fixtures/public-profile.bin').read_bytes())
+        store = PrivateProfileStore(self.runtime / 'data/private-profiles', self.runtime / 'backups/private-profiles')
         store.set_progression(int(uid, 16), 70, 3)
         before = store.load(int(uid, 16))
         self.running = True
@@ -151,9 +163,9 @@ class ControllerTests(unittest.TestCase):
         self.assertEqual(self.call('/api/settings'), {'skip_tutorial': True})
 
     def test_status_reports_available_profiles_and_unsupported_mutations_do_not_write(self):
-        directory = self.root / 'runtime/data/public-profiles'
+        directory = self.runtime / 'data/public-profiles'
         directory.mkdir(parents=True)
-        sample = Path(__file__).parent / 'fixtures/public-profile.bin'
+        sample = ROOT / 'games/codol/versions/v3_3_3_3/tests/fixtures/public-profile.bin'
         target = directory / 'e94a180c65d3c23b.bin'
         target.write_bytes(sample.read_bytes())
         status = self.call('/api/status')
@@ -164,9 +176,9 @@ class ControllerTests(unittest.TestCase):
         self.assertEqual(target.read_bytes(), sample.read_bytes())
 
     def test_currency_api_persists_rejects_invalid_accounts_and_running_game(self):
-        directory = self.root / 'runtime/data/public-profiles'
+        directory = self.runtime / 'data/public-profiles'
         directory.mkdir(parents=True)
-        sample = (Path(__file__).parent / 'fixtures/public-profile.bin').read_bytes()
+        sample = (ROOT / 'games/codol/versions/v3_3_3_3/tests/fixtures/public-profile.bin').read_bytes()
         (directory / 'e94a180c65d3c23b.bin').write_bytes(sample)
         data = {'user_id': 'e94a180c65d3c23b', 'amount': 100}
         result = self.call('/api/profile/currency', data)
@@ -188,21 +200,21 @@ class ControllerTests(unittest.TestCase):
         self.assertEqual((directory / 'e94a180c65d3c23b.bin').read_bytes(), sample)
 
     def test_invalid_saved_currency_is_reported_without_overwriting_it(self):
-        directory = self.root / 'runtime/data/marketplace'
+        directory = self.runtime / 'data/marketplace'
         directory.mkdir(parents=True)
         (directory / 'e94a180c65d3c23b.json').write_text('{}', encoding='utf-8')
-        profiles = self.root / 'runtime/data/public-profiles'
+        profiles = self.runtime / 'data/public-profiles'
         profiles.mkdir(parents=True)
-        (profiles / 'e94a180c65d3c23b.bin').write_bytes((Path(__file__).parent / 'fixtures/public-profile.bin').read_bytes())
+        (profiles / 'e94a180c65d3c23b.bin').write_bytes((ROOT / 'games/codol/versions/v3_3_3_3/tests/fixtures/public-profile.bin').read_bytes())
         with self.assertRaises(HTTPError) as caught:
             self.call('/api/profile/currency', {'user_id': 'e94a180c65d3c23b', 'amount': 10})
         self.assertEqual(caught.exception.code, 400)
         self.assertEqual((directory / 'e94a180c65d3c23b.json').read_text(), '{}')
 
     def test_premium_api_is_separate_and_rejects_live_game_writes(self):
-        directory = self.root / 'runtime/data/public-profiles'
+        directory = self.runtime / 'data/public-profiles'
         directory.mkdir(parents=True)
-        (directory / 'e94a180c65d3c23b.bin').write_bytes((Path(__file__).parent / 'fixtures/public-profile.bin').read_bytes())
+        (directory / 'e94a180c65d3c23b.bin').write_bytes((ROOT / 'games/codol/versions/v3_3_3_3/tests/fixtures/public-profile.bin').read_bytes())
         data = {'user_id': 'e94a180c65d3c23b', 'amount': 1000}
         self.assertEqual(self.call('/api/profile/premium', data)['premium'], 1000)
         profile = self.call('/api/status')['profiles'][0]
@@ -219,10 +231,10 @@ class ControllerTests(unittest.TestCase):
 
     def test_inventory_listing_and_manual_renewal_obey_account_and_running_boundaries(self):
         uid = 'e94a180c65d3c23b'
-        directory = self.root / 'runtime/data/public-profiles'
+        directory = self.runtime / 'data/public-profiles'
         directory.mkdir(parents=True)
-        (directory / (uid + '.bin')).write_bytes((Path(__file__).parent / 'fixtures/public-profile.bin').read_bytes())
-        store = MarketplaceStore(self.root / 'runtime/data/marketplace', self.root / 'runtime/backups/marketplace')
+        (directory / (uid + '.bin')).write_bytes((ROOT / 'games/codol/versions/v3_3_3_3/tests/fixtures/public-profile.bin').read_bytes())
+        store = MarketplaceStore(self.runtime / 'data/marketplace', self.runtime / 'backups/marketplace')
         store.add_currency(int(uid, 16), 20000)
         store.purchase(int(uid, 16), 848, unlock_rank=370)
         old = store.inventory(int(uid, 16))[0]['expires']
@@ -238,9 +250,9 @@ class ControllerTests(unittest.TestCase):
 
     def test_grant_all_api_is_offline_and_preserves_public_profile(self):
         uid = 'e94a180c65d3c23b'
-        directory = self.root / 'runtime/data/public-profiles'
+        directory = self.runtime / 'data/public-profiles'
         directory.mkdir(parents=True)
-        original = (Path(__file__).parent / 'fixtures/public-profile.bin').read_bytes()
+        original = (ROOT / 'games/codol/versions/v3_3_3_3/tests/fixtures/public-profile.bin').read_bytes()
         (directory / (uid + '.bin')).write_bytes(original)
         self.running = True
         with self.assertRaises(HTTPError) as caught:
@@ -253,9 +265,9 @@ class ControllerTests(unittest.TestCase):
         self.assertEqual((directory / (uid + '.bin')).read_bytes(), original)
 
     def test_progression_api_applies_verified_maximum_and_protects_existing_public_profile(self):
-        directory = self.root / 'runtime/data/public-profiles'
+        directory = self.runtime / 'data/public-profiles'
         directory.mkdir(parents=True)
-        original = (Path(__file__).parent / 'fixtures/public-profile.bin').read_bytes()
+        original = (ROOT / 'games/codol/versions/v3_3_3_3/tests/fixtures/public-profile.bin').read_bytes()
         (directory / 'e94a180c65d3c23b.bin').write_bytes(original)
         data = {'user_id': 'e94a180c65d3c23b', 'level': 70, 'prestige': 3}
         result = self.call('/api/profile/progression', data)

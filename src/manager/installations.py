@@ -4,6 +4,8 @@ import json
 import os
 from pathlib import Path
 import re
+import shutil
+import tempfile
 from xml.etree import ElementTree
 
 
@@ -83,8 +85,10 @@ class Installations:
         except (OSError, ValueError, KeyError, TypeError):
             return {'state': 'invalid', 'path': '', 'version': None, 'reason': '目录配置无法读取，请重新选择游戏目录'}
 
-    def select(self, path):
+    def select(self, path, *, prepare=False):
         result = self.detect(path, fresh=True)
+        if prepare and result['state'] == 'matched':
+            self.prepare(result)
         write_json(self.file, {'path': result['path']})
         return result
 
@@ -96,3 +100,24 @@ class Installations:
     def runtime(self, selection):
         self.definition(selection)
         return self.root / 'runtime/instances' / selection['instance_id']
+
+    def prepare(self, selection):
+        """Copy legacy player data once, only for the original installation."""
+        runtime = self.runtime(selection)
+        if (runtime / 'instance.json').exists():
+            return runtime
+        runtime.parent.mkdir(parents=True, exist_ok=True)
+        legacy = self.root / 'runtime'
+        original = self.root.parent / 'CODOL_Experience_V3.3.3.3_FULL.7z'
+        # Stage before publishing: interruption never leaves a partly imported profile.
+        with tempfile.TemporaryDirectory(prefix='import-', dir=runtime.parent) as temporary:
+            stage = Path(temporary) / 'instance'
+            stage.mkdir()
+            names = ['certs']
+            if Path(selection['path']) == original and selection['version'] == '3.3.3.3':
+                names += ['data', 'backups']
+            for name in names:
+                if (legacy / name).is_dir(): shutil.copytree(legacy / name, stage / name)
+            write_json(stage / 'instance.json', selection)
+            stage.rename(runtime)
+        return runtime

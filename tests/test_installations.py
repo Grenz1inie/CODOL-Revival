@@ -5,6 +5,7 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 from manager.installations import Installations
@@ -91,6 +92,33 @@ class InstallationsTests(unittest.TestCase):
         self.manager.file.parent.mkdir()
         self.manager.file.write_text('not json')
         self.assertEqual(self.manager.current()['state'], 'invalid')
+
+    def test_import_is_atomic_one_time_and_does_not_copy_players_to_other_installs(self):
+        import shutil
+        # Use a nested disposable repository so the legacy sibling is also disposable.
+        repo = self.root / 'repo'
+        manager = Installations(repo, catalog=self.catalog)
+        original = self.root / 'CODOL_Experience_V3.3.3.3_FULL.7z'
+        shutil.copytree(self.game, original)
+        legacy = repo / 'runtime/data'
+        legacy.mkdir(parents=True)
+        (legacy / 'save.bin').write_bytes(b'original player data')
+        selected = manager.select(str(original), prepare=True)
+        saved = manager.runtime(selected) / 'data/save.bin'
+        self.assertEqual(saved.read_bytes(), b'original player data')
+        saved.write_bytes(b'new progress')
+        manager.select(str(original), prepare=True)
+        self.assertEqual(saved.read_bytes(), b'new progress')
+        self.assertEqual((legacy / 'save.bin').read_bytes(), b'original player data')
+        other = manager.select(str(self.game), prepare=True)
+        self.assertFalse((manager.runtime(other) / 'data/save.bin').exists())
+        third = self.root / 'third'
+        shutil.copytree(self.game, third)
+        (repo / 'runtime/certs').mkdir()
+        (repo / 'runtime/certs/ca.pem').write_bytes(b'test certificate')
+        with patch('manager.installations.shutil.copytree', side_effect=OSError('disk full')):
+            with self.assertRaises(OSError): manager.select(str(third), prepare=True)
+        self.assertEqual(manager.current()['path'], str(self.game))
 
 
 if __name__ == '__main__':

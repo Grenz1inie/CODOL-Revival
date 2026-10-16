@@ -1,12 +1,12 @@
 # 首关原生适配研究归档
 
-当前构建入口是项目根目录的 `tools/build_native_server.py`，当前有界启动探针是 `tools/probe_native_server.py`。实现以 `tools/native/server3333.patch` 为准；详见 [移植记录](../../../docs/reports/20261015-server-port.md)。最简首关服务端初始化和资源发布校验已通过，尚未完成大厅接入、客户端出生和移动、射击验收。
+当前构建入口是项目根目录的 `games/codol/versions/v3_3_3_3/reverse/tools/build_native_server.py`，当前有界启动探针是 `games/codol/versions/v3_3_3_3/reverse/tools/probe_native_server.py`。实现以 `games/codol/versions/v3_3_3_3/reverse/tools/native/server3333.patch` 为准；详见 [移植记录](../../../docs/reports/20261015-server-port.md)。最简首关服务端初始化和资源发布校验已通过，尚未完成大厅接入、客户端出生和移动、射击验收。
 
 本目录提交的文件用于保存历史实验方法：
 
 - `decode_reference365.py`：旧版FF365对照解码器，保留签名和哈希校验，不用于判定当前423资源格式。
 - `port_*_source.py`：前期移植生成脚本，会改写生成源码和补丁。不是当前构建步骤，不要在现有补丁上重新执行。
-- `probe_source_startup.py`：早期启动探针，已被上述 `tools/probe_native_server.py` 替代；没有当前最小装备覆盖，且会把可恢复的导航诊断当成失败。仅保留历史，不用于当前验收。
+- `probe_source_startup.py`：早期启动探针，已被上述 `games/codol/versions/v3_3_3_3/reverse/tools/probe_native_server.py` 替代；没有当前最小装备覆盖，且会把可恢复的导航诊断当成失败。仅保留历史，不用于当前验收。
 - `*.gdb`：固定版本和地址的历史断点命令，包含本机实验路径。只对照对应证据使用，不向原版客户端应用。
 - `reference-zone-assets/*.c`：源数据回放/模型探针入口，依赖本地参考源码及当时的实验消费者；不是独立完整构建工程。
 
@@ -15,3 +15,5 @@
 第三方原始源码 `reference-source/`、生成源码 `server3333/`、EXE/DLL、IFS/FF、提取数据、运行日志、REA快照和索引数据库保持本地排除。构建所需的原始文件哈希清单单独跟踪于 `../../evidence/reference-native-source.json`；用户提供的源码ZIP和游戏资源仍须在本地准备。
 
 旧启动器不作为3.3.3.3运行入口。当前探针运行的是本项目编译的隔离服务端 `server3333.exe`，读取参考包的基础脚本，不启动旧版客户端或启动器。
+
+历史实验源码已归入 `games/codol/versions/v3_3_3_3/reverse/experiments/story-native/`，本目录继续保留原始实验数据、只读参考源码和生成物。上文所列 Python、C 和 GDB 脚本均以新路径为准。

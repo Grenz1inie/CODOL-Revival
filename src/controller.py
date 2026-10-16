@@ -9,28 +9,16 @@ import subprocess
 import sys
 import threading
 from urllib.parse import parse_qs, urlsplit
-from dw_profiles import validate_profile
-from dw_marketplace import MarketplaceStore
-from dw_progression import PrivateProfileStore
-
-CAPABILITIES = {
-    'progression': {'available': True, 'reason': '此版本上限为 3 转生、70 级；同时更新商城等级解锁值。'},
-    'currency': {'available': True, 'reason': '游戏币与点券独立保存；退出游戏后修改，重登生效。'},
-    'inventory': {'available': True, 'reason': '发放 6772 种物品（含配件与皮肤），武器使用满级经验；永久保存，已有数量不叠加。'},
-}
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+import importlib
+from manager.installations import Installations
+from manager.folder_picker import choose_folder
 
 
 def game_running():
     result = subprocess.run(['tasklist', '/FI', 'IMAGENAME eq codoMP_client_shipRetail.exe', '/FO', 'CSV', '/NH'],
                             capture_output=True, creationflags=subprocess.CREATE_NO_WINDOW, timeout=10, check=True)
     return b'codoMP_client_shipRetail.exe' in result.stdout
-
-
-def read_settings(root):
-    path = root / 'runtime/data/controller.json'
-    if not path.exists():
-        return {'skip_tutorial': True}
-    return json.loads(path.read_text(encoding='utf-8'))
 
 
 def write_json(path, value):
@@ -47,11 +35,37 @@ def under(directory, name):
     return path
 
 
-def create_server(root, port=8765, *, game_status=game_running):
+def create_server(root, port=8765, *, game_status=game_running, installations=None, choose_directory=choose_folder):
     root = Path(root).resolve()
-    mutation_lock = threading.Lock()
-    marketplace = MarketplaceStore(root / 'runtime/data/marketplace', root / 'runtime/backups/marketplace')
-    progression = PrivateProfileStore(root / 'runtime/data/private-profiles', root / 'runtime/backups/private-profiles')
+    mutation_lock = threading.RLock()
+    installs = installations or Installations(root)
+    adapters = {}
+
+    def adapter_for(selection):
+        definition = installs.definition(selection)
+        key = selection['instance_id']
+        if key not in adapters:
+            module = importlib.import_module(definition['adapter'])
+            adapters[key] = module.Adapter(root, selection, installs.runtime(selection))
+        return adapters[key]
+
+    def command(adapter, name, action):
+        return subprocess.run(['powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File',
+                               str(Path(adapter.environment()['CODOL_VERSION_ROOT']) / 'scripts' / name),
+                               '-Action', action, '-PythonPath', sys.executable], env=adapter.environment(),
+                              capture_output=True, creationflags=subprocess.CREATE_NO_WINDOW, timeout=120)
+
+    def session_adapter():
+        saved = root / 'config/session.json'
+        selection = json.loads(saved.read_text(encoding='utf-8')) if saved.is_file() else installs.current()
+        return adapter_for(selection) if selection['state'] == 'matched' else None
+
+    def server_state():
+        adapter = session_adapter()
+        if adapter is None: return {'running': False, 'pid': None, 'ready': False, 'ports': []}
+        result = command(adapter, 'Control-Services.ps1', 'status')
+        if result.returncode: raise OSError(result.stderr.decode('utf-8', errors='replace'))
+        return json.loads(result.stdout.decode('utf-8-sig'))
 
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, *_):
@@ -92,89 +106,71 @@ def create_server(root, port=8765, *, game_status=game_running):
                     body = json.loads(self.rfile.read(length))
                     if not isinstance(body, dict):
                         raise ValueError('请求必须是对象')
-                if url.path == '/api/settings':
-                    if writing:
-                        if set(body) != {'skip_tutorial'} or type(body['skip_tutorial']) is not bool:
-                            raise ValueError('skip_tutorial 必须是布尔值')
-                        with mutation_lock:
-                            write_json(root / 'runtime/data/controller.json', body)
-                    self.reply(read_settings(root))
+                if url.path == '/api/versions' and not writing:
+                    self.reply({'versions': [{'game_id': v['game_id'], 'version': v['version'],
+                        'label': v.get('label', v['version']), 'supported': bool(v.get('adapter'))} for v in installs.catalog]})
+                elif url.path in ('/api/installation/select', '/api/installation/choose') and writing:
+                    choosing = url.path.endswith('/choose')
+                    if set(body) != (set() if choosing else {'path'}):
+                        raise ValueError('需要有效的游戏目录参数')
+                    if game_status():
+                        self.reply({'error': '请先停止游戏与模拟服务器，再切换目录'}, 409); return
+                    path = choose_directory() if choosing else body['path']
+                    if path is None:
+                        self.reply({'cancelled': True, 'installation': installs.current()}); return
+                    with mutation_lock:
+                        if game_status() or server_state()['running']:
+                            self.reply({'error': '请先停止游戏与模拟服务器，再切换目录'}, 409); return
+                        selection = installs.select(path, prepare=True)
+                    self.reply({'cancelled': False, 'installation': selection})
                 elif url.path == '/api/status' and not writing:
-                    profiles = []
-                    for path in sorted((root / 'runtime/data/public-profiles').glob('*.bin')):
-                        if re.fullmatch('[0-9a-f]{16}', path.stem):
-                            validate_profile(path.read_bytes())
-                            profiles.append({'user_id': path.stem, 'currency': marketplace.balance(int(path.stem, 16)),
-                                             'premium': marketplace.balance(int(path.stem, 16), currency_id=2),
-                                             **progression.summary(int(path.stem, 16))})
-                    self.reply({'profiles': profiles, 'game_running': game_status(), 'capabilities': CAPABILITIES})
+                    with mutation_lock:
+                        selection = installs.current()
+                        adapter = adapter_for(selection) if selection['state'] == 'matched' else None
+                        self.reply({'installation': selection, 'profiles': adapter.profiles() if adapter else [],
+                                    'game_running': game_status(), 'capabilities': adapter.capabilities if adapter else {}})
                 elif url.path == '/api/server/status' and not writing:
-                    result = subprocess.run(['powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass',
-                                             '-File', str(root / 'scripts/Control-Services.ps1'), '-Action', 'status'],
-                                            capture_output=True, creationflags=subprocess.CREATE_NO_WINDOW, timeout=40)
-                    if result.returncode:
-                        self.reply({'error': '服务器状态读取失败',
-                                    'detail': result.stderr.decode('utf-8', errors='replace')}, 500)
-                    else:
-                        self.reply(json.loads(result.stdout.decode('utf-8-sig')))
-                elif url.path in ('/api/game/launch', '/api/game/stop') and writing:
-                    if body:
-                        raise ValueError('游戏操作不接受参数')
-                    launching = url.path.endswith('/launch')
+                    with mutation_lock: self.reply(server_state())
+                elif url.path == '/api/settings' or (url.path == '/api/inventory' and not writing) or (url.path.startswith('/api/profile/') and writing) or (url.path in ('/api/game/launch', '/api/game/stop') and writing):
                     with mutation_lock:
-                        if launching and game_status():
-                            self.reply({'error': '游戏已运行，请先退出当前游戏'}, 409)
-                            return
-                        result = subprocess.run(['powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File',
-                                                 str(root / 'scripts/Control-Game.ps1'), '-Action', 'start' if launching else 'stop',
-                                                 '-PythonPath', sys.executable], capture_output=True,
-                                                creationflags=subprocess.CREATE_NO_WINDOW, timeout=120)
-                        if result.returncode:
-                            self.reply({'error': '游戏与服务器操作失败',
-                                        'detail': result.stderr.decode('utf-8', errors='replace')}, 500)
-                            return
-                        if game_status() != launching:
-                            self.reply({'error': '启动未完成，游戏未运行。' if launching else '停止未完成，游戏仍在运行。'}, 500)
-                            return
-                    self.reply({'message': '游戏与服务器已启动。' if launching else '游戏与服务器已停止。'})
-                elif url.path == '/api/inventory' and not writing:
-                    uid = query.get('user_id', [''])[0]
-                    if not re.fullmatch('[0-9a-f]{16}', uid):
-                        raise ValueError('需要有效账号')
-                    validate_profile((root / 'runtime/data/public-profiles' / (uid + '.bin')).read_bytes())
-                    catalogue = json.loads((Path(__file__).resolve().parents[1] / 'data/marketplace-catalog.json').read_text(encoding='utf-8'))['items']
-                    self.reply({'items': [{**item, 'name': catalogue.get(str(item['item_id']), {}).get('name', str(item['item_id']))}
-                                          for item in marketplace.inventory(int(uid, 16))]})
-                elif url.path in ('/api/profile/currency', '/api/profile/premium', '/api/profile/progression', '/api/profile/renew', '/api/profile/unlock', '/api/profile/story') and writing:
-                    action = url.path.rsplit('/', 1)[1]
-                    fields = {'currency': {'user_id', 'amount'}, 'premium': {'user_id', 'amount'},
-                              'progression': {'user_id', 'level', 'prestige'},
-                              'renew': {'user_id', 'item_id', 'days'}, 'unlock': {'user_id'}, 'story': {'user_id'}}[action]
-                    if (set(body) != fields or not isinstance(body['user_id'], str)
-                            or not re.fullmatch('[0-9a-f]{16}', body['user_id'])):
-                        raise ValueError('需要有效的账号和操作参数')
-                    with mutation_lock:
-                        path = root / 'runtime/data/public-profiles' / (body['user_id'] + '.bin')
-                        validate_profile(path.read_bytes())
-                        if game_status():
-                            self.reply({'error': '请先退出游戏，再修改玩家数据'}, 409)
-                            return
-                        user_id = int(body['user_id'], 16)
-                        if action in ('currency', 'premium'):
-                            currency_id = 2 if url.path.endswith('/premium') else 1
-                            result = {marketplace.currency_key(currency_id): marketplace.add_currency(
-                                user_id, body['amount'], currency_id=currency_id)}
-                        elif action == 'renew':
-                            result = marketplace.renew(user_id, body['item_id'], body['days'])
-                        elif action == 'unlock':
-                            result = marketplace.grant_all(user_id)
-                        elif action == 'story':
-                            result = progression.unlock_story(user_id)
+                        selection = installs.current(fresh=writing)
+                        stopping = url.path == '/api/game/stop'
+                        adapter = session_adapter() if stopping else (adapter_for(selection) if selection['state'] == 'matched' else None)
+                        if not adapter:
+                            if url.path == '/api/settings' and not writing:
+                                self.reply({'skip_tutorial': True}); return
+                            self.reply({'error': selection['reason']}, 409); return
+                        capability = {'/api/game/launch': 'launch', '/api/settings': 'skip_tutorial'}.get(url.path)
+                        if writing and capability and not adapter.capabilities.get(capability, {}).get('available'):
+                            self.reply({'error': '当前版本尚未支持此操作'}, 409); return
+                        if url.path == '/api/settings':
+                            self.reply(adapter.set_settings(body) if writing else adapter.settings())
+                        elif url.path == '/api/inventory':
+                            self.reply(adapter.inventory(query.get('user_id', [''])[0]))
+                        elif url.path.startswith('/api/profile/'):
+                            action = url.path.rsplit('/', 1)[1]
+                            capability = {'currency':'currency', 'premium':'currency', 'progression':'progression',
+                                          'renew':'inventory', 'unlock':'inventory', 'story':'story'}.get(action)
+                            if not adapter.capabilities.get(capability, {}).get('available'):
+                                self.reply({'error': '此项数据结构尚未验证，未修改档案'}, 409); return
+                            if game_status():
+                                self.reply({'error': '请先退出游戏，再修改玩家数据'}, 409); return
+                            self.reply({**adapter.mutate(action, body), 'message': '玩家数据已保存；重新启动游戏后生效。'})
                         else:
-                            result = progression.set_progression(user_id, body['level'], body['prestige'])
-                    self.reply({**result, 'message': '玩家数据已保存；重新启动游戏后生效。'})
-                elif url.path.startswith('/api/profile/') and writing:
-                    self.reply({'error': '此项数据结构尚未验证，未修改档案'}, 409)
+                            if body: raise ValueError('游戏操作不接受参数')
+                            launching = not stopping
+                            if launching and game_status():
+                                self.reply({'error': '游戏已运行，请先退出当前游戏'}, 409); return
+                            if launching:
+                                installs.prepare(selection)
+                                write_json(root / 'config/session.json', selection)
+                            result = command(adapter, 'Control-Game.ps1', 'start' if launching else 'stop')
+                            if result.returncode:
+                                self.reply({'error': '游戏与服务器操作失败', 'detail': result.stderr.decode('utf-8', errors='replace')}, 500); return
+                            if game_status() != launching:
+                                self.reply({'error': '启动未完成，游戏未运行。' if launching else '停止未完成，游戏仍在运行。'}, 500); return
+                            if stopping: (root / 'config/session.json').unlink(missing_ok=True)
+                            self.reply({'message': '游戏与服务器已启动。' if launching else '游戏与服务器已停止。'})
                 elif url.path == '/api/docs' and not writing:
                     directory = root / 'docs'
                     files = [{'path': p.relative_to(directory).as_posix(), 'size': p.stat().st_size}

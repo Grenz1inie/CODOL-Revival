@@ -1,0 +1,89 @@
+import base64
+from pathlib import Path
+import struct
+import tempfile
+import unittest
+
+from client_matchmaking423 import ClientMatchmaking423
+from client_playlist423 import ClientPlaylist423
+from test_match_runtime import package
+
+
+def message(recipient,text):
+    data=text.encode('ascii')
+    return b'\x0a'+struct.pack('<Q',recipient)+b'\x13\x08'+struct.pack('<II',len(data)+4,len(data))+data+b'\0'
+
+
+class IndependentMatchmakingTests(unittest.TestCase):
+    def service(self,map_name='mp_killhouse_sh'):
+        from games.codol.versions.v3_3_3_3.server.match_server.runtime import load_matchmaking
+        temp=tempfile.TemporaryDirectory()
+        self.addCleanup(temp.cleanup)
+        path=Path(temp.name)/'match'
+        package(path,map_name)
+        service=load_matchmaking(path,port=0)
+        self.addCleanup(service.close)
+        return service
+
+    def test_nuketown_accepts_fixed_playlist_rotation_and_rejects_other_maps(self):
+        service=self.service('mp_nuked')
+        try:
+            service.find(1,bytes.fromhex('08010000000800000000080a000000079b1ff0d600'))
+            reader=ClientPlaylist423()
+            content=(Path(__file__).resolve().parents[5]/'games/codol/versions/v3_3_3_3/resources/definitions/match-playlist.info').read_text('utf-8').encode('gbk')
+            reader.parse(content)
+            self.assertEqual(reader.wire_index(110),25)
+            # Actual 3.3.3.3 room message, not the publisher's directory ID.
+            start='mmstart sv_resetServer; 2486 1; 3265 2; 2489 0; playlist 25; start_map_rotate_once 0'
+            self.assertIsNone(service.message(1,message(service.server_id,start)))
+            self.assertIsNone(service.message(1,message(service.server_id,'mmstart g_gametype dm; map mp_nuked')))
+            for invalid in (start.replace('playlist 25','playlist 0'),
+                            start.replace('playlist 25','playlist 110'),
+                            start.replace('playlist 25','playlist 240'),
+                            start.replace('start_map_rotate_once 0','start_map_rotate_once -1'),
+                            start+'; map mp_killhouse_sh',
+                            'mmstart g_gametype cha; map mp_nuked',
+                            'mmstart map mp_nuked; map mp_killhouse_sh'):
+                with self.subTest(command=invalid),self.assertRaises(ValueError):
+                    service.message(1,message(service.server_id,invalid))
+        finally:
+            service.close()
+
+    def test_live_independent_endpoint_is_published_and_room_is_bound_to_killhouse(self):
+        service=self.service()
+        reader=ClientMatchmaking423()
+        query=bytes.fromhex('08010000000800000000080a000000079b1ff0d600')
+        uid=0x1234567812345678
+        try:
+            candidate,=service.find(uid,query)
+            self.assertTrue(service.server.is_alive())
+            ok,state,_=reader.candidate(candidate)
+            self.assertTrue(ok)
+            self.assertEqual(struct.unpack_from('<H',state,0x1c)[0],service.server.port)
+            text=f'mmbook 1 {base64.b64encode(service.security_id).decode()} 1'
+            reply=service.message(uid,message(service.server_id,text))
+            self.assertEqual(reader.booking_push(reply),(service.server_id,b'mmbook accepted'))
+            self.assertIsNone(service.message(uid,message(service.server_id,'mmstart set g_gametype dm;map mp_killhouse_sh')))
+            with self.assertRaises(ValueError):
+                service.message(uid,message(service.server_id,'mmstart map mp_cargoship'))
+            with self.assertRaises(ValueError):
+                service.find(uid+1,query)
+            with self.assertRaises(ValueError):
+                service.message(uid+1,message(service.server_id,text))
+            with self.assertRaises(ValueError):
+                service.message(uid,message(service.server_id,text.replace('mmbook 1','mmbook -1')))
+            service.server.close()
+            self.assertEqual(service.find(uid,query),())
+        finally:
+            service.close()
+
+    def test_invalid_query_never_reserves_or_publishes_the_process(self):
+        service=self.service()
+        with self.assertRaises(ValueError):
+            service.find(1,b'invalid')
+        self.assertIsNone(service.owner)
+        service.close()
+
+
+if __name__=='__main__':
+    unittest.main()

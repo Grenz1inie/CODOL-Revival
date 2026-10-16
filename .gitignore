@@ -8,6 +8,7 @@ __pycache__/
 node_modules/
 web/dist/
 native/**/target/
+games/**/target/
 runtime/
 /config/
 archive/
@@ -43,25 +44,8 @@ research/reference-protocol/ryunet-demonware-ctr/
 !/research/experiments/story-native/
 /research/experiments/story-native/*
 !/research/experiments/story-native/README.md
-!/research/experiments/story-native/decode_reference365.py
-!/research/experiments/story-native/port_assets_source.py
-!/research/experiments/story-native/port_collision_source.py
-!/research/experiments/story-native/port_weapon_source.py
-!/research/experiments/story-native/probe_source_startup.py
-!/research/experiments/story-native/collision-components423.gdb
-!/research/experiments/story-native/collision-world423.gdb
-!/research/experiments/story-native/image-alias423.gdb
-!/research/experiments/story-native/model-allocation423.gdb
-!/research/experiments/story-native/model-conversion423.gdb
-!/research/experiments/story-native/physics-preset423.gdb
-!/research/experiments/story-native/shared-directory423.gdb
-!/research/experiments/story-native/weapon-allocation423.gdb
 !/research/experiments/story-native/reference-zone-assets/
 /research/experiments/story-native/reference-zone-assets/*
-!/research/experiments/story-native/reference-zone-assets/model-trace-main365.c
-!/research/experiments/story-native/reference-zone-assets/model-trace-main423.c
-!/research/experiments/story-native/reference-zone-assets/replay.c
-!/research/experiments/story-native/reference-zone-assets/replay423.c
 
 # Local credentials and captures.
 *.pem

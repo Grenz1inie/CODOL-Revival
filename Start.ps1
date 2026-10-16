@@ -1,4 +1,4 @@
-#requires -Version 5.1
+﻿#requires -Version 5.1
 <#
 .SYNOPSIS
 Check the environment, start local services and the controller, then open the game.
@@ -70,8 +70,6 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Environment check failed. Resolve the reported prerequisites and run Start.ps1 again.' }
 
     $services = @(
-        @{Name='Local services'; Source='src\local_server.py'; Entry='Start-Services.ps1';
-          PidFile='server.pid'; TCP=@(443,3074); UDP=@(3074); Process=$null},
         @{Name='Web controller'; Source='src\controller.py'; Entry='Start-Controller.ps1';
           PidFile='controller.pid'; TCP=@(8765); UDP=@(); Process=$null}
     )
@@ -128,11 +126,12 @@ try {
 
     Write-Output "Controller: $controllerUrl"
     if (!$NoGame) {
-        if (Get-Process -Name 'codoMP_client_shipRetail' -ErrorAction SilentlyContinue) {
-            Write-Output 'Game already running; keeping the current session.'
-        } else {
-            & (Join-Path $projectRoot 'scripts\Launch-Game.ps1') -PythonPath $PythonPath -StartupTimeoutSeconds $StartupTimeoutSeconds | Out-Null
-            Write-Output 'Game launch requested. Confirm Windows UAC if prompted.'
+        $status = Invoke-RestMethod ($controllerUrl + 'api/status') -TimeoutSec 5
+        if ($status.installation.state -eq 'matched' -and !$status.game_running) {
+            Invoke-RestMethod ($controllerUrl + 'api/game/launch') -Method Post -ContentType 'application/json' -Body '{}' -TimeoutSec 120 | Out-Null
+            Write-Output 'Selected game launch requested. Confirm Windows UAC if prompted.'
+        } elseif ($status.installation.state -ne 'matched') {
+            Write-Output 'Choose a supported game directory in the web console.'
         }
     }
     if (!$NoBrowser) { Start-Process -FilePath $controllerUrl }

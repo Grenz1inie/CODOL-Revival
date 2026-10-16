@@ -1,6 +1,11 @@
 # Index only maintained development code.
 /*
 !/src/
+!/games/
+/games/**/tests/fixtures/
+/games/**/resources/definitions/
+/games/**/reverse/recovered-code/evidence/
+/games/**/target/
 !/native/
 /native/**/target/
 !/tests/
