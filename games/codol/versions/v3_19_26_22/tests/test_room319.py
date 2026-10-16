@@ -88,7 +88,8 @@ class NativeRoomPush319Tests(unittest.TestCase):
         try:
             from client_inventory319 import InventoryReader319
             from unicorn import UC_HOOK_CODE
-            from unicorn.x86_const import UC_X86_REG_ESP, UC_X86_REG_EIP
+            from unicorn.x86_const import (UC_X86_REG_ESP, UC_X86_REG_EIP,
+                                           UC_X86_REG_ESI, UC_X86_REG_EDI)
             machine = InventoryReader319()
         except (ImportError, FileNotFoundError) as error:
             self.skipTest('Captured 3.19 native code unavailable: ' + str(error))
@@ -129,5 +130,18 @@ class NativeRoomPush319Tests(unittest.TestCase):
             machine.cpu.mem_write(machine.buffer, struct.pack('<6I', 0xdb7154, 100, len(data),
                 machine.data, machine.data, machine.data + len(data)) + b'\1\0\0\0')
             machine.call(address, machine.object, machine.buffer, *args)
-        self.assertEqual(callbacks[0], (91, 1000001, struct.pack('<Q', bot['uid']), b'Bot01', 1))
-        self.assertEqual(callbacks[1], (91, 1, 6, b'Bot01', 1, struct.pack('<I', len(payload)) + payload))
+        def client_name(wire_name):
+            # 0x7e7a50 consumes the event member through this native decoder.
+            machine.cpu.mem_write(machine.data, wire_name + b'\0')
+            machine.cpu.reg_write(UC_X86_REG_ESI, machine.data)
+            machine.cpu.reg_write(UC_X86_REG_EDI, machine.buffer)
+            self.assertEqual(machine.call(0x7f3440, 0), 1)
+            return bytes(machine.cpu.mem_read(machine.buffer, 64)).split(b'\0')[0]
+        member, message = callbacks
+        self.assertEqual((*member[:3], client_name(member[3]), member[4]),
+                         (91, 1000001, struct.pack('<Q', bot['uid']), b'Bot01', 1))
+        self.assertEqual((*message[:3], client_name(message[3]), *message[4:]),
+                         (91, 1, 6, b'Bot01', 1, struct.pack('<I', len(payload)) + payload))
+        # Real namesTable.csv row 0, UTF-8 bytes captured from the current client.
+        self.assertEqual(client_name(room319.text('AK47宝贝')[1:-1]),
+                         bytes.fromhex('414b3437e5ae9de8b49d'))

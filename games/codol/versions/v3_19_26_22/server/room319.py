@@ -1,4 +1,5 @@
 """3.19 local-host channel admission; native room logic owns the visible roster."""
+from base64 import b64encode
 import json
 from pathlib import Path
 import struct
@@ -21,7 +22,7 @@ def native_manifest(owner, name, roster=None):
 
 def u32(value): return b'\x08' + struct.pack('<I', value)
 def u64(value): return b'\x0a' + struct.pack('<Q', value)
-def text(value): return b'\x10' + value.encode('ascii') + b'\0'
+def text(value): return b'\x10' + b64encode(value.encode('utf-8')) + b'\0'
 def blob(value): return b'\x13' + u32(len(value)) + value
 
 
