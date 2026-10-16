@@ -66,8 +66,9 @@ class MatchRuntimeTests(unittest.TestCase):
                 # Real configstring reader: append after stock slots, never replace ACR CS5448.
                 offset,=struct.unpack('<I',client.cpu.mem_read(0x796f2dc+5795*4,4))
                 self.assertNotEqual(offset,0)
-                recipe=bytes(client.cpu.mem_read(0x7976124+offset,32)).split(b'\0',1)[0]
-                self.assertEqual(recipe,b'** 5 0 0')
+                recipe=bytes(client.cpu.mem_read(0x7976124+offset,128)).split(b'\0',1)[0]
+                # 14-bit attachment-name slots; marketplace item IDs/ordinals are different.
+                self.assertEqual(recipe,b'** 5 0 0 1690 2683 2385 9641 13370')
                 self.assertEqual(bytes(client.cpu.mem_read(0x796f2dc+5448*4,4)),bytes(4))
                 world.bot=False
                 world.step([dict(time=1050,direction=0,buttons=1,yaw=0,pitch=0,

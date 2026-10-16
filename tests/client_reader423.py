@@ -182,38 +182,42 @@ class ClientReader423:
                     base_name=text(word(source)),
                     base_keys=(word(source+0x6b8),word(source+0x6c0)))
 
-    def composed_viewmodels(self, definition, *, view_model):
+    def composed_viewmodels(self, definition, *, view_model, attachments=()):
         """Execute 0x42e800's real lookup and model-list selection.
 
-        Supply name-only XModel fixtures at the resolved-asset boundary. Stop
-        before 0x49b120's hierarchy processing; no bones or renderer execute.
+        Supply distinct view/world XModels at the resolved-asset boundary.
+        Stub only 0x49b120's streaming requests; no bones or renderer execute.
         None represents an unpopulated composition, which must return false.
         """
         cpu=self.cpu;stack,end=0x303ff000,0x303ffff0
         record=0x18178c0;models,count=0x30360000,0x30368000
-        hand,fallback,gun=0x30370000,0x30371000,0x30372000
-        for pointer,name in ((hand,'viewhands_player_tf141'),(fallback,'tag_origin'),
-                             (gun,view_model or '')):
+        hand,fallback=0x30370000,0x30371000
+        def asset(pointer,name):
             cpu.mem_write(pointer,bytes(0x200))
             cpu.mem_write(pointer,struct.pack('<I',pointer+0x180))
             cpu.mem_write(pointer+0x180,name.encode('ascii')+b'\0')
-        # 0x42dcac stores the resolved viewmodel at record+fac; +92 is count.
-        cpu.mem_write(record+0x92,bytes([int(view_model is not None)]))
-        cpu.mem_write(record+0xfac,struct.pack('<I',gun if view_model is not None else 0))
+        asset(hand,'viewhands_player_tf141');asset(fallback,'tag_origin')
+        entries=[(view_model,'wea_acr_acr_blk',0),*attachments] if view_model else []
+        # Current composition: tags +f48, world +f68, view +fac; +92 is count.
+        cpu.mem_write(record+0x92,bytes([len(entries)]))
+        for i,(view,world,tag) in enumerate(entries):
+            gun=0x30372000+i*0x800
+            asset(gun,view);asset(gun+0x400,world)
+            cpu.mem_write(record+0xf48+2*i,struct.pack('<H',tag))
+            cpu.mem_write(record+0xf68+4*i,struct.pack('<I',gun+0x400))
+            cpu.mem_write(record+0xfac+4*i,struct.pack('<I',gun))
         cpu.mem_write(definition+0x10,struct.pack('<I',fallback))
-        cpu.mem_write(models,bytes(0x58))
+        cpu.mem_write(models,bytes(0x2c*(len(entries)+1)))
         cpu.mem_write(models,struct.pack('<I',hand))
         cpu.mem_write(count,struct.pack('<H',1))
         cpu.mem_write(stack,struct.pack('<5I',end,0x32d,models,count,0))
         cpu.reg_write(UC_X86_REG_ESP,stack);cpu.reg_write(UC_X86_REG_EAX,definition)
-        def before_hierarchy(cpu,address,size,context):
-            cpu.emu_stop()
-        hook=cpu.hook_add(UC_HOOK_CODE,before_hierarchy,begin=0x42e8ed,end=0x42e8ed)
+        hook=cpu.hook_add(UC_HOOK_CODE,self._return,begin=0x49b120,end=0x49b120)
         self.error=False
         try:
             cpu.emu_start(0x42e800,end,count=200000)
             stopped=cpu.reg_read(UC_X86_REG_EIP)
-            if self.error or stopped not in (end,0x42e8ed):
+            if self.error or stopped!=end:
                 raise ValueError('client composed model selection did not finish')
         finally:cpu.hook_del(hook)
         def model_name(pointer_address):
@@ -222,6 +226,7 @@ class ClientReader423:
             return bytes(cpu.mem_read(name,128)).split(b'\0',1)[0].decode('ascii')
         size,=struct.unpack('<H',cpu.mem_read(count,2))
         return dict(models=[model_name(models+i*0x2c) for i in range(size)],
+                    tags=[struct.unpack('<H',cpu.mem_read(models+i*0x2c+4,2))[0] for i in range(size)],
                     fallback=model_name(definition+0x10),appended=size>1)
 
     def usercmd(self, values, *, key, base=None, move=False, reliables=()):

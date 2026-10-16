@@ -37,6 +37,23 @@ class MatchComposedWeaponTests(unittest.TestCase):
         self.assertEqual(selected['models'],
                          ['viewhands_player_tf141', 'wea_acr_acr_blk_vmgun'])
         self.assertNotIn('tag_origin', selected['models'])
+        self.assertNotIn('wea_acr_acr_blk', selected['models'])
+        self.assertEqual(selected['tags'], [0, 0x32d])
+
+    def test_default_parts_keep_the_view_models_and_their_attachment_tags(self):
+        result = self.client.register_composed_weapon(base=5, name='** 5 0 0 1690 2683 2385 9641 13370')
+        # The current ACR CSV's view/world pairs; fixture handles stand for the
+        # five distinct tag names. Asset loading/animation matching is not tested.
+        world = ('muz_default_acrncm_blk', 'sto_default_acr_blk',
+                 'gri_default_acr_blk', 'mag_default_acr_blk', 'iro_default_acrncm_blk')
+        parts = [(name+'_vmgun', name, 0x501+i) for i, name in enumerate(world)]
+        selected = self.client.composed_viewmodels(
+            result['definition'], view_model='wea_acr_acr_blk_vmgun', attachments=parts)
+        self.assertEqual(selected['models'],
+                         ['viewhands_player_tf141', 'wea_acr_acr_blk_vmgun',
+                          *(part[0] for part in parts)])
+        self.assertEqual(selected['tags'], [0, 0x32d, *range(0x501, 0x506)])
+        self.assertTrue(set(world).isdisjoint(selected['models']))
 
 
 if __name__ == '__main__':

@@ -1,4 +1,4 @@
-param([switch]$Stats, [switch]$Connection, [switch]$Clock, [switch]$ViewWeapon)
+param([switch]$Stats, [switch]$Connection, [switch]$Clock, [switch]$ViewWeapon, [switch]$ViewAnimation)
 $ErrorActionPreference = 'Stop'
 $rootPath = Split-Path $PSScriptRoot -Parent
 $expectedExe = Join-Path (Split-Path $rootPath -Parent) 'CODOL_Experience_V3.3.3.3_FULL.7z/codoMP_client_shipRetail.exe'
@@ -10,6 +10,7 @@ if (!$principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
     if ($Connection) { $arguments += '-Connection' }
     if ($Clock) { $arguments += '-Clock' }
     if ($ViewWeapon) { $arguments += '-ViewWeapon' }
+    if ($ViewAnimation) { $arguments += '-ViewAnimation' }
     Start-Process powershell.exe -Verb RunAs -WindowStyle Hidden -ArgumentList $arguments
     return
 }
@@ -20,9 +21,32 @@ if ($game.Count -ne 1) { throw 'Expected one verified CODOL process.' }
 if ((Get-FileHash -LiteralPath $expectedExe -Algorithm SHA256).Hash -ne 'e3823fd6afc80fb25fa84747e6e9634707b9a0b189357a5466921cda354af37b') { throw 'Client hash mismatch.' }
 $cdb = 'C:/Program Files (x86)/Windows Kits/10/Debuggers/x86/cdb.exe'
 $outputPath = Join-Path $rootPath 'runtime/logs/match-debug.txt'
+if ($ViewAnimation) {
+    # Current 0x64ba40/0x649336: XAnimInfo stride 0x38, bind handle at +0x12.
+    # Walk only this viewmodel tree, capped at 64 nodes; no breakpoints/writes.
+    $commands = @(
+        '.echo WEAPON_DEFINITIONS; .foreach (slot { .echo 5 160 }) { r @$t10=poi(codoMP_client_shipRetail+0x13f5a40+${slot}*4); dd @$t10 L1; da poi(@$t10); da poi(@$t10+0x7c); da poi(@$t10+0x154); dd @$t10+0x480 L1; db @$t10+0xd83 L1 }',
+        'r @$t0 = poi(codoMP_client_shipRetail+0x1619510+4*poi(codoMP_client_shipRetail+0x7417bb8)) ^ 0x39641402',
+        'r @$t1 = poi(@$t0); r @$t2 = poi(@$t1+0xc0); .echo MODEL_BONES; dw poi(poi(@$t2)+0x2c) L42; dw poi(poi(@$t2+4)+0x2c) L19',
+        'r @$t5 = poi(@$t1); .echo TREE; dd @$t5 L4; dd poi(@$t5) L10; r @$t6 = wo(@$t5+4)',
+        '.for (r @$t7=0; (@$t6!=0) & (@$t7<0x40); r @$t7=@$t7+1) { r @$t8=codoMP_client_shipRetail+0x334db08+@$t6*0x38; .echo NODE; dd @$t8 Le; .if ((wo(@$t8+0x12)!=0) & (poi(@$t8+0x14)!=0)) { r @$t9=poi(@$t8+0x14); .echo ANIM; da poi(@$t9); db @$t9+0x1a L1; dw poi(@$t9+0x30) L60; .echo BIND; db poi(codoMP_client_shipRetail+0x2b37164)+wo(@$t8+0x12)*0x14+4 La0 }; .if (wo(@$t8+0xc)!=0) { r @$t6=wo(@$t8+0xc) } .else { .while ((@$t6!=0) & (wo(@$t8+0xa)==0)) { r @$t6=wo(@$t8+0xe); r @$t8=codoMP_client_shipRetail+0x334db08+@$t6*0x38 }; .if (@$t6!=0) { r @$t6=wo(@$t8+0xa) } } }',
+        'q'
+    )
+    'q' | & $cdb -pv -p $game[0].ProcessId -c ($commands -join '; ') *> $outputPath
+    return
+}
 if ($ViewWeapon) {
     # Current DObj layout: hide mask +a0, model pointers +c0, then parent bytes.
-    & $cdb -pv -p $game[0].ProcessId -c 'r @$t0 = poi(codoMP_client_shipRetail+0x1619510+4*poi(codoMP_client_shipRetail+0x7417bb8)) ^ 0x39641402; r @$t1 = poi(@$t0); .echo DOBJ; dd @$t1 L4; dd @$t1+0x94 L4; .echo HIDDEN_PARTS; dd @$t1+0xa0 L8; r @$t2 = poi(@$t1+0xc0); .echo MODELS_AND_PARENTS; dd @$t2 L2; db @$t2+8 L2; r @$t3 = poi(@$t2); r @$t4 = poi(@$t2+4); .echo HANDS; da poi(@$t3); db @$t3+4 L3; .echo GUN; da poi(@$t4); db @$t4+4 L3; .echo TAG_WEAPON; dw codoMP_client_shipRetail+0x2824990 L1; .if (by(@$t2+9) < by(@$t3+4)) { .echo PARENT_BONE_NAME; dw poi(@$t3+0x2c)+2*by(@$t2+9) L1 }; q' *> $outputPath
+    # 0x645257/0x64527d: numModels +9, parents follow all model pointers.
+    # 0x646a98/0x646b07: skel +98, 0x20 bytes per bone. Cap at this ACR's 7 models.
+    $commands = @(
+        'r @$t0 = poi(codoMP_client_shipRetail+0x1619510+4*poi(codoMP_client_shipRetail+0x7417bb8)) ^ 0x39641402; r @$t1 = poi(@$t0); .echo DOBJ; dd @$t1 L4; dd @$t1+0x94 L4; .echo HIDDEN_PARTS; dd @$t1+0xa0 L8',
+        'r @$t2 = poi(@$t1+0xc0); r @$t5 = by(@$t1+9); .echo MODELS_AND_PARENTS; .for (r @$t6=0; (@$t6<@$t5) & (@$t6<7); r @$t6=@$t6+1) { r @$t3=poi(@$t2+4*@$t6); da poi(@$t3); db @$t3+4 L3; db @$t2+4*@$t5+@$t6 L1 }',
+        '.echo TAG_WEAPON; dw codoMP_client_shipRetail+0x2824990 L1; r @$t3=poi(@$t2); .if ((@$t5>1) & (by(@$t2+4*@$t5+1)<by(@$t3+4))) { .echo PARENT_BONE_NAME; dw poi(@$t3+0x2c)+2*by(@$t2+4*@$t5+1) L1 }',
+        'r @$t4=poi(@$t1+0x98); .if ((@$t4!=0) & (by(@$t1+0xa)>0x42)) { .echo HAND_BONE3; df @$t4+0x60 L8; .echo HAND_TAG_WEAPON; df @$t4+0x180 L8; .echo GUN_ROOT; df @$t4+0x840 L8 }',
+        'q'
+    )
+    'q' | & $cdb -pv -p $game[0].ProcessId -c ($commands -join '; ') *> $outputPath
     return
 }
 if ($Clock) {

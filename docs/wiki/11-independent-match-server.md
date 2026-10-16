@@ -254,6 +254,30 @@ python -m unittest test_match_transport test_match_connection test_match_server 
 
 09:11项目服务重载为PID61972，日志确认 `mp_nuked / dm`、NCS校验和1765105316。用户需完全退出旧客户端，从控制器重启，再经原有“冲锋团队竞技 → 核弹小镇”入口检查基础枪体、左键耗弹、R换弹及AI受击；端口监听不作为这些画面行为的验收。
 
+### 枪手错位：区分第一/第三人称与缺少默认部件（2026-10-16）
+
+用户确认动作能播放但枪手错位，随后转述“枪的模型调用错误、可能混用第一/第三人称，动作不通用”。按此线索核对实际消费者，不能仅按资源名或view列判定整套姿态正确：
+
+| 核对项 | 当前证据 |
+|---|---|
+| 模型选择 | `0x707b17/0x707b40` 分别取表中world/view列，写入组合记录 `+f68/+fac`；第一人称 `0x558d85 → 0x42e800` 固定读 `+fac` |
+| 实机模型 | DObj为 `viewhands_player_tf141`（66骨）和 `wea_acr_acr_blk_vmgun`（25骨）；world版本 `wea_acr_acr_blk` 为18骨，并非当前选中的模型 |
+| 主枪挂接 | DObj父骨骼12为手部 `tag_weapon/032d`；idle映射 `0330` 到枪根骨66，尚无证据要求移除这个挂接 |
+| 动作来源 | 原始ACR与组合Def的idle都是 `viewmodel_m4a1tech_idle`，不是本项目写入；开火/换弹另有ACR动作，不能按M4A1名字直接判成第三人称动作 |
+| ADS状态 | `0x556b10` 由 `PS+34c` 驱动节点36/37的采样时间；未瞄准时节点37时间1、速率0是正常端点，不是异常满ADS |
+
+确定遗漏的是默认枪口、枪托、握把、弹匣和机械瞄具。`mp/coweapitemswea.csv` 将它们标为默认，`mp/coWeaponAttachmentTable.csv` 对应 `nop`，不会替换原始动画。当前 `0x42c6a0` 按名称注册14位槽，`0x42e44d` 直接读取槽内字符串；不是旧服的marketplace序号或item/variant对。PID52008只读确认五槽分别为 `1690=muz_default`、`2683=sto_default`、`2385=gri_default`、`9641=mag_default`、`13370=iro_default`，已排除这五项的哈希碰撞。CS5795现在发布：
+
+```text
+** 5 0 0 1690 2683 2385 9641 13370
+```
+
+runtime原生gamestate回归先复现空部件配方，再验证完整配方、武器/弹匣352和备用弹药5。原生模型选择回归提供不同world/view资源夹具，检查主枪及五部件只取view，保留各自tag和主枪的 `tag_weapon`；只隔离资源流式加载调用，不把该测试当作渲染或动画配套验收。相关server/runtime/composed共13项通过。
+
+证据：`research/evidence/acr-model-pairing-20261016.json`、`acr-model-pose-20261016.txt`、`acr-animation-pose-20261016.txt`、`acr-animation-source-20261016.txt`。`Read-PlayerSchema.ps1 -WeaponModels` 复用限定只读采集；`tools/Read-MatchDebug.ps1 -ViewAnimation` 读取当前枪模动作树，最多64节点。REA已存证据继续复用；本次新指令查询返回 `Ghidra client is already started`，没有反复重扫，新增地址结论以本版本缓存汇编和实机读取交叉核对。
+
+10:28服务重载为PID61288，同时带入输入排队及UDP退出修复，确认 `mp_nuked / dm`、NCS校验和1765105316。默认部件完整性和枪手姿态交由人工检查；目前没有证据宣称错位已修复，也未替换原始客户端的模型、骨骼或动作文件。
+
 ### 保留已确认的输入基准帧（2026-10-16）
 
 时钟修复后的08:36会话已经进入active，随后日志大量记录 `client acknowledged an unsent message`。原检查把“确认了尚未发送的序号”和“确认帧已被64帧缓存淘汰”合并，单凭旧日志不能判定每个失败属于哪一类。
@@ -268,7 +292,7 @@ python -m unittest test_match_transport test_match_connection test_match_server 
 
 收包循环原先每读一个UDP包都先调用模拟tick。路径计算超过50ms时，积压输入只能穿插在后续tick之间消费。当前核弹小镇离线12步中，常规步约10–12ms，重新寻路的一步1045ms；它确实能触发该条件。现在先排空已就绪的UDP包，再执行下一次模拟，不增大输入缓存、不更换差分基准。
 
-回归使用真实加密UDP和原生usercmd writer，在受控的慢tick期间排入三条操作。旧代码首批只处理 `[1150]`，修改后首批处理 `[1150,1200,1250]`，后续位置、扣弹和伤害断言仍通过；`test_match_server` 3项通过。尚待服务重载及实机观察，不能据此声称所有延迟或枪手错位已经消失。
+回归使用真实加密UDP和原生usercmd writer，在受控的慢tick期间排入三条操作。旧代码首批只处理 `[1150]`，修改后首批处理 `[1150,1200,1250]`，后续位置、扣弹和伤害断言仍通过；当时 `test_match_server` 3项通过。10:28已随默认部件修复重载，实机效果待观察，不能据此声称所有延迟或枪手错位已经消失。
 
 ### 退出后再匹配提示服务器繁忙（2026-10-16）
 

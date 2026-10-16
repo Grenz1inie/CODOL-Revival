@@ -127,7 +127,9 @@ def capture(pid, image_base, marketplace=False, weapon_progression=False, pve=Fa
         if pve:
             tables = ('mp/coMapList.csv', 'mp/coGameTypesTable.csv')
         if weapon_models:
-            tables = ('mp/coweapmodels/acr_mp.csv', 'mp/coweapitemswea.csv')
+            tables = ('mp/coweapmodels/acr_mp.csv', 'mp/coweapitemswea.csv',
+                      'mp/coWeaponAttachmentTable.csv',
+                      *(f'mp/coweapitems/{group}.csv' for group in ('muz', 'sto', 'gri', 'mag', 'iro')))
         for name in tables:
             header = words(asset(0x25, name), 4)
             columns, rows, cells = header[1:]
@@ -135,6 +137,25 @@ def capture(pid, image_base, marketplace=False, weapon_progression=False, pve=Fa
                 raise ValueError('Unexpected rank table size')
             result['tables'][name] = [[string(words(cells + (row * columns + col) * 8, 1)[0])
                                       for col in range(columns)] for row in range(rows)]
+            if weapon_models and name.startswith('mp/coweapitems/'):
+                result['tables'][name] = [row for row in result['tables'][name] if row[1] == 'acr_mp']
+        if weapon_models:
+            # 0x42e44d consumes these 14-bit name slots, not marketplace ordinals.
+            result['attachment_slots'] = {
+                index: string(words(image_base + 0x17e5848 - 0x400000 + index * 4, 1)[0])
+                for index in (1690, 2683, 2385, 9641, 13370)
+            }
+            result['models'] = {}
+            for name in ('viewhands_player_tf141', 'viewhands_tf141',
+                         'wea_acr_acr_blk', 'wea_acr_acr_blk_vmgun'):
+                pointer = asset(4, name)
+                header = read(pointer, 0x48)
+                bones, roots = header[4:6]
+                names, parents, _, _, _, matrices = struct.unpack_from('<6I', header, 0x2c)
+                result['models'][name] = dict(address=pointer, bones=bones, roots=roots,
+                    bone_ids=list(struct.unpack('<'+'H'*bones, read(names, 2*bones))),
+                    parents=list(read(parents, bones-roots)),
+                    bind_matrices=[list(struct.unpack('<8f', read(matrices+32*i, 32))) for i in range(bones)])
         if marketplace:
             # REA 0x5840a0 / 0x7070b0: read the loaded catalogue, never execute game code.
             def global_words(address, count):

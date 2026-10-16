@@ -50,6 +50,9 @@ def load_matchmaking(directory, *, port=28970, record=None):
     manifest=json.loads((Path(directory)/'manifest.json').read_text(encoding='utf-8'))
     ncs=json.loads((Path(directory)/'ncs.json').read_text(encoding='utf-8'))
     # Stock acr_mp renders tag_origin. The native ** recipe selects its model table.
-    recipe=(ncs['registry']['kinds']['13']['base']+world.weapon.index,world.weapon.ammo_type,0,0,())
+    # ACR's authored muz/sto/gri/mag/iro defaults. Current 0x42e44d reads the
+    # 14-bit name registry; these live-verified slots are not marketplace IDs.
+    recipe=(ncs['registry']['kinds']['13']['base']+world.weapon.index,world.weapon.ammo_type,0,0,
+            (1690,2683,2385,9641,13370))
     return IndependentMatchmaking(world,netconst_checksum=ncs['registry']['checksum'],
                                   recipes=(recipe,),port=port,record=record,map_name=manifest['map'])
