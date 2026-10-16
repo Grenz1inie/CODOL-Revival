@@ -15,7 +15,7 @@ class Adapter:
     capabilities['launch_settings'] = {'available': True, 'reason': '玩家名、FOV 和帧率上限按安装保存，下次启动生效。'}
     capabilities['currency'] = {'available': True, 'reason': '增加本地档案余额，下次登录生效。',
                                 'currency_label': 'GP', 'premium_label': 'CP'}
-    capabilities['inventory'] = {'available': True, 'reason': '发放当前版本完整物品目录，保留已有库存；下次登录生效。'}
+    capabilities['inventory'] = {'available': True, 'reason': '保存完整物品目录并保留已有库存；3.19 库存列表最多载入前 20,000 项，下次登录生效。'}
     capabilities['progression'] = {'available': True, 'reason': '当前版本最高 70 级、4 次转生；同步等级解锁条件。',
                                    'max_level': SCHEMA['max_level'], 'max_prestige': SCHEMA['max_prestige']}
     capabilities['story'] = {'available': True, 'reason': '解除 10 项剧情前置条件；地图启动与可玩性仍在恢复中。'}

@@ -115,7 +115,10 @@ while time.monotonic()<deadline:
                                 # The id is a shop SKU: charge its price, own exactly its items (sku-items319.txt).
                                 granted,result=local_profile319.buy_sku(bought)
                                 emit('item_owned',sku=bought,items=granted,result=result,wallet=local_profile319.wallet())
-                        if (service,task)==(80,203):
+                        if (service,task)==(80,230):
+                            response=local_profile319.player_assets_reply(task,txn)
+                            emit('player_assets_reply',items=len(local_profile319.owned_items()),bytes=len(response))
+                        elif (service,task)==(80,203):
                             if '--own-appearance' in sys.argv:
                                 response,count=local_profile319.inventory_reply_ids(task,txn,local_profile319.appearance_items()+local_profile319.owned_items(),'--inventory-keyed' in sys.argv)
                             elif '--own-everything' in sys.argv:

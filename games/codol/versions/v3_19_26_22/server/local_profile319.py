@@ -298,10 +298,10 @@ def record_purchase(body):
 
 # Purchases and inventory (3.19). A purchase is service 93 task 131; its body carries the item id
 # as the second uint32 field (10 00 | 08 count | 08 id | ...). Owned ids are kept in
-# local-profiles319/owned_items.json and served by the inventory request, service 80 task 203.
-# Inventory item layout traced from 00B8D050 (item array 088BA0D8, 0xB8 per item):
-# [optional key: u64 + string] u32 +0x40 item id, u32 +0x44, u32 +0x48, blob +0x4C (<= 0x40),
-# u32 +0x90, int64 +0x98 (expiry; 0 = permanent), uint16 +0xA0, u32 +0xA4, number +0xA8.
+# local-profiles319/owned_items.json, served by login assets (80/230) and inventory (80/203).
+# 3.19 00B8D050: optional account owner, id/quantity/XP, blob (<=64),
+# expiry, usage limit, uint16, expiry duration, status (uint8 or uint32).
+# 00B8CD90 initializes the no-limit sentinels; zero is not the permanent default.
 OWNED = ROOT / 'local-profiles319' / 'owned_items.json'
 
 
@@ -374,11 +374,24 @@ def add_owned(item_id):
 
 
 def inventory_item(item_id, keyed=False):
-    head = (b'\x0a' + struct.pack('<Q', item_id) + b'\x10\x00') if keyed else b''
+    head = (b'\x0a' + struct.pack('<Q', UID) + b'\x10\x00') if keyed else b''
     return (head + b'\x08' + struct.pack('<I', item_id) + b'\x08' + struct.pack('<I', 1)
             + b'\x08' + struct.pack('<I', 0) + b'\x13\x08' + struct.pack('<I', 0)
-            + b'\x08' + struct.pack('<I', 0) + b'\x09' + struct.pack('<q', 0)
-            + b'\x06' + struct.pack('<H', 0) + b'\x08' + struct.pack('<I', 0) + b'\x08' + struct.pack('<I', 0))
+            + b'\x08' + struct.pack('<I', 0xffffffff) + b'\x09' + struct.pack('<q', 0x7fffffffffffffff)
+            + b'\x06' + struct.pack('<H', 0) + b'\x08' + struct.pack('<I', 0xffffffff) + b'\x08' + struct.pack('<I', 0))
+
+
+def player_assets_reply(task, transaction):
+    """80/230 login result (00B87C00 -> 00B8BB90), with inherited account owners."""
+    items = owned_items()
+    owner = b'\x0a' + struct.pack('<Q', UID) + b'\x10\x00'
+    currencies = b''.join(WALLET_LAYOUTS['G'](cid, balance(cid)) for cid in (1, 2))
+    assets = (owner + b'\x08' + struct.pack('<I', 2) + currencies
+              + b'\x08' + struct.pack('<I', len(items))
+              + b''.join(inventory_item(item) for item in items)
+              + b'\x08' + struct.pack('<I', 0))  # No entitlements (00B8D6A0).
+    head = b'\x0a' + struct.pack('<Q', transaction) + b'\x08' + struct.pack('<I', 0) + b'\x03' + bytes([task])
+    return head + b'\x08' + struct.pack('<I', 1) + b'\x08' + struct.pack('<I', 1) + assets
 
 
 def inventory_reply(task, transaction, keyed=False):
