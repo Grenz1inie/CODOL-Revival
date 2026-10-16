@@ -63,11 +63,16 @@ class PreparationTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, '指纹'):
             self.prepare()
         self.assertFalse(self.runtime.exists())
+
         (self.game / preparation.CLIENT).write_bytes(b'client')
         (self.package / 'server/match-host/version.dll').unlink()
         with self.assertRaises(FileNotFoundError):
             self.prepare()
         self.assertFalse(self.runtime.exists())
+
+    def test_preparation_does_not_require_the_old_loader(self):
+        (self.package / 'server/loader/Client-english-fixed-resources.exe').unlink()
+        self.assertEqual(self.prepare(), self.runtime / 'game')
 
     def test_language_round_trip_preserves_original_resources_and_progress(self):
         before = {p.relative_to(self.game): p.read_bytes() for p in self.game.rglob('*') if p.is_file()}

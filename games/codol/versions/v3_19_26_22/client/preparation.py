@@ -10,11 +10,9 @@ from .settings import read_options
 
 CLIENT = 'codoMP_client_shipRetail.exe'
 CLIENT_SHA256 = '36997674b18f2896de5e9d755686f6922af10708f355175714058d0a0172b537'
-LOADER = 'loader/Client-english-fixed-resources.exe'
 REQUIRED = ('patches/localization.txt', 'patches/ff_init_common_gfx_V109.ifs',
-            'server/match-host/version.dll', 'server/match-host/client_loopback319.dll', 'server/' + LOADER)
+            'server/match-host/version.dll', 'server/match-host/client_loopback319.dll')
 NATIVE_HASHES = {
-    'server/' + LOADER: 'bd89f07fd634498f37be10c420915ba0581c6cdd661b8567aecfaac809c70867',
     'server/match-host/version.dll': 'b9e297174c9c652f10835ee39cd001b9c85e1fd4b70813adf4dafddc653dc97d',
     'server/match-host/client_loopback319.dll': 'ffc616e8534b31292cedabf48e31d4f6915693f63a8503414b26622adf894e56',
 }

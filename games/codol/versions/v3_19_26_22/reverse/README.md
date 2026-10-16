@@ -6,6 +6,8 @@
 
 原生组件身份在 [preparation.py](../client/preparation.py) 的 `NATIVE_HASHES` 中固定；导入及执行前校验。原始二进制仅在被忽略的本地runtime包中保存。
 
+2026-10-17加载器阶段：[loader.py](../client/loader.py) 替代旧 `Client-english-fixed-resources.exe`，生产入口直接运行仓库Python源码。按下述反编译证据生成TCLS共享内存，等待原客户端解包后，仅在原字节匹配时配置HTTP认证、关闭远程NAT探测并隔离UDP端口；英文分支保留原有资源入口选择。读取与写入限于新建的游戏子进程，文件EXE不变。18项准备/启停/协议测试通过，另一个受控32位子进程实际消费命名映射并验证三处修改、页面保护恢复和磁盘EXE不变（6.99秒）。这不替代真实客户端大厅和对局验收；代理、桥接和资产生成仍在后续阶段。
+
 对局使用的两个原生组件身份另固定于 [match.py](../client/match.py)：`collision319.exe`、`snapshot319_live.exe`。迁入的 [match_host](../server/match_host/) 调用这些组件处理本版本的碰撞和快照，没有混入3.3.3.3地址。原生快照、配装读取及碰撞进程生命周期已通过离线测试；游戏内效果仍需人工验收。
 
 2026-10-17 NCS阶段：运行时配置表改由仓库Python算法重建，移除 `test_native_ncs319.exe`、`config-reader-relocated.bin` 和旧rdata转储依赖。23项范围定义直接从原版客户端 `0x00da9808` 提取，来源与客户端SHA256见 [ncs319.json](../resources/definitions/ncs319.json)。[固定对照样本](../tests/fixtures/ncs319-reference.json) 保存旧原生程序的校验值、注册表摘要和地图消息摘要；测试覆盖跨列表去重、列表内重复、排序、跳过类型及不完整采集拒绝。删除这三个旧文件的真实服务启动与相关用例共8项通过；客户端自身的地图校验继续生效。

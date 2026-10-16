@@ -14,12 +14,9 @@ ROOT = Path(__file__).resolve().parents[5]
 VERSION = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from games.codol.versions.v3_19_26_22.client.lifecycle import Services, alive, identity, lobby_ready, service_status
-from games.codol.versions.v3_19_26_22.client.preparation import CLIENT, LOADER, NATIVE_HASHES, check_client, digest, grant_runtime_access, prepare
+from games.codol.versions.v3_19_26_22.client.preparation import CLIENT, NATIVE_HASHES, check_client, digest, grant_runtime_access, prepare
 from games.codol.versions.v3_19_26_22.client.settings import apply_options, read_options
 from games.codol.versions.v3_19_26_22.client.match import MatchSession
-
-LOADER_ARGS = ['--metadata', '--local-lobby', '--observe', '--local-http']
-
 
 def save(runtime, state):
     temporary = runtime / 'startup.tmp'
@@ -126,8 +123,8 @@ def supervise(runtime):
         since = time.time()
         language_args = ['--english-resources'] if read_options(runtime)['game_language'] == 'en' else []
         with (runtime / 'logs/loader.log').open('ab') as out:
-            loader = subprocess.Popen([str(runtime / 'server' / LOADER), *LOADER_ARGS, *language_args],
-                cwd=runtime / 'server/loader', env=env, stdin=subprocess.DEVNULL,
+            loader = subprocess.Popen([python, '-B', '-X', 'utf8', str(VERSION / 'client/loader.py'), *language_args],
+                cwd=runtime, env=env, stdin=subprocess.DEVNULL,
                 stdout=out, stderr=subprocess.STDOUT, close_fds=True, creationflags=subprocess.CREATE_NO_WINDOW)
         state['loader'] = identity(loader.pid)
         save(runtime, state)
@@ -148,7 +145,7 @@ def supervise(runtime):
                     state['phase'] = 'lobby'
                     save(runtime, state)
                 elif 'game' not in state and time.monotonic() >= deadline:
-                    raise TimeoutError('加载器未创建游戏进程，请查看 server/loader/bootstrap.log')
+                    raise TimeoutError('加载器未创建游戏进程，请查看 logs/loader.log')
             if state['phase'] == 'lobby' and match is not None:
                 match_state = match.poll()
                 if match_state != state.get('match'):
@@ -156,7 +153,7 @@ def supervise(runtime):
                     save(runtime, state)
             time.sleep(0.5)
         if state['phase'] != 'lobby' and not (runtime / 'stop.request').exists():
-            raise RuntimeError('游戏在登录前退出，请重试并查看 server/loader/bootstrap.log')
+            raise RuntimeError('游戏在登录前退出，请重试并查看 logs/loader.log')
         state['phase'] = 'stopped'
     except Exception as error:
         state.update(phase='error', error=str(error))

@@ -26,7 +26,7 @@ class LaunchTests(unittest.TestCase):
 
                 def spawn(command, **kwargs):
                     process = Mock(pid=100 + len(spawned))
-                    process.poll.return_value = 0 if command[0].endswith('.exe') and 'Client-' in command[0] else None
+                    process.poll.return_value = 0 if any('Client-' in c or c.endswith('loader.py') for c in command) else None
                     spawned.append((command, kwargs))
                     return process
 
@@ -40,7 +40,8 @@ class LaunchTests(unittest.TestCase):
                     process_info.return_value.children.return_value = []
                     launch.supervise(runtime)
                 command, arguments = spawned[-1]
-                self.assertTrue(command[0].endswith(preparation.LOADER.replace('/', os.sep)))
+                self.assertEqual(command[:4], [str(Path(sys.executable).with_name('python.exe')), '-B', '-X', 'utf8'])
+                self.assertEqual(Path(command[4]), launch.VERSION / 'client/loader.py')
                 self.assertNotIn('--windowed', command)
                 self.assertEqual('--english-resources' in command, language == 'en')
                 self.assertEqual(arguments['env']['CODOL319_EXTRA_ARGS'],
