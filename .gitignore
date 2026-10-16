@@ -7,6 +7,7 @@ __pycache__/
 .codegraph/
 node_modules/
 web/dist/
+native/**/target/
 runtime/
 archive/
 research/evidence/
