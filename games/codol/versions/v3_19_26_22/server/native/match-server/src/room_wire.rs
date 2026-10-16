@@ -47,7 +47,6 @@ pub(super) fn roster(players: &[Player], human_state: &[u8; 0x1d0]) -> Vec<u8> {
             row[0x94..0x98].copy_from_slice(&1000u32.to_le_bytes());
             row[0xac..0xb0].fill(0xff);
             row[0xb0] = 0xff;
-            row[0x90] = 1;
         }
         row[..8].copy_from_slice(&player.uid.to_le_bytes());
         row[0x88] = if player.team == Team::One { 1 } else { 2 };
@@ -61,7 +60,7 @@ pub(super) fn join(player: &Player, human_state: &[u8; 0x1d0]) -> Vec<u8> {
     let mut row = *human_state;
     row[..8].copy_from_slice(&player.uid.to_le_bytes());
     row[0x88] = if player.team == Team::One { 1 } else { 2 };
-    row[0x90] = 1; // Local bot policy; no claim about the original service's bots.
+    row[0x90] = 0; // Local policy: only human Ready starts the native countdown.
     let mut output = vec![0; 91];
     let mut write = bits(&mut output);
     write(0, 1);

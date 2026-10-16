@@ -54,4 +54,5 @@ def apply_options(runtime):
         temporary = path.with_suffix('.tmp')
         temporary.write_text(json.dumps(profile) + '\n', encoding='utf-8')
         temporary.replace(path)
-    return f"+set cg_fov {options['fov']} +set com_maxfps {options['max_fps']}"
+    # 3.19 0x62ca80 copies dvar 3291 into the room's automatic-start flag.
+    return f"+set cg_fov {options['fov']} +set com_maxfps {options['max_fps']} +set 3291 0"

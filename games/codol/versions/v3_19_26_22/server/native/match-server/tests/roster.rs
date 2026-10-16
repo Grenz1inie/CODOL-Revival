@@ -14,7 +14,12 @@ fn roster_matches_the_current_client_native_writer() {
     let mut human = human_state();
     human[0x90] = 1;
     let room = NuketownRoom::new(1_000_001, "Player").unwrap();
-    assert_eq!(room.roster_message(&human), include_bytes!("fixtures/roster-native.bin"));
+    let mut expected = *include_bytes!("fixtures/roster-native.bin");
+    for slot in 1..18 {
+        let ready_bit = 41 + slot * 545 + 64 + 8;
+        expected[ready_bit / 8] &= !(1 << (ready_bit % 8));
+    }
+    assert_eq!(room.roster_message(&human), expected);
 }
 
 #[test]

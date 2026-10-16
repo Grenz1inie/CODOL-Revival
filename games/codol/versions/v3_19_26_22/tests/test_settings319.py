@@ -16,7 +16,7 @@ class SettingsTests(unittest.TestCase):
             profile.write_text(json.dumps(original), encoding='utf-8')
             self.assertEqual(settings.read_options(runtime)['player_name'], 'OldName')
             settings.save_options(runtime, {'player_name': 'New_Name', 'fov': 60, 'max_fps': 0})
-            self.assertEqual(settings.apply_options(runtime), '+set cg_fov 60 +set com_maxfps 0')
+            self.assertEqual(settings.apply_options(runtime), '+set cg_fov 60 +set com_maxfps 0 +set 3291 0')
             self.assertEqual(json.loads(profile.read_text()), {**original, 'name': 'New_Name'})
             backups = list((runtime / 'backups').glob('profile319-*.json'))
             self.assertEqual(len(backups), 1)

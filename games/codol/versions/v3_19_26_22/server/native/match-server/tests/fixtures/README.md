@@ -30,5 +30,8 @@ The content version is checked by `0x634870` against `0x7b25a38`; a bounded
 read of PID81072 confirmed 797, without modifying the client.
 REA evidence `ev_5f69d4787bea7c73fabbb407d2d15c82fc297a2c3e2174b3a8c18b6f2f5448f8`.
 The Rust test also replays all 17 requests through both native functions.
-Ready bots are a local implementation policy, not a recovered original-server
-rule. Actual host admission, channel routing and UI remain unverified.
+These historical fixtures retain ready=1. The local human-Ready policy clears
+only the documented ready bits in expected bytes; the native writer/reader
+replay independently verifies ready=0. Host admission and Bot01-Bot17 names
+have since been confirmed in the real waiting room; the new start policy and
+gameplay still require separate live acceptance.

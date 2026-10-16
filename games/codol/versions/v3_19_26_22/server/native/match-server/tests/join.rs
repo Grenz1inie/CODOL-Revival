@@ -16,7 +16,10 @@ fn bot_admission_uses_one_native_join_per_bot() {
     let messages = room.bot_join_messages(&human());
     assert_eq!(messages.len(), 17);
     assert!(messages.iter().all(|message| message.len() == 91));
-    assert_eq!(messages[0], include_bytes!("fixtures/join-native.bin"));
+    let mut expected = *include_bytes!("fixtures/join-native.bin");
+    // Preserve the historical ready=1 fixture; local bots must wait for the human.
+    expected[25] &= !2; // Native message 6 ready bit 201.
+    assert_eq!(messages[0], expected);
     // Each request contains its own UID and team, not 17 identical copies.
     let distinct: std::collections::HashSet<_> = messages.iter().collect();
     assert_eq!(distinct.len(), 17);
