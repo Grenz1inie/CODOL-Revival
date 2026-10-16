@@ -1,0 +1,8 @@
+# Preserve reviewed experiment sources; generated evidence stays on this machine.
+*
+!.gitignore
+!*/
+!*.md
+!*.py
+!*.java
+!*.ps1
