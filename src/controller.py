@@ -142,9 +142,13 @@ def create_server(root, port=8765, *, game_status=game_running, installations=No
                                 self.reply({'skip_tutorial': True}); return
                             self.reply({'error': selection['reason']}, 409); return
                         capability = {'/api/game/launch': 'launch', '/api/settings': 'skip_tutorial'}.get(url.path)
+                        if writing and url.path == '/api/settings' and set(body) == {'launch'}:
+                            capability = 'launch_settings'
                         if writing and capability and not adapter.capabilities.get(capability, {}).get('available'):
                             self.reply({'error': '当前版本尚未支持此操作'}, 409); return
                         if url.path == '/api/settings':
+                            if writing and capability == 'launch_settings' and game_status():
+                                self.reply({'error': '请先退出游戏，再修改启动选项'}, 409); return
                             self.reply(adapter.set_settings(body) if writing else adapter.settings())
                         elif url.path == '/api/inventory':
                             self.reply(adapter.inventory(query.get('user_id', [''])[0]))

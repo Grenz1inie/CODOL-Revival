@@ -268,7 +268,9 @@ button:focus-visible,a:focus-visible,summary:focus-visible,select:focus-visible 
 .version-list summary span { margin-left: 8px; }
 .version-list table { width: 100%; max-width: 560px; margin-top: 10px; border-collapse: collapse; }
 .version-list th, .version-list td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--gray-5); }
+.launch-options { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 16px; }
 @media (max-width: 600px) {
+  .launch-options { grid-template-columns: 1fr; }
   .installation-panel { padding: 16px; }
   .installation-heading { align-items: flex-start; flex-direction: column; gap: 12px; }
 }

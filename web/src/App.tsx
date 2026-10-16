@@ -5,7 +5,8 @@ import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import {savedLanguage, translate, type Language} from './i18n';
 
-type Settings = {skip_tutorial: boolean};
+type LaunchSettings = {player_name: string; fov: number; max_fps: number};
+type Settings = {skip_tutorial: boolean; launch?: LaunchSettings};
 type Profile = {user_id: string; level?: number; prestige?: number; currency?: number; premium?: number};
 type Installation = {state:string; path:string; version:string|null; reason:string; instance_id?:string};
 type Version = {game_id:string; version:string; label:string; supported:boolean};
@@ -26,6 +27,21 @@ function FileTree({files, active, onSelect, prefix = ''}: {files: Doc[]; active:
     const children = files.filter(f => f.path.startsWith(path + '/'));
     return <li key={path}>{children.length ? <details open><summary><Folder size={17}/>{name}</summary><FileTree files={children} active={active} onSelect={onSelect} prefix={path + '/'}/></details> : <button className={path === active ? 'selected' : ''} onClick={()=>onSelect(path)}><FileText size={16}/><span>{name}</span></button>}</li>;
   })}</ul>;
+}
+
+function LaunchOptions({value, disabled, onSave, t}: {value: LaunchSettings; disabled: boolean; onSave:(value:LaunchSettings)=>Promise<void>; t:(text:string)=>string}) {
+  const [name, setName] = useState(value.player_name);
+  const [fov, setFov] = useState(String(value.fov));
+  const [fps, setFps] = useState(String(value.max_fps));
+  return <form onSubmit={event=>{event.preventDefault();void onSave({player_name:name, fov:Number(fov), max_fps:Number(fps)});}}>
+    <div className="launch-options">
+      <div><label className="field-label" htmlFor="launch-name">{t('玩家名')}</label><TextField.Root id="launch-name" required minLength={3} maxLength={15} value={name} disabled={disabled} onChange={e=>setName(e.target.value)}/></div>
+      <div><label className="field-label" htmlFor="launch-fov">FOV</label><TextField.Root id="launch-fov" type="number" required min={60} max={120} step={1} value={fov} disabled={disabled} onChange={e=>setFov(e.target.value)}/></div>
+      <div><label className="field-label" htmlFor="launch-fps">{t('帧率上限')}</label><TextField.Root id="launch-fps" type="number" required min={0} max={400} step={1} value={fps} disabled={disabled} onChange={e=>setFps(e.target.value)}/></div>
+    </div>
+    <p className="helper">{t('玩家名 3–15 位；FOV 60–120；帧率 0–400，0 表示不限。退出游戏后保存，下次启动生效。')}</p>
+    <Button type="submit" variant="soft" disabled={disabled}>{t('保存启动选项')}</Button>
+  </form>;
 }
 
 export default function App() {
@@ -220,8 +236,10 @@ export default function App() {
             </aside>
               <section className="panel startup-panel" aria-labelledby="startup-title">
                 <div className="section-title"><SlidersHorizontal size={20}/><h2 id="startup-title">{t('启动选项')}</h2><span className="section-code">{t('下次启动生效')}</span></div>
-                <div className="switch-row"><label htmlFor="skip">{t('跳过新手引导')}</label><Switch id="skip" checked={settings?.skip_tutorial ?? true} disabled={busy || !settings || !matched || !capability('skip_tutorial')?.available} onCheckedChange={value=>act('settings',{skip_tutorial:value},'启动选项已保存')}/></div>
-                <p className="helper">{t('默认开启。训练服务尚未恢复；更改在下一次启动生效。')}</p>
+                {capability('launch_settings')?.available && settings?.launch ? <LaunchOptions key={status?.installation.instance_id} value={settings.launch} disabled={busy || !matched || !!status?.game_running} onSave={launch=>act('settings',{launch},'启动选项已保存')} t={t}/> : <>
+                  <div className="switch-row"><label htmlFor="skip">{t('跳过新手引导')}</label><Switch id="skip" checked={settings?.skip_tutorial ?? true} disabled={busy || !settings || !matched || !capability('skip_tutorial')?.available} onCheckedChange={value=>act('settings',{skip_tutorial:value},'启动选项已保存')}/></div>
+                  <p className="helper">{t('默认开启。训练服务尚未恢复；更改在下一次启动生效。')}</p>
+                </>}
               </section>
           </div>
           <footer className="usage"><ShieldCheck size={18}/><p>{t('先退出游戏，再修改数据，随后重新启动读取。写入前保留原档案备份。')}</p><button className="text-link" onClick={()=>{setPage('wiki');void openDoc('wiki/06-onboarding-profile.md');}}>{t('查看档案与引导说明')}<CaretRight/></button></footer>

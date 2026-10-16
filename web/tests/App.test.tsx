@@ -7,6 +7,7 @@ const actions = ['设置最高等级', '解锁全部剧情关卡', '增加游戏
 let installation: {state: string; path: string; version: string | null; reason: string; instance_id?: string};
 const matched = {state:'matched', path:'E:/Games/CODOL', version:'3.3.3.3', reason:'已匹配', instance_id:'codol-main'};
 let running: boolean;
+let launchSettings: {player_name: string; fov: number; max_fps: number} | undefined;
 let serverState: {running: boolean; pid: number | null; ready: boolean; ports: {name: string; protocol: string; port: number; listening: boolean; conflict: boolean}[]};
 let serverError: boolean;
 let statusError: boolean;
@@ -32,6 +33,7 @@ beforeEach(() => {
   ]};
   installation = {...matched};
   running = false;
+  launchSettings = undefined;
   profiles = [profile];
   capabilities = Object.fromEntries(['progression', 'currency', 'inventory', 'story', 'launch', 'skip_tutorial'].map(key => [key, {available: true, reason: `${key} 已就绪`, max_level:70, max_prestige:3}]));
   posts = [];
@@ -45,7 +47,7 @@ beforeEach(() => {
     if (path === 'status') return response(statusError ? {error:'读取失败'} : {profiles, game_running: running, capabilities, installation}, !statusError);
     if (path === 'server/status') return serverResponse();
     if (path === 'versions') return response({versions:[{game_id:'codol', version:'3.3.3.3', label:'体验服 3.3.3.3', supported:true}, {game_id:'codol', version:'2.6.9.7', label:'2.6.9.7', supported:false}]});
-    if (path === 'settings') return response({skip_tutorial: true});
+    if (path === 'settings') return response({skip_tutorial: true, launch: launchSettings});
     if (path.startsWith('inventory?')) return response({items: []});
     if (path === 'docs') return response({files: [{path: 'README.md', size: 10}, {path: 'wiki/06-onboarding-profile.md', size: 20}]});
     if (path.startsWith('docs/file?')) {
@@ -361,6 +363,26 @@ describe('低频自动刷新', () => {
 
 
 describe('游戏目录与版本匹配', () => {
+  it('3.19 启动参数可保存，刷新不覆盖未保存输入，运行时禁用修改', async () => {
+    installation = {...matched, version:'3.19.26.22'};
+    capabilities.launch_settings = {available:true, reason:''};
+    capabilities.skip_tutorial.available = false;
+    launchSettings = {player_name:'Player319', fov:90, max_fps:0};
+    render(<App/>);
+    await screen.findByLabelText('玩家名');
+    expect((screen.getByLabelText('玩家名') as HTMLInputElement).value).toBe('Player319');
+    fireEvent.change(screen.getByLabelText('玩家名'), {target:{value:'NewName'}});
+    fireEvent.change(screen.getByLabelText('FOV'), {target:{value:'110'}});
+    fireEvent.click(button('刷新状态'));
+    await screen.findByText('状态已更新');
+    expect((screen.getByLabelText('玩家名') as HTMLInputElement).value).toBe('NewName');
+    fireEvent.click(button('保存启动选项'));
+    await waitFor(()=>expect(posts).toContainEqual({path:'settings',data:{launch:{player_name:'NewName',fov:110,max_fps:0}}}));
+    await waitFor(()=>expect(button('保存启动选项').disabled).toBe(false));
+    running = true;
+    fireEvent.click(button('刷新状态'));
+    await waitFor(()=>expect(button('保存启动选项').disabled).toBe(true));
+  });
   it('未选择或未支持版本时锁定所有游戏和档案操作，保留版本列表', async () => {
     installation = {state:'unselected', path:'', version:null, reason:'请先选择游戏目录'};
     await ready();

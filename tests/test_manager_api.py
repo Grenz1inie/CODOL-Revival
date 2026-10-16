@@ -117,6 +117,41 @@ class ManagerApiTests(unittest.TestCase):
             with self.assertRaises(HTTPError) as error: self.call('installation/select', body, **headers)
             self.assertEqual(error.exception.code, code)
 
+    def test_final_launch_settings_validate_persist_and_stay_with_installation(self):
+        self.manager.catalog[0].update(version='3.19.26.22', adapter='games.codol.versions.v3_19_26_22.adapter')
+        (self.game / 'IIPS/IIPSVersion.ini').write_text('3.19.26.22')
+        self.call('installation/select', {'path': str(self.game)})
+        defaults = {'player_name': 'Player', 'fov': 90, 'max_fps': 0}
+        self.assertEqual(self.call('settings')['launch'], defaults)
+        self.assertTrue(self.call('status')['capabilities']['launch_settings']['available'])
+        options = {'player_name': 'Tester_319', 'fov': 120, 'max_fps': 400}
+        self.assertEqual(self.call('settings', {'launch': options})['launch'], options)
+        for field, values in [('player_name', ['', 'ab', 'x' * 16, '玩家', 'a b']),
+                              ('fov', [59, 121, 90.5, True, '90']),
+                              ('max_fps', [-1, 401, False, None])]:
+            for value in values:
+                with self.subTest(field=field, value=value), self.assertRaises(HTTPError) as error:
+                    self.call('settings', {'launch': {**options, field: value}})
+                self.assertEqual(error.exception.code, 400)
+                self.assertEqual(self.call('settings')['launch'], options)
+        for value in [{**options, 'command': 'extra'}, {'player_name': 'Tester'}, []]:
+            with self.assertRaises(HTTPError) as error:
+                self.call('settings', {'launch': value})
+            self.assertEqual(error.exception.code, 400)
+        self.running = True
+        with self.assertRaises(HTTPError) as error:
+            self.call('settings', {'launch': defaults})
+        self.assertEqual(error.exception.code, 409)
+        self.running = False
+        second = self.root / 'Second'
+        (second / 'IIPS').mkdir(parents=True)
+        (second / 'IIPS/IIPSVersion.ini').write_text('3.19.26.22')
+        (second / 'client.exe').write_bytes(b'client')
+        self.call('installation/select', {'path': str(second)})
+        self.assertEqual(self.call('settings')['launch'], defaults)
+        self.call('installation/select', {'path': str(self.game)})
+        self.assertEqual(self.call('settings')['launch'], options)
+
     def test_version_capabilities_are_enforced_by_backend(self):
         self.call('installation/select', {'path': str(self.game)})
         from games.codol.versions.v3_3_3_3.adapter import Adapter

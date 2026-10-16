@@ -139,6 +139,11 @@ const english: Record<string, string> = {
   "需要有效的游戏目录参数": "Invalid game directory parameters.",
   "请先停止游戏与模拟服务器，再切换目录": "Stop the game and local server before switching directories.",
   "无法打开目录选择窗口": "Could not open the directory picker.",
+  '玩家名': 'Player name',
+  '帧率上限': 'Max FPS',
+  '保存启动选项': 'Save launch settings',
+  '玩家名 3–15 位；FOV 60–120；帧率 0–400，0 表示不限。退出游戏后保存，下次启动生效。': 'Name: 3–15 characters; FOV: 60–120; max FPS: 0–400 (0 = unlimited). Exit the game before saving; changes apply on the next launch.',
+  '请先退出游戏，再修改启动选项': 'Exit the game before changing launch settings.',
 };
 
 export function translate(text: string, language: Language): string {

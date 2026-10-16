@@ -15,6 +15,7 @@ VERSION = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from games.codol.versions.v3_19_26_22.client.lifecycle import Services, alive, identity, lobby_ready, service_status
 from games.codol.versions.v3_19_26_22.client.preparation import CLIENT, LOADER, NATIVE_HASHES, check_client, digest, grant_runtime_access, prepare
+from games.codol.versions.v3_19_26_22.client.settings import apply_options
 
 LOADER_ARGS = ['--metadata', '--local-lobby', '--observe', '--windowed', '--local-http', '--english-resources']
 
@@ -104,7 +105,8 @@ def supervise(runtime):
                     grant_runtime_access(path)
         python = str(Path(sys.executable).with_name('python.exe'))
         env = {**os.environ, 'CODOL319_GAME_DIR': str(game),
-               'CODOL319_SERVER_ROOT': str(runtime / 'server'), 'PYTHONUTF8': '1'}
+               'CODOL319_SERVER_ROOT': str(runtime / 'server'), 'PYTHONUTF8': '1',
+               'CODOL319_EXTRA_ARGS': apply_options(runtime)}
         specs = [{'name': name, 'port': port,
                   'command': [python, '-B', '-X', 'utf8', str(VERSION / 'server' / script), *args]}
                  for name, port, script, args in (
