@@ -19,7 +19,7 @@ from reference_match.mapdata import load_map
 from reference_match.navigation import Navigation
 
 
-def export_loadout(source, output, common_zone, waypoints, registration):
+def export_loadout(source, output, common_zone, waypoints, registration, *, output_root=OUTPUT_ROOT):
     package=load_map(source)
     registration=Path(registration)
     ncs_bytes=(registration/'ncs.json').read_bytes()
@@ -31,7 +31,7 @@ def export_loadout(source, output, common_zone, waypoints, registration):
     if not required_zones.issubset(ncs['selected_zones']):
         raise ValueError('registration does not include the selected map')
     output=Path(output).resolve()
-    if output==OUTPUT_ROOT.resolve() or not output.is_relative_to(OUTPUT_ROOT.resolve()) or output.exists():
+    if output==Path(output_root).resolve() or not output.is_relative_to(Path(output_root).resolve()) or output.exists():
         raise ValueError('choose a new directory under independent-match')
     zone=Path(common_zone).read_bytes()
     zone_hash=hashlib.sha256(zone).hexdigest()

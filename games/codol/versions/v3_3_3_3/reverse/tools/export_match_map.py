@@ -683,14 +683,15 @@ def select_dm_submodels(report, baseline, geometry):
     return instances
 
 
-def export_zones(zones, output, *, map_name=MAP, gametype='dm', source_records=None, registration=None):
+def export_zones(zones, output, *, map_name=MAP, gametype='dm', source_records=None, registration=None,
+                 output_root=OUTPUT_ROOT):
     """Export explicitly supplied decoded FF423 zones into a new local directory.
 
     source_records carries offline FF provenance; it is not a runtime mount list.
     Registration evidence proves only its own historical name-list checksum.
     """
     output = Path(output).resolve()
-    if not output.is_relative_to(OUTPUT_ROOT.resolve()) or output == OUTPUT_ROOT.resolve():
+    if not output.is_relative_to(Path(output_root).resolve()) or output == Path(output_root).resolve():
         raise ValueError('output must be a new directory under research/experiments/independent-match')
     if output.exists():
         raise ValueError('output directory already exists; select a new export directory')
@@ -915,11 +916,11 @@ def enrich_geometry(manifest, collision, data, world, spawns, save_json, *, mode
         save_json(name,value)
 
 
-def export_geometry_package(source, output, *, model_zones=None):
+def export_geometry_package(source, output, *, model_zones=None, output_root=OUTPUT_ROOT):
     """Enrich a hash-verified existing export: no zone decrypt or EXE access."""
     from reference_match.mapdata import load_map
     source,output = Path(source).resolve(),Path(output).resolve()
-    if not output.is_relative_to(OUTPUT_ROOT.resolve()) or output == OUTPUT_ROOT.resolve() or output.exists():
+    if not output.is_relative_to(Path(output_root).resolve()) or output == Path(output_root).resolve() or output.exists():
         raise ValueError('output must be a new directory under research/experiments/independent-match')
     loaded = load_map(source)
     manifest = loaded['manifest']

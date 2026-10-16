@@ -16,6 +16,66 @@ def digest(path):
         return hashlib.file_digest(stream, 'sha256').hexdigest()
 
 
+NUKETOWN_ARCHIVES = (
+    'ff_init_common_gfx_V43.ifs', 'ff_init_common_mp_V43.ifs',
+    'ff_init_common_marketplace_V38.ifs', 'ff_init_common_gametype_mp_V26.ifs',
+    'ff_init_mp_nuked_V32.ifs', 'lf_init_mp_nuked_const_V37.ifs',
+)
+
+
+def extract_nuketown(game, stage, extractor):
+    """Extract all required FFs from copies; no historical research inputs."""
+    from build_match_registration import phases_for_map
+    game, stage, extractor = Path(game), Path(stage), Path(extractor).resolve()
+    dll = game / 'IIPS/IFS2.dll'
+    if digest(dll) != DLL_SHA256:
+        raise ValueError('IFS DLL hash mismatch')
+    sources = [game / 'IIPS/IIPSDownload' / name for name in NUKETOWN_ARCHIVES]
+    for source in sources:
+        if not source.is_file():
+            raise FileNotFoundError(f'Missing game archive: {source}')
+    stage.mkdir()
+    shutil.copyfile(dll, stage / 'IFS2.dll')
+    assets = stage / 'chinese'
+    assets.mkdir()
+    required = {name + '.ff' for zones in phases_for_map('mp_nuked').values() for name in zones}
+    manifest = dict(dll_sha256=DLL_SHA256, extractor_sha256=digest(extractor), archives=[])
+    for number, source in enumerate(sources):
+        folder = stage / str(number)
+        folder.mkdir()
+        archive = folder / 'archive.ifs'
+        before = digest(source)
+        shutil.copyfile(source, archive)
+        if digest(archive) != before:
+            raise ValueError(f'archive copy hash mismatch: {source.name}')
+        # The recovered archive ABI accepts ANSI paths. Relative ASCII names
+        # keep it usable even when the selected game or staging path is Unicode.
+        task = subprocess.run([str(extractor), 'IFS2.dll', f'{number}/archive.ifs', str(number)],
+                              cwd=stage, capture_output=True, text=True, timeout=60)
+        if task.returncode:
+            raise RuntimeError(f'{source.name}: IFS extraction failed ({task.returncode}): {task.stderr}')
+        if digest(source) != before or digest(archive) != before:
+            raise ValueError(f'archive changed during extraction: {source.name}')
+        records = []
+        for line in task.stdout.splitlines():
+            index, size, name = line.split('\t', 2)
+            name = name.replace('\\', '/')
+            basename = name.rsplit('/', 1)[-1]
+            if not name.startswith('client_shipretail/chinese/') or basename not in required:
+                continue
+            data = folder / f'{int(index)}.bin'
+            if data.stat().st_size != int(size):
+                raise ValueError(f'extracted size mismatch: {basename}')
+            shutil.copyfile(data, assets / basename)
+            records.append(dict(name=basename, bytes=int(size), sha256=digest(data)))
+            required.remove(basename)
+        manifest['archives'].append(dict(name=source.name, sha256=before, files=records))
+    if required:
+        raise ValueError(f'missing Nuketown fastfiles: {sorted(required)}')
+    (stage / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n', encoding='utf-8')
+    return assets
+
+
 def main(base=False, common=False, pvp=False, *, map_name=None, output=None):
     sidecar = map_name is not None
     selected_map = map_name
