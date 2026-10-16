@@ -10,7 +10,9 @@ $pidFile = Join-Path $projectRoot 'runtime\logs\server.pid'
 
 function Get-OwnedServer {
     $pattern = '(?i)(?:^|\s|\")' + [regex]::Escape($serverFile) + '(?:\"|\s|$)'
-    $matches = @(Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -match $pattern })
+    $matches = @(Get-CimInstance Win32_Process | Where-Object {
+        $_.Name -in @('python.exe','pythonw.exe') -and $_.CommandLine -match $pattern
+    })
     # Windows venv Python can have a redirector parent with the same command line.
     $leaves = @($matches | Where-Object { $_.ProcessId -notin $matches.ParentProcessId })
     if ($leaves.Count -gt 1) { throw 'Multiple local server processes found; resolve duplicates before controlling the server.' }

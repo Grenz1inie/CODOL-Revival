@@ -28,14 +28,15 @@ $global:stopped = @()
 $global:live = $Scenario -in @('running', 'partial', 'venv', 'duplicate', 'stop-failure')
 function Get-CimInstance {
     param($ClassName, $Filter)
-    $items = @([pscustomobject]@{ProcessId=999;ParentProcessId=0;CommandLine='python other.py'})
+    $items = @([pscustomobject]@{Name='python.exe';ProcessId=999;ParentProcessId=0;CommandLine='python other.py'})
     if ($global:live) {
-        $items += [pscustomobject]@{ProcessId=101;ParentProcessId=100;CommandLine=('python "'+$global:source+'"')}
-        if ($Scenario -eq 'venv') { $items += [pscustomobject]@{ProcessId=100;ParentProcessId=0;CommandLine=('python "'+$global:source+'"')} }
-        if ($Scenario -eq 'duplicate') { $items += [pscustomobject]@{ProcessId=102;ParentProcessId=0;CommandLine=('python "'+$global:source+'"')} }
+        $items += [pscustomobject]@{Name='python.exe';ProcessId=101;ParentProcessId=100;CommandLine=('python "'+$global:source+'"')}
+        if ($Scenario -eq 'venv') { $items += [pscustomobject]@{Name='python.exe';ProcessId=100;ParentProcessId=0;CommandLine=('python "'+$global:source+'"')} }
+        if ($Scenario -eq 'duplicate') { $items += [pscustomobject]@{Name='python.exe';ProcessId=102;ParentProcessId=0;CommandLine=('python "'+$global:source+'"')} }
     }
     # A substring match must never identify another source as this service.
-    $items += [pscustomobject]@{ProcessId=777;ParentProcessId=0;CommandLine=('python "'+$global:source+'.backup"')}
+    $items += [pscustomobject]@{Name='python.exe';ProcessId=777;ParentProcessId=0;CommandLine=('python "'+$global:source+'.backup"')}
+    if ($Scenario -eq 'editor') { $items += [pscustomobject]@{Name='notepad.exe';ProcessId=888;ParentProcessId=0;CommandLine=('notepad "'+$global:source+'"')} }
     if ($Filter -match 'ProcessId=(\d+)') { return $items | Where-Object ProcessId -eq ([int]$Matches[1]) }
     return $items
 }
@@ -111,6 +112,11 @@ try {
                 self.assertFalse(result['state']['running'])
                 self.assertEqual(result['stopped'], stopped)
         self.assertTrue(self.probe('stop-failure', 'stop')['error'])
+
+    def test_open_source_in_editor_is_not_a_server_process(self):
+        result = self.probe('editor')
+        self.assertFalse(result['state']['running'])
+        self.assertEqual(result['stopped'], [])
 
 
 if __name__ == '__main__':
