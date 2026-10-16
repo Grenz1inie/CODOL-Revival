@@ -47,6 +47,16 @@ class MatchServer:
                 packet, address = self.socket.recvfrom(65535)
             except socket.timeout:
                 continue
+            except ConnectionResetError:
+                # Windows reports ICMP port-unreachable here after the client
+                # exits. Keep this endpoint alive and release its old UDP peer.
+                peer=self.association.peer if self.association else None
+                self.association=None
+                self.connection=Connection(self.uid,**self.map_state)
+                self.pending_inputs.clear()
+                self.next_tick=None
+                self.record('match_peer_reset',peer=peer)
+                continue
             except OSError:
                 if self.stopping.is_set():
                     return

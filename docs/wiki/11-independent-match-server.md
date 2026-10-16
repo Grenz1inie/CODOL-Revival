@@ -270,6 +270,12 @@ python -m unittest test_match_transport test_match_connection test_match_server 
 
 回归使用真实加密UDP和原生usercmd writer，在受控的慢tick期间排入三条操作。旧代码首批只处理 `[1150]`，修改后首批处理 `[1150,1200,1250]`，后续位置、扣弹和伤害断言仍通过；`test_match_server` 3项通过。尚待服务重载及实机观察，不能据此声称所有延迟或枪手错位已经消失。
 
+### 退出后再匹配提示服务器繁忙（2026-10-16）
+
+10:18用户重试时，大厅仍运行，但对局线程已因 `recvfrom` 的 `ConnectionResetError: WinError 10054` 退出；同一日志的服务器查询21/5返回0个候选。Windows会把发往已关闭客户端UDP端口的ICMP错误交给下一次接收，不能据大厅端口仍在监听判断对局可用。
+
+接收循环现仅处理这个连接重置：清除旧association、输入队列和tick时钟，重建连接状态，保留本地UDP端点供重新握手；其他未处理的系统错误仍上报。Windows回归实际关闭已握手的回环客户端并触发ICMP，旧代码使线程退出；修复后第二个端口重新完成加密握手及getchallenge。证据保存在 `research/evidence/match-udp-reset-20261016.txt`。
+
 ### 客户端帧时钟与稀疏输入（2026-10-16）
 
 用户人工按住W和开火后，两次非暂停CDB读取相隔约47秒，本地帧时钟 `0x078b0a58` 只从180301增至180347，usercmd序号41→87，发送序号4→5。限频dvar969仍为30；正常倍率dvar1866/1867均为1、固定步长1868为0、帧率1848为85。异常来自慢动作全局 `0x02e8a974`：值为 `0x01d2447c`（极小浮点数），不是正常1.0。只读证据为 `research/evidence/match-input-clock-20261016-a.txt`、`-b.txt` 和 `match-clock-scales-20261016.txt`。

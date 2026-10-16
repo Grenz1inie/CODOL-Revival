@@ -1,6 +1,7 @@
 """Real loopback UDP with current DATA framing and native client consumers."""
 import struct
 import socket
+import sys
 import threading
 import time
 import unittest
@@ -13,6 +14,34 @@ from test_match_connection import profile_bytes
 
 
 class MatchServerTests(unittest.TestCase):
+    @unittest.skipUnless(sys.platform == 'win32', 'Windows UDP reset behavior')
+    def test_closed_client_does_not_kill_endpoint_or_block_new_client_port(self):
+        from match_server.server import MatchServer
+        reset = threading.Event()
+        uid, sid, security = 1, b'12345678', bytes(16)
+        def record(event, **fields):
+            if event == 'match_peer_reset':
+                reset.set()
+        with MatchServer(uid, sid, security, netconst_checksum=55, record=record) as server:
+            first = EncryptedPeer(server.port, sid, security, None, current=True)
+            old_peer = first.socket.getsockname()
+            first.socket.close()
+            # Actual Windows ICMP-to-WSAECONNRESET path after a game exits.
+            server.socket.sendto(b'late snapshot', old_peer)
+            self.assertTrue(reset.wait(2), 'server did not handle the closed UDP peer')
+            self.assertTrue(server.thread.is_alive())
+            self.assertIsNone(server.association)
+            self.assertIsNone(server.next_tick)
+            self.assertEqual(server.pending_inputs, [])
+            second = EncryptedPeer(server.port, sid, security, None, current=True)
+            try:
+                self.assertNotEqual(second.socket.getsockname(), old_peer)
+                reply = second.oob(b'getchallenge 0 "0000000000000001"\0', b'challengeResponse ')
+                self.assertTrue(reply.startswith(b'challengeResponse '))
+                self.assertEqual(server.association.peer, second.socket.getsockname())
+            finally:
+                second.socket.close()
+
     def test_nat_intro_reply_precedes_dtls_without_claiming_a_reservation(self):
         from match_server.server import MatchServer
         # bdNAT v2 INTRO: id, opaque client MAC, and two endpoints.
