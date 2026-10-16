@@ -38,6 +38,21 @@ python -B tools/check-doc-links.py
 
 首次运行或修改Rust源码后，在根目录运行 `powershell -NoProfile -File scripts/Invoke-MatchCargo.ps1 build --release`。工具链和构建产物位于项目`runtime/`；运行已构建的对局服不需要临时编译。缺少Rust产物不会回退到Python对局实现。
 
+3.3.3.3首次启动服务会从所选游戏生成核弹小镇包，保存到
+`runtime/builds/codol/v3_3_3_3/maps/nuketown/`。该目录是本地生成物，不随Git交付；
+235点参考路网和版本注册定义已随仓库提供，不再需要旧服目录或作者的`research/`。
+首次提取需要支持32位Windows目标的MinGW GCC；可设置`CODOL_IFS_CC`为其`gcc.exe`路径。
+也可先手动准备：
+
+```powershell
+$env:CODOL_IFS_CC = 'C:\工具链\mingw32\bin\gcc.exe' # 换成实际路径；已在PATH中可省略
+powershell -NoProfile -ExecutionPolicy Bypass -File games/codol/versions/v3_3_3_3/scripts/Prepare-Resources.ps1 -GameRoot 'D:\游戏目录'
+```
+
+有效包会复用；提取失败不发布半成品。已有损坏包会报告具体错误并保留，请先将其移出上述目录再重试。
+这一步不会配置客户端地址、证书或构建前端/Rust；这些仍是独立前提，见
+[开发环境](CONTRIBUTING.md)和[地址与证书](docs/wiki/03-redirection-tls-auth.md)。
+
 ## 目录
 
 ```text

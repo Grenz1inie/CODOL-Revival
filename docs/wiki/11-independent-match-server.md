@@ -1,5 +1,9 @@
 # 11 独立模拟对局服务器
 
+2026-10-17：新环境资源准备已接入服务启动。当前地图目录为
+`runtime/builds/codol/v3_3_3_3/maps/nuketown/`；使用方式见[项目说明](../../README.md)。
+历史导出命令仍用于研究复现，新环境无需准备其中的`research/`输入或旧服目录。
+
 2026-10-16实现已迁入Rust独立进程，性能对照、启停及当前验收状态见
 [12 Rust对局服迁移](12-rust-match-server.md)。本章保留协议/资源恢复过程；
 下文旧Python实现路径对应现已冻结的`tools/reference_match/`。
@@ -163,7 +167,7 @@ python -B games/codol/versions/v3_3_3_3/reverse/tools/export_match_map.py --from
 
 最后一步将包内路点纳入坐标窗口并重新生成哈希。旧路点只作为图结构输入，运行时仍须以当前地图碰撞确认可达性。动态尾部1413777字节原样保存；玻璃破坏、脚本驱动物体与复杂环境效果不属于 `dm_frozen_initial_static` 就绪范围。
 
-独立服源码位于 `src/match_server/`，已接入现有认证/大厅，当前资源独立保存在 `runtime/match/nuketown/`；旧Killhouse包保留。`local_server.py` 已替换 `NativeServer`，启动时读取地图、碰撞、武器与寻路数据；查询时为当前账号建立回环UDP实例。**自动验证覆盖协议消费和服务端模拟；完整客户端开图、画面、操作及对战仍待用户验收。**
+独立服源码位于 `src/match_server/`，已接入现有认证/大厅，当前资源独立保存在 `runtime/builds/codol/v3_3_3_3/maps/nuketown/`；旧Killhouse包保留。`local_server.py` 已替换 `NativeServer`，启动时读取地图、碰撞、武器与寻路数据；查询时为当前账号建立回环UDP实例。**自动验证覆盖协议消费和服务端模拟；完整客户端开图、画面、操作及对战仍待用户验收。**
 
 | 对象 | 实际作用及状态 |
 |---|---|
@@ -462,7 +466,7 @@ python games/codol/versions/v3_3_3_3/reverse/tools/export_match_loadout.py --sou
 3. 检查实际进入地图并看见武器，而非停留在加载画面；WASD、鼠标、空格、R分别检查移动、瞄准射击、跳跃、换弹。
 4. 检查一个AI是否可见，双方射击是否扣血，死亡后约3秒重生。固定ACR，不以仓库其他武器或配件作为本轮验收对象。
 
-资源包为 `runtime/match/nuketown/`，服务日志应显示 `independent_match_ready` 的 `map=mp_nuked`、`checksum=1765105316`。连接阶段查看 `match_nat_reply`、`match_phase`、`match_start`、`match_state`；失败时报告画面文字及点击时间，结合 `match_rejected.header` 定位。初始预热约31秒；每次服务启动仅维护一场预订，退出对局后重新测试需重启项目服务。
+资源包为 `runtime/builds/codol/v3_3_3_3/maps/nuketown/`，服务日志应显示 `independent_match_ready` 的 `map=mp_nuked`、`checksum=1765105316`。连接阶段查看 `match_nat_reply`、`match_phase`、`match_start`、`match_state`；失败时报告画面文字及点击时间，结合 `match_rejected.header` 定位。初始预热约31秒；每次服务启动仅维护一场预订，退出对局后重新测试需重启项目服务。
 
 2026-10-15 22:31:36（Asia/Shanghai）项目服务已重载，PID46688；日志确认上述地图/CRC和认证443、大厅TCP3074、STUN UDP3074启动。未启动完整游戏或占用真人对局预订，留给用户验收。
 

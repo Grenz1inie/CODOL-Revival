@@ -33,6 +33,24 @@ python -B -m unittest test_match_process test_rust_match_runtime test_independen
 3.3.3.3客户端、核弹小镇隔离资源包与已构建Rust程序，只读资源并使用临时端口，
 不操作正式游戏或存档。
 
+3.3.3.3资源准备入口为`games/codol/versions/v3_3_3_3/scripts/Prepare-Resources.ps1`，
+参数和新环境步骤见[README](README.md)。IFS读取器在临时目录用x86 MinGW GCC构建，
+`CODOL_IFS_CC`指定编译器，未设置时查找PATH中的gcc；需要该工具链的32位头文件和链接库。
+运行已有有效包不需要C编译器。签名FF解码所需pefile已列入运行依赖。
+
+新环境集成测试显式选定游戏，先验证缺归档失败和重试，再在中文/空格临时路径生成包、
+校验哈希及注册编号、验证复用和损坏拒绝。原归档保持只读；Rust测试使用临时UDP端口：
+
+```powershell
+$env:CODOL_TEST_GAME_ROOT = 'D:\游戏目录'
+$env:CODOL_IFS_CC = 'C:\工具链\mingw32\bin\gcc.exe'
+$env:CODOL_TEST_MATCH_EXE = (Resolve-Path runtime/builds/codol/v3_3_3_3/rust-match/release/codol-match.exe).Path
+python -B -m unittest discover -s games/codol/versions/v3_3_3_3/tests -p test_resource_preparation.py
+```
+
+未设置游戏路径时，仅跳过该项真实资源集成，其他资源边界测试仍运行。
+不要用本机历史包替代首次生成验收；全量测试集中执行一次。
+
 ## 文件归属
 
 - `src/`：共用管理器；版本源码、逆向工具、模拟服和测试归入 `games/codol/versions/<版本>/`。导入模块不得启动监听器。

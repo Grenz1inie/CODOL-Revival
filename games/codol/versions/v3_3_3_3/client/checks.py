@@ -8,10 +8,16 @@ import ssl
 import sys
 
 
-def check_environment(root, game, runtime):
+def check_environment(root, game, runtime, *, include_package=True):
     root = Path(root).resolve()
     game, runtime = Path(game), Path(runtime)
     errors = []
+    try:
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from preparation import resource_errors
+        errors.extend(resource_errors(root, include_package=include_package))
+    except ImportError as error:
+        errors.append(f'Cannot check match resources: {error}. Install requirements.txt with the selected Python.')
     if sys.version_info < (3, 9):
         errors.append('Python 3.9+ is required; this project is validated with Python 3.13.')
     requirements = root / 'requirements.txt'
@@ -95,6 +101,7 @@ def check_environment(root, game, runtime):
 
 if __name__ == '__main__':
     import os
-    problems = check_environment(os.environ['CODOL_REPO_ROOT'], os.environ['CODOL_GAME_ROOT'], os.environ['CODOL_RUNTIME'])
+    problems = check_environment(os.environ['CODOL_REPO_ROOT'], os.environ['CODOL_GAME_ROOT'], os.environ['CODOL_RUNTIME'],
+                                 include_package='--before-preparation' not in sys.argv)
     for problem in problems: print('[FAIL] ' + problem)
     sys.exit(bool(problems))

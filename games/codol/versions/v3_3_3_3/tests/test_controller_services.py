@@ -16,7 +16,7 @@ class ServiceControlTests(unittest.TestCase):
             (root / 'scripts').mkdir()
             (root / 'runtime/logs').mkdir(parents=True)
             (root / 'runtime/logs/server.pid').write_text('999')  # stale foreign PID
-            for name in ('Control-Services.ps1', 'Start-Services.ps1'):
+            for name in ('Control-Services.ps1', 'Start-Services.ps1', 'Prepare-Resources.ps1'):
                 shutil.copyfile(ROOT / 'games/codol/versions/v3_3_3_3/scripts' / name, root / 'scripts' / name)
             harness = root / 'probe.ps1'
             harness.write_text(r'''
@@ -56,6 +56,10 @@ function Get-NetUDPEndpoint {
     if ($global:live -and $Scenario -ne 'missing-match') { [pscustomobject]@{LocalPort=28970;LocalAddress='127.0.0.1';OwningProcess=103} }
 }
 function python.exe {
+    if (($args -join ' ') -like '*preparation.py*') {
+        $global:LASTEXITCODE = $(if ($Scenario -eq 'preparation-failure') {1} else {0})
+        return 'Missing game archive: ff_init_mp_nuked_V32.ifs'
+    }
     if (($args -join ' ') -notlike '*background.py*--runtime*') { throw 'Wrong background command' }
     $global:started++
     $global:live = $Scenario -ne 'exit'
@@ -85,6 +89,11 @@ try {
         self.assertIsNone(result['error'])
         self.assertFalse(result['state']['running'])
         self.assertEqual(result['stopped'], [])
+
+    def test_resource_failure_reports_reason_without_starting_background_server(self):
+        result = self.probe('preparation-failure', 'start')
+        self.assertIn('ff_init_mp_nuked_V32.ifs', result['error'] or '')
+        self.assertEqual(result['started'], 0)
 
     def test_status_tracks_owned_process_and_each_listener(self):
         for scenario, running, ready in [('stopped', False, False), ('running', True, True),

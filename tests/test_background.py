@@ -23,8 +23,14 @@ class BackgroundTests(unittest.TestCase):
                 (root / 'src/manager').mkdir(parents=True)
                 shutil.copyfile(helper, root / 'src/manager/background.py')
             runtime = root / 'runtime'
+            scripts = root / 'scripts'
+            scripts.mkdir()
+            shutil.copyfile(ROOT / 'games/codol/versions/v3_3_3_3/scripts/Start-Services.ps1', scripts / 'Start-Services.ps1')
+            # This test covers detached output pipes; preparation has its own
+            # resource/launch tests and must not consume a real game here.
+            (scripts / 'Prepare-Resources.ps1').write_text('param($PythonPath,[switch]$RequireServer)\n')
             process = subprocess.Popen(['powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File',
-                str(ROOT / 'games/codol/versions/v3_3_3_3/scripts/Start-Services.ps1'), '-PythonPath', sys.executable],
+                str(scripts / 'Start-Services.ps1'), '-PythonPath', sys.executable],
                 env={**os.environ, 'CODOL_REPO_ROOT': str(root), 'CODOL_RUNTIME': str(runtime)},
                 creationflags=subprocess.CREATE_NO_WINDOW, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             try:

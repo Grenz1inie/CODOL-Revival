@@ -18,6 +18,7 @@ if (!$PythonPath) {
     $venvPython = Join-Path $projectRoot '.venv\Scripts\python.exe'
     $PythonPath = if (Test-Path -LiteralPath $venvPython) { $venvPython } else { (Get-Command python.exe -ErrorAction Stop).Source }
 }
+& (Join-Path $PSScriptRoot 'Prepare-Resources.ps1') -PythonPath $PythonPath -RequireServer | Out-Null
 New-Item -ItemType Directory -Path $logRoot -Force | Out-Null
 New-Item -ItemType Directory -Path (Join-Path $runtimeRoot 'captures') -Force | Out-Null
 $serverPid = & $PythonPath -B (Join-Path $projectRoot 'src/manager/background.py') --cwd $projectRoot `

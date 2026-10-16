@@ -38,6 +38,7 @@ class StartupFixture:
         self.write(self.root / 'web/dist/assets/app.js', '// test')
         self.write(self.root / 'web/dist/assets/app.css', 'body{}')
         self.write(self.root / 'requirements.txt', (ROOT / 'requirements.txt').read_text())
+        self.write(self.root / 'runtime/builds/codol/v3_3_3_3/rust-match/release/codol-match.exe', 'not executed')
         self.write(self.game / 'codoMP_client_shipRetail.exe', 'test executable; never started')
         self.write(self.game / 'dwauth.ini', '127.0.0.1 3074\n127.0.0.1 443\n0x03EA\n')
         self.write(self.game / 'stun.ini', '127.0.0.1\n')
@@ -67,10 +68,14 @@ class StartupFixture:
 
 
 class StartupChecksTests(StartupFixture, unittest.TestCase):
-    def test_valid_environment_is_read_only_and_needs_no_node_when_ui_is_built(self):
+    def test_before_preparation_check_is_read_only_and_needs_no_node_when_ui_is_built(self):
         before = {p: p.read_bytes() for p in self.root.parent.rglob('*') if p.is_file()}
-        self.assertEqual(startup.check_environment(self.root, self.game, self.root / 'runtime'), [])
+        self.assertEqual(startup.check_environment(self.root, self.game, self.root / 'runtime', include_package=False), [])
         self.assertEqual({p: p.read_bytes() for p in self.root.parent.rglob('*') if p.is_file()}, before)
+
+    def test_default_preflight_reports_missing_package(self):
+        errors = '\n'.join(startup.check_environment(self.root, self.game, self.root / 'runtime'))
+        self.assertIn('Prepare-Resources.ps1', errors)
 
     def test_missing_files_are_reported_together_with_frontend_build_instructions(self):
         for name in ('games/codol/versions/v3_3_3_3/server/local_server.py', 'web/dist/index.html', 'runtime/certs/server.pem',

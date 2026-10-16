@@ -35,7 +35,7 @@ try {
         $gameRoot = $env:CODOL_GAME_ROOT
         $gameExe = Join-Path $gameRoot ($gameName + '.exe')
         if (!$PythonPath) { $PythonPath = (Get-Command python.exe -ErrorAction Stop).Source }
-        & $PythonPath -B (Join-Path $env:CODOL_VERSION_ROOT 'client/checks.py')
+        & $PythonPath -B (Join-Path $env:CODOL_VERSION_ROOT 'client/checks.py') --before-preparation
         if ($LASTEXITCODE -ne 0) { throw 'Selected game prerequisites failed.' }
         $skipTutorial = $true
         $settingsFile = Join-Path $runtimeRoot 'data\controller.json'

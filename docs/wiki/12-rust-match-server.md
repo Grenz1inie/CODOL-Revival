@@ -1,5 +1,9 @@
 # 12. 独立对局服 Rust 迁移
 
+2026-10-17：服务启动前自动准备核弹小镇地图包；首次需要匹配原游戏、Python依赖及
+x86 MinGW GCC，Rust程序仍先按下面命令构建。手动入口及失败恢复见[项目说明](../../README.md)。
+包缺失、损坏和Rust产物缺失会提前报告，不再等到对局端口超时才发现。
+
 ## 目标与边界
 
 Python 保留网页控制器、认证、大厅、玩家档案与对局预订。Rust 独立进程接管
@@ -24,7 +28,7 @@ Python 保留网页控制器、认证、大厅、玩家档案与对局预订。R
 ## 可重放基线（2026-10-16）
 
 入口 `games/codol/versions/v3_3_3_3/reverse/tools/benchmark_match.py`，原实现基点 `e3ddc7d`。
-地图 `runtime/match/nuketown`，400帧、同一份输入，覆盖移动、转向、开火、
+地图 `runtime/builds/codol/v3_3_3_3/maps/nuketown`，400帧、同一份输入，覆盖移动、转向、开火、
 跳跃、换弹、一次125ms慢帧及20帧菜单空输入。结果记录完整玩家状态、
 快照字段和封包；浮点状态及对应字段容差1e-6，整数和事件严格比较，
 封包的逐字节差异另外统计。
@@ -54,13 +58,13 @@ Python快照编码本身超过50ms帧预算；Rust本轮所有整帧均低于该
 ```powershell
 powershell -NoProfile -File scripts/Invoke-MatchCargo.ps1 build --offline --release
 powershell -NoProfile -File scripts/Invoke-MatchCargo.ps1 test --offline --release
-python -B games/codol/versions/v3_3_3_3/reverse/tools/benchmark_match.py --output research/evidence/rust-migration-next --rust runtime/build/rust-match/release/codol-match.exe
+python -B games/codol/versions/v3_3_3_3/reverse/tools/benchmark_match.py --output research/evidence/rust-migration-next --rust runtime/builds/codol/v3_3_3_3/rust-match/release/codol-match.exe
 ```
 
 ## 进程与启停
 
 - `games/codol/versions/v3_3_3_3/server/local_server.py → match_server.runtime → NativeMatchProcess` 启动
-  `runtime/build/rust-match/release/codol-match.exe serve`。Rust直接绑定回环UDP28970；
+  `runtime/builds/codol/v3_3_3_3/rust-match/release/codol-match.exe serve`。Rust直接绑定回环UDP28970；
   Python继续处理认证TCP443、大厅TCP3074及STUN UDP3074。
 - JSONL标准输入只承载预订和停止；标准输出返回ready、预订确认及诊断事件。
   大厅收到Rust的预订确认后才返回服务器地址，原事件21及赛单25/轮换0保持不变。
