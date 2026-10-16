@@ -22,7 +22,7 @@
 
 ## 实际最小实验与失败结果
 
-主任务在原版 EXE 不变的前提下，只向 [Launch-Game.ps1](../../scripts/Launch-Game.ps1)追加：
+主任务在原版 EXE 不变的前提下，只向 [Launch-Game.ps1](../../games/codol/versions/v3_3_3_3/scripts/Launch-Game.ps1)追加：
 
 ```text
 +set 2822 1 +set 3233 1
@@ -84,7 +84,7 @@ raw = CRC32[4] | 数据[32764]
 
 ## 已采用的最小修复
 
-[scripts/Launch-Game.ps1](../../scripts/Launch-Game.ps1)保留原有 TGP 参数，并传入一个完整命令段：
+[scripts/Launch-Game.ps1](../../games/codol/versions/v3_3_3_3/scripts/Launch-Game.ps1)保留原有 TGP 参数，并传入一个完整命令段：
 
 ```text
 +set dw_username johnClient;set 2822 1;set 3233 1
@@ -92,7 +92,7 @@ raw = CRC32[4] | 数据[32764]
 
 用户名 `johnClient` 与本机已有账号一致。不能把后两项重新拆成独立 `+set` 段，否则又会被过滤。这是本机客户端的实验性启动方式；完整用户名设置也包含在命令里，更换账号时需要一起复核。
 
-同时实现 [dw_profiles.py](../../src/dw_profiles.py) 的公开档案存储，以及 [dw_lobby.py](../../src/dw_lobby.py) 的 `8/1` 查询、`8/3` 保存：
+同时实现 [dw_profiles.py](../../games/codol/versions/v3_3_3_3/server/dw_profiles.py) 的公开档案存储，以及 [dw_lobby.py](../../games/codol/versions/v3_3_3_3/server/dw_lobby.py) 的 `8/1` 查询、`8/3` 保存：
 
 | 数据 | 已核对的结构 |
 |---|---|
@@ -127,6 +127,6 @@ raw = CRC32[4] | 数据[32764]
 
 ## 回滚与后续
 
-原始启动脚本及直接参数实验脚本见 [备份目录](../../runtime/backups/20261014-before-onboarding/)。回滚应只移除本次引导命令，保留原TGP参数和已保存角色。公开档案在 `runtime/data/public-profiles/`，原始初始化样本保留在研究证据和测试fixtures；不要用全目录覆盖方式回滚玩家数据。
+原始启动脚本及直接参数实验脚本见 [备份目录](../../runtime/backups/20261014-before-onboarding)。回滚应只移除本次引导命令，保留原TGP参数和已保存角色。公开档案在 `runtime/data/public-profiles/`，原始初始化样本保留在研究证据和测试fixtures；不要用全目录覆盖方式回滚玩家数据。
 
 后续先观察真实客户端的`8/3`变更与重载，再还原需要编辑的DDL字段。`9/16`仍返回空结果，但当前大厅能正常显示，不能仅凭该请求为空就认定它会触发繁忙；训练/游戏服务器见 [07](07-session-game-server.md)。

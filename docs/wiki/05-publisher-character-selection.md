@@ -10,7 +10,7 @@
 
 ## 实际最小解决办法
 
-初期在 [dw_lobby.py](../../src/dw_lobby.py) 对发布文件请求记录文件名，合法文件名返回一个内容为空的 `bdFileData`。2026-10-15开始为确切的赛单文件名提供本地适配内容；其他文件继续使用原响应，见本文末尾。
+初期在 [dw_lobby.py](../../games/codol/versions/v3_3_3_3/server/dw_lobby.py) 对发布文件请求记录文件名，合法文件名返回一个内容为空的 `bdFileData`。2026-10-15开始为确切的赛单文件名提供本地适配内容；其他文件继续使用原响应，见本文末尾。
 
 | 服务/任务（十进制） | typedParameters | 来源/用途 |
 |---|---|---|
@@ -52,7 +52,7 @@
 
 - [请求](../../runtime/captures/20261014T035934848139-lobby-request.bin) → [响应](../../runtime/captures/20261014T035934850889-lobby-response.bin)，对应[日志](../../runtime/logs/server.jsonl)中时间、peer、seq9 的 `lobby_task`。
 - 日志 `parameters_hex` 开头为 `10 00 10`：空 context 后跟文件名；不能当单字符串任务解析。
-- [测试](../../tests/test_dw_lobby.py)的 `test_codol_task21_publisher_request_with_context` 检查 21 号任务分支；[协议笔记](../../research/reference-protocol/protocol-notes.md)记录 serializer 和公开源提交。
+- [测试](../../games/codol/versions/v3_3_3_3/tests/test_dw_lobby.py)的 `test_codol_task21_publisher_request_with_context` 检查 21 号任务分支；[协议笔记](../../research/reference-protocol/protocol-notes.md)记录 serializer 和公开源提交。
 - 此任务 ID/参数判断来自真实流量与当前源码，没有单独的“CODOL GetPublisherFile 已命名反编译”Evidence ID；不借用 KDF 的证据 ID 冒充服务语义证据。
 
 ## 限制、回滚与下一检查
@@ -67,7 +67,7 @@
 
 用户截图中，精简发布文件只显示一个 `KILLHOUSE DM` 分类，中间列表及匹配按钮缺失。用户随后明确当前先恢复界面供人工复审，暂停对局能力扩展。文件传输成功和分类可见不足以证明完整菜单可用。
 
-参考为用户提供的相邻 `Server/mp_playlists_shipRetail_release.info`（version796，SHA256 `43ec9add79e69a6439d2de3e04a953a2f562d71e3d1e89d78b03b00e3b58c3ca`）。它包含完整目录，但格式不是当前客户端可直接照搬的格式。适配结果保存在 [data/match-playlist.info](../../data/match-playlist.info)，发布version798，运行不依赖Server目录。
+参考为用户提供的相邻 `Server/mp_playlists_shipRetail_release.info`（version796，SHA256 `43ec9add79e69a6439d2de3e04a953a2f562d71e3d1e89d78b03b00e3b58c3ca`）。它包含完整目录，但格式不是当前客户端可直接照搬的格式。适配结果保存在 [data/match-playlist.info](../../games/codol/versions/v3_3_3_3/resources/definitions/match-playlist.info)，发布version798，运行不依赖Server目录。
 
 - 保留97个带release标记的赛单及原ID、地图行、玩法规则；只保留这些赛单使用的30种玩法。当前解析器 `0x6111d0` 最多接受32种，参考文件43种导致后面的狼人、勇者游戏、无畏护送等地图行被丢弃。
 - 当前 `catinfo` 只读取ID、Group、Flag及两种语言名称（`0x611537..0x611625`），没有参考文件的空Unlock_Item字段。去掉该列，补齐中文分类名。
@@ -75,7 +75,7 @@
 - 名称/说明的原生缓冲区为64/256字节（`0x611925`、`0x611af7`）。13条过长说明缩至标点边界并加省略号，避免UTF-8字符被截断。去掉15行旧活动时间、日期和星期限制；不搬入参考文件开头的全局引擎调参。
 - 只发布赛单文件；没有修改游戏EXE、UI资源、正式档案或额外开放新对局。客户端本身的顶部标签、版式仍由3.3.3.3原资源决定，参考截图不能证明它们与当前版本一致。
 
-定向TDD先复现目录缺失，再验证当前EXE的真实解析器能得到PVP/PVE分类、中文名称与说明，以及“战术团竞6V6”的34张地图（含Killhouse）。[原生探针](../../tests/client_playlist423.py)只替换下载元数据查询及已捕获的unlockFlags表查询，不替换赛单解析、地图行校验或分类归属；[回归用例](../../tests/test_client_playlist.py)覆盖全部非空分类下的文本和地图，发布接口测试核对完整字节。未执行Flash绘制或按钮点击。
+定向TDD先复现目录缺失，再验证当前EXE的真实解析器能得到PVP/PVE分类、中文名称与说明，以及“战术团竞6V6”的34张地图（含Killhouse）。[原生探针](../../games/codol/versions/v3_3_3_3/tests/client_playlist423.py)只替换下载元数据查询及已捕获的unlockFlags表查询，不替换赛单解析、地图行校验或分类归属；[回归用例](../../games/codol/versions/v3_3_3_3/tests/test_client_playlist.py)覆盖全部非空分类下的文本和地图，发布接口测试核对完整字节。未执行Flash绘制或按钮点击。
 
 ```powershell
 $env:PYTHONPATH='src;tests;tools'

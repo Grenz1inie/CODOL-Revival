@@ -7,7 +7,9 @@ import {savedLanguage, translate, type Language} from './i18n';
 
 type Settings = {skip_tutorial: boolean};
 type Profile = {user_id: string; level?: number; prestige?: number; currency?: number; premium?: number};
-type Status = {profiles: Profile[]; game_running: boolean; capabilities: Record<string, {available: boolean; reason: string}>};
+type Installation = {state:string; path:string; version:string|null; reason:string; instance_id?:string};
+type Version = {game_id:string; version:string; label:string; supported:boolean};
+type Status = {installation: Installation; profiles: Profile[]; game_running: boolean; capabilities: Record<string, {available: boolean; reason: string; max_level?:number; max_prestige?:number}>};
 type Doc = {path: string; size: number};
 type ServerStatus = {running: boolean; pid: number | null; ready: boolean; ports: {name: string; protocol: string; port: number; listening: boolean; conflict: boolean}[]};
 async function api<T>(path: string, data?: unknown): Promise<T> {
@@ -38,6 +40,7 @@ export default function App() {
   const [dark, setDark] = useState(matchMedia('(prefers-color-scheme: dark)').matches);
   const [settings, setSettings] = useState<Settings>();
   const [status, setStatus] = useState<Status>();
+  const [versions, setVersions] = useState<Version[]>([]);
   const [statusError, setStatusError] = useState('');
   const [server, setServer] = useState<ServerStatus>();
   const [serverError, setServerError] = useState('');
@@ -75,7 +78,7 @@ export default function App() {
       refreshServer(),
       Promise.all([api<Settings>('settings'), api<Status>('status')]).then(([s,state])=>{
         setSettings(s); setStatus(state); setStatusError('');
-        setAccount(current => current || state.profiles[0]?.user_id || '');
+        setAccount(current => state.profiles.some(p=>p.user_id===current) ? current : state.profiles[0]?.user_id || '');
       }).catch(e=>{setStatus(undefined); setStatusError(e instanceof Error ? e.message : String(e));}),
     ]).then(()=>{}).finally(()=>{refreshRequest.current=null; scheduleRefresh();});
     return refreshRequest.current;
@@ -87,6 +90,7 @@ export default function App() {
   useEffect(()=>{
     mounted.current = true;
     void refresh();
+    api<{versions:Version[]}>('versions').then(r=>setVersions(r.versions)).catch(e=>setError(e.message));
     function visibilityChanged() {
       clearTimeout(refreshTimer.current);
       if (!document.hidden && !actionPending.current) void refresh();
@@ -100,11 +104,13 @@ export default function App() {
     actionPending.current = true;
     clearTimeout(refreshTimer.current);
     setBusy(true); setError(''); setErrorDetail(''); setMessage('');
+    if (path === 'installation/choose') setGameAction('choose');
     if (path.startsWith('game/')) setGameAction(path.split('/')[1]);
     try {
       // Drain an older read before mutation so it cannot overwrite the resulting status.
       await refreshRequest.current;
-      const result = await api<{message?:string}>(path,data); setMessage(result.message || success);
+      const result = await api<{message?:string; cancelled?:boolean; installation?:Installation}>(path,data);
+      if (!result.cancelled && (!result.installation || result.installation.state==='matched')) setMessage(result.message || success);
     }
     catch(e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -120,7 +126,8 @@ export default function App() {
   }
   const profile = status?.profiles.find(p=>p.user_id===account);
   const capability = (name:string)=>status?.capabilities[name];
-  const editable = !!account && !busy && !!status && !status.game_running;
+  const matched = status?.installation.state === 'matched';
+  const editable = matched && !!account && !busy && !!status && !status.game_running;
   return <Theme appearance={dark?'dark':'light'} accentColor="blue" grayColor="slate" radius="medium" scaling="100%">
     <div className="shell">
       <header className="navigation">
@@ -142,9 +149,17 @@ export default function App() {
             <div><p className="eyebrow"><span className="mono">LOCAL SESSION</span><span>{t('本地游戏')}</span></p><h1>{t('玩家与启动设置')}</h1><p>{t('管理当前档案，设置下一次游戏启动。')}</p></div>
             <div className="game-actions">
               <Button aria-label={t('停止游戏')} className="stop-button" variant="soft" size="3" disabled={busy || !status || (!status.game_running && !server?.running)} onClick={()=>act('game/stop',{},'游戏与服务器已停止。')}><Stop weight="fill"/>{t(gameAction==='stop'?'停止中…':'停止游戏')}</Button>
-              <Button aria-label={t('启动游戏')} className="launch-button" size="3" disabled={busy || !status || status.game_running} onClick={()=>act('game/launch',{},'游戏与服务器已启动。')}><Play weight="fill"/><span>{t(gameAction==='launch'?'启动中…':'启动游戏')}</span><ArrowUpRight className="launch-arrow"/></Button>
+              <Button aria-label={t('启动游戏')} className="launch-button" size="3" disabled={busy || !matched || !capability('launch')?.available || status?.game_running} onClick={()=>act('game/launch',{},'游戏与服务器已启动。')}><Play weight="fill"/><span>{t(gameAction==='launch'?'启动中…':'启动游戏')}</span><ArrowUpRight className="launch-arrow"/></Button>
             </div>
           </div>
+          <section className="panel installation-panel" aria-labelledby="installation-title">
+            <div className="installation-heading"><div><h2 id="installation-title">{t('游戏目录')}</h2><p className="installation-path mono">{status?.installation.path || t('尚未选择目录')}</p></div>
+              <Button variant="soft" disabled={busy || !status || status.game_running || server?.running} onClick={()=>act('installation/choose',{},'游戏目录已匹配')}><Folder/>{t(gameAction==='choose'?'选择与识别中…':'选择游戏目录')}</Button></div>
+            <div className={'installation-result ' + (matched?'matched':'')}><span className="state-dot"/>{status?.installation.version && <strong className="mono">{status.installation.version}</strong>}<span>{t(status?.installation.reason || '读取中')}</span></div>
+            <details className="version-list"><summary>{t('版本列表')} <span className="mono">{versions.length}</span></summary>
+              <table><thead><tr><th>{t('版本号')}</th><th>{t('适配状态')}</th></tr></thead><tbody>{versions.map(version=><tr key={version.game_id+version.version}><td className="mono">{version.version}</td><td>{t(version.supported?'已接入':'尚未接入')}</td></tr>)}</tbody></table>
+            </details>
+          </section>
           <section className="profile-strip" aria-label={t('玩家概况')}>
             <div><label className="label" htmlFor="account">{t('当前档案')}</label><Select.Root value={account} onValueChange={setAccount}><Select.Trigger id="account" placeholder={t('尚无档案')}/><Select.Content>{status?.profiles.map(p=><Select.Item key={p.user_id} value={p.user_id}>{p.user_id}</Select.Item>)}</Select.Content></Select.Root></div>
             <div><span className="label">{t('等级')}</span><strong>{profile?.level ?? t('待读取')}</strong></div>
@@ -177,12 +192,12 @@ export default function App() {
                 <section className="panel quick-panel" aria-labelledby="progression-title">
                   <span className="action-icon"><Star size={22}/></span>
                   <div className="quick-copy"><h3 id="progression-title">{t('等级与转生')}</h3><p className="helper">{t(capability('progression')?.reason || '正在确认客户端字段')}</p></div>
-                  <Button variant="soft" disabled={!editable || !capability('progression')?.available} onClick={()=>act('profile/progression',{user_id:account,prestige:3,level:70},'等级设置已保存，请重新启动游戏')}>{t('设置最高等级')}</Button>
+                  <Button variant="soft" disabled={!editable || !capability('progression')?.available} onClick={()=>act('profile/progression',{user_id:account,prestige:capability('progression')?.max_prestige,level:capability('progression')?.max_level},'等级设置已保存，请重新启动游戏')}>{t('设置最高等级')}</Button>
                 </section>
                 <section className="panel quick-panel" aria-labelledby="story-title">
                   <span className="action-icon"><Flag size={22}/></span>
                   <div className="quick-copy"><h3 id="story-title">{t('剧情关卡')}</h3><p className="helper">{t('解除剧情前置条件，保留等级、货币和库存。地图启动与可玩性仍在恢复中；请退出游戏后操作。')}</p></div>
-                  <Button variant="soft" disabled={!editable} onClick={()=>act('profile/story',{user_id:account},'剧情关卡解锁数据已保存，请重新启动游戏')}>{t('解锁全部剧情关卡')}</Button>
+                  <Button variant="soft" disabled={!editable || !capability('story')?.available} onClick={()=>act('profile/story',{user_id:account},'剧情关卡解锁数据已保存，请重新启动游戏')}>{t('解锁全部剧情关卡')}</Button>
                 </section>
                 <section className="panel quick-panel" aria-labelledby="inventory-title">
                   <span className="action-icon"><Package size={22}/></span>
@@ -205,7 +220,7 @@ export default function App() {
             </aside>
               <section className="panel startup-panel" aria-labelledby="startup-title">
                 <div className="section-title"><SlidersHorizontal size={20}/><h2 id="startup-title">{t('启动选项')}</h2><span className="section-code">{t('下次启动生效')}</span></div>
-                <div className="switch-row"><label htmlFor="skip">{t('跳过新手引导')}</label><Switch id="skip" checked={settings?.skip_tutorial ?? true} disabled={busy || !settings} onCheckedChange={value=>act('settings',{skip_tutorial:value},'启动选项已保存')}/></div>
+                <div className="switch-row"><label htmlFor="skip">{t('跳过新手引导')}</label><Switch id="skip" checked={settings?.skip_tutorial ?? true} disabled={busy || !settings || !matched || !capability('skip_tutorial')?.available} onCheckedChange={value=>act('settings',{skip_tutorial:value},'启动选项已保存')}/></div>
                 <p className="helper">{t('默认开启。训练服务尚未恢复；更改在下一次启动生效。')}</p>
               </section>
           </div>

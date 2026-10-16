@@ -23,7 +23,7 @@
 
 ## 通用原生模块移植（2026-10-15）
 
-保留旧服的 C/C++、汇编引擎及消息、资源、玩家输入模块，在独立副本应用 [源码补丁](../../tools/native/server3333.patch)。没有另建 Python 对局引擎；`src/story_wire423.py` 是协议研究原型，仅由离线测试使用。
+保留旧服的 C/C++、汇编引擎及消息、资源、玩家输入模块，在独立副本应用 [源码补丁](../../games/codol/versions/v3_3_3_3/reverse/tools/native/server3333.patch)。没有另建 Python 对局引擎；`games/codol/versions/v3_3_3_3/server/story_wire423.py` 是协议研究原型，仅由离线测试使用。
 
 | 链路 | 已实现并验证 | 当前边界 |
 | --- | --- | --- |
@@ -54,7 +54,7 @@
 在项目根目录执行：
 
 ```powershell
-& A:/Coding/Python3.13.7/python.exe tools/build_native_server.py
+& A:/Coding/Python3.13.7/python.exe games/codol/versions/v3_3_3_3/reverse/tools/build_native_server.py
 & A:/Coding/Python3.13.7/python.exe -B -m unittest discover -s tests -v
 ```
 
@@ -78,7 +78,7 @@
 
 武器依赖读取已按当前加载器 `0x4915b0` 适配：10个前置模型、`+0x38`隐藏标签、3组56项动画、35个特效槽、18个视觉依赖及当前尾部依赖。保留所有条目与原偏移，仍检查完整消费和解析失败；没有把423原始结构交给旧版运行时。AK104、沙鹰、白磷弹、闪光弹的完整源数据读取已通过[先失败后通过的测试](../../research/evidence/server3333-weapon-source-green.log)。这尚不包含武器运行时构造、弹药编号或射击验收。
 
-可用 `python tools/probe_native_server.py` 重现原生初始化边界：仅启动本项目新构建的隔离服务端，绑定回环28970端口，最多40秒，自动结束它创建的进程；不启动客户端。命令、日志和构建哈希保存在独立实验目录。`ready`只表示地图初始化与资源发布探针通过，不代表客户端已经连接或可操作。
+可用 `python games/codol/versions/v3_3_3_3/reverse/tools/probe_native_server.py` 重现原生初始化边界：仅启动本项目新构建的隔离服务端，绑定回环28970端口，最多40秒，自动结束它创建的进程；不启动客户端。命令、日志和构建哈希保存在独立实验目录。`ready`只表示地图初始化与资源发布探针通过，不代表客户端已经连接或可操作。
 
 1. 保留新增能力值和组合状态的未验证标记；用真实地图对象核对已适配字段，不把合成快照等同于可玩地图。
 2. 423资源消费者已接入源码；继续复用既有类别/附加地图装载流程，核对实际资源集合、注册种子和地图CRC。当前仍缺武器运行时字段转换，资源遍历通过不代表能开枪。
@@ -116,7 +116,7 @@
 
 423武器的开火、换弹、抬枪、冲刺、弹药和伤害参数转换已接入保留引擎。动画保留3组56项并映射原生槽位；新版前置模型已无独立手臂槽，不能按旧11槽解释。俯卧限制由当前 `0x418ec0` 确认为 `+0xd88`，`+0xd87` 属于换弹分支。未实现的中间伤害曲线明确拒绝，不压平为两段。参数边界用例覆盖溢出、布尔值、NaN、截断和失败不改输出；开火时序还执行当前客户端 `0x4253e0` 核对。
 
-`python tools/prepare_native_models.py` 从原IFS的隔离副本提取并解码模型，缓存文件和来源哈希。274个无冲突模型写入隔离 `startup-assets/main/models/`；10个同名异内容条目保留证据，未猜测补丁优先级。[模型清单](../../research/evidence/server3333-model-streams.json)。材质未找到曾是五包测试集合不完整，补齐真实13包后解决；没有因此放宽材质校验。
+`python games/codol/versions/v3_3_3_3/reverse/tools/prepare_native_models.py` 从原IFS的隔离副本提取并解码模型，缓存文件和来源哈希。274个无冲突模型写入隔离 `startup-assets/main/models/`；10个同名异内容条目保留证据，未猜测补丁优先级。[模型清单](../../research/evidence/server3333-model-streams.json)。材质未找到曾是五包测试集合不完整，补齐真实13包后解决；没有因此放宽材质校验。
 
 `none/defaultweapon_mp` 的真实依赖、早期/晚期失败回滚、缓存复用和退役后重建已通过，[运行时失败记录](../../research/evidence/server3333-minimal-runtime-red.log) → [通过记录](../../research/evidence/server3333-minimal-runtime-green.log)，1项11.038秒。默认武器之外的四种源数据保留测试仍在；不要求复杂装备构造全部通过才能推进出生。
 
@@ -175,7 +175,7 @@ REA `0x409040` 确认新版在一次定义初始化后先解析 `mp/playeranim_d
 
 ### 2026-10-15 原生档案探针被拦截
 
-用户截图显示火绒在北京时间12:27:35及12:28:33报告 `Trojan/Agent.cuhk!crit`。选中记录的路径为 `C:\Users\john\AppData\Local\Temp\codol-profile-native-5gc23n60\story_profile.exe`，操作进程为MinGW的 `ld.exe`、父进程为 `collect2.exe`。对应本项目 [测试构建入口](../../tests/test_story_profile.py) 的两次TDD运行，探针源码为 [story_profile.c](../../tests/native/story_profile.c)，链接现有档案读取器、资源解压代码和zlib；用途是读取测试档案并向标准输出写入32768字节。
+用户截图显示火绒在北京时间12:27:35及12:28:33报告 `Trojan/Agent.cuhk!crit`。选中记录的路径为 `C:\Users\john\AppData\Local\Temp\codol-profile-native-5gc23n60\story_profile.exe`，操作进程为MinGW的 `ld.exe`、父进程为 `collect2.exe`。对应本项目 [测试构建入口](../../games/codol/versions/v3_3_3_3/tests/test_story_profile.py) 的两次TDD运行，探针源码为 [story_profile.c](../../games/codol/versions/v3_3_3_3/tests/native/story_profile.c)，链接现有档案读取器、资源解压代码和zlib；用途是读取测试档案并向标准输出写入32768字节。
 
 两次均未成功执行探针：第一次停在缺失导出方法，第二次5项Python测试通过，但启动探针时报 `FileNotFoundError / WinError 2`。日志归档为 `research/evidence/server3333-profile-export-red.log`、`server3333-profile-export-native-blocked.log`。已暂停该测试类的自动构建；解除拦截原因前不得把跳过项算作通过，或自动重建、恢复、改名绕过检测。没有修改杀毒设置、添加白名单或上传样本。
 

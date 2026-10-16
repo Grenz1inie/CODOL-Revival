@@ -10,7 +10,7 @@
 
 ## 实际最小协议实现
 
-[dw_lobby.py](../../src/dw_lobby.py)提供 `handle_lobby(sock, peer, record, save_capture)`；[local_server.py](../../src/local_server.py)持有已接受 socket、120 秒超时及关闭职责。没有把解析模块本身做成监听器。
+[dw_lobby.py](../../games/codol/versions/v3_3_3_3/server/dw_lobby.py)提供 `handle_lobby(sock, peer, record, save_capture)`；[local_server.py](../../games/codol/versions/v3_3_3_3/server/local_server.py)持有已接受 socket、120 秒超时及关闭职责。没有把解析模块本身做成监听器。
 
 ### 握手与 KDF
 
@@ -70,7 +70,7 @@ MAC 包含外层长度 DWORD，padding 不是 PKCS#7，payloadLength 不含 inne
 - [首个已处理加密请求](../../runtime/captures/20261014T035712118848-lobby-request.bin)、[响应](../../runtime/captures/20261014T035712126301-lobby-response.bin)。
 - [类型30请求](../../runtime/captures/20261014T035713460832-stun-request.bin)、[应答](../../runtime/captures/20261014T035713463581-stun-reply.bin)；[类型20请求](../../runtime/captures/20261014T035713465777-stun-request.bin)、[应答](../../runtime/captures/20261014T035713468224-stun-reply.bin)；[尚未解释的0x0e](../../runtime/captures/20261014T035949825070-stun-request.bin)。
 - [REA JSON](../../research/evidence/lobby-keys-stun-decompiled.json)，ID `ev_88a82b73182cc47932137af41a0471451f32e98cb986bebdcb5fa10822f80bb1`；[可读伪代码](../../research/evidence/0xa61980.c)。
-- [协议测试](../../tests/test_dw_lobby.py)覆盖拆包/粘包、KDF、方向密钥、MAC 拒绝、重连状态、TASK_REPLY/STUN；当前源码含后续补充的 CODOL 10/21 测试，最新测试结论见[项目总览](../../README.md)。
+- [协议测试](../../games/codol/versions/v3_3_3_3/tests/test_dw_lobby.py)覆盖拆包/粘包、KDF、方向密钥、MAC 拒绝、重连状态、TASK_REPLY/STUN；当前源码含后续补充的 CODOL 10/21 测试，最新测试结论见[项目总览](../../README.md)。
 
 ## 回滚和下一检查
 

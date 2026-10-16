@@ -1,5 +1,7 @@
 # CODOL 3.3.3.3 本地复活技术 Wiki
 
+**2026-10-16 多版本管理器**：目录选择、版本识别、代码与模拟服隔离见 [管理器说明](../multi-version-manager.md)。本Wiki的游戏行为结论仍仅适用于3.3.3.3。
+
 本 Wiki 按游戏生命周期维护问题、证据和最小修复。适用对象是本项目的 2016 年 3.3.3.3 客户端；公开 Demonware 实现仅作对照，不能按 SDK 名称推定兼容性。
 
 **截至 2026-10-14 13:03（北京时间）**：已走通本地认证、加密大厅、发布文件、公开档案读取，并实际进入游戏大厅，显示第二角色马库斯。直接传`+set 2822 1 +set 3233 1`失败；改为单个白名单命令段内的分号列表，结合真实选角档案读取后成功。13:03在目录迁移后重新启动游戏和服务，仍加载同一角色并进入大厅。训练、匹配、对局服务器仍未实现。公开档案保存/读取的自动化测试通过，真实客户端的新修改写回尚待另测。
@@ -47,11 +49,11 @@
 
 | 操作 | 入口与使用边界 |
 |---|---|
-| 一键启动 / 环境检查 | [Start.ps1](../../Start.ps1)；默认启动服务、控制器、浏览器和游戏，`-CheckOnly` 只读检查，`-NoGame` 暂不启动游戏；[参数与排错](../controller.md#启动与使用) |
-| 启动 / 停止游戏 | [Launch-Game.ps1](../../scripts/Launch-Game.ps1)、[Stop-Game.ps1](../../scripts/Stop-Game.ps1)；人工确认 UAC，详见 [02](02-process-iips-admin.md)。当前启动脚本包含已进入大厅的组合命令 |
-| 启动 / 停止服务 | [Start-Services.ps1](../../scripts/Start-Services.ps1)、[Stop-Services.ps1](../../scripts/Stop-Services.ps1)；服务改源码后需重启才生效，不能把文件修改当作运行采用 |
-| 检查服务链 | [server.jsonl](../../runtime/logs/server.jsonl) 中依次找 `auth_request`、`auth_reply`、`lobby_authenticated`、`lobby_task`，结合对应抓包和界面 |
-| 运行协议测试 | 在项目根执行 `& 'A:\Coding\Python3.13.7\python.exe' -B -m unittest discover -s tests -v`；内存测试不代表游戏界面或对局通过 |
+| 一键启动 / 环境检查 | [Start.ps1](../../Start.ps1)；首次打开控制台选择目录，已有匹配选择时默认启动对应游戏及服务；`-CheckOnly` 只读检查管理器，`-NoGame` 只打开控制台；[参数与排错](../controller.md#启动与使用) |
+| 启动 / 停止游戏 | 通过网页按钮，由管理器向版本脚本传入安装目录和实例路径；人工确认 UAC，详见 [02](02-process-iips-admin.md) |
+| 启动 / 停止服务 | 随游戏由管理器调用版本内脚本；服务改源码后需重启才生效，不能把文件修改当作运行采用 |
+| 检查服务链 | 当前实例 `runtime/instances/<实例ID>/logs/server.jsonl` 中依次找 `auth_request`、`auth_reply`、`lobby_authenticated`、`lobby_task`，结合对应抓包和界面；旧日志保留原位置 |
+| 运行协议测试 | 在项目根执行 `python -B tools/run-tests.py`；内存测试不代表游戏界面或对局通过 |
 | 查已有静态证据 | 阅读保存的 JSON / C 文件；本次REA分析已导出快照并关闭。静态地址不是运行时地址 |
 
 ## 证据总索引

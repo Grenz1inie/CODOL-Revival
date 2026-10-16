@@ -29,7 +29,7 @@ GitNexus 本次产生 0 个自动流程；三处 callable-value-flow 分析因�
 在 `CODOL-Revival` 根目录导出已有证据（不启动游戏、不重新执行反编译）：
 
 ```powershell
-python -B tools/export-client-code.py --game-root 'E:\Games\CODOL_Experience_V3.3.3.3_FULL.7z\CODOL_Experience_V3.3.3.3_FULL.7z'
+python -B games/codol/versions/v3_3_3_3/reverse/tools/export-client-code.py --game-root 'E:\Games\CODOL_Experience_V3.3.3.3_FULL.7z\CODOL_Experience_V3.3.3.3_FULL.7z'
 Set-Location research/client-code-index
 ```
 

@@ -23,7 +23,7 @@ Python 保留网页控制器、认证、大厅、玩家档案与对局预订。R
 
 ## 可重放基线（2026-10-16）
 
-入口 `tools/benchmark_match.py`，原实现基点 `e3ddc7d`。
+入口 `games/codol/versions/v3_3_3_3/reverse/tools/benchmark_match.py`，原实现基点 `e3ddc7d`。
 地图 `runtime/match/nuketown`，400帧、同一份输入，覆盖移动、转向、开火、
 跳跃、换弹、一次125ms慢帧及20帧菜单空输入。结果记录完整玩家状态、
 快照字段和封包；浮点状态及对应字段容差1e-6，整数和事件严格比较，
@@ -54,12 +54,12 @@ Python快照编码本身超过50ms帧预算；Rust本轮所有整帧均低于该
 ```powershell
 powershell -NoProfile -File scripts/Invoke-MatchCargo.ps1 build --offline --release
 powershell -NoProfile -File scripts/Invoke-MatchCargo.ps1 test --offline --release
-python -B tools/benchmark_match.py --output research/evidence/rust-migration-next --rust runtime/build/rust-match/release/codol-match.exe
+python -B games/codol/versions/v3_3_3_3/reverse/tools/benchmark_match.py --output research/evidence/rust-migration-next --rust runtime/build/rust-match/release/codol-match.exe
 ```
 
 ## 进程与启停
 
-- `src/local_server.py → match_server.runtime → NativeMatchProcess` 启动
+- `games/codol/versions/v3_3_3_3/server/local_server.py → match_server.runtime → NativeMatchProcess` 启动
   `runtime/build/rust-match/release/codol-match.exe serve`。Rust直接绑定回环UDP28970；
   Python继续处理认证TCP443、大厅TCP3074及STUN UDP3074。
 - JSONL标准输入只承载预订和停止；标准输出返回ready、预订确认及诊断事件。

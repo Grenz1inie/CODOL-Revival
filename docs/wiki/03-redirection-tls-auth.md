@@ -28,9 +28,9 @@
 
 [本地证书工具](../../tools/create-local-cert.py)生成项目私有 CA 和含 `127.0.0.1`/`localhost` SAN 的服务证书。CA 只追加到游戏自己的 `cacert.pem`，保留原内容；**没有安装 OS 根证书，也没有修改 hosts、防火墙或 EXE**。根目录文件的恢复点见[备份](../../runtime/backups)。
 
-[local_server.py](../../src/local_server.py)对该本地服务启用 TLSv1 兼容和 `ALL:@SECLEVEL=0`，先回复 HTTP `100 Continue`，按 Content-Length 收完整 JSON，再发最终响应。这是本地兼容配置，不是系统 TLS 策略修改。
+[local_server.py](../../games/codol/versions/v3_3_3_3/server/local_server.py)对该本地服务启用 TLSv1 兼容和 `ALL:@SECLEVEL=0`，先回复 HTTP `100 Continue`，按 Content-Length 收完整 JSON，再发最终响应。这是本地兼容配置，不是系统 TLS 策略修改。
 
-[dw_auth.py](../../src/dw_auth.py)仅处理观察到的 task10，返回 `auth_task="11"`、`code="700"`，两个 base64 编码的 128 字节票据。客户端票据以 LE32 `0xEFBDADDE` 开头，字节为 `DE AD BD EF`；服务票据是本地约定 `sessionKey24 + zero104`。
+[dw_auth.py](../../games/codol/versions/v3_3_3_3/server/dw_auth.py)仅处理观察到的 task10，返回 `auth_task="11"`、`code="700"`，两个 base64 编码的 128 字节票据。客户端票据以 LE32 `0xEFBDADDE` 开头，字节为 `DE AD BD EF`；服务票据是本地约定 `sessionKey24 + zero104`。
 
 | 明文 client_ticket 偏移 | 内容 |
 |---|---|
@@ -49,7 +49,7 @@
 11:38:09 收到真实 TLS 请求；11:45:53 返回 task11 后，客户端主动连接 TCP 3074 并发 28 字节 hello。**“客户端继续进入大厅协议”才是本阶段通过点，HTTP 200 本身不够。**
 
 - [原请求](../../runtime/captures/20261014T033809332089-auth-request.bin)、[被接受的响应](../../runtime/captures/20261014T034553362522-auth-reply.bin)、[紧随其后的大厅 hello](../../runtime/captures/20261014T034553490974-lobby-request.bin)。
-- [认证验证记录](../reports/20261014-auth-verification.md)、[认证测试](../../tests/test_dw_auth.py)。
+- [认证验证记录](../reports/20261014-auth-verification.md)、[认证测试](../../games/codol/versions/v3_3_3_3/tests/test_dw_auth.py)。
 - [认证 REA JSON](../../research/evidence/auth-parser-decompiled.json)，`ev_806f8b8a073991ad1b8b2ed6e34540407266a15ab204346b21850a5fbc77728d`。
 - [配置读取/大厅 REA JSON](../../research/evidence/lobby-keys-stun-decompiled.json)，`ev_88a82b73182cc47932137af41a0471451f32e98cb986bebdcb5fa10822f80bb1`；`0x641e10` 读取 dwauth/stun 配置。
 

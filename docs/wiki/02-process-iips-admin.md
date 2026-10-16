@@ -14,9 +14,9 @@
 
 只通过 Windows UAC 提升指定游戏启动进程，不授予整个工具链长期管理员权限，不改系统安全策略或 EXE。现有脚本：
 
-- [Launch-Game.ps1](../../scripts/Launch-Game.ps1)：先启动本地服务，再以 `-Verb RunAs` 启动项目同级游戏目录中的 EXE；防止重复启动。
-- [Stop-Game.ps1](../../scripts/Stop-Game.ps1)：必要时隐藏提权辅助 PowerShell 窗口，经 UAC 后读取 `ExecutablePath`，仅当完整路径与目标一致才按 PID 结束游戏，写入 [game-control.jsonl](../../runtime/logs/game-control.jsonl)。
-- [Start-Services.ps1](../../scripts/Start-Services.ps1) / [Stop-Services.ps1](../../scripts/Stop-Services.ps1)：服务 PID 文件还需与本项目 `src/local_server.py` 命令行匹配，不按所有 Python 进程处理。
+- [Launch-Game.ps1](../../games/codol/versions/v3_3_3_3/scripts/Launch-Game.ps1)：先启动本地服务，再以 `-Verb RunAs` 启动项目同级游戏目录中的 EXE；防止重复启动。
+- [Stop-Game.ps1](../../games/codol/versions/v3_3_3_3/scripts/Stop-Game.ps1)：必要时隐藏提权辅助 PowerShell 窗口，经 UAC 后读取 `ExecutablePath`，仅当完整路径与目标一致才按 PID 结束游戏，写入 [game-control.jsonl](../../runtime/logs/game-control.jsonl)。
+- [Start-Services.ps1](../../games/codol/versions/v3_3_3_3/scripts/Start-Services.ps1) / [Stop-Services.ps1](../../games/codol/versions/v3_3_3_3/scripts/Stop-Services.ps1)：服务 PID 文件还需与本项目 `games/codol/versions/v3_3_3_3/server/local_server.py` 命令行匹配，不按所有 Python 进程处理。
 
 **当前启动脚本含 `+set 2822 1 +set 3233 1`，这是未达到菜单目标的引导实验，不是已验证的启动必需项。** 参数和结果见 [06](06-onboarding-profile.md)。
 
@@ -68,7 +68,7 @@ Get-CimInstance Win32_Process -Filter "Name='codoMP_client_shipRetail.exe'" |
 - **工具事实**：Windows MCP 的 `desktop/service.py::click` 调用 `uia.Click`，底层为 `SetCursorPos` 与 `mouse_event`；成功消息没有验证游戏状态。当前统一 CUA 仅开放浏览器能力，用户已明确授权改用 Windows MCP。其截图为 2560×1440，显示时缩为 1920×1080，坐标需乘 4/3。
 - **普通权限对照**：任务栏点击能将游戏切到前台；在游戏前台点击仓库不生效。不能把截图可见、鼠标命令已调用当作输入成功。
 - **管理员对照**：用户授权单次管理员点击。第一次因同时人工操作出现角色名单弹窗，只确认鼠标移动；随后用户明确要求重试。16:55:37 单次脚本将仓库从“配装”切换到“背包”，证明本次菜单无需额外处理 DirectInput 或修改 EXE。主武器 31 级、副武器 20 级也在结果截图可见。
-- **最小办法**：[单次验证脚本](../../tools/test-game-admin-click.py) 在管理员进程内复用已安装的 Windows MCP 输入库，核对 EXE 完整路径、PID/窗口归属和 1280×960 客户区，确认前台后点击一次。脚本随即退出，没有常驻输入服务，也没有把 Codex/MCP 配置永久提权。固定“背包”坐标只用于本次截图条件，不是通用自动操作入口。
+- **最小办法**：[单次验证脚本](../../games/codol/versions/v3_3_3_3/reverse/tools/test-game-admin-click.py) 在管理员进程内复用已安装的 Windows MCP 输入库，核对 EXE 完整路径、PID/窗口归属和 1280×960 客户区，确认前台后点击一次。脚本随即退出，没有常驻输入服务，也没有把 Codex/MCP 配置永久提权。固定“背包”坐标只用于本次截图条件，不是通用自动操作入口。
 - **证据**：[点击前](../../runtime/captures/screenshots/20261014-admin-input-before.png)、[点击后](../../runtime/captures/screenshots/20261014-admin-input-test.png)、[目标与坐标](../../research/evidence/admin-input-test.json)。第一次受弹窗干扰的截图另保留为 `20261014-admin-input-test-first-modal.png`。
 
 后续操作必须重新观察窗口、确认权限范围并避免用户与自动化同时输入。单次授权不能扩大成永久管理员输入；未验证战斗、长按、拖动或所有游戏页面。

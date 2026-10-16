@@ -4,6 +4,8 @@ import App from '../src/App';
 
 const profile = {user_id: 'player-one', level: 42, prestige: 2, currency: 44445, premium: 99620};
 const actions = ['设置最高等级', '解锁全部剧情关卡', '增加游戏币', '增加点券', '一键发放全部物品'];
+let installation: {state: string; path: string; version: string | null; reason: string; instance_id?: string};
+const matched = {state:'matched', path:'E:/Games/CODOL', version:'3.3.3.3', reason:'已匹配', instance_id:'codol-main'};
 let running: boolean;
 let serverState: {running: boolean; pid: number | null; ready: boolean; ports: {name: string; protocol: string; port: number; listening: boolean; conflict: boolean}[]};
 let serverError: boolean;
@@ -28,9 +30,10 @@ beforeEach(() => {
     {name: 'stun', protocol: 'UDP', port: 3074, listening: false, conflict: false},
     {name: 'match', protocol: 'UDP', port: 28970, listening: false, conflict: false},
   ]};
+  installation = {...matched};
   running = false;
   profiles = [profile];
-  capabilities = Object.fromEntries(['progression', 'currency', 'inventory'].map(key => [key, {available: true, reason: `${key} 已就绪`}]));
+  capabilities = Object.fromEntries(['progression', 'currency', 'inventory', 'story', 'launch', 'skip_tutorial'].map(key => [key, {available: true, reason: `${key} 已就绪`, max_level:70, max_prestige:3}]));
   posts = [];
   postResponse = async () => response({message: '操作已保存'});
   vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
@@ -39,8 +42,9 @@ beforeEach(() => {
       posts.push({path, data: JSON.parse(String(init.body))});
       return postResponse();
     }
-    if (path === 'status') return response(statusError ? {error:'读取失败'} : {profiles, game_running: running, capabilities}, !statusError);
+    if (path === 'status') return response(statusError ? {error:'读取失败'} : {profiles, game_running: running, capabilities, installation}, !statusError);
     if (path === 'server/status') return serverResponse();
+    if (path === 'versions') return response({versions:[{game_id:'codol', version:'3.3.3.3', label:'体验服 3.3.3.3', supported:true}, {game_id:'codol', version:'2.6.9.7', label:'2.6.9.7', supported:false}]});
     if (path === 'settings') return response({skip_tutorial: true});
     if (path.startsWith('inventory?')) return response({items: []});
     if (path === 'docs') return response({files: [{path: 'README.md', size: 10}, {path: 'wiki/06-onboarding-profile.md', size: 20}]});
@@ -194,7 +198,7 @@ describe('控制器原有操作契约', () => {
   });
 
   it('按能力分别禁用等级、货币、物品；剧情操作不受这些能力限制', async () => {
-    for (const cap of Object.values(capabilities)) cap.available = false;
+    for (const key of ['progression', 'currency', 'inventory']) capabilities[key].available = false;
     await ready();
     for (const name of actions.filter(name => name !== '解锁全部剧情关卡')) expect(button(name).disabled).toBe(true);
     expect(button('解锁全部剧情关卡').disabled).toBe(false);
@@ -352,5 +356,47 @@ describe('低频自动刷新', () => {
     statusError = false;
     await act(()=>vi.advanceTimersByTimeAsync(10000));
     expect(button('启动游戏').disabled).toBe(false);
+  });
+});
+
+
+describe('游戏目录与版本匹配', () => {
+  it('未选择或未支持版本时锁定所有游戏和档案操作，保留版本列表', async () => {
+    installation = {state:'unselected', path:'', version:null, reason:'请先选择游戏目录'};
+    await ready();
+    expect(screen.getByText('请先选择游戏目录')).toBeTruthy();
+    for (const name of [...actions, '启动游戏']) expect(button(name).disabled).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>('switch', {name:'跳过新手引导'}).disabled).toBe(true);
+    expect(button('选择游戏目录').disabled).toBe(false);
+    fireEvent.click(screen.getByText('版本列表'));
+    expect(screen.getByText('2.6.9.7')).toBeTruthy();
+    expect(screen.getByText('尚未接入')).toBeTruthy();
+  });
+
+  it('选择成功后显示版本并启用操作，取消保留当前选择', async () => {
+    installation = {state:'unselected', path:'', version:null, reason:'请先选择游戏目录'};
+    await ready();
+    postResponse = async () => { installation = {...matched}; return response({cancelled:false, installation}); };
+    fireEvent.click(button('选择游戏目录'));
+    await waitFor(()=>expect(button('启动游戏').disabled).toBe(false));
+    expect(posts[0]).toEqual({path:'installation/choose', data:{}});
+    expect(screen.getByText(matched.path)).toBeTruthy();
+    postResponse = async () => response({cancelled:true, installation});
+    fireEvent.click(button('选择游戏目录'));
+    await waitFor(()=>expect(button('选择游戏目录').disabled).toBe(false));
+    expect(button('启动游戏').disabled).toBe(false);
+    expect(screen.queryByText('游戏目录已匹配')).toBeNull();
+  });
+
+  it('重新识别失败会锁定旧按钮，运行中不能切换目录但能停止', async () => {
+    await ready();
+    postResponse = async () => { installation = {...matched, state:'fingerprint_mismatch', reason:'主程序指纹与已适配客户端不一致'}; return response({installation}); };
+    fireEvent.click(button('选择游戏目录'));
+    expect(await screen.findByText('主程序指纹与已适配客户端不一致')).toBeTruthy();
+    expect(button('增加游戏币').disabled).toBe(true);
+    running = true;
+    fireEvent.click(button('刷新状态'));
+    await waitFor(()=>expect(button('选择游戏目录').disabled).toBe(true));
+    expect(button('停止游戏').disabled).toBe(false);
   });
 });

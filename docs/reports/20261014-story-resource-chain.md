@@ -37,7 +37,7 @@ FF外层是 `IWff0100`、版本 **0x1A7（423）**；此前十进制写成427是
 
 ### 2.1 当前客户端资源编号与校验
 
-实现位于 `tools/story_netconst423.py`，不沿用2697的资源bank。REA链：`0x5855d0` 计算网络变量名种子 → `0x5857b0` 建运行时表 → `0x585000` 排序资产表 → `0x584d80` 跨表去重 → `0x584ed0` 分配编号并累计CRC。布局读取当前客户端 `0xc57118` 的21条记录；新增sts为17类，codinfo/codinfovalue/network依次为18/19/20。中文索引11在 `0xcdbc1c` 的代码为`chi`，不是参考源码传入的`chinese`。
+实现位于 `games/codol/versions/v3_3_3_3/reverse/tools/story_netconst423.py`，不沿用2697的资源bank。REA链：`0x5855d0` 计算网络变量名种子 → `0x5857b0` 建运行时表 → `0x585000` 排序资产表 → `0x584d80` 跨表去重 → `0x584ed0` 分配编号并累计CRC。布局读取当前客户端 `0xc57118` 的21条记录；新增sts为17类，codinfo/codinfovalue/network依次为18/19/20。中文索引11在 `0xcdbc1c` 的代码为`chi`，不是参考源码传入的`chinese`。
 
 - 排序依次为source、type、本地化标志、名称逐字节顺序；长度大于12的名称在+8处检测`chi_`。同表内重复值保留，只删除同类型早先表已有的值。
 - configstring使用各类别自己的起点、容量和保留槽；15类不进入常量索引。CRC按新增字符串字节连续计算，不含NUL，必须显式传入已验证种子。
@@ -80,7 +80,7 @@ REA链路：
 
 ## 5. 参考引擎实验结果
 
-`tools/story_engine_patch.py` 校验固定原始SHA和每处原字节。归档实验适配版本分支、材料位置及下述布局，并将缺少的附加实体读取器编译进独立PE节；保留ASLR、签名、块哈希和资源长度校验。配置字符串10位补丁是另一份副本，未混合成默认对局引擎。
+`games/codol/versions/v3_3_3_3/reverse/tools/story_engine_patch.py` 校验固定原始SHA和每处原字节。归档实验适配版本分支、材料位置及下述布局，并将缺少的附加实体读取器编译进独立PE节；保留ASLR、签名、块哈希和资源长度校验。配置字符串10位补丁是另一份副本，未混合成默认对局引擎。
 
 `--codol-archive-probe <FF路径> <客户端路径>` 在引擎网络初始化前返回。实际结果及输出哈希以 [探针清单](../../research/experiments/story-native/archive427-probes.json) 为准：
 
@@ -105,7 +105,7 @@ REA链路：
 
 模型在 `_CODOL_ReplayZoneAsset → ReadXModelExtent → ReadXModelBounds → ReadXModelCollision` 中先做独立长度检查，之后才进入 `replay_model`。材质两套消费者现已同步：当前材质0x68字节、名称+0x10、三个计数+0x50/51/52；图片0x34字节；技术表0xD0字节、48项。此前 `material-candidate-patches.json` 只记录未通过阶段，不能代表当前已集成结果。
 
-特效视觉采样由48改为64字节；撞击特效表由16改为19行，每行35个引用。渲染世界采用0x648字节头及扩展数组。附加实体头由36变为52字节，增加碰撞信息、子模型等子流；武器0xe28字节、曳光0x74字节并新增特效引用；当前碰撞图仍为256字节头，但内部字段顺序改变。新读取器在 `tools/native/story_archive427.c`，保留分配边界与两次重建流程。类型14/17/18仅允许客户端实际置空的零长度目录项，不生成虚构AI导航。
+特效视觉采样由48改为64字节；撞击特效表由16改为19行，每行35个引用。渲染世界采用0x648字节头及扩展数组。附加实体头由36变为52字节，增加碰撞信息、子模型等子流；武器0xe28字节、曳光0x74字节并新增特效引用；当前碰撞图仍为256字节头，但内部字段顺序改变。新读取器在 `games/codol/versions/v3_3_3_3/reverse/tools/native/story_archive427.c`，保留分配边界与两次重建流程。类型14/17/18仅允许客户端实际置空的零长度目录项，不生成虚构AI导航。
 
 模型重定位回归曾暴露一个适配错误：新武器读取器将物理预设与碰撞模型的回调接反，68字节预设被按72字节读取，名称开头被吞掉，后续块3共享骨骼地址出现16字节偏移。源流长度检查仍会通过，因为字符串变短抵消了头部多读；因此增加模型转换成功断言，先确认失败，再修正回调映射。客户端 `0x489e60` 对应参考 `0x550d9e`（预设），客户端 `0x48a0f0` 对应 `0x550d80`（碰撞模型）。证据：[类型消费者](../../research/evidence/story-physics-preset-map423.json)、隔离目录下的 `weapon-allocation423.gdb.log`。不能用填补16字节或跳过骨骼校验替代修复。
 
@@ -122,15 +122,15 @@ REA链路：
 $storyBuildPath = $env:Path
 try {
   $env:Path='A:\Coding\MinGW\bin;C:\Windows\System32;C:\Windows'
-  gcc -O2 -Wall -static-libgcc -o research/experiments/story-native/ifs-read.exe tools/ifs-read.c
+  gcc -O2 -Wall -static-libgcc -o research/experiments/story-native/ifs-read.exe games/codol/versions/v3_3_3_3/reverse/tools/ifs-read.c
 } finally { $env:Path = $storyBuildPath }
-python tools/extract_story_resources.py
-python tools/extract_story_resources.py --base
-python tools/extract_story_resources.py --common
-python tools/inspect_story_resources.py
-python tools/export_story_zone_assets.py
-python tools/probe_story_archives.py
-python tools/probe_story_world.py
+python games/codol/versions/v3_3_3_3/reverse/tools/extract_story_resources.py
+python games/codol/versions/v3_3_3_3/reverse/tools/extract_story_resources.py --base
+python games/codol/versions/v3_3_3_3/reverse/tools/extract_story_resources.py --common
+python games/codol/versions/v3_3_3_3/reverse/tools/inspect_story_resources.py
+python games/codol/versions/v3_3_3_3/reverse/tools/export_story_zone_assets.py
+python games/codol/versions/v3_3_3_3/reverse/tools/probe_story_archives.py
+python games/codol/versions/v3_3_3_3/reverse/tools/probe_story_world.py
 python -B -m unittest discover -s tests -p 'test_story_*.py' -v
 ```
 

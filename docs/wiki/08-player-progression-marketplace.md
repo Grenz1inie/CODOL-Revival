@@ -27,7 +27,7 @@ REA 静态证据：
 
 公开档案解压后仍读取扩展字段，单改压缩区可能被覆盖。还需区分公开资料和私有资料；不能把公开存档内一个类似数值的位置直接命名为等级。
 
-用户授权管理员只读提取后，已取得[实际字段定义与等级表](../../research/evidence/live-player-schema.json)。普通权限读取曾报 Windows 错误 5；第一次管理员提取因忽略 ASLR 报 299。修复为主模块基址加 RVA，本次基址 `0x410000`；资源名称比较按大小写不敏感处理。入口为 [Read-PlayerSchema.ps1](../../scripts/Read-PlayerSchema.ps1)，仅申请查询和读取权限。
+用户授权管理员只读提取后，已取得[实际字段定义与等级表](../../research/evidence/live-player-schema.json)。普通权限读取曾报 Windows 错误 5；第一次管理员提取因忽略 ASLR 报 299。修复为主模块基址加 RVA，本次基址 `0x410000`；资源名称比较按大小写不敏感处理。入口为 [Read-PlayerSchema.ps1](../../games/codol/versions/v3_3_3_3/scripts/Read-PlayerSchema.ps1)，仅申请查询和读取权限。
 
 `mp/playersecuredata.def` 为版本 19、定义哈希 2318499177。下表偏移从 DDL 数据起算，实际解压档案还需加 4 字节 CRC 前缀。
 
@@ -38,7 +38,7 @@ REA 静态证据：
 | rank | 4883 | 70 |
 | rankVersion | 4887 | 4 |
 
-等级表最高索引 69、最高转生 3；本版本没有第 4 转生定义。私有档案有 36 个扩展字段，其中 kills/wins 为 float32，其余 int32；写入同步压缩区、扩展字段及 CRC。`8/2` 返回当前私有档案，`8/6` 接收带账号 ID 的保存数据。实现见 [dw_progression.py](../../src/dw_progression.py)，证据见 [任务分派](../../research/evidence/controller-profile-service-tasks.json)、[默认初始化](../../research/evidence/controller-private-profile-defaults.json)。修改前备份至 `runtime/backups/private-profiles/`，不覆盖公开角色资料。
+等级表最高索引 69、最高转生 3；本版本没有第 4 转生定义。私有档案有 36 个扩展字段，其中 kills/wins 为 float32，其余 int32；写入同步压缩区、扩展字段及 CRC。`8/2` 返回当前私有档案，`8/6` 接收带账号 ID 的保存数据。实现见 [dw_progression.py](../../games/codol/versions/v3_3_3_3/server/dw_progression.py)，证据见 [任务分派](../../research/evidence/controller-profile-service-tasks.json)、[默认初始化](../../research/evidence/controller-private-profile-defaults.json)。修改前备份至 `runtime/backups/private-profiles/`，不覆盖公开角色资料。
 
 ### 商城等级限制的独立条件
 
@@ -74,7 +74,7 @@ REA 已确认 `0x00a472b0` 发起服务 `0x50`、任务 `0xe6`，即实际捕获
 
 ### 实现与回滚
 
-代码见 [dw_marketplace.py](../../src/dw_marketplace.py)。余额保存在 `runtime/data/marketplace/<用户ID>.json`；每次覆盖前将原 JSON 保存至 `runtime/backups/marketplace/`。只接受正整数增加量，当前界面采用有符号 32 位上限 `2147483647`；线上字段本身为 uint32。公开档案二进制不随货币操作改写。
+代码见 [dw_marketplace.py](../../games/codol/versions/v3_3_3_3/server/dw_marketplace.py)。余额保存在 `runtime/data/marketplace/<用户ID>.json`；每次覆盖前将原 JSON 保存至 `runtime/backups/marketplace/`。只接受正整数增加量，当前界面采用有符号 32 位上限 `2147483647`；线上字段本身为 uint32。公开档案二进制不随货币操作改写。
 
 控制器仅允许为已有且校验通过的档案增加余额，并要求游戏已退出。恢复余额时先退出游戏，复制对应备份覆盖单个账号 JSON，再重启读取。服务端当前仅支持本机单账号，沿用首次 `8/1` 查询绑定的玩家 ID。
 
@@ -86,7 +86,7 @@ REA 已确认 `0x00a472b0` 发起服务 `0x50`、任务 `0xe6`，即实际捕获
 
 ### 静态目录来源
 
-`Read-PlayerSchema.ps1 -Marketplace` 读取两份 CSV 及已加载的商品、SKU、物品和解锁条件表，仅使用查询/读取进程权限。`tools/export-marketplace.py` 按 `0x5840a0` 的地址异或与循环位移还原值，按 `0x7070b0` 解释价格/期限，按 `0x706f10` 获取商品中的物品与数量，生成 [商城目录](../../data/marketplace-catalog.json)。目录记录 EXE 与捕获源 SHA256，包含 12316 个启用 SKU。服务不需要再读取游戏内存。
+`Read-PlayerSchema.ps1 -Marketplace` 读取两份 CSV 及已加载的商品、SKU、物品和解锁条件表，仅使用查询/读取进程权限。`games/codol/versions/v3_3_3_3/reverse/tools/export-marketplace.py` 按 `0x5840a0` 的地址异或与循环位移还原值，按 `0x7070b0` 解释价格/期限，按 `0x706f10` 获取商品中的物品与数量，生成 [商城目录](../../games/codol/versions/v3_3_3_3/resources/definitions/marketplace-catalog.json)。目录记录 EXE 与捕获源 SHA256，包含 12316 个启用 SKU。服务不需要再读取游戏内存。
 
 SKU 3386 是物品 789、5000 游戏币、永久；SKU 937 是相同物品、950 游戏币、30 天，用作独立测试样例。实际人工购买的是 SKU 2687、M14 EBR。不同 SKU 可指向同一物品，不能用 SKU 直接充当物品 ID。
 

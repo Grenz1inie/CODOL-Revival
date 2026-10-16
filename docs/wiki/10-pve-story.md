@@ -14,7 +14,7 @@
 ## 已确认的起点
 
 - 用户截图只显示剧情模式；首关“身份不明”可选，后续关卡带锁。
-- `src/dw_lobby.py` 的发布文件分支仍对 `mp_playlists_shipRetail_release.info` 返回空文件；不能由此推断完整模式配置已恢复。
+- `games/codol/versions/v3_3_3_3/server/dw_lobby.py` 的发布文件分支仍对 `mp_playlists_shipRetail_release.info` 返回空文件；不能由此推断完整模式配置已恢复。
 - REA 既有反编译 `0x605af0` 注册 `ui_unlock_allplaylists`；目前仅有注册证据，尚未验证它的消费者和效果。
 - 原始 EXE 有 `GetPlayList`、`GetPlayListCategories`、`GetNewUnlockedCoopStoryMaps` 字符串。后续需连接注册、处理函数和字段消费，不能只凭名称改档案。
 - [只读运行时表](../../research/evidence/live-pve-tables.json)来自当前客户端 PID 51896：`mp/coMapList.csv` 79 行，`mp/coGameTypesTable.csv` 36 行。前者包含剧情、survival、evac、zm 等地图；表中项目不等于本地资源完整或可运行。
@@ -58,13 +58,13 @@ REA 消费链：`AS_IsMapUnlocked` 的处理函数 `0x5b1960` → `0x4a4b10`（�
 
 失败消息投递链静态确认：`0x6e2140` 汇编将队列类型设为2，再进入 `0x6e1f40`；`0x6e7560` 刷新房间队列并通过 `0x6ca350 → 0xa4ced0` 发送 **11/4**。客户端发送过该任务，但目前大厅只应答空成功，没有实现房间广播下行；该缺口是否直接造成等待/按钮状态不复位，仍需下行消费者及对照实验确认。不能将其等同于已恢复地图加载。
 
-复现脚本：`python -B tools/story-start-hitl.py`。它记录本次开始后的大厅事件，人工点击首关后报告 `waiting` / `error` / `unresponsive` / `playable`；只有实际进入地图且能移动才为0。采用人工观察是因为管理员窗口自动输入仍受前台与窗口尺寸约束，不能用“已发送点击”作为通过条件。首轮脚本未包含用户实际反馈的 `unresponsive`，因此拒绝该输入、未生成判定；后补此状态，尚待重新运行，不能称已完成自动复现闭环。
+复现脚本：`python -B games/codol/versions/v3_3_3_3/reverse/tools/story-start-hitl.py`。它记录本次开始后的大厅事件，人工点击首关后报告 `waiting` / `error` / `unresponsive` / `playable`；只有实际进入地图且能移动才为0。采用人工观察是因为管理员窗口自动输入仍受前台与窗口尺寸约束，不能用“已发送点击”作为通过条件。首轮脚本未包含用户实际反馈的 `unresponsive`，因此拒绝该输入、未生成判定；后补此状态，尚待重新运行，不能称已完成自动复现闭环。
 
 18:12 用户反馈再次点击无反应，截图仍在已解锁剧情页、没有等待弹窗。同一连接在18:04:20已发生 `21/5` 与 `11/4`，之后没有新的启动请求。关联证据：[解锁后当前会话事件](../../research/evidence/pve-unlocked-no-response-events.json)。当前手动复现与截图可作为调查依据；持续自动输入仍未可靠，下一次启动验证应使用新会话。
 
 本轮集中回归：`python -B -m unittest discover -s tests -v`，48项通过；前端 TypeScript/Vite 构建通过。控制器已重载，用户实际游戏确认解锁；地图启动未修复。
 
-- 预计涉及 `src/dw_lobby.py` 的 publisher/会话分支、`src/dw_progression.py` 的定点解锁、`src/controller.py` 与 `web/src/main.tsx` 的操作入口；只有启动参数路径确认必要时才修改 `scripts/Launch-Game.ps1`。
+- 预计涉及 `games/codol/versions/v3_3_3_3/server/dw_lobby.py` 的 publisher/会话分支、`games/codol/versions/v3_3_3_3/server/dw_progression.py` 的定点解锁、`src/controller.py` 与 `web/src/main.tsx` 的操作入口；只有启动参数路径确认必要时才修改 `games/codol/versions/v3_3_3_3/scripts/Launch-Game.ps1`。
 - 本地启动与会话代码是否需要新增模块，由当前客户端调用链决定；不预建通用匹配框架。
 - 沿用已同意的档案存储、HTTP 与真实游戏验收边界；协议通过已有加密大厅测试边界验证。
 - 每个行为先失败测试再最小实现：档案 CRC/扩展字段/无关字节/备份重载；模式发布文件内容与未知文件兼容；HTTP 参数及运行中拒写；错误无部分修改。客户端字段/协议未确认之前不写猜测性测试。
@@ -86,7 +86,7 @@ REA 消费链：`AS_IsMapUnlocked` 的处理函数 `0x5b1960` → `0x4a4b10`（�
 
 证据：[下行反序列化](../../research/evidence/pve-channel-push-deserializer.json)、[分派汇编](../../research/evidence/pve-push-dispatcher-assembly.json)、[事件跳转表](../../research/evidence/pve-push-case-table.json)。当前仅支持本地单玩家同连接回送，不是跨连接房间服务器。
 
-真实验证：`python -B tools/story-start-hitl.py` 返回 **FAIL: error**。用户确认从无限等待变为“服务器繁忙中”；连接63428在10:38:32 UTC收到 `11/4` 推送后立即发出 `11/2` 离开频道。见[本轮 HITL 记录](../../research/evidence/story-start-hitl-20261014-183912.json)。这证明失败消息链产生了客户端可见行为，未加载地图。
+真实验证：`python -B games/codol/versions/v3_3_3_3/reverse/tools/story-start-hitl.py` 返回 **FAIL: error**。用户确认从无限等待变为“服务器繁忙中”；连接63428在10:38:32 UTC收到 `11/4` 推送后立即发出 `11/2` 离开频道。见[本轮 HITL 记录](../../research/evidence/story-start-hitl-20261014-183912.json)。这证明失败消息链产生了客户端可见行为，未加载地图。
 
 随后补齐 `11/13` 的单房间创建结果：`0xa4c940` 请求一个结果，`0xa55970` 初始化对象，`0xa55a40` 读取 u64/u32/u32/u64/bool/bool/u32。返回频道1、两个计数字段各1、当前用户、两个false和末尾0；后面三个字段的业务语义尚未确认，保留构造默认值。见[结果契约](../../research/evidence/pve-channel-info-wire.json)。该分支加密协议测试先失败再通过，服务PID57632已采用；游戏PID36316已启动，但此创建结果尚未完成新一轮真实游戏验收。
 
@@ -132,7 +132,7 @@ REA已确认：参考引擎配置字符串别名组数量写11位，当前客户
 
 第三批把已验证的423模型、材质、特效、碰撞和目录消费者移入原生源码，3项资源集成测试及23项协议回归通过。新构建已完成九个公共资源包初始化，随后暴露旧入口只接受MP的限制；下一步复用已有类别和附加地图装载流程。武器资源遍历与武器运行时转换分开验证。
 
-第四批已接通首关的类别与附加地图挂载，真实初始化停在武器注册。新版武器源数据保留168项动画及增加的特效、材质依赖；4项资源集成测试通过（14.503秒）。`tools/probe_native_server.py` 可在隔离目录重现当前初始化边界，自动结束其服务端进程。
+第四批已接通首关的类别与附加地图挂载，真实初始化停在武器注册。新版武器源数据保留168项动画及增加的特效、材质依赖；4项资源集成测试通过（14.503秒）。`games/codol/versions/v3_3_3_3/reverse/tools/probe_native_server.py` 可在隔离目录重现当前初始化边界，自动结束其服务端进程。
 
 这批结果尚未形成可操作关卡：武器运行时、地图初始化后半段、回环连接与大厅衔接仍须继续；新增能力值与组合状态语义保持待验证。没有发布可用服务器候选，也没有新的游戏内通过结论。实现、证据、构建命令与验证边界见[3.3.3.3对局移植](../reports/20261015-server-port.md)。
 

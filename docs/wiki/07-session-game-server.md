@@ -19,7 +19,7 @@ payload=0a3300000000000000080000000003100800000000
 
 ## 已做的最小处理与为何还未解决
 
-[dw_lobby.py](../../src/dw_lobby.py)让未知服务返回有正确 TASK_REPLY 包装的 N=0，维持协议推进与证据采集；这并没有创建训练会话，也没有启动实际游戏服务器。
+[dw_lobby.py](../../games/codol/versions/v3_3_3_3/server/dw_lobby.py)让未知服务返回有正确 TASK_REPLY 包装的 N=0，维持协议推进与证据采集；这并没有创建训练会话，也没有启动实际游戏服务器。
 
 本阶段尚无已验证的修复。不要只向9/16塞一个凭空拼装的 N=1 结果来宣布完成；必须知道客户端如何反序列化和消费结果、是否随后连接另一个端点。
 
@@ -86,7 +86,7 @@ REA确认的实际消息路径：
 
 [28项集中测试](../../research/evidence/server3333-booking-lifecycle-tests.log)通过，耗时2.554秒，覆盖加密大厅请求/应答/推送、实际候选与房间路由消费、身份及关卡限制、实例启动/停止/失败边界和当前stats写入器。原生档案独立探针仍保持跳过；本次实际引擎已成功读取同样的隔离档案导出，不恢复被拦截的临时程序。
 
-连接探针 [probe_native_connection.py](../../tools/probe_native_connection.py)在独立28971端口测试：当前客户端Tiger函数计算会话材料，P224/AES192CTR/HMAC-SHA1握手 → challenge/connect → 当前stats写入器上传 → 当前netchan/gamestate读取器接收首关和CRC `9eaffd84` → 可靠userinfo确认 → `CS_ACTIVE`和出生坐标`(3248,296,364)`。随后实际脚本报`codol_applyProfileCharacter could not compose/publish this player's character`，属于出生后的外观构造失败，不能把已到达出生函数当作能操作。
+连接探针 [probe_native_connection.py](../../games/codol/versions/v3_3_3_3/reverse/tools/probe_native_connection.py)在独立28971端口测试：当前客户端Tiger函数计算会话材料，P224/AES192CTR/HMAC-SHA1握手 → challenge/connect → 当前stats写入器上传 → 当前netchan/gamestate读取器接收首关和CRC `9eaffd84` → 可靠userinfo确认 → `CS_ACTIVE`和出生坐标`(3248,296,364)`。随后实际脚本报`codol_applyProfileCharacter could not compose/publish this player's character`，属于出生后的外观构造失败，不能把已到达出生函数当作能操作。
 
 证据：[连接结果](../../research/evidence/native-connection-latest.json)、[当前房间路由](../../research/evidence/client-room-instant-message423.json)、[事件21读取器](../../research/evidence/client-booking-push21-reader423.json)、[开始命令](../../research/evidence/client-coop-mmstart423.json)、[stats写入器](../../research/evidence/client-stats-writer423.json)、[Tiger消费者](../../research/evidence/client-tiger423.json)。目标SHA-256仍为`e3823fd6afc80fb25fa84747e6e9634707b9a0b189357a5466921cda354af37b`。探针混合真实引擎、当前客户端机器码及测试网络驱动，不替代完整游戏的渲染与操作验收。
 
@@ -94,7 +94,7 @@ REA确认的实际消息路径：
 
 修复旧角色读取器仅接受233版旧校验值的问题：当前公开结构为233版、校验值`e32d50d6`、记录14426字节。12个角色、每个9个uint32槽位按捕获的非连续偏移读取；越界、错误结构和无效物品仍拒绝。
 
-出生实际依赖的14份流式模型来自5个`lf_init_common_marketplace*.ifs`。工具[prepare_character_streams.py](../../tools/prepare_character_streams.py)只提取指定名称，先复制IFS、检查原始名称解码并校验前后哈希，安装到隔离`startup-assets/main/models`。原游戏资源不改；来源记录在`resources-character-streams/installed.json`。测试外观为`cha_INFbaseA + han_hands`，装备仍为`defaultweapon_mp`。
+出生实际依赖的14份流式模型来自5个`lf_init_common_marketplace*.ifs`。工具[prepare_character_streams.py](../../games/codol/versions/v3_3_3_3/reverse/tools/prepare_character_streams.py)只提取指定名称，先复制IFS、检查原始名称解码并校验前后哈希，安装到隔离`startup-assets/main/models`。原游戏资源不改；来源记录在`resources-character-streams/installed.json`。测试外观为`cha_INFbaseA + han_hands`，装备仍为`defaultweapon_mp`。
 
 [保存的通过结果](../../research/evidence/native-minimal-input-pass.json)包含9个阶段：真实原生实例就绪 → 加密握手 → challenge/connect → stats → gamestate → userinfo确认 → 出生快照 → 移动 → 射击。当前客户端快照读取器完整消费975个实体、1个客户端及EOF；位置从约`(3248,296,360)`变为`(2849,271,336)`，收到`a 1`切枪命令后弹药从10减至0。切枪消费依据`0x57d560 → 0x562260`，没有用手写快照读取器代替。
 

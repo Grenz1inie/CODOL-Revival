@@ -1,8 +1,10 @@
-# CODOL 3.3.3.3 本地复活
+# CODOL 多版本管理器
 
-面向本机客户端的认证、大厅和公开角色档案协议原型。新增文件集中在本目录，游戏客户端位于相邻的 `CODOL_Experience_V3.3.3.3_FULL.7z/`。
+在网页中选择本机游戏目录，自动核验版本文件与主程序指纹，再调用对应版本的逆向实现和模拟服务器。当前接入 **3.3.3.3**；2.6.9.7、3.19.26.22已收录但尚未接入。版本列表是 [games/codol/versions.json](games/codol/versions.json)，新增版本的规则见 [多版本管理说明](docs/multi-version-manager.md)。
 
 ## 当前进度
+
+**2026-10-16 多版本管理器**：目录选择、版本文件与EXE指纹匹配、操作门控及版本适配器已接入；逆向工具、模拟服务器和测试按版本存放，玩家数据按安装实例隔离。真实3.3.3.3目录识别、存档复制校验及模拟服务器启停已验证；网页新增部分的浏览器截图与原生目录弹窗尚待人工确认，游戏内验收范围不变。
 
 **2026-10-16 Rust独立对局服**：碰撞、移动、AI和UDP协议已迁入独立Rust进程，Python保留网页、认证、大厅和档案，现有启停流程已接入并重载。核弹小镇同输入400帧的整帧P99由91.60ms降至1.62ms，状态在约定精度内一致；这是离线性能结果，Rust版游戏手感待人工验收。仍从“冲锋团队竞技 → 核弹小镇”进入，一名真人、一个AI、固定ACR、自由混战，不新增赛单。构建、证据与验收步骤见 [Rust迁移 Wiki](docs/wiki/12-rust-match-server.md)。9V9等其他玩法未接入。
 
@@ -20,58 +22,52 @@ Web 控制器支持引导开关、启动游戏、读取开发 Wiki、3 转生 70
 .\Start.ps1
 ```
 
-[Start.ps1](Start.ps1) 先检查环境，再依次启动本地认证/大厅/STUN 服务、Web 控制器，打开 <http://127.0.0.1:8765/> 并启动游戏。游戏提权仍需确认 Windows UAC；已运行的服务和游戏会复用。首次环境准备、参数和排错见 [控制器文档](docs/controller.md)。
+[Start.ps1](Start.ps1) 先检查并启动网页控制器，再打开 <http://127.0.0.1:8765/>。首次打开点击“选择游戏目录”；匹配成功后启用该版本支持的操作。已有选择会在重启后重新核验；默认入口会启动已匹配的游戏。游戏提权仍需确认 Windows UAC。
 
 ```powershell
-.\Start.ps1 -CheckOnly            # 只检查，不启动或修改配置
-.\Start.ps1 -NoGame               # 启动服务并打开控制器，暂不进入游戏
-.\Start.ps1 -NoGame -NoBrowser    # 只启动后台服务和控制器
-```
-
-如果系统阻止执行脚本，可使用 `powershell -NoProfile -ExecutionPolicy Bypass -File .\Start.ps1`，仅对本次进程生效。单独的启停入口仍可使用：
-
-```powershell
-.\scripts\Launch-Game.ps1
-.\scripts\Stop-Game.ps1
-```
-
-启动入口先启动本地服务，再请求管理员身份运行游戏；Windows UAC 由操作者确认。停止脚本只匹配相邻游戏目录的完整 EXE 路径。
-
-```powershell
-.\scripts\Start-Services.ps1
-.\scripts\Stop-Services.ps1
-python -B -m unittest discover -s tests -v
+.\Start.ps1 -CheckOnly            # 只检查管理器环境
+.\Start.ps1 -NoGame               # 打开网页，由用户点击启动游戏
+.\Start.ps1 -NoGame -NoBrowser    # 只启动后台网页控制器
+python -B tools/run-tests.py      # 管理器与版本测试集中运行一次
 python -B tools/check-doc-links.py
 ```
 
-Python 依赖见 [requirements.txt](requirements.txt)。启动脚本优先使用 `.venv`，否则使用 PATH；也可给 `Start-Services.ps1` 传 `-PythonPath`。新环境安装、协作和验收规则见 [CONTRIBUTING](CONTRIBUTING.md)。本机已有依赖和本地证书，整理目录没有重新安装依赖或替换证书。
+游戏与模拟服务器通过网页一起启停。版本目录内的脚本由管理器传入安装路径及实例目录后调用。详细检查项见 [控制器文档](docs/controller.md)。Python依赖见 [requirements.txt](requirements.txt)，开发约定见 [CONTRIBUTING](CONTRIBUTING.md)。
 
 首次运行或修改Rust源码后，在根目录运行 `powershell -NoProfile -File scripts/Invoke-MatchCargo.ps1 build --release`。工具链和构建产物位于项目`runtime/`；运行已构建的对局服不需要临时编译。缺少Rust产物不会回退到Python对局实现。
 
 ## 目录
 
 ```text
-src/                         认证、大厅、档案、货币与控制器 HTTP 服务
-native/match-server/          Rust对局服、协议、碰撞、移动与AI
-data/                        有来源哈希的商城静态目录，不参与代码索引
-web/                         控制器前端源码、构建配置与依赖锁文件
-scripts/                     游戏和服务的启动/停止入口
-Start.ps1                    一键预检查、启动服务、控制器和游戏
-tests/fixtures/               独立测试及受控样本
-tools/                       REA、证书、文档校验工具
-  reference_match/           冻结的Python离线对照与资源导出依赖
-docs/wiki/                   按游戏流程组织的技术 Wiki
-docs/reports/                带日期的验证、目录搬迁记录
-research/evidence/           本机反编译、快照、原始档案样本
-research/reference-protocol/ 外部协议资料、来源与许可证
-runtime/                     不进入版本控制的本机运行文件
-  captures/ logs/ certs/ data/ backups/
-archive/                     保留原始内容的历史基线
+src/controller.py                共用控制器HTTP入口
+src/manager/                     版本识别、安装选择、数据迁移、原生目录选择
+web/                             共用网页控制台
+Start.ps1                        管理器入口
+scripts/                         管理器启动与Rust构建
+games/codol/versions.json        持续维护的版本列表
+games/codol/versions/v3_3_3_3/
+   adapter.py                    本版本控制接口
+   client/                       本版本启动检查
+   server/                       Python认证、大厅、档案与对局编排
+     native/match-server/        本版本Rust模拟对局服
+   resources/definitions/        商城、赛单、快照字段
+   reverse/tools/                资源解析、逆向探针、冻结的Python对照实现
+   reverse/recovered-code/       已恢复的客户端逻辑及证据
+   reverse/experiments/          本版本历史实验脚本与探针
+   scripts/                      本版本游戏及模拟服务器启停
+   tests/                        本版本测试与受控样本
+config/                          本机所选目录与运行会话，不提交
+runtime/instances/<实例ID>/       档案、备份、证书、日志、抓包，不提交
+runtime/builds/codol/v3_3_3_3/     本版本Rust产物与地图包，不提交
+tests/                           管理器接口与启动测试
+docs/                            管理器说明、版本Wiki、历史报告
+research/                        历史原始证据、参考资料与实验产物
+archive/                         历史基线
 ```
 
 [文档入口](docs/README.md) · [技术 Wiki 总览](docs/wiki/README.md) · [搬迁清单与校验值](docs/reports/20261014-directory-migration.json)
 
-`runtime/data/public-profiles/` 保存公开角色档案；`runtime/logs/server.jsonl` 记录服务事件。研究 JSON 和历史归档中的绝对路径保留生成时原文，查找新位置使用搬迁清单。外部参考源码不作为本项目源码参与测试，其来源清单和许可证归属保留在研究目录。
+当前公开角色档案位于 `runtime/instances/<实例ID>/data/public-profiles/`，服务日志位于同一实例的 `logs/server.jsonl`。原 `runtime/data/` 保留为迁移来源，不再承接新进度。研究 JSON、历史归档和旧搬迁清单保留生成时原文；当前源码位置以本页目录为准。外部参考源码的来源清单和许可证归属保留在研究目录。
 
 ## 游戏目录例外
 

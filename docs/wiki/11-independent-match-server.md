@@ -50,7 +50,7 @@
 
 加密修复已应用：参考服的Tiger192/AES-192组合不适用于本次客户端。当前 `0xa7af90` 将28字节P-224共享X与16字节预订密钥拼接后做SHA-1；AES使用前16字节。`0xa7f960` 的IV来自32位完整序号与16位目标tag的SHA-1前16字节，CTR按小端递增；HMAC覆盖头6字节及长度2字节和密文，结果截取8字节。
 
-验证使用 `tests/client_transport423.py` 执行当前EXE的DATA封包、SHA-1、HMAC和AES-CTR机器码，仅隔离CRT内存分配。服务端输出与原生输出逐字节相同；覆盖完整32位序号跨65535、方向tag、分块载荷、错误认证、长度和重放。4项传输测试加6项UDP/探针测试通过，UDP路径继续到stats、gamestate、active及移动射击输入。旧参考服探针保留默认旧协议，独立服用例显式指定 `current=True`，避免把旧版自我往返误当新版握手证据。
+验证使用 `games/codol/versions/v3_3_3_3/tests/client_transport423.py` 执行当前EXE的DATA封包、SHA-1、HMAC和AES-CTR机器码，仅隔离CRT内存分配。服务端输出与原生输出逐字节相同；覆盖完整32位序号跨65535、方向tag、分块载荷、错误认证、长度和重放。4项传输测试加6项UDP/探针测试通过，UDP路径继续到stats、gamestate、active及移动射击输入。旧参考服探针保留默认旧协议，独立服用例显式指定 `current=True`，避免把旧版自我往返误当新版握手证据。
 
 另用已捕获的临时服务端密钥重建COOKIE_ACK，与实抓响应完全相同；新的生产 `Association` 成功认证并解密全部30条DATA，首个真实getchallenge已由生产 `Connection` 生成challengeResponse。秘密材料仍仅在忽略目录中。01:18（Asia/Shanghai）完整游戏重试已到 `match_phase=connected`，随后反复被 `invalid stats size or CRC` 拒收；不再把后续等待归因于握手加密。
 
@@ -70,7 +70,7 @@
 
 因此 `StatsTransfer` 保留已认证DATA、连接身份、分片顺序/长度/重复内容检查、zlib完整性及精确32768字节边界，按原样接收对局stats，不拿其旧CRC检查整理后的正文。大厅公开/私有档案保存的CRC规则不变，也不将上传缓冲区写回正式存档。回归通过原生stats封包器覆盖压缩/未压缩及旧CRC上传；损坏zlib、尾随数据、错误尺寸仍拒绝。连接与UDP共15项通过，大厅存档5项通过。
 
-复现工具为 `tools/Read-MatchDebug.ps1 -Stats`，使用三个硬件断点，不改EXE代码字节；第三次命中后脱离。需在新启动、首次匹配前附加，后续重试会复用压缩缓存。原始缓冲区位于忽略目录 `runtime/captures/stats-20261016-014425-*.bin`，包含玩家数据，不提交。调试后客户端上报异常并退出，此次只用于取证；可玩性验证须使用不附加调试器的独立重试。
+复现工具为 `games/codol/versions/v3_3_3_3/reverse/tools/Read-MatchDebug.ps1 -Stats`，使用三个硬件断点，不改EXE代码字节；第三次命中后脱离。需在新启动、首次匹配前附加，后续重试会复用压缩缓存。原始缓冲区位于忽略目录 `runtime/captures/stats-20261016-014425-*.bin`，包含玩家数据，不提交。调试后客户端上报异常并退出，此次只用于取证；可玩性验证须使用不附加调试器的独立重试。
 
 ### 首个netchan的地图编号
 
@@ -107,7 +107,7 @@ REA缓存 `client-send-command423.json` 的 `0x4602a0` 读取当前地图状态�
 ### 核弹小镇接入（2026-10-15）
 
 - 赛单版本801按用户纠正移除新增分类6和赛单240，复用“冲锋团队竞技 → 核弹小镇”（分类1、赛单110），保留名称和位置。此入口使用 `mp_nuked,ffa,1`，客户端已有 `ffa → dm` 映射；规则与说明为1真人＋1AI、ACR、自由混战，其余赛单不变。
-- 版本802修复801误删 `ranked` 的回归。原客户端 `GetPlayList`（`0x6ab670`）调用 `0x613ed0`，在 `0x6ac42b` 将结果发布为UI字段 `type`。801中110仍存在于分类和地图表，但类型从1变成0；只补回 `ranked` 即恢复1，地图及1V1规则无需回退。`tests/test_client_playlist.py` 已保护冲锋分类七个赛单的名称、顺序与真实客户端UI类型，以及110的地图/规则说明、无新增入口；修复前定向用例报 `0 != 1`，修复后通过。该测试执行当前EXE机器码，未执行Flash渲染，最终显示仍由用户复审。
+- 版本802修复801误删 `ranked` 的回归。原客户端 `GetPlayList`（`0x6ab670`）调用 `0x613ed0`，在 `0x6ac42b` 将结果发布为UI字段 `type`。801中110仍存在于分类和地图表，但类型从1变成0；只补回 `ranked` 即恢复1，地图及1V1规则无需回退。`games/codol/versions/v3_3_3_3/tests/test_client_playlist.py` 已保护冲锋分类七个赛单的名称、顺序与真实客户端UI类型，以及110的地图/规则说明、无新增入口；修复前定向用例报 `0 != 1`，修复后通过。该测试执行当前EXE机器码，未执行Flash渲染，最终显示仍由用户复审。
 - 本次对照证据为 `research/evidence/nuketown-menu-type423.json`；REA新反编译请求再次300秒超时，结论来自原EXE汇编与机器码执行，未冒称新反编译成功。23:15:33（Asia/Shanghai）服务PID52332已就绪，重登后发布802。
 - `runtime → matchmaking → MatchServer → Connection` 传递包内地图身份，连接响应、serverinfo及gamestate使用同一地图名；当前客户端机器码读取器已消费Nuketown的状态。
 - REA已保存的 `client-coop-mmstart423.json` 中 `0x6e6bf0` 证明PVP有 `playlist …; start_map_rotate_once …` 分支，不能只识别 `map`。核弹小镇目录ID为110、实际网络索引为25（见上节纠正），也接受明确的 `map mp_nuked` / `g_gametype dm`；不执行客户端任意控制台文本。
@@ -133,8 +133,8 @@ REA快照另存为 `research/evidence/client423-nuketown-entry.rea.json`，93项
 
 ```powershell
 $env:PYTHONPATH='src;tests;tools'
-python -B tools/extract_story_resources.py --map-name mp_nuked --output research/experiments/independent-match/nuketown-inputs-v1
-python -B tools/build_match_registration.py --map-name mp_nuked --ff-directory research/experiments/independent-match/nuketown-inputs-v1/chinese --output research/experiments/independent-match/nuketown-registration-v1
+python -B games/codol/versions/v3_3_3_3/reverse/tools/extract_story_resources.py --map-name mp_nuked --output research/experiments/independent-match/nuketown-inputs-v1
+python -B games/codol/versions/v3_3_3_3/reverse/tools/build_match_registration.py --map-name mp_nuked --ff-directory research/experiments/independent-match/nuketown-inputs-v1/chinese --output research/experiments/independent-match/nuketown-registration-v1
 ```
 
 首次地图导出使用 `export_zones` 的地图参数：
@@ -156,9 +156,9 @@ zones={name:decode(client,Path(records[name]['path']).read_bytes(),name)
 export_zones(zones,base/'nuketown-dm-v1',map_name='mp_nuked',gametype='dm',
              source_records=records,registration=ncs['registration_evidence'])
 '@ | python -B -
-python -B tools/export_match_map.py --from-package research/experiments/independent-match/nuketown-dm-v1 --model-zone research/experiments/story-native/zone-assets/common_mp/zone.bin --output research/experiments/independent-match/nuketown-dm-v2
-python -B tools/export_match_loadout.py --source research/experiments/independent-match/nuketown-dm-v2 --output research/experiments/independent-match/nuketown-loadout-v1 --common-zone research/experiments/story-native/zone-assets/common_mp/zone.bin --waypoints ../sh1x_dedicated/bin/home/main/waypoints/mp_nuked_wp.csv --registration research/experiments/independent-match/nuketown-registration-v1
-python -B tools/export_match_map.py --from-package research/experiments/independent-match/nuketown-loadout-v1 --model-zone research/experiments/story-native/zone-assets/common_mp/zone.bin --output research/experiments/independent-match/nuketown-loadout-v2
+python -B games/codol/versions/v3_3_3_3/reverse/tools/export_match_map.py --from-package research/experiments/independent-match/nuketown-dm-v1 --model-zone research/experiments/story-native/zone-assets/common_mp/zone.bin --output research/experiments/independent-match/nuketown-dm-v2
+python -B games/codol/versions/v3_3_3_3/reverse/tools/export_match_loadout.py --source research/experiments/independent-match/nuketown-dm-v2 --output research/experiments/independent-match/nuketown-loadout-v1 --common-zone research/experiments/story-native/zone-assets/common_mp/zone.bin --waypoints ../sh1x_dedicated/bin/home/main/waypoints/mp_nuked_wp.csv --registration research/experiments/independent-match/nuketown-registration-v1
+python -B games/codol/versions/v3_3_3_3/reverse/tools/export_match_map.py --from-package research/experiments/independent-match/nuketown-loadout-v1 --model-zone research/experiments/story-native/zone-assets/common_mp/zone.bin --output research/experiments/independent-match/nuketown-loadout-v2
 ```
 
 最后一步将包内路点纳入坐标窗口并重新生成哈希。旧路点只作为图结构输入，运行时仍须以当前地图碰撞确认可达性。动态尾部1413777字节原样保存；玻璃破坏、脚本驱动物体与复杂环境效果不属于 `dm_frozen_initial_static` 就绪范围。
@@ -219,7 +219,7 @@ REA会话已保存为[独立服参考基线](../../research/evidence/client423-i
 
 - 初版 `crypto.py`、`transport.py` 沿用参考的Tiger192、P-224、AES-192 CTR与DATA HMAC。2026-10-16真实抓包证实其中密钥派生、AES位数、IV和认证范围与当前客户端不匹配；早期回环测试不能作为3.3.3.3加密兼容性证明，纠正见上节。
 - `connection.py`：单一预订账号校验、challenge/connect、stats分片与压缩边界、可靠userinfo确认、当前版本gamestate；不写正式玩家档案。
-- `server.py`：只绑定 `127.0.0.1` 的独立 UDP 收发。`tests/test_match_server.py` 经真实 socket 和加密层，把地图状态交给当前客户端读取器；确认解析出 `mp_killhouse_sh / dm`。
+- `server.py`：只绑定 `127.0.0.1` 的独立 UDP 收发。`games/codol/versions/v3_3_3_3/tests/test_match_server.py` 经真实 socket 和加密层，把地图状态交给当前客户端读取器；确认解析出 `mp_killhouse_sh / dm`。
 - stats的uint16是**压缩后总长度**，不是本分片长度；每片最多1238字节，未压缩长度32768。首4字节是整理前的CRC，不能用于校验上传正文（2026-10-16动态证据见上节）。只有全部合法数据齐备才允许地图状态发送。
 
 测试分别使用客户端 `0xa87020/0xa87060/0xa87110`（Tiger）、`0x6d81a0`（stats writer）、`0x5a5960/0x46bf80`（netchan/XOR）和 `0x46dea0`（gamestate）。最后一项在 `0x4651b0` 加载入口停止，**未执行渲染、资源加载或出生**；测试中的 NCS CRC 是协议夹具，不是已经核实的 Killhouse 实际注册表。
@@ -278,7 +278,7 @@ python -m unittest test_match_transport test_match_connection test_match_server 
 
 runtime原生gamestate回归先复现空部件配方，再验证完整配方、武器/弹匣352和备用弹药5。原生模型选择回归提供不同world/view资源夹具，检查主枪及五部件只取view，保留各自tag和主枪的 `tag_weapon`；只隔离资源流式加载调用，不把该测试当作渲染或动画配套验收。相关server/runtime/composed共13项通过。
 
-证据：`research/evidence/acr-model-pairing-20261016.json`、`acr-model-pose-20261016.txt`、`acr-animation-pose-20261016.txt`、`acr-animation-source-20261016.txt`。`Read-PlayerSchema.ps1 -WeaponModels` 复用限定只读采集；`tools/Read-MatchDebug.ps1 -ViewAnimation` 读取当前枪模动作树，最多64节点。REA已存证据继续复用；本次新指令查询返回 `Ghidra client is already started`，没有反复重扫，新增地址结论以本版本缓存汇编和实机读取交叉核对。
+证据：`research/evidence/acr-model-pairing-20261016.json`、`acr-model-pose-20261016.txt`、`acr-animation-pose-20261016.txt`、`acr-animation-source-20261016.txt`。`Read-PlayerSchema.ps1 -WeaponModels` 复用限定只读采集；`games/codol/versions/v3_3_3_3/reverse/tools/Read-MatchDebug.ps1 -ViewAnimation` 读取当前枪模动作树，最多64节点。REA已存证据继续复用；本次新指令查询返回 `Ghidra client is already started`，没有反复重扫，新增地址结论以本版本缓存汇编和实机读取交叉核对。
 
 10:28服务重载为PID61288，同时带入输入排队及UDP退出修复，确认 `mp_nuked / dm`、NCS校验和1765105316。用户随后确认能进入，但枪手仍错位。PID59232动态读取确认七个模型均已加载为view版本，不能再把默认部件遗漏作为全部原因。
 
@@ -383,7 +383,7 @@ runtime原生gamestate回归先复现空部件配方，再验证完整配方、�
 
 `input.py` 直接反解3.3.3.3的3位消息类型、键控usercmd和末尾标签，支持一包多条可靠命令。首条输入的省略字段来自**已确认的快照**；不能拿服务器最新位置、视角或武器作解码基准。畸形批次不更新连接状态，重发批次不重复处理。
 
-`snapshot.py` 直接编码当前玩家字段、生命值、单武器弹药、两名玩家的entity/client记录；没有旧引擎布局中转。`data/match-fields423.json` 保存当前EXE的实体字段、客户端字段与事件参数宽度。连接中加入可靠服务端命令及其确认记录，后续可发送武器选择和对局状态。
+`snapshot.py` 直接编码当前玩家字段、生命值、单武器弹药、两名玩家的entity/client记录；没有旧引擎布局中转。`games/codol/versions/v3_3_3_3/resources/definitions/match-fields423.json` 保存当前EXE的实体字段、客户端字段与事件参数宽度。连接中加入可靠服务端命令及其确认记录，后续可发送武器选择和对局状态。
 
 坐标中心不是必须猜出的地图常量：REA `client-gamestate-instructions423.json` 的 `0x46e0e1..0x46e0ec` 读取配置串16并按 `%f %f %f` 写入 `0x78b0a78/7c/80`。新服可选覆盖本图坐标的中心，配置串和实体编码必须使用同一值。`test_map_center_is_server_supplied_configstring_16` 执行实际gamestate读取器，只替换CRT的sscanf，并再用实际实体读取器验证非零中心的位置。
 
@@ -428,15 +428,15 @@ python -m unittest test_match_world test_match_navigation test_match_loadout tes
 
 ```powershell
 $env:PYTHONPATH='src;tests;tools'
-python tools/build_match_registration.py
-python tools/export_match_loadout.py --source research/experiments/independent-match/killhouse-dm-v5 --output research/experiments/independent-match/killhouse-loadout-v2 --common-zone research/experiments/story-native/zone-assets/common_mp/zone.bin --waypoints research/experiments/story-native/source-startup-xygdjp3z/main/waypoints/mp_killhouse_sh_wp.csv --registration research/experiments/independent-match/registration/rebuilt
+python games/codol/versions/v3_3_3_3/reverse/tools/build_match_registration.py
+python games/codol/versions/v3_3_3_3/reverse/tools/export_match_loadout.py --source research/experiments/independent-match/killhouse-dm-v5 --output research/experiments/independent-match/killhouse-loadout-v2 --common-zone research/experiments/story-native/zone-assets/common_mp/zone.bin --waypoints research/experiments/story-native/source-startup-xygdjp3z/main/waypoints/mp_killhouse_sh_wp.csv --registration research/experiments/independent-match/registration/rebuilt
 ```
 
 导出要求新目录，已有包不会覆盖。将完整导出目录部署到 `runtime/match/killhouse/`；生成物、游戏资源和玩家档案均不提交。重建依赖本机已提取输入，运行只依赖独立包。
 
 ## 历史部署记录（Killhouse）
 
-此前 `data/match-playlist.info` 通过 **10/21 → mp_playlists_shipRetail_release.info** 仅发布 `Killhouse DM`。用户截图显示分类存在但子赛单为空、匹配按钮缺失，不能视为可用入口。随后已按用户要求恢复完整菜单，实施与步骤见 [05](05-publisher-character-selection.md#赛单恢复与界面复审2026-10-15)。以下保留当时的Killhouse计划和部署证据；当前人工入口见下一节。
+此前 `games/codol/versions/v3_3_3_3/resources/definitions/match-playlist.info` 通过 **10/21 → mp_playlists_shipRetail_release.info** 仅发布 `Killhouse DM`。用户截图显示分类存在但子赛单为空、匹配按钮缺失，不能视为可用入口。随后已按用户要求恢复完整菜单，实施与步骤见 [05](05-publisher-character-selection.md#赛单恢复与界面复审2026-10-15)。以下保留当时的Killhouse计划和部署证据；当前人工入口见下一节。
 
 1. 界面复审通过后再接回明确的Killhouse/dm测试入口。
 2. 一名真人开始匹配，检查是否加载Killhouse并出生；不使用剧情或其他模式代替。

@@ -254,3 +254,21 @@ button:focus-visible,a:focus-visible,summary:focus-visible,select:focus-visible 
   *,*::before,*::after {animation:none!important;transition:none!important;scroll-behavior:auto!important}
   .wallet:hover,.quick-panel:hover .action-icon,.launch-button:not(:disabled):hover,.launch-button:not(:disabled):hover .launch-arrow,.rt-Button:not(:disabled):active {transform:none}
 }
+
+
+.installation-panel { margin-bottom: 20px; padding: 20px 24px; }
+.installation-heading { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.installation-heading h2 { margin: 0 0 6px; font-size: 16px; }
+.installation-heading > div { min-width: 0; }
+.installation-path { margin: 0; font-size: 12px; color: var(--gray-11); overflow-wrap: anywhere; }
+.installation-result { display: flex; align-items: center; gap: 10px; margin-top: 14px; font-size: 13px; color: var(--gray-11); }
+.installation-result.matched { color: var(--green-11); }
+.version-list { margin-top: 14px; font-size: 13px; }
+.version-list summary { cursor: pointer; width: fit-content; color: var(--gray-11); }
+.version-list summary span { margin-left: 8px; }
+.version-list table { width: 100%; max-width: 560px; margin-top: 10px; border-collapse: collapse; }
+.version-list th, .version-list td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--gray-5); }
+@media (max-width: 600px) {
+  .installation-panel { padding: 16px; }
+  .installation-heading { align-items: flex-start; flex-direction: column; gap: 12px; }
+}
