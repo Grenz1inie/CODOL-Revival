@@ -81,4 +81,10 @@ impl NuketownRoom {
     pub fn roster_message(&self, human_state: &[u8; 0x1d0]) -> Vec<u8> {
         room_wire::roster(self.players(), human_state)
     }
+
+    /// Message 6 for each bot. The host still decides admission and start timing.
+    pub fn bot_join_messages(&self, human_state: &[u8; 0x1d0]) -> Vec<Vec<u8>> {
+        self.players.iter().filter(|player| player.is_bot)
+            .map(|player| room_wire::join(player, human_state)).collect()
+    }
 }

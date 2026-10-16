@@ -19,3 +19,16 @@ Writer evidence:
 `ev_805ec1699a24f81ab2301998997c30e94940bfd2d2526fea73e47b15cabd6f0c`.
 Coverage is native serialization/deserialization only. Live channel routing,
 waiting-room UI, map loading and gameplay remain separate acceptance steps.
+
+`join-native.bin` is a synthetic single-bot admission request, message 6.
+Native writer `0x6270d0`, reader `0x627230`; 722 bits / 91 bytes, SHA-256
+`4a44e521a3982b2fcaa4fcd66e0a690096db97578d482b041ce3d2f3a1a6fa25`.
+Input: UID 0x600000001, team 1, ready 1, skill 1000, compatibility byte
+at member +0x1b0 equal to 1, remaining member fields from `0x623770`;
+party count 1, empty password/clan, content version 797, other trailers 0.
+The content version is checked by `0x634870` against `0x7b25a38`; a bounded
+read of PID81072 confirmed 797, without modifying the client.
+REA evidence `ev_5f69d4787bea7c73fabbb407d2d15c82fc297a2c3e2174b3a8c18b6f2f5448f8`.
+The Rust test also replays all 17 requests through both native functions.
+Ready bots are a local implementation policy, not a recovered original-server
+rule. Actual host admission, channel routing and UI remain unverified.
