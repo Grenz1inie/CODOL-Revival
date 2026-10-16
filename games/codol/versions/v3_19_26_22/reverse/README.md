@@ -1,8 +1,10 @@
 # 3.19 启动链路证据
 
-来源为用户提供的CODOL319-TestBuild；六份移植Python文件的原始SHA256见[source-manifest.json](source-manifest.json)。保留提供包内的来源注释。仅调整服务数据根目录为 `CODOL319_SERVER_ROOT`，主启动编排另行实现，未引入提供包按端口清理其他服务的行为。
+来源为用户提供的CODOL319-TestBuild；18份选择性移植Python文件的原始SHA256见[source-manifest.json](source-manifest.json)。保留提供包内的来源注释。服务数据根目录统一为 `CODOL319_SERVER_ROOT`，主启动和对局编排另行实现，未引入提供包按端口清理其他服务的行为。对局移植还包含正常停止、原生子进程清理和结算写入失败回滚；原始源码保持不变。
 
 原生组件身份在 [preparation.py](../client/preparation.py) 的 `NATIVE_HASHES` 中固定；导入及执行前校验。原始二进制仅在被忽略的本地runtime包中保存。
+
+对局使用的三个原生组件身份另固定于 [match.py](../client/match.py)：`collision319.exe`、`snapshot319_live.exe`、`test_native_ncs319.exe`。迁入的 [match_host](../server/match_host/) 调用这些组件处理本版本的碰撞、快照及配置数据，没有混入3.3.3.3地址。原生快照、配装读取及碰撞进程生命周期已通过离线测试；游戏内效果仍需人工验收。
 
 REA / Ghidra 12.1.4 对加载器 `Client-english-fixed-resources.exe` 的证据：
 

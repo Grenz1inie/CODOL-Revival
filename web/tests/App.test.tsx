@@ -8,7 +8,7 @@ let installation: {state: string; path: string; version: string | null; reason: 
 const matched = {state:'matched', path:'E:/Games/CODOL', version:'3.3.3.3', reason:'已匹配', instance_id:'codol-main'};
 let running: boolean;
 let launchSettings: {player_name: string; fov: number; max_fps: number} | undefined;
-let serverState: {running: boolean; pid: number | null; ready: boolean; ports: {name: string; protocol: string; port: number; listening: boolean; conflict: boolean}[]};
+let serverState: {running: boolean; pid: number | null; ready: boolean; ports: {name: string; protocol: string; port: number; listening: boolean; conflict: boolean}[]; match?: {phase:string; error:string; result?:{event:string; paid?:Record<string,number>}}};
 let serverError: boolean;
 let statusError: boolean;
 let serverResponse: () => Promise<ReturnType<typeof response>>;
@@ -363,6 +363,20 @@ describe('低频自动刷新', () => {
 
 
 describe('游戏目录与版本匹配', () => {
+  it('3.19 对局状态区分等待、失败及结算，并正确标记资源服务', async () => {
+    installation = {...matched, version:'3.19.26.22'};
+    serverState.match = {phase:'waiting', error:''};
+    serverState.ports = [{name:'web', protocol:'TCP', port:8319, listening:true, conflict:false}];
+    await ready();
+    expect(screen.getByText('等待大厅 Ready')).toBeTruthy();
+    expect(screen.getByText('资源')).toBeTruthy();
+    serverState.match = {phase:'error', error:'UDP 28970 已被占用'};
+    fireEvent.click(button('刷新状态'));
+    expect(await screen.findByText('UDP 28970 已被占用')).toBeTruthy();
+    serverState.match = {phase:'finished', error:'', result:{event:'match_pay', paid:{'1':200,'2':10,xp:1400}}};
+    fireEvent.click(button('刷新状态'));
+    expect(await screen.findByText(/GP \+200.*CP \+10.*1400/)).toBeTruthy();
+  });
   it('3.19 启动参数可保存，刷新不覆盖未保存输入，运行时禁用修改', async () => {
     installation = {...matched, version:'3.19.26.22'};
     capabilities.launch_settings = {available:true, reason:''};

@@ -16,6 +16,7 @@ sys.path.insert(0, str(ROOT))
 from games.codol.versions.v3_19_26_22.client.lifecycle import Services, alive, identity, lobby_ready, service_status
 from games.codol.versions.v3_19_26_22.client.preparation import CLIENT, LOADER, NATIVE_HASHES, check_client, digest, grant_runtime_access, prepare
 from games.codol.versions.v3_19_26_22.client.settings import apply_options
+from games.codol.versions.v3_19_26_22.client.match import MatchSession
 
 LOADER_ARGS = ['--metadata', '--local-lobby', '--observe', '--windowed', '--local-http', '--english-resources']
 
@@ -36,10 +37,14 @@ def status(runtime):
     services = service_status(state.get('services', []))
     supervisor = alive(state.get('supervisor', {}))
     game_running = supervisor and alive(state.get('game', {}))
+    match = state.get('match', {'phase': 'waiting', 'error': ''})
+    match_service = service_status([match['service']] if match.get('service') else [])
     return {**services, 'running': services['running'] or supervisor,
+            'ports': services['ports'] + match_service['ports'],
             'pid': state['supervisor']['pid'] if supervisor else None,
-            'phase': state.get('phase', 'stopped'), 'error': state.get('error', ''),
+            'phase': state.get('phase', 'stopped'), 'error': state.get('error', '') or match.get('error', ''),
             'game_running': game_running,
+            'match': {**match, 'ready': game_running and match_service['ready']},
             'lobby_ready': game_running and state.get('phase') == 'lobby'}
 
 
@@ -91,6 +96,7 @@ def supervise(runtime):
     state = {'phase': 'starting', 'supervisor': identity(os.getpid()), 'services': []}
     loader = None
     services = None
+    match = None
     try:
         save(runtime, state)
         game = runtime / 'game'
@@ -132,6 +138,8 @@ def supervise(runtime):
                 for child in psutil.Process(loader.pid).children(recursive=True):
                     if os.path.normcase(child.exe()) == os.path.normcase(str(game / CLIENT)):
                         state['game'] = identity(child.pid)
+                        match = MatchSession(runtime, state['game'], since)
+                        state['match'] = match.snapshot()
                         save(runtime, state)
                         break
             if state['phase'] != 'lobby':
@@ -140,6 +148,11 @@ def supervise(runtime):
                     save(runtime, state)
                 elif 'game' not in state and time.monotonic() >= deadline:
                     raise TimeoutError('加载器未创建游戏进程，请查看 server/loader/bootstrap.log')
+            if state['phase'] == 'lobby' and match is not None:
+                match_state = match.poll()
+                if match_state != state.get('match'):
+                    state['match'] = match_state
+                    save(runtime, state)
             time.sleep(0.5)
         if state['phase'] != 'lobby' and not (runtime / 'stop.request').exists():
             raise RuntimeError('游戏在登录前退出，请重试并查看 server/loader/bootstrap.log')
@@ -148,15 +161,20 @@ def supervise(runtime):
         state.update(phase='error', error=str(error))
     finally:
         try:
-            if loader is not None and loader.poll() is None:
-                subprocess.run(['taskkill', '/PID', str(loader.pid), '/T', '/F'],
-                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                    creationflags=subprocess.CREATE_NO_WINDOW, timeout=10)
-                loader.wait(timeout=10)
+            if match is not None:
+                match.close()
+                state['match'] = match.snapshot()
         finally:
-            if services is not None:
-                services.close()
-            save(runtime, state)
+            try:
+                if loader is not None and loader.poll() is None:
+                    subprocess.run(['taskkill', '/PID', str(loader.pid), '/T', '/F'],
+                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                        creationflags=subprocess.CREATE_NO_WINDOW, timeout=10)
+                    loader.wait(timeout=10)
+            finally:
+                if services is not None:
+                    services.close()
+                save(runtime, state)
 
 
 if __name__ == '__main__':

@@ -1,12 +1,24 @@
 {
   "source": "CODOL319-TestBuild/server (user-supplied local package)",
-  "scope": "Startup, loopback authentication, lobby and web resources only",
+  "scope": "Local launcher, authentication, lobby, web resources and Seatown test match",
   "files": {
     "auth_capture.py": "0c9dfe9dba73e921e5e46ec54b6eb8dd78254d92ffc488aa01e3f243cd16b316",
     "local_auth_ticket.py": "f49822850b7f2108ca0e1e089b1bd8fb48a79f36d7678e4eca8b2cf00b110141",
     "lsg_codec.py": "6803d44afa31fbc2f079444d93b851a6d36bc434834ae2abab151d71f800d688",
     "lsg_handshake.py": "832295f84aee2d7b20f45641fbecd145594c7019131d3b5a9b59b1cc96fbaa9f",
     "local_profile319.py": "6776fc241a7c8717b67b2c8e03935f2d596d74f92bf7f2a44e6d15c6166b89c0",
-    "match-host/nfs_http319.py": "f663b2741a3b336bc2b30c35b1fca3653e832b0a8cb75330618e98dc17b96656"
+    "match-host/nfs_http319.py": "f663b2741a3b336bc2b30c35b1fca3653e832b0a8cb75330618e98dc17b96656",
+    "match-host/client_message319.py": "a5236977603d5689c005fb7762d903d62f2ffba062cf2bc9e1f74714d9ec9049",
+    "match-host/collision_move319.py": "7c4a7f17dfa6cdd5980d5b9a12a005659eee57c12094c453f8b0ae5c2c26aa6f",
+    "match-host/config_message319.py": "8cacbc842c7181e3720732dc6fcdba771833895c3a359af6897d2c59e168d7f2",
+    "match-host/diag_host319.py": "1143c0b05080c8acd8ff3ae7a243e12384c0a6ad27e805a50ff570c54ed548b7",
+    "match-host/gamestate_probe319.py": "0800f989bd1205ca998ec65cf3c48ad55ee90cb54a12a3eab5ca5bea166775e0",
+    "match-host/inspect_config_capture319.py": "cbcfdd0da37c3e7609eb59a17e0e8c4efde63dafb6bb45b6bfe3bb1ce3c24cf0",
+    "match-host/live_sim319.py": "d34cd11f33be929bccc4f85996e90437f61ffa5bedb2e878161a03c8ffd16f74",
+    "match-host/playerdata_classes319.py": "8186fdb2627963682ae06b63d273128e7f2660baea0c9e8956b1ee7f2eab5a8b",
+    "match-host/reconstruct_ncs319.py": "08b91ec94112741cb6a56f5a533e3dec237888d9704fe3b3e3ff6ed37ad99f1f",
+    "match-host/server_message319.py": "09b338359ffec17954f6785c982975452a6c2cd31c55ae03fece64b61ebebaba",
+    "match-host/snapshot_stream319.py": "097e635c376fd08f0ed50afdf67b542f5dab3e35e75cbb2092d95f8f92512236",
+    "match-host/weapon_composite319.py": "419e3be1778d666b4577645f49d31bd10375959306cac8e63db77276cd8261bf"
   }
 }

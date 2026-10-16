@@ -1,6 +1,8 @@
 """Service lifecycle through real disposable loopback processes."""
 from pathlib import Path
 import socket
+import json
+import psutil
 import sys
 import tempfile
 import time
@@ -55,6 +57,48 @@ class LifecycleTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, 'broken'):
             services.start(timeout=5)
         self.assertFalse(services.status()['running'])
+
+    def test_udp_readiness_requires_own_bound_socket_and_preserves_foreign_listener(self):
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as reserved:
+            reserved.bind(('127.0.0.1', 0))
+            port = reserved.getsockname()[1]
+        spec = {'name': 'match', 'port': port, 'protocol': 'UDP', 'command': [sys.executable, '-c',
+            "import socket,time; s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM); "
+            f"s.bind(('127.0.0.1',{port})); time.sleep(60)"]}
+        services = Services(self.runtime, [spec])
+        self.addCleanup(services.close)
+        services.start(timeout=2)
+        self.assertEqual(services.status()['ports'], [
+            {'name': 'match', 'protocol': 'UDP', 'port': port, 'listening': True, 'conflict': False}])
+        services.close()
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as foreign:
+            foreign.bind(('127.0.0.1', port))
+            other = Services(self.runtime, [spec])
+            self.addCleanup(other.close)
+            with self.assertRaisesRegex(OSError, str(port)):
+                other.start(timeout=2)
+            self.assertFalse(other.status()['running'])
+            foreign.getsockname()
+
+    def test_forced_stop_reaps_owned_helper_processes(self):
+        spec = self.spec('parent')
+        pidfile = Path(self.tmp.name) / 'child.json'
+        spec['command'] = [sys.executable, '-c',
+            'import subprocess,sys,socket,time,json; from pathlib import Path; '
+            "p=subprocess.Popen([sys.executable,'-c','import time; time.sleep(60)']); "
+            f'Path({str(pidfile)!r}).write_text(json.dumps(p.pid)); '
+            f"s=socket.socket(); s.bind(('127.0.0.1',{spec['port']})); s.listen(); time.sleep(60)"]
+        services = Services(self.runtime, [spec])
+        services.start()
+        child = psutil.Process(json.loads(pidfile.read_text()))
+        try:
+            services.close()
+            self.assertFalse(child.is_running())
+        finally:
+            services.close()
+            if child.is_running():
+                child.kill()
+                child.wait(timeout=5)
 
     def test_only_current_launch_profile_event_proves_lobby_connection(self):
         log = Path(self.tmp.name) / 'lobby.jsonl'

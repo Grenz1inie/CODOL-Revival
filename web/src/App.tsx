@@ -12,7 +12,7 @@ type Installation = {state:string; path:string; version:string|null; reason:stri
 type Version = {game_id:string; version:string; label:string; supported:boolean};
 type Status = {installation: Installation; profiles: Profile[]; game_running: boolean; capabilities: Record<string, {available: boolean; reason: string; max_level?:number; max_prestige?:number}>};
 type Doc = {path: string; size: number};
-type ServerStatus = {running: boolean; pid: number | null; ready: boolean; ports: {name: string; protocol: string; port: number; listening: boolean; conflict: boolean}[]};
+type ServerStatus = {running: boolean; pid: number | null; ready: boolean; ports: {name: string; protocol: string; port: number; listening: boolean; conflict: boolean}[]; match?: {phase:string; error:string; result?:{event:string; paid?:Record<string,number>; error?:string}}};
 async function api<T>(path: string, data?: unknown): Promise<T> {
   const response = await fetch('/api/' + path, data === undefined ? undefined : {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
   const result = await response.json();
@@ -227,10 +227,17 @@ export default function App() {
                 <div className="section-title"><HardDrives size={20}/><h2 id="server-title">{t('模拟服务器')}</h2><span className="section-code mono">{server?.pid ? `PID ${server.pid}` : 'PID —'}</span></div>
                 <div className={'server-state ' + (server?.ready?'ready':'')}><span className="state-dot"/>{t(serverLoading && !server && !serverError ? '读取中' : serverError ? '状态读取失败' : server?.ports.some(p=>p.conflict) ? '端口被占用' : server?.ready ? '运行中' : server?.running ? '部分未监听' : '已停止')}<span className="section-code">{t('自动刷新 · 10 秒间隔')}</span></div>
                 <div className="server-ports">{(server?.ports || [{name:'auth',protocol:'TCP',port:443},{name:'lobby',protocol:'TCP',port:3074},{name:'stun',protocol:'UDP',port:3074},{name:'match',protocol:'UDP',port:28970}]).map(port=><div key={port.name}>
-                  <span>{t(port.name==='auth'?'认证':port.name==='lobby'?'大厅':port.name==='match'?'对局':'STUN')} <small className="mono">{port.protocol} {port.port}</small></span>
+                  <span>{t(port.name==='auth'?'认证':port.name==='lobby'?'大厅':port.name==='match'?'对局':port.name==='web'?'资源':'STUN')} <small className="mono">{port.protocol} {port.port}</small></span>
                   <span className={'port-state ' + ('listening' in port && port.listening ? 'listening':'')}>{t(!server ? '—' : 'conflict' in port && port.conflict ? '端口被占用' : 'listening' in port && port.listening ? '监听中':'未监听')}</span>
                 </div>)}</div>
                 <p className="helper">{t('随游戏自动启停。监听状态仅用于调试，不代表对局可玩。')}</p>
+                {server?.match && <div className="helper">
+                  <p>Seatown · {t('团队竞技')} · <span>{t(({waiting:'等待大厅 Ready', running:'对局服务已启动', finished:'本次对局已结束，重启游戏可再开一局', error:'对局启动或运行失败'} as Record<string,string>)[server.match.phase] || server.match.phase)}</span></p>
+                  <p>{t('PLAY → Join Room → Ready；当前仅 Seatown，无 AI。')}</p>
+                  {server.match.error && <p className="server-error">{server.match.error}</p>}
+                  {server.match.result?.event === 'match_pay' && <p>{server.match.result.paid && Object.keys(server.match.result.paid).length ? `GP +${server.match.result.paid['1'] || 0} · CP +${server.match.result.paid['2'] || 0} · ${t('总经验')} ${server.match.result.paid.xp}` : t('本局不足一分钟，无结算奖励')}</p>}
+                  {server.match.result?.event === 'match_pay_failed' && <p className="server-error">{t('结算失败')}：{server.match.result.error}</p>}
+                </div>}
                 {serverError && <p className="helper server-error">{t(serverError)}</p>}
               </section>
             </aside>

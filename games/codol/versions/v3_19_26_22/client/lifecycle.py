@@ -20,22 +20,24 @@ def alive(process):
         return False
 
 
-def listeners():
-    return {(c.laddr.port, c.pid) for c in psutil.net_connections(kind='tcp')
-            if c.status == psutil.CONN_LISTEN and c.laddr.ip in ('127.0.0.1', '0.0.0.0', '::')}
+def listeners(protocol='TCP'):
+    return {(c.laddr.port, c.pid) for c in psutil.net_connections(kind=protocol.lower())
+            if c.laddr and (protocol == 'UDP' or c.status == psutil.CONN_LISTEN)
+            and c.laddr.ip in ('127.0.0.1', '0.0.0.0', '::')}
 
 
 def service_status(records):
-    bound = listeners()
+    bound = {p: listeners(p) for p in {r.get('protocol', 'TCP') for r in records}}
     ports = []
     running = False
     for record in records:
         owned = alive(record)
         running |= owned
-        listening = owned and (record['port'], record['pid']) in bound
-        ports.append({'name': record['name'], 'protocol': 'TCP', 'port': record['port'],
+        protocol = record.get('protocol', 'TCP')
+        listening = owned and (record['port'], record['pid']) in bound[protocol]
+        ports.append({'name': record['name'], 'protocol': protocol, 'port': record['port'],
                       'listening': listening,
-                      'conflict': any(port == record['port'] and pid != record['pid'] for port, pid in bound)})
+                      'conflict': any(port == record['port'] and pid != record['pid'] for port, pid in bound[protocol])})
     return {'running': running, 'ready': bool(ports) and all(p['listening'] for p in ports), 'ports': ports}
 
 
@@ -48,7 +50,7 @@ class Services:
     def start(self, timeout=10):
         # Check every port before starting anything; never kill another installation.
         for spec in self.specifications:
-            with socket.socket() as sock:
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM if spec.get('protocol') == 'UDP' else socket.SOCK_STREAM) as sock:
                 try:
                     sock.bind(('127.0.0.1', spec['port']))
                 except OSError as error:
@@ -62,7 +64,8 @@ class Services:
                         stdin=subprocess.DEVNULL, stdout=out, stderr=subprocess.STDOUT, close_fds=True,
                         creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0)
                 self.processes.append(process)
-                self.records.append({**identity(process.pid), 'name': spec['name'], 'port': spec['port']})
+                self.records.append({**identity(process.pid), 'name': spec['name'], 'port': spec['port'],
+                                     'protocol': spec.get('protocol', 'TCP')})
             deadline = time.monotonic() + timeout
             while time.monotonic() < deadline:
                 for spec, process in zip(self.specifications, self.processes):
@@ -82,15 +85,25 @@ class Services:
     def close(self):
         for process in reversed(self.processes):
             if process.poll() is None:
+                try:
+                    children = psutil.Process(process.pid).children(recursive=True)
+                except psutil.NoSuchProcess:
+                    children = []
                 process.terminate()
                 try:
                     process.wait(timeout=3)
                 except subprocess.TimeoutExpired:
                     process.kill()
                     process.wait(timeout=3)
+                for child in reversed(children):
+                    try:
+                        child.kill()
+                        child.wait(timeout=3)
+                    except psutil.NoSuchProcess:
+                        pass
 
 
-def lobby_ready(log, since):
+def lobby_event(log, name, since):
     try:
         lines = Path(log).read_text(encoding='utf-8').splitlines()
     except FileNotFoundError:
@@ -100,6 +113,10 @@ def lobby_ready(log, since):
             event = json.loads(line)
         except ValueError:  # The service may be appending its last line.
             continue
-        if event.get('event') == 'secure_profile_read' and event.get('time', 0) >= since:
+        if event.get('event') == name and event.get('time', 0) >= since:
             return True
     return False
+
+
+def lobby_ready(log, since):
+    return lobby_event(log, 'secure_profile_read', since)

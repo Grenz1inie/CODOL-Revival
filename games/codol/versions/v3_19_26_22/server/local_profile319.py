@@ -202,8 +202,7 @@ def wallet():
 
 
 def save_wallet(w):
-    WALLET.parent.mkdir(parents=True, exist_ok=True)
-    WALLET.write_text(json.dumps(w), encoding='utf-8')
+    _atomic_write(WALLET, json.dumps(w).encode('utf-8'))
 
 
 def balance(cid):
@@ -255,27 +254,29 @@ def level_for(xp):
     return max(level for level, low in rank_table() if xp >= low)
 
 
-def add_xp(xp):
-    """Add match XP; the shown level (secure field 'rank') follows the rank table."""
-    settings = profile_settings()
-    total = settings.get('experience', 0) + int(xp)
-    settings['experience'] = total
-    settings['rank'] = level_for(total)
-    PROFILE.write_text(json.dumps(settings), encoding='utf-8')
-    return total, settings['rank']
-
-
 def earn(seconds):
     """Pay for time played in a match (currency and XP). Returns what was added."""
     cfg = economy()
     if seconds < cfg['earn_min_seconds']:
         return {}
+    before = PROFILE.read_bytes() if PROFILE.exists() else None
+    settings = json.loads(before) if before is not None else {}
+    total = settings.get('experience', 0) + int(cfg['xp_per_minute'] * seconds / 60)
+    settings.update(experience=total, rank=level_for(total))
     w = wallet()
     paid = {k: int(v * seconds / 60) for k, v in cfg['earn_per_minute'].items()}
     for k, v in paid.items():
         w[k] = w.get(k, 0) + v
-    save_wallet(w)
-    paid['xp'], paid['level'] = add_xp(cfg['xp_per_minute'] * seconds / 60)
+    _atomic_write(PROFILE, json.dumps(settings).encode('utf-8'))
+    try:
+        save_wallet(w)
+    except OSError:
+        if before is None:
+            PROFILE.unlink()
+        else:
+            _atomic_write(PROFILE, before)
+        raise
+    paid['xp'], paid['level'] = total, settings['rank']
     return paid
 
 

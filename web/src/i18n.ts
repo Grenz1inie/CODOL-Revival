@@ -144,6 +144,16 @@ const english: Record<string, string> = {
   '保存启动选项': 'Save launch settings',
   '玩家名 3–15 位；FOV 60–120；帧率 0–400，0 表示不限。退出游戏后保存，下次启动生效。': 'Name: 3–15 characters; FOV: 60–120; max FPS: 0–400 (0 = unlimited). Exit the game before saving; changes apply on the next launch.',
   '请先退出游戏，再修改启动选项': 'Exit the game before changing launch settings.',
+  '资源': 'Resources',
+  '团队竞技': 'Team deathmatch',
+  '等待大厅 Ready': 'Waiting for Ready in the lobby',
+  '对局服务已启动': 'Match server started',
+  '本次对局已结束，重启游戏可再开一局': 'Match ended. Restart the game to play again.',
+  '对局启动或运行失败': 'Match failed to start or stopped unexpectedly',
+  'PLAY → Join Room → Ready；当前仅 Seatown，无 AI。': 'PLAY → Join Room → Ready. Seatown only; no bots yet.',
+  '总经验': 'Total XP',
+  '本局不足一分钟，无结算奖励': 'No rewards for matches shorter than one minute.',
+  '结算失败': 'Reward settlement failed',
 };
 
 export function translate(text: string, language: Language): string {

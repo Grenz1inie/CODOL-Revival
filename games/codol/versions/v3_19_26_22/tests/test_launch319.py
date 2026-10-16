@@ -2,13 +2,39 @@ import json
 import os
 from pathlib import Path
 import tempfile
+import socket
+import sys
 import unittest
 from unittest.mock import patch
 
 from games.codol.versions.v3_19_26_22.client import launch
+from games.codol.versions.v3_19_26_22.client.lifecycle import Services
 
 
 class LaunchTests(unittest.TestCase):
+    def test_match_status_reports_own_udp_and_preserves_lobby_readiness(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            runtime = Path(tmp)
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+                sock.bind(('127.0.0.1', 0))
+                port = sock.getsockname()[1]
+            services = Services(runtime, [{'name':'match', 'protocol':'UDP', 'port':port,
+                'command':[sys.executable, '-c', 'import socket,time; s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM); '
+                    f"s.bind(('127.0.0.1',{port})); time.sleep(30)"]}])
+            try:
+                services.start()
+                current = launch.identity(os.getpid())
+                launch.save(runtime, {'phase':'lobby', 'supervisor':current, 'game':current, 'services':[],
+                    'match':{'phase':'running', 'error':'', 'service':services.records[0]}})
+                state = launch.status(runtime)
+                self.assertTrue(state['lobby_ready'])
+                self.assertTrue(state['match']['ready'])
+                self.assertEqual(state['ports'][0]['protocol'], 'UDP')
+                services.close()
+                self.assertFalse(launch.status(runtime)['match']['ready'])
+            finally:
+                services.close()
+
     def test_missing_or_stale_session_does_not_claim_game_or_server_ready(self):
         with tempfile.TemporaryDirectory() as tmp:
             runtime = Path(tmp)
