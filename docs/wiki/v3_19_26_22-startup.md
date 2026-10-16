@@ -63,8 +63,8 @@ python -B -m games.codol.versions.v3_19_26_22.client.preparation --launcher 'E:\
 
 已通过真实目录识别、隔离复制、EXE校验和启动接口。修复Windows目录重命名失败后采用完整复制标记，补测中断恢复；修复跨权限状态文件读取后，新会话状态可被普通控制器读取。网页同一启动接口约6.2秒返回成功，真实游戏显示首次硬件优化确认框，三个自有端点就绪；停止接口成功释放端点。
 
-随后实际画面越过硬件提示，到达Welcome新手欢迎页。当前会话记录了 `synthetic_auth_response`、`secure_profile_read` 及三次 `profile_saved`，`lobby_ready=true`：已验证客户端完成本地认证、加密大厅连接和档案读写。后续后台窗口截图为黑色，不能用其确认大厅菜单画面。未验证对局，未由代理操作游戏菜单；用户继续完成新手引导与大厅人工验收。
+随后实际画面越过硬件提示，到达Welcome新手欢迎页。当前会话记录了 `synthetic_auth_response`、`secure_profile_read` 及三次 `profile_saved`，`lobby_ready=true`：已验证客户端完成本地认证、加密大厅连接和档案读写。后续后台窗口截图为黑色，不能用其确认大厅菜单画面。用户于2026-10-16回复“已进入大厅”，完成大厅画面的人工验收。代理未操作游戏菜单，对局仍未验证。
 
 集中Python回归一次：352项、241.6秒，349项通过、1项跳过；两项失败均为此前已记录的3.3.3.3初始快照完整字典断言，本轮未修改这些实现或断言。后续首次提示等待和日志权限调整后，3.19专属15项及管理器API/启动9项全部通过。449个本地文档链接检查通过。原游戏2253个文件的大小和修改时间保持一致，移植的6份原启动包源码哈希保持一致。证据在本机 `work/codol319-startup/evidence/`。
 
-启动器CodeGraph索引覆盖19个源码文件；游戏索引覆盖91个可解析文件，不包含EXE反编译。REA的原生加载器分析见[逆向记录](../../games/codol/versions/v3_19_26_22/reverse/README.md)。
+启动器初次CodeGraph索引覆盖19个源码文件；用户随后提供的 `recovered-source/launcher-exe/Launcher.cs` 也已能通过该索引查询。游戏索引覆盖91个可解析文件，不包含EXE反编译。恢复源码对应WinForms图形启动器，原生加载器与DLL仍使用提供包的二进制。源码入口、REA身份核验和原生加载器分析见[逆向记录](../../games/codol/versions/v3_19_26_22/reverse/README.md)。
