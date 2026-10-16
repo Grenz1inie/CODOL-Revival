@@ -8,6 +8,7 @@ from lsg_codec import decode,encode,empty_task_reply,empty_task_reply_total
 if "--reply-total" in sys.argv: empty_task_reply=empty_task_reply_total
 import local_profile319
 from playlist319 import nuketown_rules
+from room319 import Room, native_manifest
 def emit(event,**values):
     with (root/'lsg-handshake.jsonl').open('a',encoding='utf-8') as out:out.write(json.dumps(dict(event=event,time=time.time(),**values))+'\n')
 def exact(c,n):
@@ -54,6 +55,8 @@ while time.monotonic()<deadline:
             c.sendall(assigned);emit('assigned_connection_id',connection_id=1,bytes=len(assigned))
             server_sequence+=1
             request_number=0
+            room = Room(local_profile319.UID, lambda roster=None:
+                native_manifest(local_profile319.UID, local_profile319.player_name(), roster))
             # --wake: send an empty keepalive frame every 0.5 s so the client's network loop wakes
             # (experiment for the fixed 18 s gaps between its login request bursts).
             send_lock=threading.Lock();alive=[True]
@@ -80,10 +83,15 @@ while time.monotonic()<deadline:
                     # experiment for the fixed 18 s waits between login bursts.
                     txn=0 if '--txn-zero' in sys.argv else request_number
                     emit('service_request',service=service,task=task)
+                    previous_room = (room.phase, room.observed_count)
+                    room_reply, room_pushes = room.handle(body, txn)
+                    if (room.phase, room.observed_count) != previous_room:
+                        emit('room_state',phase=room.phase,channel=room.channel,observed_count=room.observed_count,
+                             players=[{key: p[key] for key in ('uid','name','team','slot')} for p in room.players])
                     # Room "Ready": the room member update (11:4) the client sends when Ready is pressed
                     # carries member flags 80 08 (seen on every Ready press). autoarm319.sh (room mode)
                     # starts the match on this event.
-                    if (service,task)==(11,4) and bytes.fromhex('020200000008000000800800') in body:
+                    if room.phase == 'idle' and (service,task)==(11,4) and bytes.fromhex('020200000008000000800800') in body:
                         emit('room_ready')
                     # --ayria-parity: like the Ayria AlwaysOffline emulator, answer the room/matchmaking
                     # (11, 21, 28), stats (4), presence (68), chat (102) and 139 services with an empty
@@ -159,10 +167,16 @@ while time.monotonic()<deadline:
                                 error=0
                                 response=(b'\x0a'+struct.pack("<Q",txn)+b'\x08'+struct.pack('<I',0)+b'\x03'+bytes([task])+b'\x08'+struct.pack('<I',1)+b'\x08'+struct.pack('<I',1)+b'\x13\x08'+struct.pack('<I',len(data))+data)
                                 emit('publisher_file_reply',filename=filename,content_bytes=len(data),source='native 3.19 embedded playlist' if filename.startswith('mp_playlists') else 'diagnostic local config with native defaults')
+                        if room_reply is not None:
+                            response = room_reply
                         reply=encode(1,response,keys,server_sequence)
                         server_sequence+=1
                         with send_lock:c.sendall(reply)
                         emit('local_task_reply',service=service,task=task,error=error,bytes=len(reply))
+                        for push in room_pushes:
+                            reply = encode(2, push, keys, server_sequence)
+                            server_sequence += 1
+                            with send_lock:c.sendall(reply)
                     else:
                         reply=encode(1,empty_task_reply(task,txn,2),keys,server_sequence)
                         server_sequence+=1

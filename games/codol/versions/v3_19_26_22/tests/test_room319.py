@@ -1,0 +1,116 @@
+import struct
+import unittest
+from pathlib import Path
+
+from games.codol.versions.v3_19_26_22.server import room319
+
+
+# Decrypted client packet 65 of room-baseline.pcapng; query 3, content 797, playlist 110.
+SEARCH = bytes.fromhex('15030508030000000800000000083200000007abad92d6070000000007ff000000'
+                       '07010000000700000000071d030000076e000000070100000007000000006b0804'
+                       '000000010000000000000000')
+FIXTURES = Path(__file__).resolve().parents[1] / 'server/native/match-server/tests/fixtures'
+
+
+def channel_message(channel, payload):
+    wrapped = struct.pack('<I', len(payload)) + payload
+    return (b'\x0b\x03\x04\x0a' + struct.pack('<Q', channel) + b'\x13\x08'
+            + struct.pack('<I', len(wrapped)) + wrapped + b'\x08\x01\0\0\0')
+
+
+class Room319Tests(unittest.TestCase):
+    def setUp(self):
+        self.calls = []
+        def manifest(roster=None):
+            self.calls.append(roster)
+            return {'players': [{'uid': 1000001, 'name': 'Player', 'team': 1, 'slot': 0}]
+                    + [{'uid': 0x600000000 + slot, 'name': f'Bot{slot:02}', 'team': 1 if slot < 9 else 2,
+                        'slot': slot, 'join': list((FIXTURES / 'join-native.bin').read_bytes())}
+                       for slot in range(1, 18)]}
+        self.room = room319.Room(1000001, manifest)
+
+    def enter(self):
+        self.room.handle(SEARCH, 1)
+        response, pushes = self.room.handle(b'\x0b\x03\x0d', 2)
+        self.assertFalse(pushes)  # The client has not run the create-channel callback yet.
+        self.assertEqual(response[16:26], b'\x08\x01\0\0\0' * 2)
+        return self.room.channel
+
+    def test_members_are_announced_before_requesting_the_real_host_roster(self):
+        channel = self.enter()
+        response, pushes = self.room.handle(channel_message(channel, b'\x2e\x06\0\0\0\0\0\0\0\0'), 3)
+        self.assertIsNone(response)
+        self.assertEqual([struct.unpack_from('<I', p, 1)[0] for p in pushes], [9] * 17 + [7])
+        self.assertEqual(self.calls, [None])
+        self.assertEqual(self.room.handle(channel_message(channel, b'\x22\0'), 4)[1], [])
+
+    def test_bot_joins_wait_for_host_state_and_are_not_repeated(self):
+        channel = self.enter()
+        self.room.handle(channel_message(channel, b'\x2e\x06'), 3)
+        roster = (FIXTURES / 'roster-native.bin').read_bytes()
+        _, pushes = self.room.handle(channel_message(channel, roster), 4)
+        self.assertEqual(len(pushes), 18)  # 17 native joins, then query the resulting roster.
+        self.assertEqual(self.calls, [None, roster])
+        self.assertEqual(self.room.handle(channel_message(channel, roster), 5)[1], [])
+        self.assertEqual(self.room.observed_count, 18)
+
+    def test_other_playlist_wrong_channel_and_truncated_messages_do_not_inject_bots(self):
+        self.assertEqual(self.room.handle(b'\x0b\x03\x0d', 1), (None, []))
+        channel = self.enter()
+        self.assertEqual(self.room.handle(channel_message(channel + 1, b'\x1c\0'), 3)[1], [])
+        for invalid in (b'\x0b\x03\x04', channel_message(channel, b'\x02')[:-5]):
+            self.assertEqual(self.room.handle(invalid, 4)[1], [])
+        other = bytearray(SEARCH)
+        struct.pack_into('<I', other, 49, 190)
+        self.room.handle(bytes(other), 5)
+        self.assertEqual(self.room.handle(b'\x0b\x03\x0d', 6), (None, []))
+
+
+class NativeRoomPush319Tests(unittest.TestCase):
+    def test_native_channel_decoders_receive_owner_name_and_room_payload(self):
+        try:
+            from client_inventory319 import InventoryReader319
+            from unicorn import UC_HOOK_CODE
+            from unicorn.x86_const import UC_X86_REG_ESP, UC_X86_REG_EIP
+            machine = InventoryReader319()
+        except (ImportError, FileNotFoundError) as error:
+            self.skipTest('Captured 3.19 native code unavailable: ' + str(error))
+        machine.cpu.mem_map(0x1539f000, 0x1000)
+        machine.cpu.mem_map(0x153a1000, 0x1000)
+        machine.write32(0x1539fe2c, 0xf00000)
+        machine.write32(0x153a13d4, 0xf00010)
+        machine.write32(machine.object + 0x4f0, 0x20008000)
+        machine.write32(0x20008000, 0x20009000)
+        machine.write32(0x20009010, 0xf00200)
+        machine.write32(0x20009018, 0xf00210)
+        callbacks = []
+        def callback(cpu, address, size, data):
+            sp = cpu.reg_read(UC_X86_REG_ESP)
+            arg = lambda n: machine.u32(sp + n * 4)
+            if address == 0xf00200:
+                channel, member = arg(1), arg(2)
+                callbacks.append((machine.u32(channel + 8), machine.u32(channel + 0x18),
+                                  bytes(cpu.mem_read(member + 8, 8)),
+                                  bytes(cpu.mem_read(member + 0x10, 64)).split(b'\0')[0], arg(3)))
+                pop = 12
+            else:
+                callbacks.append((arg(1), arg(3), arg(4),
+                                  bytes(cpu.mem_read(arg(5), 64)).split(b'\0')[0], arg(6),
+                                  bytes(cpu.mem_read(arg(7), arg(8)))))
+                pop = 32
+            cpu.reg_write(UC_X86_REG_ESP, sp + 4 + pop)
+            cpu.reg_write(UC_X86_REG_EIP, machine.u32(sp))
+        for address in (0xf00200, 0xf00210):
+            machine.cpu.hook_add(UC_HOOK_CODE, callback, begin=address, end=address)
+        bot = {'uid': 0x600000001, 'name': 'Bot01'}
+        payload = (FIXTURES / 'join-native.bin').read_bytes()
+        pushes = [(room319.member_event(9, 91, 1000001, bot, 2), 0xb7b4b0, (9,)),
+                  (room319.message_event(91, bot, payload), 0xb7b300, ())]
+        for push, address, args in pushes:
+            data = push[5:]  # The parent dispatch already read the typed event ID.
+            machine.cpu.mem_write(machine.data, data)
+            machine.cpu.mem_write(machine.buffer, struct.pack('<6I', 0xdb7154, 100, len(data),
+                machine.data, machine.data, machine.data + len(data)) + b'\1\0\0\0')
+            machine.call(address, machine.object, machine.buffer, *args)
+        self.assertEqual(callbacks[0], (91, 1000001, struct.pack('<Q', bot['uid']), b'Bot01', 1))
+        self.assertEqual(callbacks[1], (91, 1, 6, b'Bot01', 1, struct.pack('<I', len(payload)) + payload))

@@ -10,9 +10,10 @@
 - Rust名单编码：3项新增测试先失败后通过，含当前客户端原生写入/读取函数的Unicorn重放；18人1232字节，保留真人准备状态及未解释字段。尚未发布给运行中的客户端。
 - Rust入房消息：2项新增测试先失败后通过，17条消息分别通过原生写入/读取重放；真人房主负责接纳成员。仍待大厅推送与实际UI验收。
 - 人数规则：已修正赛单110的发布名称并通过3项定向测试，含原生规则消费者；尚未由重启后的客户端读取。
-- 等待厅网络接入：尚未完成。不能将Rust名单生成等同于客户端已经显示人机。
+- 等待厅网络接入：源码已接入Rust子进程与大厅推送；隔离TCP测试通过，覆盖原生产握手、连续序号、17名频道成员、查询真人状态后再发送17条入房请求、重复名单不再注入。服务尚未重载，实际接纳与UI待验收。
 - Nuketown资源挂载、Rust UDP、AI互射、队伍计分与实机可玩：尚未验证。
 - 用户本次观察：只有一个人时进入房间即自动倒计时；不要求用户停留在一个无法保持的“Ready前”状态。
+- 用户回忆自己未准备也会倒计时，猜测可能是半数人数门槛；此为待验证假设，没有将门槛写为9或要求18人全部准备。
 
 ## 名单消息与频道成员
 
@@ -80,6 +81,29 @@ REA新分析产物位于`work/codol319-nuketown/`：
 规则名称；保持原GB18030字节、9V9说明、地图/玩法、分数和时间规则以及其他赛单。
 人机默认准备属于本地实现选择；不改写真人准备状态，也不以该选择声称恢复原服规则。
 
+## 本地房主接纳链路
+
+`Room`仅对真实抓包中21/5查询的内容版本797、赛单110启用。11/13返回
+频道资料，等待客户端首次11/4发送后，才发布17个频道成员事件9，避免
+创建频道的异步回调尚未执行。随后以第一名人机身份发送原生消息13，
+取得房主的消息14；Rust从中提取真人实际队伍和兼容字段，生成17条消息6。
+本地房主仍通过原生接纳函数决定是否加入。最后再次查询名单，日志记录
+客户端回报人数；该人数不是AI已出生或可玩的证明。
+
+| 地址 / 结论 | 来源、覆盖 | 未验证项 |
+| --- | --- | --- |
+| `0x62af10`初始化真人队伍：部分玩法固定2，其他分支可随机1/2 | 新REA `room-policy-rea.evidence.json`，绑定本页EXE与切片哈希；Rust新增测试分别覆盖真人队伍1/2并保持9/9 | 实际新房间的最终队伍、进入地图后的队伍映射 |
+| `0x634870`消息13分支由房主向请求者返回14；消息6随后走`0x634340 -> 0x62a100` | 复用已保存REA `room-results-rea.evidence.json`；频道登记与房间入队分开 | 完整实机接纳及等待厅显示 |
+| `0xb7b4b0`与`0xb7b300`读取服务端事件9/7 | 新Unicorn重放原函数；核对频道ID、房主、成员UID/名字及原始房间消息；仅上层回调被替代以观察结果 | 回调之后的实际房间状态及UI |
+| `0x629e40 -> 0x629cd0 -> 0x7f4630`多人房间广告/会话创建 | 新REA `ev_6085ff04cd53d5e8e54ee8c9a6dbdc174db78933d8b05daa44b59d38bc06f6bb`；最大人数从0改为18后会涉及该路径；`0xb9ae30`发送21/1 | 会话结果和后续对局接入仍需真实客户端核对 |
+
+当前名字`Bot01`至`Bot17`为联调占位，不代表原版名单。用户提供线索：
+他人的恢复成果中出现停服前名字和配装。REA新字符串证据
+`ev_1e61f41bbcfa24774d6cb0734dfba831bb47be710bf28427b5bf3d73589de144`
+在本版本`0xde70fc`发现`mp/botClassTable.csv`，`0xdc2104`发现`botsAddAll`。
+当前房间分析切片不含这些字符串的调用代码，空xref不代表原程序未使用；
+正在扩展切片追查实际消费者，尚未确认表内容或原版人机名字。
+
 新分析切片`room-policy319.exe` SHA-256：
 `371771424451aa18aeddeaa2a4211926716df215543dac0ad471c2ab84ede307`；
 扩展的地址范围见`room-policy-image.json`。此前`room-results319.exe` SHA-256：
@@ -102,6 +126,10 @@ SHA-256：`39090eebdd785bf0511168a24230f1845f00c1f2a69bc878a01d34d38880290c`。
 
 ```powershell
 powershell -NoProfile -File scripts/Invoke-MatchCargo.ps1 test --offline --manifest-path "$PWD/games/codol/versions/v3_19_26_22/server/native/match-server/Cargo.toml" --target-dir "$PWD/runtime/builds/codol/v3_19_26_22/rust-match" --test room
+powershell -NoProfile -File scripts/Invoke-MatchCargo.ps1 build --release --offline --manifest-path "$PWD/games/codol/versions/v3_19_26_22/server/native/match-server/Cargo.toml" --target-dir "$PWD/runtime/builds/codol/v3_19_26_22/rust-match"
+python -B -m unittest discover -s games/codol/versions/v3_19_26_22/tests -p 'test_room*.py' -v
 ```
 
-当前测试只证明Rust规则与成员状态，不证明网络接入或游戏画面。
+Rust新增host_roster、room_cli各2项测试均先失败后通过；Python房间状态/原生
+事件解析4项与生产TCP联调1项通过。大厅改动后库存7项回归通过，包括真实
+TCP登录任务和原生读取；没有重跑全项目套件。此阶段不证明实际游戏画面。

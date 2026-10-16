@@ -73,6 +73,18 @@ impl NuketownRoom {
         &self.players
     }
 
+    pub fn from_host_roster(uid: u64, name: &str, payload: &[u8]) -> Result<(Self, [u8; 0x1d0]), &'static str> {
+        let state = room_wire::host(uid, payload)?;
+        if !matches!(state[0x88], 1 | 2) { return Err("host has no playing team"); }
+        let mut room = Self::new(uid, name)?;
+        if state[0x88] == 2 {
+            for player in &mut room.players {
+                player.team = if player.team == Team::One { Team::Two } else { Team::One };
+            }
+        }
+        Ok((room, state))
+    }
+
     pub fn rules(&self) -> &Rules {
         &NUKETOWN
     }

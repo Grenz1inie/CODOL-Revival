@@ -78,3 +78,35 @@ pub(super) fn join(player: &Player, human_state: &[u8; 0x1d0]) -> Vec<u8> {
     drop(write);
     output
 }
+
+pub(super) fn host(uid: u64, payload: &[u8]) -> Result<[u8; 0x1d0], &'static str> {
+    if payload.len() < 6 { return Err("truncated roster"); }
+    let mut position = 0;
+    let mut read = |width: usize| {
+        let mut value = 0u64;
+        for bit in 0..width {
+            value |= (((payload[position / 8] >> (position % 8)) & 1) as u64) << bit;
+            position += 1;
+        }
+        value
+    };
+    if read(1) != 0 || read(8) != 14 { return Err("unsupported roster message"); }
+    let count = read(32) as usize;
+    if !(1..=18).contains(&count) || payload.len() * 8 < 41 + count * 545 {
+        return Err("invalid roster count or length");
+    }
+    let mut host = None;
+    for _ in 0..count {
+        let mut row = [0; 0x1d0];
+        for &(offset, width) in FIELDS {
+            let bytes = read(width).to_le_bytes();
+            let size = width.div_ceil(8);
+            row[offset..offset + size].copy_from_slice(&bytes[..size]);
+        }
+        if u64::from_le_bytes(row[..8].try_into().unwrap()) == uid {
+            if host.is_some() { return Err("duplicate host"); }
+            host = Some(row);
+        }
+    }
+    host.ok_or("host missing from roster")
+}
