@@ -9,6 +9,7 @@ node_modules/
 web/dist/
 native/**/target/
 runtime/
+/config/
 archive/
 research/evidence/
 research/reference-protocol/s1-mod/

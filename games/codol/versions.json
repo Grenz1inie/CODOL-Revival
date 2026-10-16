@@ -1,0 +1,24 @@
+[
+  {
+    "game_id": "codol",
+    "version": "3.3.3.3",
+    "label": "体验服 3.3.3.3",
+    "adapter": "games.codol.versions.v3_3_3_3.adapter",
+    "executable": "codoMP_client_shipRetail.exe",
+    "sha256": "e3823fd6afc80fb25fa84747e6e9634707b9a0b189357a5466921cda354af37b"
+  },
+  {
+    "game_id": "codol",
+    "version": "2.6.9.7",
+    "label": "2.6.9.7",
+    "adapter": null,
+    "executable": "codoMP_client_shipRetail.exe"
+  },
+  {
+    "game_id": "codol",
+    "version": "3.19.26.22",
+    "label": "3.19.26.22",
+    "adapter": null,
+    "executable": "codoMP_client_shipRetail.exe"
+  }
+]
