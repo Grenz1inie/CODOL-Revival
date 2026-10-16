@@ -12,7 +12,7 @@ import os
 import re
 import struct
 from pathlib import Path
-from console_store import SCHEMA, unlock_flags
+from console_store import SCHEMA, unlock_flags, client_item_ids
 
 ROOT = Path(os.environ['CODOL319_SERVER_ROOT'])
 PROFILE = ROOT / 'profile319.json'
@@ -323,11 +323,16 @@ def record_purchase(body):
 OWNED = ROOT / 'local-profiles319' / 'owned_items.json'
 
 
-def owned_items():
+def _stored_items():
     try:
         return json.loads(OWNED.read_text(encoding='utf-8'))
     except (OSError, ValueError):
         return []
+
+
+def owned_items():
+    # Compatibility projection only: login must not rewrite the player's save.
+    return client_item_ids(ROOT, _stored_items())
 
 
 def purchase_item_id(body):
@@ -363,7 +368,7 @@ def owned_skus():
         return json.loads(OWNED_SKUS.read_text(encoding='utf-8'))
     except (OSError, ValueError):
         # First run: owned_items.json used to hold the purchased SKU ids themselves.
-        return owned_items() if OWNED.exists() else []
+        return _stored_items()
 
 
 def add_purchase(sku, *, charged_wallet=None):
@@ -446,9 +451,10 @@ def inventory_reply(task, transaction, keyed=False):
 def all_registry_items():
     """Every item id in the client's item registry (item-registry319.json)."""
     try:
-        return [i for i, _ in json.loads((ROOT / 'item-registry319.json').read_text(encoding='utf-8'))['items']]
+        items = [i for i, _ in json.loads((ROOT / 'item-registry319.json').read_text(encoding='utf-8'))['items']]
     except (OSError, ValueError, KeyError):
         return []
+    return client_item_ids(ROOT, items)
 
 
 def inventory_reply_all(task, transaction, keyed=True, limit=20000):
@@ -469,11 +475,11 @@ def appearance_items():
         items = json.loads((ROOT / 'item-registry319.json').read_text(encoding='utf-8'))['items']
     except (OSError, ValueError, KeyError):
         return []
-    return [i for i, n in items if n.split('_')[0] in APPEARANCE_PREFIXES]
+    return client_item_ids(ROOT, [i for i, n in items if n.split('_')[0] in APPEARANCE_PREFIXES])
 
 
 def inventory_reply_ids(task, transaction, ids, keyed=True):
-    ids = list(dict.fromkeys(ids))[:20000]
+    ids = client_item_ids(ROOT, ids)[:20000]
     results = [inventory_item(i, keyed) for i in ids]
     head = b'\x0a' + struct.pack('<Q', transaction) + b'\x08' + struct.pack('<I', 0) + b'\x03' + bytes([task])
     return head + b'\x08' + struct.pack('<I', len(results)) + b'\x08' + struct.pack('<I', len(results)) + b''.join(results), len(ids)

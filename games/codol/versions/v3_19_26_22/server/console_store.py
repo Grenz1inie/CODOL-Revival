@@ -19,6 +19,39 @@ def integer(value, low, high, label):
     return value
 
 
+def item_id_aliases(root):
+    """Resolve old registry scan IDs to the shop ID for that same native slot."""
+    root = Path(root)
+    try:
+        registry = (root / 'item-ids319.txt').read_text(encoding='utf-8').splitlines()
+        products = (root / 'sku-items319.txt').read_text(encoding='utf-8').splitlines()
+    except FileNotFoundError:
+        return {}
+    slots = {}
+    for line in registry:
+        fields = line.split()
+        if len(fields) == 3 and fields[0].isdigit():
+            slots[int(fields[0])] = int(fields[1])
+    shop_ids = {}
+    for line in products:
+        fields = line.split()
+        if not fields or not fields[0].isdigit():
+            continue
+        for item in map(int, fields[2:]):
+            if item not in slots:
+                continue
+            slot = slots[item]
+            if slot in shop_ids and shop_ids[slot] != item:
+                raise ValueError('同一物品索引对应多个商城物品 ID')
+            shop_ids[slot] = item
+    return {item: shop_ids[slot] for item, slot in slots.items() if slot in shop_ids}
+
+
+def client_item_ids(root, items):
+    aliases = item_id_aliases(root)
+    return list(dict.fromkeys(aliases.get(item, item) for item in items))
+
+
 def unlock_flags(settings):
     if not isinstance(settings, dict):
         raise ValueError('玩家档案格式错误')
@@ -117,18 +150,20 @@ class ConsoleStore:
         rows = source.get('items') if isinstance(source, dict) else None
         if not isinstance(rows, list) or not rows:
             raise ValueError('当前版本物品目录缺失或为空')
+        aliases = item_id_aliases(self.root)
         result = {}
         for row in rows:
             if not isinstance(row, list) or len(row) != 2 or not isinstance(row[1], str):
                 raise ValueError('物品目录格式错误')
-            result[integer(row[0], 1, 0xffffffff, '物品 ID')] = row[1]
+            item = integer(row[0], 1, 0xffffffff, '物品 ID')
+            result[aliases.get(item, item)] = row[1]
         return result
 
     def owned(self):
         items = read_json(self.data / 'owned_items.json', [])
         if not isinstance(items, list):
             raise ValueError('库存档案格式错误')
-        return list(dict.fromkeys(integer(i, 1, 0xffffffff, '物品 ID') for i in items))
+        return client_item_ids(self.root, [integer(i, 1, 0xffffffff, '物品 ID') for i in items])
 
     def inventory(self):
         catalog = self.catalog()
@@ -142,12 +177,13 @@ class ConsoleStore:
         # Freeze the legacy SKU fallback before appending item IDs; later purchases
         # must not treat newly granted item IDs as already purchased SKUs.
         skus = self.data / 'owned_skus.json'
-        existing_skus = read_json(skus, current)
+        # The legacy fallback contains SKU IDs; never apply the item-ID mapping.
+        existing_skus = read_json(skus, read_json(self.data / 'owned_items.json', []))
         if not isinstance(existing_skus, list):
             raise ValueError('购买记录格式错误')
         for sku in existing_skus:
             integer(sku, 1, 0xffffffff, 'SKU ID')
         if not skus.exists():
-            self.save(skus, current)
+            self.save(skus, existing_skus)
         self.save(self.data / 'owned_items.json', items)
         return {'items': len(items), 'added': len(items) - len(current)}
