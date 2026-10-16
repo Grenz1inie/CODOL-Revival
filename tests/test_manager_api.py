@@ -90,18 +90,19 @@ class ManagerApiTests(unittest.TestCase):
             self.assertEqual(error.exception.code, 409)
             run.assert_not_called()
 
-    def test_final_version_routes_startup_without_enabling_unverified_profile_tools(self):
+    def test_final_version_routes_startup_and_requires_an_existing_profile_for_edits(self):
         self.manager.catalog[0].update(version='3.19.26.22', adapter='games.codol.versions.v3_19_26_22.adapter')
         (self.game / 'IIPS/IIPSVersion.ini').write_text('3.19.26.22')
         selected = self.call('installation/select', {'path': str(self.game)})['installation']
         status = self.call('status')
         self.assertEqual(status['profiles'], [])
         self.assertTrue(status['capabilities']['launch']['available'])
-        self.assertFalse(status['capabilities']['progression']['available'])
+        self.assertTrue(status['capabilities']['progression']['available'])
+        self.assertEqual(status['capabilities']['progression']['max_prestige'], 4)
         self.assertFalse(status['capabilities']['skip_tutorial']['available'])
         with self.assertRaises(HTTPError) as error:
             self.call('profile/currency', {'user_id': '00000000000f4241', 'amount': 10})
-        self.assertEqual(error.exception.code, 409)
+        self.assertEqual(error.exception.code, 400)
         def launch(command, **options):
             self.assertIn('v3_19_26_22', ' '.join(command))
             self.assertEqual(options['env']['CODOL_RUNTIME'], str(self.manager.runtime(selected)))
@@ -110,6 +111,31 @@ class ManagerApiTests(unittest.TestCase):
             return subprocess.CompletedProcess(command, 0, b'', b'')
         with patch('controller.subprocess.run', side_effect=launch):
             self.call('game/launch', {})
+
+    def test_final_console_actions_use_selected_profile_and_running_game_blocks_every_write(self):
+        self.manager.catalog[0].update(version='3.19.26.22', adapter='games.codol.versions.v3_19_26_22.adapter')
+        (self.game / 'IIPS/IIPSVersion.ini').write_text('3.19.26.22')
+        selection = self.call('installation/select', {'path': str(self.game)})['installation']
+        runtime = self.manager.runtime(selection)
+        directory = runtime / 'server'
+        directory.mkdir(parents=True, exist_ok=True)
+        (directory / 'profile319.json').write_text('{"name":"Tester","rank":1}')
+        (directory / 'item-registry319.json').write_text('{"items":[[11,"item"]]}')
+        uid = '00000000000f4241'
+        actions = [('currency', {'amount':100}), ('premium', {'amount':50}),
+                   ('progression', {'level':70,'prestige':4}), ('story', {}), ('unlock', {})]
+        for action, values in actions:
+            self.call('profile/' + action, {'user_id':uid, **values})
+        summary = self.call('status')['profiles'][0]
+        self.assertEqual((summary['currency'],summary['premium'],summary['level'],summary['prestige']), (2100,50,70,4))
+        self.assertEqual(len(self.call('inventory?user_id=' + uid)['items']), 1)
+        before = {p: p.read_bytes() for p in directory.rglob('*') if p.is_file()}
+        self.running = True
+        for action, values in actions:
+            with self.subTest(action=action), self.assertRaises(HTTPError) as error:
+                self.call('profile/' + action, {'user_id':uid, **values})
+            self.assertEqual(error.exception.code, 409)
+        self.assertEqual(before, {p:p.read_bytes() for p in directory.rglob('*') if p.is_file()})
 
     def test_selection_api_rejects_foreign_origin_and_extra_fields(self):
         for body, headers, code in [({'path': str(self.game)}, {'Origin': 'https://example.com'}, 403),

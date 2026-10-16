@@ -1,0 +1,295 @@
+{
+  "size": 15124,
+  "index_count": 10007,
+  "struct_count": 9,
+  "fields": [
+    {
+      "name": "accuracy",
+      "type": 0,
+      "index": 0,
+      "offset": 8,
+      "size": 0,
+      "depth": 0
+    },
+    {
+      "name": "assists",
+      "type": 0,
+      "index": 461,
+      "offset": 672,
+      "size": 0,
+      "depth": 0
+    },
+    {
+      "name": "bombDefuses",
+      "type": 0,
+      "index": 463,
+      "offset": 676,
+      "size": 0,
+      "depth": 0
+    },
+    {
+      "name": "bombPlants",
+      "type": 0,
+      "index": 464,
+      "offset": 680,
+      "size": 0,
+      "depth": 0
+    },
+    {
+      "name": "confirmed",
+      "type": 0,
+      "index": 2512,
+      "offset": 4816,
+      "size": 0,
+      "depth": 0
+    },
+    {
+      "name": "currentWinStreak",
+      "type": 0,
+      "index": 2513,
+      "offset": 4820,
+      "size": 0,
+      "depth": 0
+    },
+    {
+      "name": "deaths",
+      "type": 0,
+      "index": 2514,
+      "offset": 4824,
+      "size": 0,
+      "depth": 0
+    },
+    {
+      "name": "denied",
+      "type": 0,
+      "index": 2516,
+      "offset": 4828,
+      "size": 0,
+      "depth": 0
+    },
+    {
+      "name": "elo",
+      "type": 0,
+      "index": 2610,
+      "offset": 4832,
+      "size": 0,
+      "depth": 0
+    },
+    {
+      "name": "escapes",
+      "type": 0,
+      "index": 2611,
+      "offset": 4836,
+      "size": 0,
+      "depth": 0
+    },
+    {
+      "name": "experience",
+      "type": 0,
+      "index": 2612,
+      "offset": 4840,
+      "size": 0,
+      "depth": 0
+    },
+    {
+      "name": "headshots",
+      "type": 0,
+      "index": 2618,
+      "offset": 4844,
+      "size": 0,
+      "depth": 0
+    },
+    {
+      "name": "hits",
+      "type": 0,
+      "index": 2619,
+      "offset": 4848,
+      "size": 0,
+      "depth": 0
+    },
+    {
+      "name": "kdRatio",
+      "type": 0,
+      "index": 2620,
+      "offset": 4852,
+      "size": 0,
+      "depth": 0
+    },
+    {
+      "name": "killStreak",
+      "type": 0,
+      "index": 2631,
+      "offset": 4856,
+      "size": 0,
+      "depth": 0
+    },
+    {
+      "name": "kills",
+      "type": 8,
+      "index": 2632,
+      "offset": 4860,
+      "size": 0,
+      "depth": 0
+    },
+    {
+      "name": "losses",
+      "type": 0,
+      "index": 2641,
+      "offset": 4864,
+      "size": 0,
+      "depth": 0
+    },
+    {
+      "name": "objectives",
+      "type": 0,
+      "index": 2644,
+      "offset": 4868,
+      "size": 0,
+      "depth": 0
+    },
+    {
+      "name": "prestige",
+      "type": 0,
+      "index": 2699,
+      "offset": 4879,
+      "size": 0,
+      "depth": 0
+    },
+    {
+      "name": "rank",
+      "type": 0,
+      "index": 2700,
+      "offset": 4883,
+      "size": 0,
+      "depth": 0
+    },
+    {
+      "name": "rankVersion",
+      "type": 0,
+      "index": 2701,
+      "offset": 4887,
+      "size": 0,
+      "depth": 0
+    },
+    {
+      "name": "score",
+      "type": 0,
+      "index": 3513,
+      "offset": 4891,
+      "size": 0,
+      "depth": 0
+    },
+    {
+      "name": "scorePerMinute",
+      "type": 0,
+      "index": 3514,
+      "offset": 4895,
+      "size": 0,
+      "depth": 0
+    },
+    {
+      "name": "skill",
+      "type": 0,
+      "index": 3517,
+      "offset": 4899,
+      "size": 0,
+      "depth": 0
+    },
+    {
+      "name": "suicides",
+      "type": 0,
+      "index": 3522,
+      "offset": 4903,
+      "size": 0,
+      "depth": 0
+    },
+    {
+      "name": "survivalTopScoreEasy",
+      "type": 0,
+      "index": 3527,
+      "offset": 4907,
+      "size": 0,
+      "depth": 0
+    },
+    {
+      "name": "survivalTopScoreHard",
+      "type": 0,
+      "index": 3528,
+      "offset": 4911,
+      "size": 0,
+      "depth": 0
+    },
+    {
+      "name": "survivalTopScoreMedium",
+      "type": 0,
+      "index": 3529,
+      "offset": 4915,
+      "size": 0,
+      "depth": 0
+    },
+    {
+      "name": "ties",
+      "type": 0,
+      "index": 3530,
+      "offset": 4919,
+      "size": 0,
+      "depth": 0
+    },
+    {
+      "name": "timePlayed",
+      "type": 0,
+      "index": 3532,
+      "offset": 4923,
+      "size": 0,
+      "depth": 0
+    },
+    {
+      "name": "timePlayedOverAll",
+      "type": 0,
+      "index": 3533,
+      "offset": 4927,
+      "size": 0,
+      "depth": 0
+    },
+    {
+      "name": "timePlayedTotal",
+      "type": 0,
+      "index": 3534,
+      "offset": 4931,
+      "size": 0,
+      "depth": 0
+    },
+    {
+      "name": "totalShots",
+      "type": 0,
+      "index": 3660,
+      "offset": 4935,
+      "size": 0,
+      "depth": 0
+    },
+    {
+      "name": "winRatio",
+      "type": 0,
+      "index": 10003,
+      "offset": 4947,
+      "size": 0,
+      "depth": 0
+    },
+    {
+      "name": "winStreak",
+      "type": 0,
+      "index": 10004,
+      "offset": 4951,
+      "size": 0,
+      "depth": 0
+    },
+    {
+      "name": "wins",
+      "type": 8,
+      "index": 10005,
+      "offset": 4955,
+      "size": 0,
+      "depth": 0
+    }
+  ]
+}

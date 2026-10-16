@@ -12,6 +12,7 @@ import os
 import re
 import struct
 from pathlib import Path
+from console_store import SCHEMA, unlock_flags
 
 ROOT = Path(os.environ['CODOL319_SERVER_ROOT'])
 PROFILE = ROOT / 'profile319.json'
@@ -77,8 +78,8 @@ def public_info_reply(task, transaction, uids, with_entity=True):
 # then one tagged value per server-replicated field (flag 0x20) in definition order
 # (secure_fields319.json, walk 0076C920): field type 0/1/9 -> Int32 (tag 7), 8 -> Float32 (tag 13).
 SECURE_SIZE = 0x8000                 # CRC32 + 0x7FFC data bytes, like the public blob
-LEVEL70_XP = 2434700                 # 1.1.1.13 mp/rankTable.csv: rank 69 (level 70) minimum
-LEVEL70_RANK = 69
+LEVEL70_XP = 3582550                 # Current loaded mp/rankTable.csv, captured 2026-10-16.
+LEVEL70_RANK = 70
 
 
 def secure_fields():
@@ -94,7 +95,7 @@ def profile_settings():
 
 def secure_values():
     settings = profile_settings()
-    values = {f['name']: 0 for f in secure_fields()}
+    values = {f['name']: settings.get(f['name'], 0) for f in secure_fields()}
     values['experience'] = settings.get('experience', 0)
     values['rank'] = settings.get('rank', level_for(values['experience']))
     values['prestige'] = settings.get('prestige', 0)
@@ -107,12 +108,15 @@ def secure_values():
 def secure_blob(values):
     import zlib
     data = bytearray(SECURE_SIZE - 4)
+    struct.pack_into('<II', data, 0, *SCHEMA['ddl_header'])
     for f in secure_fields():
         v = values[f['name']]
         if f['type'] == 8:
             struct.pack_into('<f', data, f['offset'], float(v))
         else:
             struct.pack_into('<i', data, f['offset'], int(v))
+    for key, value in unlock_flags(profile_settings()).items():
+        struct.pack_into('<H', data, SCHEMA['unlock_flag_offsets'][int(key)], value)
     return struct.pack('<I', zlib.crc32(bytes(data))) + bytes(data)
 
 
@@ -240,14 +244,8 @@ def buy_sku(sku):
 
 
 def rank_table():
-    """[(level shown, minimum XP)] from rankTable319.csv (mp/rankTable.csv: col 2 = min XP,
-    col 13 = displayed level; level 70 = 2,434,700 XP, which 3.19 accepts)."""
-    rows = []
-    for line in (ROOT / 'rankTable319.csv').read_text(encoding='utf-8').splitlines():
-        f = line.split(',')
-        if len(f) > 13 and f[0].isdigit():
-            rows.append((int(f[13]), int(f[2])))
-    return rows
+    """Shown level and XP from the verified 3.19 client, not the package's old table."""
+    return SCHEMA['levels']
 
 
 def level_for(xp):
@@ -351,11 +349,11 @@ def owned_skus():
 
 
 def add_purchase(sku):
-    """Record a bought SKU permanently; owned items = the items of every bought SKU only."""
+    """Record a bought SKU without discarding items granted by the local console."""
     skus = owned_skus()
     if sku and sku not in skus:
         skus.append(sku)
-    items = []
+    items = list(owned_items())
     for s in skus:
         for it in sku_items(s):
             if it not in items:

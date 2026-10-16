@@ -23,10 +23,10 @@ class ProfileRuntimeTests(unittest.TestCase):
                     env={**os.environ, 'CODOL319_SERVER_ROOT': str(root)}, capture_output=True, text=True)
             result = run('import json; from local_profile319 import earn; print(json.dumps([earn(59),earn(120)]))')
             self.assertEqual(result.returncode, 0, result.stderr)
-            self.assertEqual(json.loads(result.stdout), [{}, {'1':200,'2':10,'xp':1490,'level':2}])
+            self.assertEqual(json.loads(result.stdout), [{}, {'1':200,'2':10,'xp':1490,'level':1}])
             result = run('import json; from local_profile319 import wallet,profile_settings; print(json.dumps([wallet(),profile_settings()]))')
             self.assertEqual(json.loads(result.stdout), [{'1':2200,'2':17},
-                {'name':'Player','experience':1490,'rank':2,'other':7}])
+                {'name':'Player','experience':1490,'rank':1,'other':7}])
             profile_before = (root / 'profile319.json').read_bytes()
             before = wallet.read_bytes()
             failed = run('''
@@ -46,10 +46,20 @@ with patch('os.replace', side_effect=full):
             self.assertIn('disk full', failed.stderr)
             self.assertEqual(wallet.read_bytes(), before)
             self.assertEqual((root / 'profile319.json').read_bytes(), profile_before)
-            ranks.unlink()
-            failed = run('from local_profile319 import earn; earn(120)')
+            failed = run('from unittest.mock import patch; from local_profile319 import earn; '
+                         'p=patch("local_profile319.rank_table",side_effect=ValueError("bad definition")); '
+                         'p.start(); earn(120)')
             self.assertNotEqual(failed.returncode, 0)
             self.assertEqual(wallet.read_bytes(), before)
+
+    def test_current_client_rank_thresholds_do_not_use_supplied_legacy_table(self):
+        server = Path(__file__).resolve().parents[1] / 'server'
+        with tempfile.TemporaryDirectory() as directory:
+            result = subprocess.run([sys.executable, '-B', '-c',
+                'from local_profile319 import level_for; print([level_for(x) for x in (0,1999,2000,3582549,3582550)])'],
+                cwd=server, env={**os.environ, 'CODOL319_SERVER_ROOT': directory}, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(json.loads(result.stdout), [1,1,2,69,70])
 
     def test_two_instances_read_and_write_only_their_own_profiles(self):
         server = Path(__file__).resolve().parents[1] / 'server'
