@@ -15,10 +15,10 @@ VERSION = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from games.codol.versions.v3_19_26_22.client.lifecycle import Services, alive, identity, lobby_ready, service_status
 from games.codol.versions.v3_19_26_22.client.preparation import CLIENT, LOADER, NATIVE_HASHES, check_client, digest, grant_runtime_access, prepare
-from games.codol.versions.v3_19_26_22.client.settings import apply_options
+from games.codol.versions.v3_19_26_22.client.settings import apply_options, read_options
 from games.codol.versions.v3_19_26_22.client.match import MatchSession
 
-LOADER_ARGS = ['--metadata', '--local-lobby', '--observe', '--local-http', '--english-resources']
+LOADER_ARGS = ['--metadata', '--local-lobby', '--observe', '--local-http']
 
 
 def save(runtime, state):
@@ -124,8 +124,9 @@ def supervise(runtime):
         state.update(services=services.records, phase='launching')
         save(runtime, state)
         since = time.time()
+        language_args = ['--english-resources'] if read_options(runtime)['game_language'] == 'en' else []
         with (runtime / 'logs/loader.log').open('ab') as out:
-            loader = subprocess.Popen([str(runtime / 'server' / LOADER), *LOADER_ARGS],
+            loader = subprocess.Popen([str(runtime / 'server' / LOADER), *LOADER_ARGS, *language_args],
                 cwd=runtime / 'server/loader', env=env, stdin=subprocess.DEVNULL,
                 stdout=out, stderr=subprocess.STDOUT, close_fds=True, creationflags=subprocess.CREATE_NO_WINDOW)
         state['loader'] = identity(loader.pid)

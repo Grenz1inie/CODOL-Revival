@@ -6,6 +6,8 @@ import re
 import shutil
 import subprocess
 
+from .settings import read_options
+
 CLIENT = 'codoMP_client_shipRetail.exe'
 CLIENT_SHA256 = '36997674b18f2896de5e9d755686f6922af10708f355175714058d0a0172b537'
 LOADER = 'loader/Client-english-fixed-resources.exe'
@@ -59,13 +61,18 @@ def prepare(source, runtime, package, system_version=None):
     source, runtime, package = map(lambda p: Path(p).resolve(), (source, runtime, package))
     game = runtime / 'game'
     check_client(source)
+    language = read_options(runtime)['game_language']
+    resources = [(package / 'patches' / Path(relative).name if language == 'en' else source / relative,
+                  game / relative, True)
+                 for relative in ('localization.txt', 'IIPS/IIPSDownload/ff_init_common_gfx_V109.ifs')]
     # Both the loader and its proxy use ANSI paths and MAX_PATH buffers.
     if not str(runtime).isascii() or len(str(game / CLIENT)) >= 260:
         raise ValueError('3.19 加载器需要较短的纯英文工具目录')
     if runtime == source or runtime.is_relative_to(source):
         raise ValueError('运行目录不能位于原游戏目录内')
     system_version = Path(system_version) if system_version else Path(os.environ['SystemRoot']) / 'SysWOW64/version.dll'
-    for path in [*(package / p for p in REQUIRED), system_version]:
+    for path in [*(package / p for p in REQUIRED if not p.startswith('patches/')),
+                 *(src for src, _, _ in resources), system_version]:
         if not path.is_file():
             raise FileNotFoundError(f'缺少 3.19 启动组件：{path}')
     ready = runtime / 'game-copy.ready'
@@ -96,8 +103,7 @@ def prepare(source, runtime, package, system_version=None):
     for src, dst, backup in (
         (package / 'server/match-host/version.dll', game / 'version.dll', False),
         (system_version, game / 'version_system319.dll', False),
-        (package / 'patches/localization.txt', game / 'localization.txt', True),
-        (package / 'patches/ff_init_common_gfx_V109.ifs', game / 'IIPS/IIPSDownload/ff_init_common_gfx_V109.ifs', True),
+        *resources,
     ):
         if dst.is_file() and digest(src) == digest(dst):
             continue

@@ -5,15 +5,15 @@ import re
 import shutil
 import time
 
-DISPLAY_DEFAULTS = {'display_mode': 'windowed', 'resolution': '1280x720'}
+OPTION_DEFAULTS = {'display_mode': 'windowed', 'resolution': '1280x720', 'game_language': 'en'}
 RESOLUTIONS = ('1280x720', '1366x768', '1600x900', '1920x1080', '2560x1440', '3840x2160')
 
 
 def validate(options):
     required = {'player_name', 'fov', 'max_fps'}
-    if not isinstance(options, dict) or not required <= set(options) or set(options) - required - DISPLAY_DEFAULTS.keys():
+    if not isinstance(options, dict) or not required <= set(options) or set(options) - required - OPTION_DEFAULTS.keys():
         raise ValueError('需要玩家名、FOV 和帧率上限')
-    options = {**DISPLAY_DEFAULTS, **options}
+    options = {**OPTION_DEFAULTS, **options}
     name = options['player_name']
     # Match local_profile319.player_name, whose actual limit is 15, not the GUI's 16.
     if not isinstance(name, str) or not re.fullmatch(r'[A-Za-z0-9_\-\[\]]{3,15}', name):
@@ -25,6 +25,8 @@ def validate(options):
         raise ValueError('显示模式需为窗口化或全屏')
     if options['resolution'] not in RESOLUTIONS:
         raise ValueError('请选择支持的分辨率')
+    if options['game_language'] not in ('en', 'zh-CN'):
+        raise ValueError('游戏语言需为简体中文或英文')
     return options
 
 

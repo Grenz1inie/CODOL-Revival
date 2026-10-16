@@ -12,7 +12,7 @@ class Adapter:
     capabilities = {name: {'available': False, 'reason': '3.19 尚未接入此项网页操作。'}
                     for name in ('currency', 'progression', 'inventory', 'story', 'skip_tutorial')}
     capabilities['launch'] = {'available': True, 'reason': '首次启动创建约 24 GB 隔离副本；登录可能需要数分钟。'}
-    capabilities['launch_settings'] = {'available': True, 'reason': '玩家名、显示模式、分辨率、FOV 和帧率上限按安装保存，下次启动生效。'}
+    capabilities['launch_settings'] = {'available': True, 'reason': '玩家名、显示模式、分辨率、游戏语言、FOV 和帧率上限按安装保存，下次启动生效。'}
     capabilities['currency'] = {'available': True, 'reason': '增加本地档案余额，下次登录生效。',
                                 'currency_label': 'GP', 'premium_label': 'CP'}
     capabilities['inventory'] = {'available': True, 'reason': '保存完整物品目录并保留已有库存；3.19 库存列表最多载入前 20,000 项，下次登录生效。'}

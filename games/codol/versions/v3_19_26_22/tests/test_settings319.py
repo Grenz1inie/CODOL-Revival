@@ -32,7 +32,7 @@ class SettingsTests(unittest.TestCase):
             legacy = b'{"player_name":"Existing","fov":105,"max_fps":144}'
             path.write_bytes(legacy)
             self.assertEqual(settings.read_options(runtime), {'player_name': 'Existing', 'fov': 105,
-                'max_fps': 144, 'display_mode': 'windowed', 'resolution': '1280x720'})
+                'max_fps': 144, 'display_mode': 'windowed', 'resolution': '1280x720', 'game_language': 'en'})
             self.assertEqual(path.read_bytes(), legacy)
 
     def test_saved_display_settings_reach_the_game_command(self):
@@ -48,7 +48,7 @@ class SettingsTests(unittest.TestCase):
                     options = {'player_name': 'Player', 'fov': 120, 'max_fps': 400,
                                'display_mode': mode, 'resolution': resolution}
                     settings.save_options(runtime, options)
-                    self.assertEqual(settings.read_options(runtime), options)
+                    self.assertEqual(settings.read_options(runtime), {**options, 'game_language': 'en'})
                     command = settings.apply_options(runtime)
                     self.assertEqual(command, '+set cg_fov 120 +set com_maxfps 400 +set 3291 0 ' + expected)
                     # Native loader reads CODOL319_EXTRA_ARGS into a 256-byte buffer.

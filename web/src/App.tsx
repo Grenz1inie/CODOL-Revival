@@ -5,7 +5,7 @@ import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import {savedLanguage, translate, type Language} from './i18n';
 
-type LaunchSettings = {player_name: string; fov: number; max_fps: number; display_mode: string; resolution: string};
+type LaunchSettings = {player_name: string; fov: number; max_fps: number; display_mode: string; resolution: string; game_language: string};
 type Settings = {skip_tutorial: boolean; launch?: LaunchSettings};
 type Profile = {user_id: string; level?: number; prestige?: number; currency?: number; premium?: number};
 type Installation = {state:string; path:string; version:string|null; reason:string; instance_id?:string};
@@ -35,15 +35,17 @@ function LaunchOptions({value, disabled, onSave, t}: {value: LaunchSettings; dis
   const [fps, setFps] = useState(String(value.max_fps));
   const [displayMode, setDisplayMode] = useState(value.display_mode);
   const [resolution, setResolution] = useState(value.resolution);
-  return <form onSubmit={event=>{event.preventDefault();void onSave({player_name:name, fov:Number(fov), max_fps:Number(fps), display_mode:displayMode, resolution});}}>
+  const [gameLanguage, setGameLanguage] = useState(value.game_language);
+  return <form onSubmit={event=>{event.preventDefault();void onSave({player_name:name, fov:Number(fov), max_fps:Number(fps), display_mode:displayMode, resolution, game_language:gameLanguage});}}>
     <div className="launch-options">
       <div><label className="field-label" htmlFor="launch-name">{t('玩家名')}</label><TextField.Root id="launch-name" required minLength={3} maxLength={15} value={name} disabled={disabled} onChange={e=>setName(e.target.value)}/></div>
       <div><label className="field-label" htmlFor="launch-display-mode">{t('显示模式')}</label><Select.Root value={displayMode} disabled={disabled} onValueChange={setDisplayMode}><Select.Trigger id="launch-display-mode"/><Select.Content><Select.Item value="windowed">{t('窗口化')}</Select.Item><Select.Item value="fullscreen">{t('全屏')}</Select.Item></Select.Content></Select.Root></div>
       <div><label className="field-label" htmlFor="launch-resolution">{t('分辨率')}</label><Select.Root value={resolution} disabled={disabled} onValueChange={setResolution}><Select.Trigger id="launch-resolution"/><Select.Content>{['1280x720','1366x768','1600x900','1920x1080','2560x1440','3840x2160'].map(size=><Select.Item key={size} value={size}>{size.replace('x',' × ')}</Select.Item>)}</Select.Content></Select.Root></div>
       <div><label className="field-label" htmlFor="launch-fov">FOV</label><TextField.Root id="launch-fov" type="number" required min={60} max={120} step={1} value={fov} disabled={disabled} onChange={e=>setFov(e.target.value)}/></div>
       <div><label className="field-label" htmlFor="launch-fps">{t('帧率上限')}</label><TextField.Root id="launch-fps" type="number" required min={0} max={400} step={1} value={fps} disabled={disabled} onChange={e=>setFps(e.target.value)}/></div>
+      <div><label className="field-label" htmlFor="launch-language">{t('游戏语言')}</label><Select.Root value={gameLanguage} disabled={disabled} onValueChange={setGameLanguage}><Select.Trigger id="launch-language"/><Select.Content><Select.Item value="zh-CN">{t('简体中文')}</Select.Item><Select.Item value="en">{t('英文')}</Select.Item></Select.Content></Select.Root></div>
     </div>
-    <p className="helper">{t('玩家名 3–15 位；FOV 60–120；帧率 0–400，0 表示不限。退出游戏后保存，下次启动生效。')}</p>
+    <p className="helper">{t('玩家名 3–15 位；FOV 60–120；帧率 0–400，0 表示不限。退出游戏后保存，下次启动生效。')} {t('游戏语言独立于网页语言。')}</p>
     <Button type="submit" variant="soft" disabled={disabled}>{t('保存启动选项')}</Button>
   </form>;
 }

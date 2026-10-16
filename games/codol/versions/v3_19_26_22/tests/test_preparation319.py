@@ -7,7 +7,7 @@ import subprocess
 import unittest
 from unittest.mock import patch
 
-from games.codol.versions.v3_19_26_22.client import preparation
+from games.codol.versions.v3_19_26_22.client import preparation, settings
 
 
 class PreparationTests(unittest.TestCase):
@@ -68,6 +68,47 @@ class PreparationTests(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             self.prepare()
         self.assertFalse(self.runtime.exists())
+
+    def test_language_round_trip_preserves_original_resources_and_progress(self):
+        before = {p.relative_to(self.game): p.read_bytes() for p in self.game.rglob('*') if p.is_file()}
+        game = self.prepare()
+        progress = self.runtime / 'server/profile319.json'
+        progress.write_bytes(b'{"name":"Player","experience":12345,"extra":[7]}')
+        (game / 'players/save.dat').write_bytes(b'current save')
+        originals = {'localization.txt': b'Chinese',
+                     'IIPS/IIPSDownload/ff_init_common_gfx_V109.ifs': b'original resource'}
+        english = {'localization.txt': b'English',
+                   'IIPS/IIPSDownload/ff_init_common_gfx_V109.ifs': b'patched resource'}
+        for language, expected in (('zh-CN', originals), ('en', english), ('zh-CN', originals)):
+            with self.subTest(language=language):
+                settings.save_options(self.runtime, {'player_name': 'Player', 'fov': 90,
+                    'max_fps': 0, 'game_language': language})
+                self.prepare()
+                for relative, data in expected.items():
+                    self.assertEqual((game / relative).read_bytes(), data)
+                    self.assertEqual((game / (relative + '.original')).read_bytes(), originals[relative])
+                self.assertEqual(progress.read_bytes(), b'{"name":"Player","experience":12345,"extra":[7]}')
+                self.assertEqual((game / 'players/save.dat').read_bytes(), b'current save')
+        self.assertEqual(before, {p.relative_to(self.game): p.read_bytes() for p in self.game.rglob('*') if p.is_file()})
+
+    def test_first_chinese_language_launch_needs_only_original_language_resources(self):
+        for name in ('localization.txt', 'ff_init_common_gfx_V109.ifs'):
+            (self.package / 'patches' / name).unlink()
+        settings.save_options(self.runtime, {'player_name': 'Player', 'fov': 90,
+            'max_fps': 0, 'game_language': 'zh-CN'})
+        game = self.prepare()
+        self.assertEqual((game / 'localization.txt').read_bytes(), b'Chinese')
+        self.assertEqual((game / 'IIPS/IIPSDownload/ff_init_common_gfx_V109.ifs').read_bytes(), b'original resource')
+
+    def test_missing_selected_language_resource_stops_before_changing_copy(self):
+        game = self.prepare()
+        settings.save_options(self.runtime, {'player_name': 'Player', 'fov': 90,
+            'max_fps': 0, 'game_language': 'zh-CN'})
+        (self.game / 'IIPS/IIPSDownload/ff_init_common_gfx_V109.ifs').unlink()
+        before = {p.relative_to(game): p.read_bytes() for p in game.rglob('*') if p.is_file()}
+        with self.assertRaises(FileNotFoundError):
+            self.prepare()
+        self.assertEqual(before, {p.relative_to(game): p.read_bytes() for p in game.rglob('*') if p.is_file()})
 
     def test_import_retains_assets_without_copying_reference_service_code(self):
         self.write(self.package / 'server/start319.py', b'not our entrypoint')

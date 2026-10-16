@@ -7,7 +7,7 @@ const actions = ['设置最高等级', '解锁全部剧情关卡', '增加游戏
 let installation: {state: string; path: string; version: string | null; reason: string; instance_id?: string};
 const matched = {state:'matched', path:'E:/Games/CODOL', version:'3.3.3.3', reason:'已匹配', instance_id:'codol-main'};
 let running: boolean;
-let launchSettings: {player_name: string; fov: number; max_fps: number; display_mode: string; resolution: string} | undefined;
+let launchSettings: {player_name: string; fov: number; max_fps: number; display_mode: string; resolution: string; game_language: string} | undefined;
 let serverState: {running: boolean; pid: number | null; ready: boolean; ports: {name: string; protocol: string; port: number; listening: boolean; conflict: boolean}[]; match?: {phase:string; error:string; result?:{event:string; paid?:Record<string,number>}}};
 let serverError: boolean;
 let statusError: boolean;
@@ -402,7 +402,7 @@ describe('游戏目录与版本匹配', () => {
     installation = {...matched, version:'3.19.26.22'};
     capabilities.launch_settings = {available:true, reason:''};
     capabilities.skip_tutorial.available = false;
-    launchSettings = {player_name:'Player319', fov:90, max_fps:0, display_mode:'windowed', resolution:'1280x720'};
+    launchSettings = {player_name:'Player319', fov:90, max_fps:0, display_mode:'windowed', resolution:'1280x720', game_language:'en'};
     render(<App/>);
     await screen.findByLabelText('玩家名');
     expect((screen.getByLabelText('玩家名') as HTMLInputElement).value).toBe('Player319');
@@ -419,29 +419,48 @@ describe('游戏目录与版本匹配', () => {
     expect(screen.getByRole('combobox', {name:'分辨率'}).textContent).toBe('1920 × 1080');
     fireEvent.click(button('保存启动选项'));
     await waitFor(()=>expect(posts).toContainEqual({path:'settings',data:{launch:{player_name:'NewName',fov:110,max_fps:0,
-      display_mode:'fullscreen',resolution:'1920x1080'}}}));
+      display_mode:'fullscreen',resolution:'1920x1080',game_language:'en'}}}));
     await waitFor(()=>expect(button('保存启动选项').disabled).toBe(false));
     running = true;
     fireEvent.click(button('刷新状态'));
     await waitFor(()=>expect(button('保存启动选项').disabled).toBe(true));
     expect(screen.getByRole<HTMLButtonElement>('combobox', {name:'显示模式'}).disabled).toBe(true);
     expect(screen.getByRole<HTMLButtonElement>('combobox', {name:'分辨率'}).disabled).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>('combobox', {name:'游戏语言'}).disabled).toBe(true);
   });
 
   it('切换安装实例后读取该实例的启动设置', async () => {
     installation = {...matched, version:'3.19.26.22'};
     capabilities.launch_settings = {available:true, reason:''};
-    launchSettings = {player_name:'First', fov:90, max_fps:0, display_mode:'windowed', resolution:'1280x720'};
+    launchSettings = {player_name:'First', fov:90, max_fps:0, display_mode:'windowed', resolution:'1280x720', game_language:'en'};
     render(<App/>);
     await screen.findByLabelText('玩家名');
     fireEvent.change(screen.getByLabelText('玩家名'), {target:{value:'Unsaved'}});
     installation = {...installation, instance_id:'second'};
-    launchSettings = {player_name:'Second', fov:100, max_fps:60, display_mode:'fullscreen', resolution:'2560x1440'};
+    launchSettings = {player_name:'Second', fov:100, max_fps:60, display_mode:'fullscreen', resolution:'2560x1440', game_language:'zh-CN'};
     fireEvent.click(button('刷新状态'));
     await waitFor(()=>expect((screen.getByLabelText('玩家名') as HTMLInputElement).value).toBe('Second'));
     expect(screen.getByRole('combobox', {name:'显示模式'}).textContent).toBe('全屏');
     expect(screen.getByRole('combobox', {name:'分辨率'}).textContent).toBe('2560 × 1440');
+    expect(screen.getByRole('combobox', {name:'游戏语言'}).textContent).toBe('简体中文');
     expect(posts).toEqual([]);
+  });
+
+  it('游戏语言与网页语言独立，选择简体中文随启动设置保存', async () => {
+    installation = {...matched, version:'3.19.26.22'};
+    capabilities.launch_settings = {available:true, reason:''};
+    launchSettings = {player_name:'Player319', fov:90, max_fps:0, display_mode:'windowed', resolution:'1280x720', game_language:'en'};
+    render(<App/>);
+    const language = await screen.findByRole('combobox', {name:'游戏语言'});
+    expect(language.textContent).toBe('英文');
+    fireEvent.keyDown(language, {key:'Enter'});
+    fireEvent.click(await screen.findByRole('option', {name:'简体中文', exact:true}));
+    fireEvent.click(button('English'));
+    expect(screen.getByRole('combobox', {name:'Game language'}).textContent).toBe('Simplified Chinese');
+    expect(screen.getByRole('combobox', {name:'Display mode'}).textContent).toBe('Windowed');
+    expect(posts).toEqual([]);
+    fireEvent.click(button('Save launch settings'));
+    await waitFor(()=>expect(posts).toContainEqual({path:'settings',data:{launch:{...launchSettings,game_language:'zh-CN'}}}));
   });
   it('未选择或未支持版本时锁定所有游戏和档案操作，保留版本列表', async () => {
     installation = {state:'unselected', path:'', version:null, reason:'请先选择游戏目录'};
