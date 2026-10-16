@@ -49,4 +49,6 @@ no native player layout, assembly engine or native runtime is used.
 The minimal AI reaction, single-rifle damage rules and respawn policy are this
 project's implementation. They do not claim to reproduce the original game's
 complete bot behavior, perks, penetration, body-part damage or movement modes.
-Waypoint and game resource bytes stay in ignored local bundles with input hashes.
+Game resource bytes stay in ignored local bundles with input hashes. The approved
+Nuketown reference graph is tracked under `resources/navigation`; its adjacent
+`NOTICE.md` records the source chain and the limits of available attribution.
