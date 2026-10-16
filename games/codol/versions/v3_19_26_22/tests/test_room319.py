@@ -10,12 +10,17 @@ SEARCH = bytes.fromhex('15030508030000000800000000083200000007abad92d60700000000
                        '07010000000700000000071d030000076e000000070100000007000000006b0804'
                        '000000010000000000000000')
 FIXTURES = Path(__file__).resolve().parents[1] / 'server/native/match-server/tests/fixtures'
+# Actual frames 340 and 356, room-admission.pcapng. The final zero ends the task buffer.
+FIRST_BROADCAST = bytes.fromhex('0b03040a010090310000000013081a000000160000000202000000'
+                                '30000000e068ab5bab63ab030000000000080100000000')
+SESSION_SEARCH = bytes.fromhex('15030508010000000800000000080a00000007abad92d6'
+                               '6b0804000000010000000000000000')
 
 
 def channel_message(channel, payload):
     wrapped = struct.pack('<I', len(payload)) + payload
     return (b'\x0b\x03\x04\x0a' + struct.pack('<Q', channel) + b'\x13\x08'
-            + struct.pack('<I', len(wrapped)) + wrapped + b'\x08\x01\0\0\0')
+            + struct.pack('<I', len(wrapped)) + wrapped + b'\x08\x01\0\0\0\0')
 
 
 class Room319Tests(unittest.TestCase):
@@ -64,6 +69,18 @@ class Room319Tests(unittest.TestCase):
         struct.pack_into('<I', other, 49, 190)
         self.room.handle(bytes(other), 5)
         self.assertEqual(self.room.handle(b'\x0b\x03\x0d', 6), (None, []))
+
+    def test_real_client_task_terminator_is_accepted(self):
+        self.enter()
+        _, pushes = self.room.handle(FIRST_BROADCAST, 3)
+        self.assertEqual(len(pushes), 18)
+        self.assertEqual(self.room.phase, 'host_requested')
+
+    def test_session_refresh_does_not_discard_the_selected_room(self):
+        channel = self.enter()
+        self.room.handle(SESSION_SEARCH, 3)
+        self.assertEqual(self.room.channel, channel)
+        self.assertEqual(self.room.phase, 'created')
 
 
 class NativeRoomPush319Tests(unittest.TestCase):

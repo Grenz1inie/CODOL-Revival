@@ -9,7 +9,7 @@ import sys
 
 from games.codol.versions.v3_19_26_22.server import lsg_codec, room319
 from test_inventory319 import InventoryFixture, SERVER
-from test_room319 import SEARCH, FIXTURES, channel_message
+from test_room319 import SEARCH, FIXTURES, FIRST_BROADCAST, channel_message
 
 
 class RoomLobby319Tests(InventoryFixture):
@@ -78,7 +78,7 @@ runpy.run_path('lsg_handshake.py', run_name='__main__')
             created = request(b'\x0b\x03\x0d', 2)
             self.assertEqual(struct.unpack_from('<I', created, 17)[0], 1)
             channel = struct.unpack_from('<Q', created, 27)[0]
-            request(channel_message(channel, b'\x2e\x06'), 3)
+            request(FIRST_BROADCAST, 3)
             members = [receive(2) for _ in range(17)]
             self.assertEqual([struct.unpack_from('<Q', p, 6)[0] for p in members],
                              list(range(0x600000001, 0x600000012)))

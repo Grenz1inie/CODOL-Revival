@@ -90,6 +90,8 @@ class Room:
             return None, []
         service, _, task = body[:3]
         if (service, task) == (21, 5):
+            if body[3:8] != u32(3):
+                return None, []  # Query 1 refreshes sessions inside the existing room.
             # Query 3 field positions verified in the current client's real capture.
             selected = (len(body) >= 63 and body[3:8] == u32(3)
                         and body[43:48] == b'\x07' + struct.pack('<I', 797)
@@ -112,7 +114,7 @@ class Room:
             return None, []
         size = struct.unpack_from('<I', body, 14)[0]
         wrapped = body[18:18 + size]
-        if len(wrapped) != size or size < 4 or body[18 + size:] != u32(1):
+        if len(wrapped) != size or size < 4 or body[18 + size:] != u32(1) + b'\0':
             return None, []
         length = struct.unpack_from('<I', wrapped)[0]
         if length > size - 4:
