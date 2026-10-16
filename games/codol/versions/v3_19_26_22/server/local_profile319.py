@@ -86,7 +86,8 @@ LEVEL70_RANK = 70
 
 
 def secure_fields():
-    return json.loads((ROOT / 'secure_fields319.json').read_text(encoding='utf-8'))['fields']
+    definition = Path(__file__).resolve().parents[1] / 'resources/definitions/secure_fields319.json'
+    return json.loads(definition.read_text(encoding='utf-8'))['fields']
 
 
 def profile_settings():

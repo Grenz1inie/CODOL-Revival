@@ -2,15 +2,10 @@
 Tiger implementation follows LibTomCrypt's Unlicense reference:
 https://github.com/libtom/libtomcrypt/blob/develop/src/hashes/tiger.c
 """
-from pathlib import Path
-import os
-import struct,time,base64,json,sys
+import struct,time,base64,json
 from cryptography.hazmat.primitives.ciphers import Cipher,modes
 from cryptography.hazmat.decrepit.ciphers.algorithms import TripleDES
-root=Path(os.environ['CODOL319_SERVER_ROOT'])
-raw=(root/'iips-memory/codoMP_client_shipRetail.exe.9076736.bin').read_bytes()
-offset=raw.index(struct.pack('<Q',0x02AAB17CF7E90C5E))
-tables=struct.unpack_from('<1024Q',raw,offset)
+from tiger_tables import TABLES as tables
 MASK=(1<<64)-1
 def tiger(message):
     padded=message+b'\x01'+bytes((55-len(message))%64)+struct.pack('<Q',len(message)*8)
@@ -34,7 +29,7 @@ def tiger(message):
         state=[s[0]^state[0],(s[1]-state[1])&MASK,(s[2]+state[2])&MASK]
     return struct.pack('<3Q',*state)
 def response(request):
-    sys.path.insert(0,str(root));from local_profile319 import player_name
+    from local_profile319 import player_name
     # The client base64-decodes the Demonware user name before storing it in dw_username
     # (007F2E1B -> 007F3440; only the literal "HostUser" is taken as is), so the ticket and
     # extra_data carry base64(UTF-8 name). A plain (non-base64) name decodes to garbage.

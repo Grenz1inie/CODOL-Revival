@@ -7,11 +7,14 @@ sys.path.insert(0,str(root))
 def emit(event,**values):
     with (root/'auth-capture.jsonl').open('a',encoding='utf-8') as out:
         out.write(json.dumps(dict(event=event,time=time.time(),**values))+'\n')
-ctx=ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-ctx.load_cert_chain(root/'localhost-capture-cert.pem',root/'localhost-capture-key.pem')
+ctx=None
+if '--http' not in sys.argv:
+    ctx=ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    ctx.load_cert_chain(root/'localhost-capture-cert.pem',root/'localhost-capture-key.pem')
 s=socket.socket();s.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
-s.bind(('127.0.0.1',31900));s.listen(4);s.settimeout(1)
-emit('listening',port=31900)
+port=int(sys.argv[sys.argv.index('--port')+1]) if '--port' in sys.argv else 31900
+s.bind(('127.0.0.1',port));s.listen(4);s.settimeout(1)
+emit('listening',port=s.getsockname()[1])
 # Runs until stopped (the old 2-hour limit cut off logins mid-launch); --lifetime N restores a limit.
 deadline=time.monotonic()+(float(sys.argv[sys.argv.index("--lifetime")+1]) if "--lifetime" in sys.argv else float("inf"))
 while time.monotonic()<deadline:
