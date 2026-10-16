@@ -124,13 +124,16 @@ class MatchServer:
         now=time.monotonic()
         if now < self.next_tick:
             return
-        # One owned clock advances both players, including while no packets arrive.
+        # Preserve elapsed time when routing/physics misses a deadline. Dropping
+        # lateness slows server time and repeatedly pulls client prediction back.
+        milliseconds=50+round((now-self.next_tick)*1000)
+        self.next_tick=now+.05
         commands=self.pending_inputs
         self.pending_inputs=[]
         if commands:
             self.last_input={key:commands[-1][key] for key in ('time','buttons','direction','weapon')}
             self.last_input['world_time']=self.world.time
-        self.world.step(commands,milliseconds=50)
+        self.world.step(commands,milliseconds=milliseconds)
         health=tuple(p.health for p in self.world.players)
         if health!=self.reported_health or now-self.last_report>=5:
             self.record('match_state',server_time=self.world.time,input=self.last_input,
@@ -138,7 +141,6 @@ class MatchServer:
                 origin=p.origin[:],health=p.health,clip=p.clip,kills=p.kills,deaths=p.deaths)
                 for p in self.world.players])
             self.reported_health,self.last_report=health,now
-        self.next_tick=max(self.next_tick+.05,now)
         payload,fields=self.world.snapshot()
         for packet in self.connection.send(payload,player_fields=fields):
             self.socket.sendto(self.association.encrypt(packet),self.association.peer)

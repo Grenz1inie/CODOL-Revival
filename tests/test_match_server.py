@@ -14,6 +14,27 @@ from test_match_connection import profile_bytes
 
 
 class MatchServerTests(unittest.TestCase):
+    def test_late_tick_preserves_elapsed_simulation_time(self):
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        from match_server.server import MatchServer
+        from test_match_world import MatchWorldTests
+        world = MatchWorldTests().world()
+        with socket.socket(socket.AF_INET,socket.SOCK_DGRAM) as peer:
+            peer.bind(('127.0.0.1',0))
+            server = MatchServer(1,b'12345678',bytes(16),netconst_checksum=55,world=world)
+            try:
+                server.association = SimpleNamespace(encrypt=lambda packet:packet,peer=peer.getsockname())
+                server.connection.phase = 'active'
+                server.next_tick = 10.05
+                for now,expected in ((10.04,1000),(10.05,1050),(10.25,1250),
+                                     (10.25,1250),(10.30,1300)):
+                    with self.subTest(now=now),patch('match_server.server.time.monotonic',return_value=now):
+                        server._tick()
+                        self.assertEqual(world.time,expected)
+            finally:
+                server.close()
+
     @unittest.skipUnless(sys.platform == 'win32', 'Windows UDP reset behavior')
     def test_closed_client_does_not_kill_endpoint_or_block_new_client_port(self):
         from match_server.server import MatchServer

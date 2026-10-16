@@ -220,6 +220,13 @@ class Connection:
                         raise ValueError('unsupported or missing reliable client command')
                     if candidate.startswith(b'userinfo "') and candidate.endswith(b'"'):
                         self._userinfo(candidate[10:-1].decode('ascii'))
+                    elif candidate.startswith(b'mr '):
+                        # Current menu replies carry map epoch, menu slot and a
+                        # response token. Acknowledge the UI notification; this
+                        # restricted match keeps its fixed ACR loadout.
+                        pattern = fr'mr {self.server_id} ([0-9]|[12][0-9]|3[01]) [A-Za-z0-9_]{{1,63}}'.encode()
+                        if not re.fullmatch(pattern,candidate):
+                            raise ValueError('unsupported or missing reliable client command')
                     elif candidate != b's' and not re.fullmatch(rb'n ([1-9]|[1-8][0-9]|9[0-8])',candidate):
                         raise ValueError('unsupported or missing reliable client command')
                     # Current action table 0xce1cc0 has IDs 1..98. These `n`

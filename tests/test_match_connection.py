@@ -286,6 +286,40 @@ class ConnectionTests(unittest.TestCase):
             self.assertEqual((self.connection.received,self.connection.reliable),(1,0))
             self.assertEqual(self.connection.pending_commands,[])
 
+    def test_menu_response_does_not_block_bundled_movement(self):
+        from match_server.input import usercmd_key
+        self.connect()
+        self.upload()
+        self.connection.receive(self.packet(b'\x03',1))
+        # Live 2026-10-16 queue stalled on `mr 179 1 custom1` after menu use.
+        command = f'mr {self.connection.server_id} 1 custom1'.encode()
+        move = self.client.usercmd({'time':100,'weapon':5,'forward':127},
+            key=usercmd_key(1,self.connection.checksum_feed),move=True,
+            reliables=((1,command),))
+        packet = self.packet(move,2,ack=1,server_id=self.connection.server_id)
+        replies = self.connection.receive(packet)
+        self.assertEqual((self.connection.reliable,self.connection.command),(1,command))
+        self.assertNotEqual(self.connection.pending_commands[0]['direction'],0)
+        reader = ClientReader423()
+        reader.reset_netchan()
+        self.assertEqual(reader.packet(replies[0],challenge=self.challenge,command=command)[1:],(1,b'\x06'))
+        self.assertEqual(self.connection.receive(packet),[])
+
+    def test_menu_response_rejects_wrong_map_and_malformed_tokens(self):
+        self.connect()
+        self.upload()
+        self.connection.receive(self.packet(b'\x03',1))
+        epoch = self.connection.server_id
+        for command in (f'mr {epoch+1} 1 custom1',f'mr {epoch} -1 custom1',
+                        f'mr {epoch} 32 custom1',f'mr {epoch} 1 custom1;quit',
+                        f'mr {epoch} 1 custom1 extra',f'mr {epoch} 1'):
+            packet = self.packet(b'\x1a'+struct.pack('<I',1)+command.encode()+b'\0',2,
+                                 ack=1,server_id=epoch)
+            with self.assertRaisesRegex(ValueError,'reliable client command'):
+                self.connection.receive(packet)
+            self.assertEqual((self.connection.received,self.connection.reliable),(1,0))
+            self.assertEqual(self.connection.pending_commands,[])
+
     def test_weapon_command_and_acknowledged_snapshot_key_the_next_input(self):
         from match_server.input import usercmd_key
         from match_server.snapshot import encode_snapshot,Inventory
