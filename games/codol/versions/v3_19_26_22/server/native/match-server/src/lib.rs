@@ -1,5 +1,7 @@
 //! Version 3.19.26.22 match rules and room state.
 
+mod room_wire;
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Team {
     One,
@@ -73,5 +75,10 @@ impl NuketownRoom {
 
     pub fn rules(&self) -> &Rules {
         &NUKETOWN
+    }
+
+    /// Message 14; channel membership supplies names separately.
+    pub fn roster_message(&self, human_state: &[u8; 0x1d0]) -> Vec<u8> {
+        room_wire::roster(self.players(), human_state)
     }
 }
