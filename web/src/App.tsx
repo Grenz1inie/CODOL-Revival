@@ -10,7 +10,7 @@ type Settings = {skip_tutorial: boolean; launch?: LaunchSettings};
 type Profile = {user_id: string; level?: number; prestige?: number; currency?: number; premium?: number};
 type Installation = {state:string; path:string; version:string|null; reason:string; instance_id?:string};
 type Version = {game_id:string; version:string; label:string; supported:boolean};
-type Status = {installation: Installation; profiles: Profile[]; game_running: boolean; capabilities: Record<string, {available: boolean; reason: string; max_level?:number; max_prestige?:number}>};
+type Status = {installation: Installation; profiles: Profile[]; game_running: boolean; capabilities: Record<string, {available: boolean; reason: string; max_level?:number; max_prestige?:number; currency_label?:string; premium_label?:string}>};
 type Doc = {path: string; size: number};
 type ServerStatus = {running: boolean; pid: number | null; ready: boolean; ports: {name: string; protocol: string; port: number; listening: boolean; conflict: boolean}[]; match?: {phase:string; error:string; result?:{event:string; paid?:Record<string,number>; error?:string}}};
 async function api<T>(path: string, data?: unknown): Promise<T> {
@@ -189,13 +189,13 @@ export default function App() {
                 <h2 id="wallet-title" className="sr-only">{t('游戏币与商城')}</h2>
                 <div className="wallet-grid">
                   <section className="wallet panel" aria-labelledby="currency-title">
-                    <div className="balance-label"><Coins size={19}/><h3 id="currency-title">{t('游戏币')}</h3><span className="mono">CP</span></div>
+                    <div className="balance-label"><Coins size={19}/><h3 id="currency-title">{t('游戏币')}</h3><span className="mono">{capability('currency')?.currency_label || 'CP'}</span></div>
                     <strong className="balance">{profile?.currency?.toLocaleString(language) ?? t('待读取')}</strong>
                     <label htmlFor="amount" className="field-label">{t('增加数量')}</label>
                     <div className="input-action"><TextField.Root id="amount" type="number" min="1" max="2147483647" value={amount} onChange={e=>setAmount(e.target.value)}/><Button variant="soft" disabled={!editable || !capability('currency')?.available} onClick={()=>act('profile/currency',{user_id:account,amount:Number(amount)},'游戏币已更新')}>{t('增加游戏币')}</Button></div>
                   </section>
                   <section className="wallet panel" aria-labelledby="premium-title">
-                    <div className="balance-label"><Coins size={19}/><h3 id="premium-title">{t('点券')}</h3><span className="mono">CC</span></div>
+                    <div className="balance-label"><Coins size={19}/><h3 id="premium-title">{t('点券')}</h3><span className="mono">{capability('currency')?.premium_label || 'CC'}</span></div>
                     <strong className="balance">{profile?.premium?.toLocaleString(language) ?? t('待读取')}</strong>
                     <label htmlFor="premium-amount" className="field-label">{t('增加点券数量')}</label>
                     <div className="input-action"><TextField.Root id="premium-amount" type="number" min="1" max="2147483647" value={premiumAmount} onChange={e=>setPremiumAmount(e.target.value)}/><Button variant="soft" disabled={!editable || !capability('currency')?.available} onClick={()=>act('profile/premium',{user_id:account,amount:Number(premiumAmount)},'点券已更新')}>{t('增加点券')}</Button></div>

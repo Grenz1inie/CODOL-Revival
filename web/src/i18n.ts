@@ -154,6 +154,10 @@ const english: Record<string, string> = {
   '总经验': 'Total XP',
   '本局不足一分钟，无结算奖励': 'No rewards for matches shorter than one minute.',
   '结算失败': 'Reward settlement failed',
+  '增加本地档案余额，下次登录生效。': 'Add to the local wallet. Applies on the next login.',
+  '发放当前版本完整物品目录，保留已有库存；下次登录生效。': 'Grant the full item catalog for this version and keep existing inventory. Applies on the next login.',
+  '当前版本最高 70 级、4 次转生；同步等级解锁条件。': 'Level 70 and prestige 4 for this version. Updates level unlock requirements too.',
+  '解除 10 项剧情前置条件；地图启动与可玩性仍在恢复中。': 'Unlock 10 campaign prerequisites. Map loading and playability are still being restored.',
 };
 
 export function translate(text: string, language: Language): string {

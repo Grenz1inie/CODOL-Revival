@@ -13,7 +13,7 @@ let serverError: boolean;
 let statusError: boolean;
 let serverResponse: () => Promise<ReturnType<typeof response>>;
 let profiles: typeof profile[];
-let capabilities: Record<string, {available: boolean; reason: string}>;
+let capabilities: Record<string, {available: boolean; reason: string; max_level?:number; max_prestige?:number; currency_label?:string; premium_label?:string}>;
 let posts: {path: string; data: unknown}[];
 let postResponse: () => Promise<{ok: boolean; json: () => Promise<unknown>}>;
 const response = (data: unknown, ok = true) => ({ok, json: async () => data});
@@ -205,6 +205,18 @@ describe('控制器原有操作契约', () => {
     for (const name of actions.filter(name => name !== '解锁全部剧情关卡')) expect(button(name).disabled).toBe(true);
     expect(button('解锁全部剧情关卡').disabled).toBe(false);
     expect(screen.getByText('progression 已就绪')).toBeTruthy();
+  });
+
+  it('3.19 使用本版本币种和转生上限并开放五项档案操作', async () => {
+    installation = {...matched,version:'3.19.26.22'};
+    capabilities.currency = {available:true,reason:'本地余额',currency_label:'GP',premium_label:'CP'};
+    capabilities.progression = {available:true,reason:'70级、4转',max_level:70,max_prestige:4};
+    await ready();
+    expect(within(screen.getByRole('region',{name:'游戏币',exact:true})).getByText('GP')).toBeTruthy();
+    expect(within(screen.getByRole('region',{name:'点券',exact:true})).getByText('CP')).toBeTruthy();
+    for (const name of actions) expect(button(name).disabled).toBe(false);
+    fireEvent.click(button('设置最高等级'));
+    await waitFor(()=>expect(posts).toEqual([{path:'profile/progression',data:{user_id:'player-one',level:70,prestige:4}}]));
   });
 
   it.each([
