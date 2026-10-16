@@ -109,8 +109,6 @@ p {font-size:13px;line-height:1.65;color:var(--console-muted);margin:12px 0}
 .server-ports>div+div {border-left:1px solid var(--console-line);padding-left:10px}
 .server-ports small {color:var(--console-muted);font-size:10px;margin-left:4px;white-space:nowrap}
 .port-state {color:var(--console-muted);white-space:nowrap}
-.server-actions {display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
-.server-actions .rt-Button {font-size:12px;min-width:0}
 .server-panel .helper {margin-top:9px;font-size:10px;line-height:1.5}
 .server-error {color:var(--red-11)!important}
 .error-detail {white-space:pre-wrap;font-size:11px;max-height:160px;overflow:auto}

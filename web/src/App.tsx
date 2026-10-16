@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {Theme, Button, Switch, TextField, Select} from '@radix-ui/themes';
 import {BookOpen, SlidersHorizontal, CaretRight, Folder, FileText, ArrowClockwise, Play, Stop, Star, Coins, Sun, Moon, Package, Flag, ArrowUpRight, ShieldCheck, HardDrives} from '@phosphor-icons/react';
 import Markdown from 'react-markdown';
@@ -38,10 +38,15 @@ export default function App() {
   const [dark, setDark] = useState(matchMedia('(prefers-color-scheme: dark)').matches);
   const [settings, setSettings] = useState<Settings>();
   const [status, setStatus] = useState<Status>();
+  const [statusError, setStatusError] = useState('');
   const [server, setServer] = useState<ServerStatus>();
   const [serverError, setServerError] = useState('');
   const [serverLoading, setServerLoading] = useState(true);
-  const [serverAction, setServerAction] = useState('');
+  const [gameAction, setGameAction] = useState('');
+  const refreshRequest = useRef<Promise<void> | null>(null);
+  const refreshTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const actionPending = useRef(false);
+  const mounted = useRef(false);
   const [files, setFiles] = useState<Doc[]>([]);
   const [doc, setDoc] = useState({path:'', content:''});
   const [account, setAccount] = useState('');
@@ -57,30 +62,55 @@ export default function App() {
     catch(e) { setServer(undefined); setServerError(e instanceof Error ? e.message : String(e)); }
     finally { setServerLoading(false); }
   }
-  async function refresh() {
-    await Promise.all([
+  function scheduleRefresh() {
+    clearTimeout(refreshTimer.current);
+    if (mounted.current && !document.hidden && !actionPending.current) {
+      refreshTimer.current = setTimeout(()=>{void refresh();},10000);
+    }
+  }
+  function refresh(): Promise<void> {
+    if (refreshRequest.current) return refreshRequest.current;
+    clearTimeout(refreshTimer.current);
+    refreshRequest.current = Promise.all([
       refreshServer(),
       Promise.all([api<Settings>('settings'), api<Status>('status')]).then(([s,state])=>{
-        setSettings(s); setStatus(state);
+        setSettings(s); setStatus(state); setStatusError('');
         setAccount(current => current || state.profiles[0]?.user_id || '');
-      }),
-    ]);
+      }).catch(e=>{setStatus(undefined); setStatusError(e instanceof Error ? e.message : String(e));}),
+    ]).then(()=>{}).finally(()=>{refreshRequest.current=null; scheduleRefresh();});
+    return refreshRequest.current;
   }
   async function openDoc(path:string) {
     try { setDoc(await api('docs/file?path=' + encodeURIComponent(path))); setError(''); window.scrollTo(0, 0); }
     catch(e) { setError(String(e instanceof Error ? e.message : e)); }
   }
-  useEffect(()=>{ refresh().catch(e=>setError(e.message)); api<{files:Doc[]}>('docs').then(r=>{setFiles(r.files); const first=r.files.find(f=>f.path===new URLSearchParams(location.search).get('doc')) || r.files.find(f=>f.path==='README.md') || r.files[0]; if(first) void openDoc(first.path);}).catch(e=>setError(e.message)); },[]);
+  useEffect(()=>{
+    mounted.current = true;
+    void refresh();
+    function visibilityChanged() {
+      clearTimeout(refreshTimer.current);
+      if (!document.hidden && !actionPending.current) void refresh();
+    }
+    document.addEventListener('visibilitychange', visibilityChanged);
+    api<{files:Doc[]}>('docs').then(r=>{setFiles(r.files); const first=r.files.find(f=>f.path===new URLSearchParams(location.search).get('doc')) || r.files.find(f=>f.path==='README.md') || r.files[0]; if(first) void openDoc(first.path);}).catch(e=>setError(e.message));
+    return ()=>{mounted.current=false; clearTimeout(refreshTimer.current); document.removeEventListener('visibilitychange',visibilityChanged);};
+  },[]);
   async function act(path:string, data:unknown, success:string) {
+    if (actionPending.current) return;
+    actionPending.current = true;
+    clearTimeout(refreshTimer.current);
     setBusy(true); setError(''); setErrorDetail(''); setMessage('');
-    if (path.startsWith('server/')) setServerAction(path.split('/')[1]);
-    try {const result = await api<{message?:string}>(path,data); setMessage(result.message || success); await refresh();}
+    if (path.startsWith('game/')) setGameAction(path.split('/')[1]);
+    try {
+      // Drain an older read before mutation so it cannot overwrite the resulting status.
+      await refreshRequest.current;
+      const result = await api<{message?:string}>(path,data); setMessage(result.message || success);
+    }
     catch(e) {
       setError(e instanceof Error ? e.message : String(e));
       if (e instanceof Error && 'detail' in e) setErrorDetail(String(e.detail || ''));
-      if (path.startsWith('server/')) await refreshServer();
     }
-    finally {setBusy(false); setServerAction('');}
+    finally {await refresh(); actionPending.current=false; setBusy(false); setGameAction(''); scheduleRefresh();}
   }
   function localDoc(href:string) {
     const resolved = new URL(href, 'http://docs/docs/' + doc.path);
@@ -90,7 +120,7 @@ export default function App() {
   }
   const profile = status?.profiles.find(p=>p.user_id===account);
   const capability = (name:string)=>status?.capabilities[name];
-  const editable = !!account && !busy && !status?.game_running;
+  const editable = !!account && !busy && !!status && !status.game_running;
   return <Theme appearance={dark?'dark':'light'} accentColor="blue" grayColor="slate" radius="medium" scaling="100%">
     <div className="shell">
       <header className="navigation">
@@ -105,13 +135,14 @@ export default function App() {
       </header>
       <main>
         {error && <div className="notice error" role="alert">{t(error)}{errorDetail && <pre className="error-detail">{errorDetail}</pre>}</div>}
+        {statusError && <div className="notice error" role="alert">{t('游戏状态读取失败')} · {t(statusError)}</div>}
         {message && <div className="notice" role="status">{t(message)}</div>}
         {page==='control' ? <div className="workspace">
           <div className="page-heading">
             <div><p className="eyebrow"><span className="mono">LOCAL SESSION</span><span>{t('本地游戏')}</span></p><h1>{t('玩家与启动设置')}</h1><p>{t('管理当前档案，设置下一次游戏启动。')}</p></div>
             <div className="game-actions">
-              <Button className="stop-button" variant="soft" size="3" disabled={busy || !status?.game_running} onClick={()=>act('game/stop',{},'游戏已停止。')}><Stop weight="fill"/>{t('停止游戏')}</Button>
-              <Button className="launch-button" size="3" disabled={busy || status?.game_running} onClick={()=>act('game/launch',{},'游戏启动命令已执行')}><Play weight="fill"/><span>{t('启动游戏')}</span><ArrowUpRight className="launch-arrow"/></Button>
+              <Button aria-label={t('停止游戏')} className="stop-button" variant="soft" size="3" disabled={busy || !status || (!status.game_running && !server?.running)} onClick={()=>act('game/stop',{},'游戏与服务器已停止。')}><Stop weight="fill"/>{t(gameAction==='stop'?'停止中…':'停止游戏')}</Button>
+              <Button aria-label={t('启动游戏')} className="launch-button" size="3" disabled={busy || !status || status.game_running} onClick={()=>act('game/launch',{},'游戏与服务器已启动。')}><Play weight="fill"/><span>{t(gameAction==='launch'?'启动中…':'启动游戏')}</span><ArrowUpRight className="launch-arrow"/></Button>
             </div>
           </div>
           <section className="profile-strip" aria-label={t('玩家概况')}>
@@ -120,7 +151,7 @@ export default function App() {
             <div><span className="label">{t('转生')}</span><strong>{profile?.prestige === undefined ? t('待读取') : language==='en' ? profile.prestige : `${profile.prestige} 转`}</strong></div>
             <div><span className="label">{t('游戏状态')}</span><strong className={'game-state ' + (status?.game_running?'running':'')}><span className="state-dot"/>{t(status ? (status.game_running?'运行中':'未运行') : '读取中')}</strong></div>
           </section>
-          {status?.game_running && <p className="edit-hint">{t('游戏运行中，档案修改已锁定。退出游戏后刷新状态即可操作。')}</p>}
+          {status?.game_running && <p className="edit-hint">{t('游戏运行中，档案修改已锁定。退出后自动更新状态。')}</p>}
           <div className="control-grid">
             <div className="primary-column">
               <section className="wallet-panel" aria-labelledby="wallet-title">
@@ -161,18 +192,14 @@ export default function App() {
               </section>
             </div>
             <aside className="secondary-column">
-              <section className="panel server-panel" aria-labelledby="server-title" aria-busy={serverLoading || !!serverAction}>
+              <section className="panel server-panel" aria-labelledby="server-title" aria-busy={serverLoading}>
                 <div className="section-title"><HardDrives size={20}/><h2 id="server-title">{t('模拟服务器')}</h2><span className="section-code mono">{server?.pid ? `PID ${server.pid}` : 'PID —'}</span></div>
-                <div className={'server-state ' + (server?.ready?'ready':'')}><span className="state-dot"/>{t(serverLoading ? '读取中' : serverError ? '状态读取失败' : server?.ports.some(p=>p.conflict) ? '端口被占用' : server?.ready ? '运行中' : server?.running ? '部分未监听' : '已停止')}</div>
+                <div className={'server-state ' + (server?.ready?'ready':'')}><span className="state-dot"/>{t(serverLoading && !server && !serverError ? '读取中' : serverError ? '状态读取失败' : server?.ports.some(p=>p.conflict) ? '端口被占用' : server?.ready ? '运行中' : server?.running ? '部分未监听' : '已停止')}<span className="section-code">{t('自动刷新 · 10 秒间隔')}</span></div>
                 <div className="server-ports">{(server?.ports || [{name:'auth',protocol:'TCP',port:443},{name:'lobby',protocol:'TCP',port:3074},{name:'stun',protocol:'UDP',port:3074}]).map(port=><div key={port.name}>
                   <span>{t(port.name==='auth'?'认证':port.name==='lobby'?'大厅':'STUN')} <small className="mono">{port.protocol} {port.port}</small></span>
-                  <span className={'port-state ' + ('listening' in port && port.listening ? 'listening':'')}>{t(serverLoading || !server ? '—' : 'conflict' in port && port.conflict ? '端口被占用' : 'listening' in port && port.listening ? '监听中':'未监听')}</span>
+                  <span className={'port-state ' + ('listening' in port && port.listening ? 'listening':'')}>{t(!server ? '—' : 'conflict' in port && port.conflict ? '端口被占用' : 'listening' in port && port.listening ? '监听中':'未监听')}</span>
                 </div>)}</div>
-                <div className="server-actions">
-                  <Button aria-label={t('启动服务器')} variant="soft" disabled={busy || serverLoading || !server || server.running || server.ports.some(p=>p.conflict)} onClick={()=>act('server/start',{},'服务器已启动。')}><Play weight="fill"/>{t(serverAction==='start'?'启动中…':'启动服务器')}</Button>
-                  <Button aria-label={t('停止服务器')} variant="soft" disabled={busy || serverLoading || !server?.running || !status || status.game_running} onClick={()=>act('server/stop',{},'服务器已停止。')}><Stop weight="fill"/>{t(serverAction==='stop'?'停止中…':'停止服务器')}</Button>
-                </div>
-                <p className="helper">{t(status?.game_running ? '请先停止游戏，再停止服务器。' : '监听状态不代表对局可玩；关闭网页不会停止服务器。')}</p>
+                <p className="helper">{t('随游戏自动启停。监听状态仅用于调试，不代表对局可玩。')}</p>
                 {serverError && <p className="helper server-error">{t(serverError)}</p>}
               </section>
             </aside>

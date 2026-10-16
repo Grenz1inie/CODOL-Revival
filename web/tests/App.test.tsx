@@ -1,5 +1,5 @@
-import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {fireEvent, render, screen, waitFor, within} from '@testing-library/react';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {act, fireEvent, render, screen, waitFor, within} from '@testing-library/react';
 import App from '../src/App';
 
 const profile = {user_id: 'player-one', level: 42, prestige: 2, currency: 44445, premium: 99620};
@@ -7,6 +7,8 @@ const actions = ['设置最高等级', '解锁全部剧情关卡', '增加游戏
 let running: boolean;
 let serverState: {running: boolean; pid: number | null; ready: boolean; ports: {name: string; protocol: string; port: number; listening: boolean; conflict: boolean}[]};
 let serverError: boolean;
+let statusError: boolean;
+let serverResponse: () => Promise<ReturnType<typeof response>>;
 let profiles: typeof profile[];
 let capabilities: Record<string, {available: boolean; reason: string}>;
 let posts: {path: string; data: unknown}[];
@@ -16,6 +18,9 @@ const button = (name: string) => screen.getByRole<HTMLButtonElement>('button', {
 
 beforeEach(() => {
   localStorage.clear();
+  statusError = false;
+  vi.spyOn(document, 'hidden', 'get').mockReturnValue(false);
+  serverResponse = async () => response(serverError ? {error:'服务器状态读取失败'} : serverState, !serverError);
   serverError = false;
   serverState = {running: false, pid: null, ready: false, ports: [
     {name: 'auth', protocol: 'TCP', port: 443, listening: false, conflict: false},
@@ -33,8 +38,8 @@ beforeEach(() => {
       posts.push({path, data: JSON.parse(String(init.body))});
       return postResponse();
     }
-    if (path === 'status') return response({profiles, game_running: running, capabilities});
-    if (path === 'server/status') return response(serverError ? {error: '服务器操作失败'} : serverState, !serverError);
+    if (path === 'status') return response(statusError ? {error:'读取失败'} : {profiles, game_running: running, capabilities}, !statusError);
+    if (path === 'server/status') return serverResponse();
     if (path === 'settings') return response({skip_tutorial: true});
     if (path.startsWith('inventory?')) return response({items: []});
     if (path === 'docs') return response({files: [{path: 'README.md', size: 10}, {path: 'wiki/06-onboarding-profile.md', size: 20}]});
@@ -47,68 +52,35 @@ beforeEach(() => {
 });
 
 describe('服务器控制与语言切换', () => {
-  it('读取中锁定启停，无档案也可启动；显示三个监听状态', async () => {
-    profiles = [];
-    render(<App/>);
-    expect(button('启动服务器').disabled).toBe(true);
-    expect(button('停止服务器').disabled).toBe(true);
-    const panel = await screen.findByRole('region', {name: '模拟服务器'});
-    await waitFor(() => expect(button('启动服务器').disabled).toBe(false));
-    expect(within(panel).getAllByText('未监听')).toHaveLength(3);
-    expect(button('停止服务器').disabled).toBe(true);
-  });
-
-  it('启动和停止发送空参数，等待期间锁定操作，完成后更新状态', async () => {
-    let finish!: (value: ReturnType<typeof response>) => void;
-    postResponse = () => new Promise(resolve => {finish = resolve;});
+  it('服务器只读显示 PID 与三个监听状态，不提供启停按钮', async () => {
+    serverState = {...serverState,running:true,pid:123,ready:true,ports:serverState.ports.map(p=>({...p,listening:true}))};
     await ready();
-    fireEvent.click(button('启动服务器'));
-    expect(button('启动服务器').disabled).toBe(true);
-    expect(button('启动游戏').disabled).toBe(true);
-    serverState = {...serverState, running: true, pid: 123, ready: true, ports: serverState.ports.map(p=>({...p, listening:true}))};
-    finish(response(serverState));
-    await waitFor(() => expect(button('停止服务器').disabled).toBe(false));
-    expect(screen.getByText('PID 123')).toBeTruthy();
-    fireEvent.click(button('停止服务器'));
-    serverState = {...serverState, running: false, pid: null, ready: false, ports: serverState.ports.map(p=>({...p, listening:false}))};
-    finish(response(serverState));
-    await waitFor(() => expect(button('启动服务器').disabled).toBe(false));
-    expect(posts).toEqual([{path:'server/start',data:{}},{path:'server/stop',data:{}}]);
+    const panel = screen.getByRole('region',{name:'模拟服务器'});
+    expect(within(panel).getByText('PID 123')).toBeTruthy();
+    expect(within(panel).getAllByText('监听中')).toHaveLength(3);
+    expect(within(panel).queryByRole('button')).toBeNull();
   });
 
-  it('游戏运行时禁止停止服务器，端口占用不算就绪', async () => {
-    running = true;
-    serverState = {...serverState, running:true, pid:123};
+  it('端口冲突和读取失败仍可见，读取失败不显示上次的正常状态', async () => {
     serverState.ports[0].conflict = true;
     await ready();
-    expect(button('停止服务器').disabled).toBe(true);
-    expect(button('启动服务器').disabled).toBe(true);
     expect(screen.getAllByText('端口被占用')).toHaveLength(2);
-    expect(screen.getByText('请先停止游戏，再停止服务器。')).toBeTruthy();
-  });
-
-  it('读取服务器失败不影响档案，禁止操作且可刷新恢复', async () => {
     serverError = true;
-    await ready();
-    expect(await screen.findByText('状态读取失败')).toBeTruthy();
-    expect(button('启动服务器').disabled).toBe(true);
-    expect(button('增加游戏币').disabled).toBe(false);
-    serverError = false;
     fireEvent.click(button('刷新状态'));
-    await waitFor(() => expect(button('启动服务器').disabled).toBe(false));
+    expect(await screen.findByText('状态读取失败')).toBeTruthy();
+    expect(button('增加游戏币').disabled).toBe(false);
   });
 
-  it('启动失败重新读取进程状态，显示错误并允许停止部分启动的服务', async () => {
+  it('游戏启动失败仍立即刷新，允许停止残留服务器', async () => {
     await ready();
     postResponse = async () => {
       serverState = {...serverState,running:true,pid:123};
-      return response({error:'服务器操作失败',detail:'Required port unavailable'}, false);
+      return response({error:'游戏与服务器操作失败',detail:'Server cleanup failed'},false);
     };
-    fireEvent.click(button('启动服务器'));
-    expect((await screen.findByRole('alert')).textContent).toContain('Required port unavailable');
-    await waitFor(() => expect(button('停止服务器').disabled).toBe(false));
+    fireEvent.click(button('启动游戏'));
+    expect((await screen.findByRole('alert')).textContent).toContain('Server cleanup failed');
+    await waitFor(()=>expect(button('停止游戏').disabled).toBe(false));
     expect(screen.getByText('部分未监听')).toBeTruthy();
-    expect(button('启动服务器').disabled).toBe(true);
   });
 
   it('默认中文，英文覆盖控制台与文档导航，切回时保留输入', async () => {
@@ -119,7 +91,7 @@ describe('服务器控制与语言切换', () => {
     expect(localStorage.getItem('codol-language')).toBe('en');
     expect(screen.getByRole('heading', {name:'Player & launch settings'})).toBeTruthy();
     expect(screen.getByRole('region', {name:'Local server'})).toBeTruthy();
-    expect(button('Start server').disabled).toBe(false);
+    expect(screen.queryByRole('button',{name:'Start server'})).toBeNull();
     expect(button('Stop game').disabled).toBe(true);
     expect(screen.getByRole<HTMLInputElement>('spinbutton', {name:'Amount to add'}).value).toBe('321');
     fireEvent.click(button('Developer WIKI'));
@@ -248,6 +220,7 @@ describe('控制器原有操作契约', () => {
     fireEvent.click(button('增加游戏币'));
     for (const name of [...actions, '启动游戏', '刷新状态']) expect(button(name).disabled).toBe(true);
     expect(screen.getByRole<HTMLButtonElement>('switch').disabled).toBe(true);
+    await waitFor(()=>expect(posts).toHaveLength(1));
     finish(response({error: '请先退出游戏'}, false));
     expect((await screen.findByRole('alert')).textContent).toBe('请先退出游戏');
     await waitFor(() => expect(button('增加游戏币').disabled).toBe(false));
@@ -263,6 +236,7 @@ describe('控制器原有操作契约', () => {
     for (const name of [...actions, '启动游戏', '停止游戏', '刷新状态']) expect(button(name).disabled).toBe(true);
     expect(screen.getByRole<HTMLButtonElement>('switch').disabled).toBe(true);
     running = false;
+    await waitFor(()=>expect(posts).toHaveLength(1));
     finish(response({message: '游戏已停止。'}));
     await screen.findByRole('status');
     await screen.findByText('未运行');
@@ -307,5 +281,73 @@ describe('控制器原有操作契约', () => {
     render(<App/>);
     await screen.findByRole('heading', {name: '档案与引导'});
     expect(screen.queryByRole('heading', {name: '玩家与启动设置'})).toBeNull();
+  });
+});
+
+
+afterEach(() => {vi.useRealTimers(); vi.restoreAllMocks();});
+
+describe('低频自动刷新', () => {
+  const reads = () => vi.mocked(fetch).mock.calls.filter(call=>call[0]==='/api/status').length;
+  it('完成后等待十秒；更新游戏按钮，隐藏暂停，返回立即刷新，卸载清理', async () => {
+    vi.useFakeTimers();
+    let view!: ReturnType<typeof render>;
+    await act(async()=>{view=render(<App/>);});
+    expect(reads()).toBe(1);
+    await act(()=>vi.advanceTimersByTimeAsync(9999));
+    expect(reads()).toBe(1);
+    running = true;
+    await act(()=>vi.advanceTimersByTimeAsync(1));
+    expect(reads()).toBe(2);
+    expect(button('启动游戏').disabled).toBe(true);
+    expect(button('停止游戏').disabled).toBe(false);
+    vi.spyOn(document,'hidden','get').mockReturnValue(true);
+    fireEvent(document,new Event('visibilitychange'));
+    await act(()=>vi.advanceTimersByTimeAsync(30000));
+    expect(reads()).toBe(2);
+    running = false;
+    vi.spyOn(document,'hidden','get').mockReturnValue(false);
+    await act(async()=>{fireEvent(document,new Event('visibilitychange'));});
+    expect(reads()).toBe(3);
+    expect(button('启动游戏').disabled).toBe(false);
+    view.unmount();
+    await act(()=>vi.advanceTimersByTimeAsync(30000));
+    expect(reads()).toBe(3);
+  });
+
+  it('慢请求不重叠，游戏操作期间不轮询，操作完成立即刷新', async () => {
+    vi.useFakeTimers();
+    let finishRead!: (r: ReturnType<typeof response>)=>void;
+    serverResponse = ()=>new Promise(resolve=>{finishRead=resolve;});
+    await act(async()=>{render(<App/>);});
+    await act(()=>vi.advanceTimersByTimeAsync(30000));
+    expect(reads()).toBe(1);
+    await act(async()=>{finishRead(response(serverState));});
+    serverResponse = async()=>response(serverState);
+    let finishAction!: (r: ReturnType<typeof response>)=>void;
+    postResponse = ()=>new Promise(resolve=>{finishAction=resolve;});
+    await act(async()=>{fireEvent.click(button('启动游戏'));});
+    await act(()=>vi.advanceTimersByTimeAsync(30000));
+    expect(reads()).toBe(1);
+    expect(button('启动游戏').disabled).toBe(true);
+    running = true;
+    await act(async()=>{finishAction(response({message:'游戏与服务器已启动。'}));});
+    expect(reads()).toBe(2);
+    expect(button('停止游戏').disabled).toBe(false);
+    await act(()=>vi.advanceTimersByTimeAsync(9999));
+    expect(reads()).toBe(2);
+  });
+
+  it('游戏状态读取失败禁用修改和启停，下次自动刷新恢复', async () => {
+    vi.useFakeTimers();
+    await act(async()=>{render(<App/>);});
+    statusError = true;
+    await act(()=>vi.advanceTimersByTimeAsync(10000));
+    expect(button('启动游戏').disabled).toBe(true);
+    expect(button('停止游戏').disabled).toBe(true);
+    expect(button('增加游戏币').disabled).toBe(true);
+    statusError = false;
+    await act(()=>vi.advanceTimersByTimeAsync(10000));
+    expect(button('启动游戏').disabled).toBe(false);
   });
 });
