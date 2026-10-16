@@ -292,11 +292,12 @@ class CollisionWorld:
         if not self.complete:
             raise ValueError('collision world incomplete: ' + '; '.join(self.geometry['closure']['blockers']))
 
-    def trace_point(self, start, end, *, contents_mask):
+    def trace_point(self, start, end, *, contents_mask, any_hit=False):
         """Nearest exact segment intersection, with an explicit partial-world flag.
 
         No engine contact epsilon, sweep radius, step or client prediction is
         emulated. A no-hit answer means only no hit in the exported world subset.
+        Visibility can use any_hit to stop at an obstacle; shots keep nearest-hit.
         """
         if len(start) != 3 or len(end) != 3 or not all(math.isfinite(v) for v in (*start,*end)):
             raise ValueError('point trace requires finite vectors')
@@ -348,6 +349,8 @@ class CollisionWorld:
             if intersects and (inside or normal is not None):
                 placement = brush.get('placement',{})
                 hit(0.0 if inside else enter,normal,'submodel_brush' if placement else 'brush',index,material,inside,**placement)
+                if any_hit:
+                    return result
         for metadata,(a,e1,e2,normal,lo,hi),_ in self._query_triangles(overlaps,contents_mask,terrain,instances,query_lo,query_hi):
             p = _cross(direction,e2)
             det = _dot(e1,p)
@@ -363,6 +366,8 @@ class CollisionWorld:
             if 0 <= t <= 1:
                 n = normal if _dot(normal,direction) <= 0 else [-c for c in normal]
                 hit(t,n,**metadata)
+                if any_hit:
+                    return result
         return result
 
     def trace_box(self, start, end, mins=(-15,-15,0), maxs=(15,15,70), *, contents_mask=0x2001001):

@@ -23,6 +23,25 @@ def actual_geometry():
 
 
 class MatchCollisionTests(unittest.TestCase):
+    def test_visibility_query_can_stop_at_any_obstacle_without_changing_nearest_hits(self):
+        from match_server.collision import CollisionWorld
+        from test_match_world import room
+        # Far obstacle comes first in the exported order. Shooting and ground
+        # queries still need the nearer obstacle; visibility needs only a hit.
+        brushes=room(((120,-50,0),(130,50,100)),((60,-50,0),(70,50,100)))
+        triangles=CollisionWorld(dict(materials=[dict(contents=1)],world_brushes=[],
+            vertices=[[x,y,z] for x in (120,60) for y,z in ((-50,0),(50,0),(0,100))],
+            triangles=[[0,1,2],[3,4,5]],partitions=[dict(first_tri=0,tri_count=2)],
+            world_partitions=[[0,0]],static_models=[],closure=dict(blockers=[])))
+        for world in (brushes,triangles):
+            with self.subTest(world=world):
+                start,end=[0,0,40],[200,0,40]
+                self.assertAlmostEqual(world.trace_point(start,end,contents_mask=1)['fraction'],.3)
+                self.assertTrue(world.trace_point(start,end,contents_mask=1,any_hit=True)['hit'])
+                self.assertFalse(world.trace_point(start,[0,200,40],contents_mask=1,any_hit=True)['hit'])
+                self.assertFalse(world.trace_point(start,end,contents_mask=2,any_hit=True)['hit'])
+                self.assertAlmostEqual(world.trace_point(start,end,contents_mask=1)['fraction'],.3)
+
     def test_box_on_sloped_contact_cannot_round_through_the_surface(self):
         from match_server.collision import CollisionWorld
         # Reduced from the first Nuketown AI stall: the preceding sweep lands

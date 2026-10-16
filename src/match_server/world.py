@@ -190,7 +190,7 @@ class World:
         return _add(player.origin,[0,0,60])
 
     def _visible(self, player, target):
-        trace=self.collision.trace_point(self._eye(player),self._eye(target),contents_mask=SHOT_MASK)
+        trace=self.collision.trace_point(self._eye(player),self._eye(target),contents_mask=SHOT_MASK,any_hit=True)
         return not trace['hit'] and not trace.get('unresolved_static_models')
 
     @staticmethod

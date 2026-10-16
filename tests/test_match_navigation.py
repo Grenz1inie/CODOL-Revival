@@ -13,6 +13,47 @@ CSV='''4
 
 
 class MatchNavigationTests(unittest.TestCase):
+    def test_long_route_uses_graph_instead_of_map_wide_collision_sweeps(self):
+        import math
+        from match_server.navigation import Navigation
+        geometry=room(((350,-100,0),(360,100,200)))
+        trace_box=geometry.trace_box
+        distances=[]
+        def measured_trace(start,end,*args,**kwargs):
+            distances.append(math.dist(start,end))
+            return trace_box(start,end,*args,**kwargs)
+        geometry.trace_box=measured_trace
+        positions=[[0,0,0],[0,160,0],[200,160,0],[400,160,0],
+                   [600,160,0],[800,160,0],[800,0,0]]
+        nodes=[dict(position=position,standing=True,
+                    links=[j for j in (i-1,i+1) if 0<=j<len(positions)])
+               for i,position in enumerate(positions)]
+        path=Navigation(nodes,geometry).route(positions[0],positions[-1])
+        self.assertTrue(path)
+        self.assertEqual(path[-1],positions[-1])
+        self.assertLessEqual(max(distances),256)
+        for a,b in zip([positions[0],*path],path):
+            self.assertEqual(trace_box(a,b)['fraction'],1)
+
+    def test_unreachable_endpoint_does_not_probe_distant_waypoints(self):
+        from match_server.navigation import Navigation
+        geometry=room(((80,-1000,0),(90,1000,200)))
+        trace_box=geometry.trace_box
+        queries=[]
+        def measured_trace(*args,**kwargs):
+            queries.append(args)
+            return trace_box(*args,**kwargs)
+        geometry.trace_box=measured_trace
+        start,end=[0,0,0],[200,0,0]
+        self.assertEqual(Navigation([],geometry).route(start,end),[])
+        baseline=len(queries)
+        queries.clear()
+        # Reference nearest_reachable only attaches within 256 units. Unrelated
+        # map nodes must not turn one failed attachment into map-wide sweeps.
+        nodes=[dict(position=[600+i*10,0,.125],standing=True,links=[]) for i in range(40)]
+        self.assertEqual(Navigation(nodes,geometry).route(start,end),[])
+        self.assertLessEqual(len(queries),baseline)
+
     def test_reference_node_heights_follow_current_ground_and_reject_blocked_nodes(self):
         from match_server.navigation import Navigation
         text='3\n0 0 -.5,1,stand,,,\n200 0 -.25,0,stand,,,\n400 0 0,1,stand,,,\n'

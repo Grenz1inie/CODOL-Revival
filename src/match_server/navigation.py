@@ -53,15 +53,24 @@ class Navigation:
         return clear(a,up_a) and clear(b,up_b) and clear(up_a,up_b)
 
     def _nearest(self, position):
-        order=sorted(range(len(self.nodes)),key=lambda i:math.dist(position,self.nodes[i]['position']))
+        # Match the reference bot's 256-unit local graph attachment. Sweeping
+        # every distant node when no local node is reachable stalls input ticks.
+        order=sorted((i for i,node in enumerate(self.nodes)
+                      if math.dist(position,node['position']) < 256),
+                     key=lambda i:math.dist(position,self.nodes[i]['position']))
         return next((i for i in order if self.nodes[i]['standing']
                      and self._clear(position,self.nodes[i]['position'])),None)
 
     def route(self, start, goal):
-        if self._clear(start,goal):
+        # Long distances belong to the waypoint graph, not repeated sweeps
+        # across all geometry between two players on opposite sides of a map.
+        if math.dist(start,goal) < 256 and self._clear(start,goal):
             return [list(goal)]
-        first,last=self._nearest(start),self._nearest(goal)
-        if first is None or last is None:
+        first=self._nearest(start)
+        if first is None:
+            return []
+        last=self._nearest(goal)
+        if last is None:
             return []
         costs,parents,queue={first:0},{first:None},[(0,first)]
         while queue:
@@ -74,7 +83,7 @@ class Navigation:
                 path.reverse()
                 # Replanning must not revisit the nearest node behind the bot
                 # when the next node is already reachable from its position.
-                while len(path)>1 and self._clear(start,path[1]):
+                while len(path)>1 and math.dist(start,path[1]) < 256 and self._clear(start,path[1]):
                     path.pop(0)
                 return path
             node=self.nodes[index]
