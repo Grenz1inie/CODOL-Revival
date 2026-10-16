@@ -1,6 +1,7 @@
 param(
     [ValidateSet('status', 'start', 'stop')][string]$Action = 'status',
-    [string]$PythonPath
+    [string]$PythonPath,
+    [ValidateRange(1,120)][int]$StartupTimeoutSeconds = 20
 )
 $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
@@ -56,8 +57,8 @@ if ($Action -eq 'start') {
         if (!$state.running) { throw 'Local server exited before its ports were listening. See runtime/logs/server.stderr.log.' }
         if ($state.ready) { break }
         Start-Sleep -Milliseconds 300
-    } while ($timer.Elapsed.TotalSeconds -lt 20)
-    if (!$state.ready) { throw 'Local server did not open all required ports within 20 seconds. See runtime/logs/server.stderr.log.' }
+    } while ($timer.Elapsed.TotalSeconds -lt $StartupTimeoutSeconds)
+    if (!$state.ready) { throw "Local server did not open all required ports within $StartupTimeoutSeconds seconds. See runtime/logs/server.stderr.log." }
     New-Item -ItemType Directory -Path (Split-Path $pidFile) -Force | Out-Null
     $state.pid | Set-Content -LiteralPath $pidFile
 } elseif ($Action -eq 'stop' -and $state.running) {

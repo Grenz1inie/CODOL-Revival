@@ -33,6 +33,7 @@ def check_environment(root):
     required = [root / name for name in (
         'src/local_server.py', 'src/controller.py', 'scripts/Start-Services.ps1',
         'scripts/Start-Controller.ps1', 'scripts/Launch-Game.ps1',
+        'scripts/Control-Game.ps1', 'scripts/Control-Services.ps1', 'scripts/Stop-Game.ps1',
         'data/marketplace-catalog.json', 'runtime/certs/ca.pem',
         'runtime/certs/server.pem', 'runtime/certs/server-key.pem')]
     required += [game / name for name in ('codoMP_client_shipRetail.exe', 'dwauth.ini', 'stun.ini', 'cacert.pem')]

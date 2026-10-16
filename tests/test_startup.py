@@ -30,6 +30,7 @@ class StartupFixture:
         self.game = self.root.parent / 'CODOL_Experience_V3.3.3.3_FULL.7z'
         for name in ('src/local_server.py', 'src/controller.py', 'scripts/Start-Services.ps1',
                      'scripts/Start-Controller.ps1', 'scripts/Launch-Game.ps1',
+                     'scripts/Control-Game.ps1', 'scripts/Control-Services.ps1', 'scripts/Stop-Game.ps1',
                      'data/marketplace-catalog.json', 'web/dist/index.html'):
             self.write(self.root / name, '{}')
         self.write(self.root / 'web/dist/index.html',
@@ -72,10 +73,12 @@ class StartupChecksTests(StartupFixture, unittest.TestCase):
         self.assertEqual({p: p.read_bytes() for p in self.root.parent.rglob('*') if p.is_file()}, before)
 
     def test_missing_files_are_reported_together_with_frontend_build_instructions(self):
-        for name in ('src/local_server.py', 'web/dist/index.html', 'runtime/certs/server.pem'):
+        for name in ('src/local_server.py', 'web/dist/index.html', 'runtime/certs/server.pem',
+                     'scripts/Control-Game.ps1', 'scripts/Control-Services.ps1', 'scripts/Stop-Game.ps1'):
             (self.root / name).unlink()
         errors = '\n'.join(startup.check_environment(self.root))
-        for expected in ('local_server.py', 'server.pem', 'npm ci', 'npm run build'):
+        for expected in ('local_server.py', 'server.pem', 'npm ci', 'npm run build',
+                         'Control-Game.ps1', 'Control-Services.ps1', 'Stop-Game.ps1'):
             self.assertIn(expected, errors)
 
     def test_incomplete_frontend_assets_are_rejected(self):
@@ -120,7 +123,8 @@ class LauncherTests(StartupFixture, unittest.TestCase):
     def setUp(self):
         super().setUp()
         for name in ('Start.ps1', 'tools/check-startup.py', 'scripts/Start-Services.ps1',
-                     'scripts/Start-Controller.ps1', 'scripts/Launch-Game.ps1'):
+                     'scripts/Start-Controller.ps1', 'scripts/Launch-Game.ps1',
+                     'scripts/Control-Game.ps1', 'scripts/Control-Services.ps1'):
             target = self.root / name
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(ROOT / name, target)
@@ -164,7 +168,7 @@ function Start-Process {
     param($FilePath, $ArgumentList, $WorkingDirectory, $WindowStyle,
           $RedirectStandardOutput, $RedirectStandardError, $Verb, [switch]$PassThru)
     $global:launchEvents += [pscustomobject]@{file=$FilePath; arguments=@($ArgumentList); window=$WindowStyle; verb=$Verb}
-    if ($FilePath -like 'http*') { return }
+    if ($FilePath -like 'http*' -or ($ArgumentList -join ' ') -like '*-Action watch*') { return }
     if ($Verb -eq 'RunAs') {
         if ($global:fixtureMode -eq 'cancel') { throw 'UAC cancelled' }
         $proc = [pscustomobject]@{Id=41003; ProcessId=41003; Name='codoMP_client_shipRetail.exe'; CommandLine=$FilePath}
@@ -184,6 +188,10 @@ function Start-Process {
         if ($global:fixtureMode -eq 'crash') { $global:fixtureProcesses = @() }
     }
     return $proc
+}
+function Stop-Process {
+    param($Id,[switch]$Force)
+    $global:fixtureProcesses = @($global:fixtureProcesses | Where-Object ProcessId -ne $Id)
 }
 function Get-NetTCPConnection {
     param($State)
@@ -260,7 +268,7 @@ exit $code
                        check=True, capture_output=True, timeout=30)
         code, events, output = self.run_launcher('-NoGame', '-NoBrowser', mode='venv', repeat=True, python_path=None)
         self.assertEqual(code, 0, output)
-        self.assertEqual(len(events), 2, events)
+        self.assertEqual(len(events), 1, events)
         self.assertTrue(all('.venv' in event['file'] for event in events))
 
     def test_missing_prerequisite_aborts_before_any_process_is_started(self):
@@ -282,9 +290,9 @@ exit $code
     def test_default_starts_both_hidden_services_browser_and_elevated_game(self):
         code, events, output = self.run_launcher()
         self.assertEqual(code, 0, output)
-        self.assertEqual(len(events), 4, events)
-        self.assertIn('local_server.py', ' '.join(events[0]['arguments']))
-        self.assertIn('controller.py', ' '.join(events[1]['arguments']))
+        self.assertEqual(len(events), 5, events)
+        self.assertIn('controller.py', ' '.join(events[0]['arguments']))
+        self.assertIn('local_server.py', ' '.join(events[1]['arguments']))
         for event in events[:2]:
             self.assertEqual(event['file'], sys.executable)
             self.assertEqual(event['window'], 'Hidden')
@@ -294,18 +302,18 @@ exit $code
     def test_no_game_no_browser_and_repeat_reuse_services(self):
         code, events, output = self.run_launcher('-NoGame', '-NoBrowser', repeat=True)
         self.assertEqual(code, 0, output)
-        self.assertEqual(len(events), 2, events)
+        self.assertEqual(len(events), 1, events)
 
     def test_repeated_default_launch_reuses_game(self):
         code, events, output = self.run_launcher(repeat=True)
         self.assertEqual(code, 0, output)
         self.assertEqual(sum(event['verb'] == 'RunAs' for event in events), 1)
-        self.assertEqual(sum(event['window'] == 'Hidden' for event in events), 2)
+        self.assertEqual(sum(event['window'] == 'Hidden' for event in events), 3)
 
     def test_existing_services_without_pid_files_are_adopted(self):
         code, events, output = self.run_launcher('-NoBrowser', mode='existing')
         self.assertEqual(code, 0, output)
-        self.assertEqual(len(events), 1, events)
+        self.assertEqual(len(events), 2, events)
         self.assertEqual(events[0]['verb'], 'RunAs')
 
     def test_stale_pid_files_do_not_block_startup(self):
@@ -313,7 +321,7 @@ exit $code
         self.write(self.root / 'runtime/logs/controller.pid', '9999')
         code, events, output = self.run_launcher('-NoGame', '-NoBrowser')
         self.assertEqual(code, 0, output)
-        self.assertEqual(len(events), 2)
+        self.assertEqual(len(events), 1)
 
     def test_crash_partial_service_and_bad_http_do_not_open_browser_or_game(self):
         for mode in ('crash', 'partial', 'bad-api', 'bad-ui'):

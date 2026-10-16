@@ -53,92 +53,59 @@ class ControllerTests(unittest.TestCase):
             self.assertEqual(caught.exception.code, 400)
         self.assertEqual(self.call('/api/settings'), {'skip_tutorial': False})
 
-    def test_server_status_and_actions_use_fixed_script(self):
+    def test_server_status_is_read_only_and_standalone_actions_are_removed(self):
         state = {'running': True, 'pid': 123, 'ready': True, 'ports': []}
-        with patch('controller.subprocess.run', return_value=subprocess.CompletedProcess(
-                [], 0, json.dumps(state).encode(), b'')) as run:
-            for action, data in [('status', None), ('start', {}), ('stop', {})]:
-                with self.subTest(action=action):
-                    result = self.call('/api/server/' + action, data)
-                    self.assertEqual(result, state)
-                    command = run.call_args.args[0]
-                    self.assertIn(str(self.root / 'scripts/Control-Services.ps1'), command)
-                    self.assertEqual(command[command.index('-Action') + 1], action)
-
-    def test_server_actions_reject_live_stop_arguments_get_and_cross_origin(self):
+        with patch('controller.subprocess.run', return_value=subprocess.CompletedProcess([], 0, json.dumps(state).encode(), b'')) as run:
+            self.assertEqual(self.call('/api/server/status'), state)
+            self.assertIn(str(self.root / 'scripts/Control-Services.ps1'), run.call_args.args[0])
         with patch('controller.subprocess.run') as run:
-            for action, data, headers, code in [
-                ('start', None, {}, 404), ('stop', {'pid': 123}, {}, 400),
-                ('start', {}, {'Origin': 'https://example.com'}, 403),
-                ('status', {}, {}, 404),
-            ]:
-                with self.subTest(action=action), self.assertRaises(HTTPError) as caught:
-                    self.call('/api/server/' + action, data, **headers)
-                self.assertEqual(caught.exception.code, code)
-            self.running = True
-            with self.assertRaises(HTTPError) as caught:
-                self.call('/api/server/stop', {})
-            self.assertEqual(caught.exception.code, 409)
+            for path, data in [('/api/server/start', {}), ('/api/server/stop', {}), ('/api/server/status', {})]:
+                with self.subTest(path=path), self.assertRaises(HTTPError) as caught:
+                    self.call(path, data)
+                self.assertEqual(caught.exception.code, 404)
         run.assert_not_called()
 
-    def test_server_script_failure_and_timeout_are_not_success(self):
-        for action in ('status', 'start', 'stop'):
-            for failure in (subprocess.CompletedProcess([], 1, b'', b'Port conflict'),
-                            subprocess.TimeoutExpired('powershell.exe', 40)):
-                with self.subTest(action=action, failure=failure), patch('controller.subprocess.run') as run:
-                    if isinstance(failure, Exception):
-                        run.side_effect = failure
-                    else:
-                        run.return_value = failure
+    def test_game_actions_use_session_script_and_confirm_observed_state(self):
+        for action in ('launch', 'stop'):
+            self.running = action == 'stop'
+            def execute(command, **kwargs):
+                self.assertIn(str(self.root / 'scripts/Control-Game.ps1'), command)
+                self.assertEqual(command[command.index('-Action') + 1], 'start' if action == 'launch' else 'stop')
+                self.running = action == 'launch'
+                return subprocess.CompletedProcess(command, 0, b'', b'')
+            with self.subTest(action=action), patch('controller.subprocess.run', side_effect=execute):
+                self.assertIn('message', self.call('/api/game/' + action, {}))
+                self.assertEqual(self.call('/api/status')['game_running'], action == 'launch')
+
+    def test_stop_without_game_still_cleans_server_and_cleanup_failure_is_reported(self):
+        with patch('controller.subprocess.run', return_value=subprocess.CompletedProcess([], 0, b'', b'')) as run:
+            self.call('/api/game/stop', {})
+            self.assertIn('stop', run.call_args.args[0])
+        with patch('controller.subprocess.run', return_value=subprocess.CompletedProcess([], 1, b'', b'Server still running')):
+            with self.assertRaises(HTTPError) as caught:
+                self.call('/api/game/stop', {})
+            self.assertEqual(caught.exception.code, 500)
+
+    def test_game_action_failures_never_report_success(self):
+        for action in ('launch', 'stop'):
+            self.running = action == 'stop'
+            for result in [subprocess.CompletedProcess([], 1, b'', b'UAC cancelled'),
+                           subprocess.CompletedProcess([], 0, b'', b''),
+                           subprocess.TimeoutExpired('powershell.exe', 120)]:
+                with self.subTest(action=action,result=result), patch('controller.subprocess.run') as run:
+                    if isinstance(result, Exception): run.side_effect = result
+                    else: run.return_value = result
                     with self.assertRaises(HTTPError) as caught:
-                        self.call('/api/server/' + action, None if action == 'status' else {})
+                        self.call('/api/game/' + action, {})
                     self.assertEqual(caught.exception.code, 500)
 
-    def test_stop_game_is_idempotent_when_not_running(self):
+    def test_game_actions_reject_get_cross_origin_and_process_arguments(self):
         with patch('controller.subprocess.run') as run:
-            self.assertEqual(self.call('/api/game/stop', {}), {'message': '游戏未运行。'})
-        run.assert_not_called()
-
-    def test_stop_game_runs_existing_script_and_confirms_exit(self):
-        self.running = True
-
-        def stop(command, **kwargs):
-            self.assertEqual(command, ['powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass',
-                                      '-File', str(self.root / 'scripts/Stop-Game.ps1')])
-            self.running = False
-            return subprocess.CompletedProcess(command, 0, b'', b'')
-
-        with patch('controller.subprocess.run', side_effect=stop) as run:
-            self.assertEqual(self.call('/api/game/stop', {}), {'message': '游戏已停止。'})
-        self.assertEqual(run.call_count, 1)
-        self.assertFalse(self.call('/api/status')['game_running'])
-
-    def test_stop_game_failures_never_report_success(self):
-        self.running = True
-        for result, error in [
-            (subprocess.CompletedProcess([], 1, b'', b'UAC cancelled'), 'UAC cancelled'),
-            (subprocess.CompletedProcess([], 0, b'', b''), '游戏仍在运行'),
-            (subprocess.TimeoutExpired('powershell.exe', 90), 'timed out'),
-        ]:
-            with self.subTest(error=error), patch('controller.subprocess.run') as run:
-                if isinstance(result, Exception):
-                    run.side_effect = result
-                else:
-                    run.return_value = result
-                with self.assertRaises(HTTPError) as caught:
-                    self.call('/api/game/stop', {})
-                self.assertEqual(caught.exception.code, 500)
-                self.assertIn(error, json.load(caught.exception)['error'])
-                self.assertTrue(self.call('/api/status')['game_running'])
-
-    def test_stop_game_rejects_get_cross_origin_and_process_arguments(self):
-        self.running = True
-        with patch('controller.subprocess.run') as run:
-            for data, headers, status in [(None, {}, 404), ({'pid': 123}, {}, 400),
-                                           ({}, {'Origin': 'https://example.com'}, 403)]:
-                with self.subTest(data=data, headers=headers), self.assertRaises(HTTPError) as caught:
-                    self.call('/api/game/stop', data, **headers)
-                self.assertEqual(caught.exception.code, status)
+            for action in ('launch', 'stop'):
+                for data, headers, code in [(None, {}, 404), ({'pid': 123}, {}, 400), ({}, {'Origin':'https://example.com'},403)]:
+                    with self.subTest(action=action,data=data), self.assertRaises(HTTPError) as caught:
+                        self.call('/api/game/' + action, data, **headers)
+                    self.assertEqual(caught.exception.code, code)
         run.assert_not_called()
 
     def test_story_unlock_api_rejects_live_game_and_preserves_other_profile_fields(self):

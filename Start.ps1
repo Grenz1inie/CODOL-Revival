@@ -87,7 +87,7 @@ try {
     }
 
     New-Item -ItemType Directory -Path $logRoot -Force | Out-Null
-    foreach ($service in $services) {
+    foreach ($service in @($services | Where-Object Entry -eq 'Start-Controller.ps1')) {
         $pidFile = Join-Path $logRoot $service.PidFile
         if ($service.Process) {
             # Recover missing/stale PID metadata for the existing stop/launch scripts.
@@ -127,15 +127,15 @@ try {
     }
 
     Write-Output "Controller: $controllerUrl"
-    if (!$NoBrowser) { Start-Process -FilePath $controllerUrl }
     if (!$NoGame) {
         if (Get-Process -Name 'codoMP_client_shipRetail' -ErrorAction SilentlyContinue) {
             Write-Output 'Game already running; keeping the current session.'
         } else {
-            & (Join-Path $projectRoot 'scripts\Launch-Game.ps1') -PythonPath $PythonPath | Out-Null
+            & (Join-Path $projectRoot 'scripts\Launch-Game.ps1') -PythonPath $PythonPath -StartupTimeoutSeconds $StartupTimeoutSeconds | Out-Null
             Write-Output 'Game launch requested. Confirm Windows UAC if prompted.'
         }
     }
+    if (!$NoBrowser) { Start-Process -FilePath $controllerUrl }
     Write-Output "Startup complete. Logs: $logRoot"
 } catch {
     throw "Startup failed: $($_.Exception.Message) Logs: $logRoot. Services already started are kept running."

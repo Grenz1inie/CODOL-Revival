@@ -108,53 +108,35 @@ def create_server(root, port=8765, *, game_status=game_running):
                                              'premium': marketplace.balance(int(path.stem, 16), currency_id=2),
                                              **progression.summary(int(path.stem, 16))})
                     self.reply({'profiles': profiles, 'game_running': game_status(), 'capabilities': CAPABILITIES})
-                elif ((url.path == '/api/server/status' and not writing)
-                      or (url.path in ('/api/server/start', '/api/server/stop') and writing)):
-                    action = url.path.rsplit('/', 1)[1]
-                    if writing and body:
-                        raise ValueError('服务器操作不接受参数')
-                    with mutation_lock:
-                        if action == 'stop' and game_status():
-                            self.reply({'error': '请先停止游戏，再停止服务器'}, 409)
-                            return
-                        result = subprocess.run(['powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass',
-                                                 '-File', str(root / 'scripts/Control-Services.ps1'),
-                                                 '-Action', action, '-PythonPath', sys.executable],
-                                                capture_output=True, creationflags=subprocess.CREATE_NO_WINDOW, timeout=40)
-                        if result.returncode:
-                            self.reply({'error': '服务器操作失败',
-                                        'detail': result.stderr.decode('utf-8', errors='replace')}, 500)
-                            return
+                elif url.path == '/api/server/status' and not writing:
+                    result = subprocess.run(['powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass',
+                                             '-File', str(root / 'scripts/Control-Services.ps1'), '-Action', 'status'],
+                                            capture_output=True, creationflags=subprocess.CREATE_NO_WINDOW, timeout=40)
+                    if result.returncode:
+                        self.reply({'error': '服务器状态读取失败',
+                                    'detail': result.stderr.decode('utf-8', errors='replace')}, 500)
+                    else:
                         self.reply(json.loads(result.stdout.decode('utf-8-sig')))
-                elif url.path == '/api/game/launch' and writing:
+                elif url.path in ('/api/game/launch', '/api/game/stop') and writing:
+                    if body:
+                        raise ValueError('游戏操作不接受参数')
+                    launching = url.path.endswith('/launch')
                     with mutation_lock:
-                        if game_status():
+                        if launching and game_status():
                             self.reply({'error': '游戏已运行，请先退出当前游戏'}, 409)
                             return
                         result = subprocess.run(['powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File',
-                                                 str(root / 'scripts/Launch-Game.ps1')], capture_output=True,
-                                                creationflags=subprocess.CREATE_NO_WINDOW, timeout=90)
+                                                 str(root / 'scripts/Control-Game.ps1'), '-Action', 'start' if launching else 'stop',
+                                                 '-PythonPath', sys.executable], capture_output=True,
+                                                creationflags=subprocess.CREATE_NO_WINDOW, timeout=120)
                         if result.returncode:
-                            self.reply({'error': result.stderr.decode('utf-8', errors='replace')}, 500)
+                            self.reply({'error': '游戏与服务器操作失败',
+                                        'detail': result.stderr.decode('utf-8', errors='replace')}, 500)
                             return
-                    self.reply({'message': '游戏已启动；界面与等级以游戏实际显示为准。'})
-                elif url.path == '/api/game/stop' and writing:
-                    if body:
-                        raise ValueError('停止游戏不接受参数')
-                    with mutation_lock:
-                        if not game_status():
-                            self.reply({'message': '游戏未运行。'})
+                        if game_status() != launching:
+                            self.reply({'error': '启动未完成，游戏未运行。' if launching else '停止未完成，游戏仍在运行。'}, 500)
                             return
-                        result = subprocess.run(['powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File',
-                                                 str(root / 'scripts/Stop-Game.ps1')], capture_output=True,
-                                                creationflags=subprocess.CREATE_NO_WINDOW, timeout=90)
-                        if result.returncode:
-                            self.reply({'error': result.stderr.decode('utf-8', errors='replace') or '停止游戏失败。'}, 500)
-                            return
-                        if game_status():
-                            self.reply({'error': '停止未完成，游戏仍在运行。'}, 500)
-                            return
-                    self.reply({'message': '游戏已停止。'})
+                    self.reply({'message': '游戏与服务器已启动。' if launching else '游戏与服务器已停止。'})
                 elif url.path == '/api/inventory' and not writing:
                     uid = query.get('user_id', [''])[0]
                     if not re.fullmatch('[0-9a-f]{16}', uid):
