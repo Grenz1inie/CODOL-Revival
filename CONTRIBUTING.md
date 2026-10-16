@@ -15,7 +15,18 @@ python -m venv .venv
 
 当前电脑已有依赖，可直接用 `python` 运行测试。启动脚本优先使用 `.venv`，否则使用 PATH 中的 Python。`games/codol/versions/v3_3_3_3/scripts/Start-Services.ps1 -PythonPath <解释器路径>` 可指定解释器。REA/Ghidra 是独立研究工具链，不属于游戏服务依赖；配置见 [工具链](docs/wiki/01-baseline-toolchain.md)。
 
-`python -B tools/check-startup.py` 只读检查管理器Python依赖、启动文件和前端产物；选中版本的游戏地址和证书在启动游戏时检查，失败返回非零退出码。缺少依赖或前端产物时按输出命令补齐；证书与游戏配置的准备见 [地址重定向与 TLS](docs/wiki/03-redirection-tls-auth.md)。该检查不会安装依赖或修改配置。
+`python -B tools/check-startup.py` 只读检查管理器Python依赖、启动文件和前端产物；缺少前提时按输出命令补齐。3.3正常启动会自动生成缺失地图、准备实例证书并备份配置三个客户端文件，随后完整预检；证书与游戏配置细节见 [地址重定向与 TLS](docs/wiki/03-redirection-tls-auth.md)。只读检查不会安装依赖或修改配置。
+
+首次部署还需构建网页（构建时使用满足`web/package-lock.json`要求的Node.js）：
+
+```powershell
+cd web
+npm ci
+npm run build
+cd ..
+```
+
+随后按下节构建Rust对局服，指定32位MinGW编译器，再运行`Start.ps1`选择游戏。已有网页与原生产物时，启动过程不调用npm或Cargo。
 
 Rust对局服使用项目内1.99.1 GNU工具链；`scripts/Invoke-MatchCargo.ps1`设置本次进程环境，
 构建产物写入`runtime/builds/codol/v3_3_3_3/rust-match/`，不更改系统PATH。依赖已经缓存时可加`--offline`：

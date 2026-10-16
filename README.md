@@ -50,8 +50,12 @@ powershell -NoProfile -ExecutionPolicy Bypass -File games/codol/versions/v3_3_3_
 ```
 
 有效包会复用；提取失败不发布半成品。已有损坏包会报告具体错误并保留，请先将其移出上述目录再重试。
-这一步不会配置客户端地址、证书或构建前端/Rust；这些仍是独立前提，见
-[开发环境](CONTRIBUTING.md)和[地址与证书](docs/wiki/03-redirection-tls-auth.md)。
+上述手动命令只生成地图。正常从网页启动3.3时，会先检查已安装依赖和构建产物，
+再生成地图、准备本实例证书，并备份后配置游戏目录中的`dwauth.ini`、`stun.ini`、`cacert.pem`。
+原CA保留；重复启动复用有效地图和证书；失败会在网页显示具体原因。
+新电脑先按[开发环境](CONTRIBUTING.md)安装Python依赖、构建前端及Rust对局服，
+首次地图提取另需上述32位MinGW工具链。无需复制作者的`runtime/`或`research/`。
+备份、证书和恢复步骤见[地址与证书](docs/wiki/03-redirection-tls-auth.md)。
 
 ## 目录
 
@@ -96,4 +100,4 @@ archive/                         历史基线
 
 ## 游戏目录例外（3.3.3.3）
 
-客户端必须就地读取 `dwauth.ini`、`stun.ini`、`cacert.pem`，所以这三项仍在游戏目录。证书文件保留原 CA 并追加本地 CA；对应原始配置位于 `runtime/backups/`。游戏 EXE 未修改，系统根证书、hosts、防火墙未修改。游戏自身产生的日志仍由游戏写入原目录。
+客户端必须就地读取 `dwauth.ini`、`stun.ini`、`cacert.pem`，所以这三项仍在游戏目录。证书文件保留原 CA 并追加本实例 CA；首次配置备份位于 `runtime/instances/<实例>/backups/client-config/`。游戏 EXE 未修改，系统根证书、hosts、防火墙未修改。游戏自身产生的日志仍由游戏写入原目录。

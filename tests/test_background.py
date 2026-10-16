@@ -28,7 +28,7 @@ class BackgroundTests(unittest.TestCase):
             shutil.copyfile(ROOT / 'games/codol/versions/v3_3_3_3/scripts/Start-Services.ps1', scripts / 'Start-Services.ps1')
             # This test covers detached output pipes; preparation has its own
             # resource/launch tests and must not consume a real game here.
-            (scripts / 'Prepare-Resources.ps1').write_text('param($PythonPath,[switch]$RequireServer)\n')
+            (scripts / 'Prepare-Client.ps1').write_text('param($PythonPath)\n')
             process = subprocess.Popen(['powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File',
                 str(scripts / 'Start-Services.ps1'), '-PythonPath', sys.executable],
                 env={**os.environ, 'CODOL_REPO_ROOT': str(root), 'CODOL_RUNTIME': str(runtime)},

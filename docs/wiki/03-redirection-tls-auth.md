@@ -26,7 +26,11 @@
 
 `stun.ini` 为 `127.0.0.1`。服务只监听回环：TCP 443 认证、TCP 3074 大厅、UDP 3074 STUN。`0x03EA=1002`，与实际 title_id 对应；不额外推定第三字段的所有内部用途。
 
-[本地证书工具](../../tools/create-local-cert.py)生成项目私有 CA 和含 `127.0.0.1`/`localhost` SAN 的服务证书。CA 只追加到游戏自己的 `cacert.pem`，保留原内容；**没有安装 OS 根证书，也没有修改 hosts、防火墙或 EXE**。根目录文件的恢复点见[备份](../../runtime/backups)。
+3.3服务启动通过[准备入口](../../games/codol/versions/v3_3_3_3/scripts/Prepare-Client.ps1)先生成缺失地图，再准备实例证书和上述三个客户端文件，最后完整预检。有效证书复用；证书缺件、损坏或失效时，原证书目录保留到本实例`backups/certs-<时间>/`后重建。检查系统时钟可避免错误时间导致证书失效。
+
+CA和含`127.0.0.1`/`localhost` SAN的服务证书放在`runtime/instances/<实例>/certs/`。CA只追加到游戏自己的`cacert.pem`，保留原内容并去重；**没有安装OS根证书，也没有修改hosts、防火墙或EXE**。首次配置原始字节保存在同实例`backups/client-config/`；`missing.json`记录首次准备时不存在的文件。配置发布失败恢复本次修改，重复准备不覆盖首次备份。
+
+[本地证书工具](../../tools/create-local-cert.py)保留为手动维护入口，须明确指定`--runtime 'runtime/instances/<实例>'`，不再写未被实例使用的根`runtime/certs`。正常启动无需先手动调用该工具。
 
 [local_server.py](../../games/codol/versions/v3_3_3_3/server/local_server.py)对该本地服务启用 TLSv1 兼容和 `ALL:@SECLEVEL=0`，先回复 HTTP `100 Continue`，按 Content-Length 收完整 JSON，再发最终响应。这是本地兼容配置，不是系统 TLS 策略修改。
 
@@ -57,6 +61,6 @@
 
 在 [02](02-process-iips-admin.md) 的授权启动流程后，先查 `auth_request` 的 TLS、字段和 capture，再查 `auth_reply`，最后关联同次启动的大堂 hello。认证和大厅固定 key 必须一致；测试本地用户不代表在线帐号可用。
 
-回滚需另有配置修改授权：停止相关进程后，分别恢复 `runtime/backups/dwauth.ini`、`runtime/backups/stun.ini`、`runtime/backups/cacert.pem` 到游戏根的同名文件。更早“尚无本地 dwauth.ini”的状态在基线清单中，不能混用不同时间点备份。无需卸载系统 CA，因为没有安装过。
+回滚需停止相关进程后，从当前实例`backups/client-config/`恢复三个文件；`missing.json`列出的文件恢复为不存在状态。历史手动配置的旧备份仍在`runtime/backups/`，不要混用不同时间点的备份。无需卸载系统CA，因为没有安装过。
 
 明文路径通过仅针对该哈希客户端，不证明其他版本接受。下一检查是 [04](04-lobby-stun.md) 的 `AB81 → AB82 → AB83`，不因后续错误 100 就重写已通过的认证。

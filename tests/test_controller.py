@@ -111,6 +111,18 @@ class ControllerTests(unittest.TestCase):
                         self.call('/api/game/' + action, {})
                     self.assertEqual(caught.exception.code, 500)
 
+    def test_launch_failure_keeps_both_output_streams_in_detail(self):
+        for stderr in (b'', b'Selected game prerequisites failed.'):
+            result = subprocess.CompletedProcess([], 1, '[FAIL] 缺少实例证书\n'.encode(), stderr)
+            with self.subTest(stderr=stderr), patch('controller.subprocess.run', return_value=result):
+                with self.assertRaises(HTTPError) as caught:
+                    self.call('/api/game/launch', {})
+                response = json.load(caught.exception)
+                self.assertEqual(caught.exception.code, 500)
+                self.assertIn('缺少实例证书', response['detail'])
+                if stderr: self.assertIn(stderr.decode(), response['detail'])
+                self.assertNotIn('message', response)
+
     def test_game_actions_reject_get_cross_origin_and_process_arguments(self):
         with patch('controller.subprocess.run') as run:
             for action in ('launch', 'stop'):

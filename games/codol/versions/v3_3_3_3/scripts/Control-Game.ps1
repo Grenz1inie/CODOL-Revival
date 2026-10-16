@@ -35,8 +35,6 @@ try {
         $gameRoot = $env:CODOL_GAME_ROOT
         $gameExe = Join-Path $gameRoot ($gameName + '.exe')
         if (!$PythonPath) { $PythonPath = (Get-Command python.exe -ErrorAction Stop).Source }
-        & $PythonPath -B (Join-Path $env:CODOL_VERSION_ROOT 'client/checks.py') --before-preparation
-        if ($LASTEXITCODE -ne 0) { throw 'Selected game prerequisites failed.' }
         $skipTutorial = $true
         $settingsFile = Join-Path $runtimeRoot 'data\controller.json'
         if (Test-Path -LiteralPath $settingsFile) {
@@ -49,6 +47,8 @@ try {
         $gameCommands = "+set dw_username johnClient;set 2822 $skipValue;set 3233 $skipValue"
         try {
             & $services -Action start -PythonPath $PythonPath -StartupTimeoutSeconds $StartupTimeoutSeconds | Out-Null
+            & $PythonPath -B -X utf8 (Join-Path $env:CODOL_VERSION_ROOT 'client/checks.py')
+            if ($LASTEXITCODE -ne 0) { throw 'Selected game prerequisites failed.' }
             $game = Start-Process -FilePath $gameExe -ArgumentList '-q','0','-src=tgp','-game_id','29','-zone_id','83886082', `
                 $gameCommands -WorkingDirectory $gameRoot -Verb RunAs -PassThru
             if (!$game -or $game.HasExited) { throw 'The game exited during launch.' }

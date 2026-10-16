@@ -68,6 +68,17 @@ class StartupFixture:
 
 
 class StartupChecksTests(StartupFixture, unittest.TestCase):
+    def test_preparation_preflight_accepts_unconfigured_game_but_remains_read_only(self):
+        for path in (self.root / 'runtime/certs').iterdir(): path.unlink()
+        (self.game / 'stun.ini').unlink()
+        (self.game / 'dwauth.ini').write_text('old-server')
+        (self.game / 'cacert.pem').write_text('original trust')
+        before = {p: p.read_bytes() for p in self.root.parent.rglob('*') if p.is_file()}
+        self.assertEqual(startup.check_environment(self.root, self.game, self.root / 'runtime',
+                         include_package=False, before_preparation=True), [])
+        self.assertTrue(startup.check_environment(self.root, self.game, self.root / 'runtime', include_package=False))
+        self.assertEqual(before, {p: p.read_bytes() for p in self.root.parent.rglob('*') if p.is_file()})
+
     def test_before_preparation_check_is_read_only_and_needs_no_node_when_ui_is_built(self):
         before = {p: p.read_bytes() for p in self.root.parent.rglob('*') if p.is_file()}
         self.assertEqual(startup.check_environment(self.root, self.game, self.root / 'runtime', include_package=False), [])

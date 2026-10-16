@@ -171,7 +171,9 @@ def create_server(root, port=8765, *, game_status=game_running, installations=No
                                 write_json(root / 'config/session.json', selection)
                             result = command(adapter, 'Control-Game.ps1', 'start' if launching else 'stop')
                             if result.returncode:
-                                self.reply({'error': '游戏与服务器操作失败', 'detail': result.stderr.decode('utf-8', errors='replace')}, 500); return
+                                detail = '\n'.join(output.decode('utf-8-sig', errors='replace').strip()
+                                                   for output in (result.stdout, result.stderr) if output)
+                                self.reply({'error': '游戏与服务器操作失败', 'detail': detail}, 500); return
                             if game_status() != launching:
                                 self.reply({'error': '启动未完成，游戏未运行。' if launching else '停止未完成，游戏仍在运行。'}, 500); return
                             if stopping: (root / 'config/session.json').unlink(missing_ok=True)
