@@ -1,16 +1,11 @@
 """Build one experimental map-load message from this PID's asset capture."""
 import json
-import os
 from pathlib import Path
 import re
-import subprocess
 
 from config_message319 import gamestate_message
 from inspect_config_capture319 import parse_capture
 from reconstruct_ncs319 import reconstruct
-
-ROOT=Path(os.environ['CODOL319_SERVER_ROOT']) / 'match-host'
-
 
 def build_probe(capture_path, *, map_name, game_type, output_dir, numeric=None, extra_literals=None):
     capture_path=Path(capture_path)
@@ -22,15 +17,6 @@ def build_probe(capture_path, *, map_name, game_type, output_dir, numeric=None, 
     prediction,wire=reconstruct(capture)
     output_dir=Path(output_dir)
     ordered=output_dir/'probe-ncs-input.bin';ordered.write_bytes(wire)
-    result=subprocess.run([str(ROOT/'mainframe-verification/test_native_ncs319.exe'),
-        str(ROOT/'mainframe-verification/config-reader-relocated.bin'),
-        str(ROOT.parent/'iips-memory/codoMP_client_shipRetail.exe.9076736.bin'),str(ordered)],
-        capture_output=True,text=True,timeout=10,creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
-    if result.returncode:raise ValueError('Native NCS replay failed: '+result.stderr)
-    lines=result.stdout.splitlines()
-    fields=dict(part.split('=') for part in lines[0].split())
-    if fields['checksum'].upper()!=prediction['predicted_checksum_hex'] or lines[1]!='types='+prediction['type_table_hex']:
-        raise ValueError('Native and Python NCS predictions disagree')
     # 5C0310 reads mapname and g_gametype from config 0, not config 1.
     # 472990 applies config 1 dvars, 472900 reads server ID from config 3,
     # and 472BE0 reads the config 16 triple. Client-game init 454981..454A28

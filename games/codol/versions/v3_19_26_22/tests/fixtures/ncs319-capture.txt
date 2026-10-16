@@ -1,0 +1,19 @@
+global address=077db834 value=12345678 readable=1
+asset origin=runtime type=20 source=0 count=2 name_hex=72756e74696d655f3230
+string hex=72756e74696d655f61
+string hex=72756e74696d655f62
+asset origin=runtime type=21 source=0 count=1 name_hex=72756e74696d655f3231
+string hex=72756e74696d655f63
+asset origin=runtime type=22 source=0 count=1 name_hex=72756e74696d655f3232
+string hex=72756e74696d655f64
+asset origin=database type=0 source=1 count=3 name_hex=737472696e67732f636f6d6d6f6e5f61
+string hex=616c706861
+string hex=736861726564
+string hex=736861726564
+asset origin=database type=0 source=1 count=3 name_hex=737472696e67732f636f6d6d6f6e5f62
+string hex=736861726564
+string hex=62657461
+string hex=67616d6d61
+asset origin=database type=15 source=1 count=1 name_hex=737472696e67732f736b6970706564
+string hex=736b69705f6d65
+database_nodes=3 assets=3

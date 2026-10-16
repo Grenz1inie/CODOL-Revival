@@ -75,6 +75,25 @@ class MatchSessionTests(unittest.TestCase):
             self.assertEqual(foreign.getsockname()[1], self.port)
         self.assertEqual(self.session.poll()['phase'], 'error')
 
+    def test_ready_needs_no_historical_ncs_verifier_or_memory_dumps(self):
+        obsolete = (
+            'match-host/mainframe-verification/test_native_ncs319.exe',
+            'match-host/mainframe-verification/config-reader-relocated.bin',
+            'iips-memory/codoMP_client_shipRetail.exe.9076736.bin',
+        )
+        saved = {}
+        try:
+            for name in obsolete:
+                path = self.runtime / 'server' / name
+                if path.exists():
+                    saved[path] = path.read_bytes()
+                    path.unlink()
+            state = self.ready()
+            self.assertEqual(state['phase'], 'running', state)
+        finally:
+            for path, content in saved.items():
+                path.write_bytes(content)
+
     def test_changed_native_dependency_fails_before_arm_or_host_start(self):
         path = self.runtime / 'server/match-host/mainframe-verification/snapshot319_live.exe'
         original = path.read_bytes()

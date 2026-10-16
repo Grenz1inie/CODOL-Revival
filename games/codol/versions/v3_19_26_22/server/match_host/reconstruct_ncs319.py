@@ -1,18 +1,13 @@
-"""Reconstruct the captured menu asset table, cross-check using native x86.
+"""Reconstruct the captured asset table using this client's tracked NCS ranges.
 
 This verifies a capture-specific prediction; it is not yet a live initialized
 map checksum and must not be substituted for a different set of loaded assets.
 """
-import os
 from pathlib import Path
 import argparse
 import json
 import struct
-import subprocess
 import zlib
-
-ROOT=Path(os.environ['CODOL319_SERVER_ROOT']) / 'match-host'
-
 
 def reconstruct(capture):
     assets=capture['assets']
@@ -26,8 +21,8 @@ def reconstruct(capture):
     if any(a['name'][8:].startswith(tuple(p+'_' for p in languages)) for a in database):
         raise ValueError('Language-prefixed assets require the active language for ordering')
     ordered=runtime+sorted(database,key=lambda a:(a['source'],a['type'],a['name'].lower()))
-    rdata=(ROOT.parent/'iips-memory/codoMP_client_shipRetail.exe.9076736.bin').read_bytes()
-    ranges=[struct.unpack_from('<III',rdata,0xDA9808-0xCA8000+i*12) for i in range(23)]
+    definition=Path(__file__).resolve().parents[2]/'resources/definitions/ncs319.json'
+    ranges=json.loads(definition.read_text())['ranges']
     seed=capture['globals']['077db834']['value']
     wire=bytearray(struct.pack('<II',seed,len(ordered)))
     table=bytearray([255])*0x31d9
@@ -65,17 +60,6 @@ def main():
     ap=argparse.ArgumentParser();ap.add_argument('capture',type=Path);a=ap.parse_args()
     result,wire=reconstruct(json.loads(a.capture.read_text()))
     binary=a.capture.with_suffix('.ncs-input.bin');binary.write_bytes(wire)
-    native=subprocess.run([str(ROOT/'mainframe-verification/test_native_ncs319.exe'),
-        str(ROOT/'mainframe-verification/config-reader-relocated.bin'),
-        str(ROOT.parent/'iips-memory/codoMP_client_shipRetail.exe.9076736.bin'),str(binary)],
-        capture_output=True,text=True,timeout=20)
-    if native.returncode:raise RuntimeError(native.stdout+native.stderr)
-    lines=native.stdout.splitlines();fields=dict(p.split('=') for p in lines[0].split())
-    assert fields['checksum'].upper()==result['predicted_checksum_hex'],(fields,result['predicted_checksum_hex'])
-    assert lines[1]=='types='+result['type_table_hex']
-    assert int(fields['nodes'])==result['nodes']
-    assert int(fields['strings'])==result['strings']
-    result['verified_against_native_recovered_functions']=True
     output=a.capture.with_suffix('.reconstructed.json');output.write_text(json.dumps(result,indent=2))
     print(json.dumps({k:v for k,v in result.items() if k not in ('defaults','type_table_hex')},indent=2))
     print('default indices 0..30:',{k:v for k,v in result['defaults'].items() if k<=30})

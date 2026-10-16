@@ -1,0 +1,85 @@
+{
+  "reference": "Synthetic lists replayed by test_native_ncs319.exe SHA256 e432c4be23ea0e4675ff3550cf0e0ac0230cb5b96d5f18232de3244ebf987797; 2026-10-17",
+  "capture": {
+    "assets": [
+      {
+        "origin": "runtime",
+        "type": 20,
+        "source": 0,
+        "name": "runtime_20",
+        "count": 2,
+        "strings": [
+          "runtime_a",
+          "runtime_b"
+        ]
+      },
+      {
+        "origin": "runtime",
+        "type": 21,
+        "source": 0,
+        "name": "runtime_21",
+        "count": 1,
+        "strings": [
+          "runtime_c"
+        ]
+      },
+      {
+        "origin": "runtime",
+        "type": 22,
+        "source": 0,
+        "name": "runtime_22",
+        "count": 1,
+        "strings": [
+          "runtime_d"
+        ]
+      },
+      {
+        "origin": "database",
+        "type": 0,
+        "source": 1,
+        "name": "strings/common_a",
+        "count": 3,
+        "strings": [
+          "alpha",
+          "shared",
+          "shared"
+        ]
+      },
+      {
+        "origin": "database",
+        "type": 0,
+        "source": 1,
+        "name": "strings/common_b",
+        "count": 3,
+        "strings": [
+          "shared",
+          "beta",
+          "gamma"
+        ]
+      },
+      {
+        "origin": "database",
+        "type": 15,
+        "source": 1,
+        "name": "strings/skipped",
+        "count": 1,
+        "strings": [
+          "skip_me"
+        ]
+      }
+    ],
+    "globals": {
+      "077db834": {
+        "value": 305419896
+      }
+    },
+    "source": "synthetic NCS lists"
+  },
+  "expected": {
+    "checksum": "9024eac4",
+    "nodes": "5",
+    "strings": "9",
+    "types_sha256": "ce8cc095978e61bc5d28ec3cd935071cf20f0c0c4701fe71a804c106471b3302"
+  },
+  "gamestate_sha256": "462bd038b6b9dfbf00c757d1da3fd6e4301c44923a8fd34c4fd81b6bdfeb8e01"
+}

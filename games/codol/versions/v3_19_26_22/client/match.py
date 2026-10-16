@@ -13,14 +13,12 @@ from .preparation import digest
 NATIVE_HASHES = {
     'match-host/mainframe-verification/collision319.exe': 'e57ca57182ab677dffaa979ca2151849ae4f9938adc9960b09f890387d1f5b4a',
     'match-host/mainframe-verification/snapshot319_live.exe': 'd91ccd7f02fb7fd5e92bd95746972bd67d192cb32b49bb55e6a5366f79900167',
-    'match-host/mainframe-verification/test_native_ncs319.exe': 'e432c4be23ea0e4675ff3550cf0e0ac0230cb5b96d5f18232de3244ebf987797',
 }
 INITIAL = 'match-host/activation-analysis319/initial-snapshot-living-loadout78-arms4-hands5-wf80-v2047-floor.bin'
 ASSETS = (*NATIVE_HASHES, INITIAL, 'match-host/collision319/config319-27572-clipmap.bin',
           'match-host/collision319/ladders-mp_seatown.json', 'match-host/weapons319.txt',
           'match-host/playerdata_classes319.json', 'match-host/server-commands319.txt',
-          'match-host/viewmodel-arms56.txt', 'match-host/mainframe-verification/config-reader-relocated.bin',
-          'iips-memory/codoMP_client_shipRetail.exe.9076736.bin', 'weapon-parts319.txt', 'item-ids319.txt',
+          'match-host/viewmodel-arms56.txt', 'weapon-parts319.txt', 'item-ids319.txt',
           'rankTable319.csv')
 
 
