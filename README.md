@@ -1,5 +1,8 @@
 # CODOL 多版本管理器
 
+<a id="chinese"></a>
+**中文** · [English](#english)
+
 在网页中选择本机游戏目录，自动核验版本文件与主程序指纹，再调用对应版本的逆向实现和模拟服务器。当前接入 **3.3.3.3**，以及 **3.19.26.22的启动、本地大厅和Seatown测试对局**；2.6.9.7仅收录。版本列表是 [games/codol/versions.json](games/codol/versions.json)，新增版本的规则见 [多版本管理说明](docs/multi-version-manager.md)。
 
 ## 当前进度
@@ -101,3 +104,112 @@ archive/                         历史基线
 ## 游戏目录例外（3.3.3.3）
 
 客户端必须就地读取 `dwauth.ini`、`stun.ini`、`cacert.pem`，所以这三项仍在游戏目录。证书文件保留原 CA 并追加本实例 CA；首次配置备份位于 `runtime/instances/<实例>/backups/client-config/`。游戏 EXE 未修改，系统根证书、hosts、防火墙未修改。游戏自身产生的日志仍由游戏写入原目录。
+
+---
+
+<a id="english"></a>
+# CODOL Multi-Version Manager
+
+[中文](#chinese) · **English**
+
+Select a local game directory in the web console; the manager automatically verifies version files and main-program fingerprints, then invokes the reverse-engineered implementation and simulated servers for the matched version. Currently integrated: **3.3.3.3**, plus **3.19.26.22 startup, local lobby, and the Seatown test match**; 2.6.9.7 is catalogued only. The version list is [games/codol/versions.json](games/codol/versions.json); rules for adding new versions are in the [multi-version manager guide](docs/multi-version-manager.md).
+
+## Current Progress
+
+**2026-10-17 Rebuildable 3.19 delivery**: Startup and the Seatown match no longer depend on the external launch package. The repository source builds the proxy, the loopback bridge, the collision program, and the IFS reader; release files and English-language assets are generated from the matched original game, and the item/loadout tables plus the current map are exported read-only from our own game process. First-run preparation still uses an isolated copy and preserves existing progress. First deployment requires Python dependencies, an x86 MinGW GCC, and the original game; see the [3.19 integration guide](docs/wiki/v3_19_26_22-startup.md). This round completed build, resource, and protocol verification; lobby access and play after starting the full new component set still await manual acceptance, and earlier on-machine results from the old components do not count as acceptance for this round.
+
+**2026-10-16 Multi-version manager**: Directory selection, version-file and EXE fingerprint matching, operation gating, and version adapters are integrated; reverse-engineering tools, simulated servers, and tests are stored per version, and player data is isolated per installation instance. Recognition of a real 3.3.3.3 directory, save-copy verification, and simulated-server start/stop have been verified; browser screenshots of the new web sections and the native directory dialog still await manual confirmation, and the in-game acceptance scope is unchanged.
+
+**2026-10-16 Rust standalone match server**: Collision, movement, AI, and the UDP protocol have been moved into a standalone Rust process; Python keeps the web console, authentication, lobby, and profiles, and the existing start/stop flow is wired in and reloaded. With identical input over 400 Nuketown frames, whole-frame P99 dropped from 91.60 ms to 1.62 ms, with state consistent within the agreed tolerance; this is an offline performance result — game feel for the Rust version awaits manual acceptance. Entry is still via "Team Deathmatch → Nuketown" with one human player, one AI, a fixed ACR, and free-for-all rules; no new playlists. Build steps, evidence, and acceptance are in the [Rust migration wiki](docs/wiki/12-rust-match-server.md). 9v9 and other modes are not integrated.
+
+2026-10-14 12:40: actually entered the game lobby; at 13:03, after reorganizing directories and restarting the game and services, verified again successfully, showing the user's second selected character "Marcus" and nickname johnClient. The combined fix includes command-line bootstrap overrides and local public-profile loading; see [Onboarding & Character Profile](docs/wiki/06-onboarding-profile.md). Training and the original campaign remain unrestored.
+
+Verified chain: TLS authentication → encrypted lobby via protocol 210 → publish files → public-profile loading → game lobby. The server implements public-profile save/load; 21 unit and in-memory protocol tests pass. The first lobby verification used the raw profile captured during character selection; acceptance of saves made later by the real client is recorded separately, and passing tests is not treated as full game-data persistence.
+
+The web controller supports onboarding toggles, launching the game, reading the dev wiki, level 70 with 3 prestiges, and adding game coins and premium points separately. Marketplace level restrictions are lifted; M14 EBR purchase debiting, permanent inventory, and persistence across relogin are confirmed, and premium-point display plus purchase debiting/crediting are also tested on the real client. Full-catalog granting of 6,772 items, max weapon XP for 201 weapons, and manual renewals were added; 44 tests and the frontend build pass. Browser operations are verified; the user confirmed that after relogin permanent items, maxed weapons, attachments, and skins equip correctly, with premium points still at 99,620. See [Player Data & Marketplace](docs/wiki/08-player-progression-marketplace.md) and [Premium Points & Full Inventory](docs/wiki/09-inventory-completion.md). Duplicate stacking is out of scope for this round; the resolution task was cancelled per the user's request.
+
+## Usage
+
+Open PowerShell in this directory:
+
+```powershell
+.\Start.ps1
+```
+
+[Start.ps1](Start.ps1) first checks and starts the web controller, then opens <http://127.0.0.1:8765/>. On first open, click "Select game directory"; once a version matches, the operations it supports are enabled. An existing selection is re-verified after restart; the default entry launches the matched game. Launching the game still requires Windows UAC confirmation.
+
+```powershell
+.\Start.ps1 -CheckOnly            # check the manager environment only
+.\Start.ps1 -NoGame               # open the web console; the user launches the game
+.\Start.ps1 -NoGame -NoBrowser    # start only the background web controller
+python -B tools/run-tests.py      # run manager and version tests once
+python -B tools/check-doc-links.py
+```
+
+The game and the simulated servers start and stop together through the web console. Scripts inside a version directory are invoked by the manager with the installation path and instance directory. For detailed checks see the [controller documentation](docs/controller.md). Python dependencies are in [requirements.txt](requirements.txt); development conventions are in [CONTRIBUTING](CONTRIBUTING.md).
+
+After the first run, or after modifying Rust sources, run `powershell -NoProfile -File scripts/Invoke-MatchCargo.ps1 build --release` from the repository root. Toolchains and build artifacts live under the project's `runtime/`; running the built match server needs no ad-hoc compilation. A missing Rust artifact never falls back to the Python match implementation.
+
+On first start of the 3.3.3.3 services, the Nuketown package is generated from the selected game and saved to
+`runtime/builds/codol/v3_3_3_3/maps/nuketown/`. That directory holds local build artifacts and is not delivered via Git;
+the 235-point reference navigation mesh and the version-registered definitions ship with the repository, so the old server directory and the author's `research/` are no longer needed.
+First-time extraction requires a MinGW GCC that supports 32-bit Windows targets; set `CODOL_IFS_CC` to the path of its `gcc.exe`.
+You can also prepare manually first:
+
+```powershell
+$env:CODOL_IFS_CC = 'C:\toolchains\mingw32\bin\gcc.exe' # replace with your actual path; omit if it is already in PATH
+powershell -NoProfile -ExecutionPolicy Bypass -File games/codol/versions/v3_3_3_3/scripts/Prepare-Resources.ps1 -GameRoot 'D:\YourGameDirectory'
+```
+
+Valid packages are reused; a failed extraction publishes nothing partial. A damaged package is reported with the specific error and kept — move it out of the directory above and retry.
+The manual command above only generates the map. When 3.3 is started from the web console as usual, the manager first checks installed dependencies and build artifacts,
+then generates the map, prepares this instance's certificates, and — after backing up — configures `dwauth.ini`, `stun.ini`, and `cacert.pem` in the game directory.
+The original CA is preserved; repeated starts reuse valid maps and certificates; failures surface the specific reason in the web console.
+On a new machine, first install the Python dependencies, build the frontend, and build the Rust match server per the [development environment](CONTRIBUTING.md);
+first-time map extraction additionally needs the 32-bit MinGW toolchain above. You do not need to copy the author's `runtime/` or `research/`.
+Backups, certificates, and recovery steps are in [Redirection & TLS Auth](docs/wiki/03-redirection-tls-auth.md).
+
+## Directory Layout
+
+```text
+src/controller.py                shared controller HTTP entry
+src/manager/                     version detection, installation selection, data migration, native directory picker
+web/                             shared web console
+Start.ps1                        manager entry point
+scripts/                         manager startup and Rust builds
+games/codol/versions.json        continuously maintained version list
+games/codol/versions/v3_3_3_3/
+   adapter.py                    version control interface
+   client/                       launch checks for this version
+   server/                       Python auth, lobby, profiles, and match orchestration
+     native/match-server/        Rust simulated match server for this version
+   resources/definitions/        marketplace, playlists, snapshot fields
+   reverse/tools/                resource parsing, reverse probes, frozen Python reference implementation
+   reverse/recovered-code/       recovered client logic and evidence
+   reverse/experiments/          historical experiment scripts and probes for this version
+   scripts/                      game and simulated-server start/stop for this version
+   tests/                        tests and controlled samples for this version
+games/codol/versions/v3_19_26_22/
+   adapter.py                    3.19 launch entry and capability scope
+   client/                       isolated copy, loader, and process management
+   server/                       3.19 auth, lobby, profile, and asset services
+   reverse/                      source and REA evidence index
+   scripts/                      3.19 start/stop scripts
+   tests/                        3.19 preparation, isolation, service, and startup tests
+config/                          locally selected directories and run sessions; not committed
+runtime/instances/<instance-id>/ profiles, backups, certificates, logs, captures; not committed
+runtime/builds/codol/v3_3_3_3/     Rust artifacts and map packages for this version; not committed
+runtime/instances/*/generated/    resources generated from the original game for this instance, with checksum records; not committed
+tests/                           manager interface and startup tests
+docs/                            manager guides, version wiki, historical reports
+research/                        historical raw evidence, reference material, experiment artifacts
+archive/                         historical baselines
+```
+
+[Documentation index](docs/README.md) · [Technical wiki overview](docs/wiki/README.md) · [Migration checklist & checksums](docs/reports/20261014-directory-migration.json)
+
+Current public character profiles live in `runtime/instances/<instance-id>/data/public-profiles/`, and server logs in `logs/server.jsonl` under the same instance. The old `runtime/data/` is kept as a migration source and no longer receives new progress. Research JSON, historical archives, and the old migration checklist keep the text they were generated with; for current source locations follow the layout on this page. The source list and license attribution for external reference source stay in the research directory.
+
+## Game-directory exceptions (3.3.3.3)
+
+The client must read `dwauth.ini`, `stun.ini`, and `cacert.pem` in place, so these three files remain in the game directory. The certificate file keeps the original CA and appends this instance's CA; first-configuration backups are in `runtime/instances/<instance>/backups/client-config/`. The game EXE is not modified, and system root certificates, hosts, and firewall are untouched. Logs produced by the game itself are still written by the game into its original directory.
