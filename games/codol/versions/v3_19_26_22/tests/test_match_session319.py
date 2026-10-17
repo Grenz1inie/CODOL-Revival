@@ -2,34 +2,38 @@
 import json
 import os
 from pathlib import Path
-import shutil
 import socket
 import subprocess
 import sys
 import tempfile
 import time
 import unittest
+from types import SimpleNamespace
 
 import psutil
 
-from games.codol.versions.v3_19_26_22.client import match
+from games.codol.versions.v3_19_26_22.client import match, native_build, resource_export
 from games.codol.versions.v3_19_26_22.client.lifecycle import identity, service_status
+from games.codol.versions.v3_19_26_22.tests.test_collision_build319 import clipmap_fixture
 
 
 class MatchSessionTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        package = Path(__file__).resolve().parents[5] / 'runtime/packages/codol-3.19.26.22'
-        if not package.exists():
-            raise unittest.SkipTest('Requires the imported user-supplied 3.19 test-build assets')
         cls.temp = tempfile.TemporaryDirectory()
         cls.addClassCleanup(cls.temp.cleanup)
         cls.runtime = Path(cls.temp.name)
         (cls.runtime / 'game').mkdir()
-        for name in match.ASSETS:
-            target = cls.runtime / 'server' / name
-            target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(package / 'server' / name, target)
+        native = native_build.build(cls.runtime/'server/match-host')
+        weapons = ['none']+[f'weapon_{i}' for i in range(1,1136)]
+        weapons[187] = 'm4_mp'
+        loaded = SimpleNamespace(weapons=lambda: weapons, table=lambda _: [['0','pvt1','0']],
+            classes=lambda: {'classes': [{'primary': 0} for _ in range(60)], 'loadoutVersion': 10})
+        registry = {'items': [[10001,0,'m4_mp'],[20001,1,'sto_m4']], 'parts': [[10,'sto_m4']],
+            'weapons': [[10001,'m4_mp',0,[20001]+[0]*14]], 'skus': []}
+        resource_export.publish(cls.runtime/'server', resource_export.common_files(loaded,registry), identity(os.getpid()))
+        (native/'clipmap-fixture.bin').write_bytes(clipmap_fixture())
+        (native/'clipmap-fixture.ladders.json').write_text('[]')
 
     def setUp(self):
         self.log = self.runtime / 'server/lsg-handshake.jsonl'
@@ -54,7 +58,12 @@ class MatchSessionTests(unittest.TestCase):
         marker = self.runtime / 'server/match-host/arm-loopback319.txt'
         self.assertEqual(marker.read_text(), str(os.getpid()))
         children = psutil.Process(state['service']['pid']).children(recursive=True)
-        self.assertTrue(children, 'The migrated host must use the real collision helper')
+        self.assertNotIn('collision319.exe', [p.name().lower() for p in children],
+                         'Map extraction must wait for the game to load the map')
+        self.assertFalse((self.session.run/'clipmap.bin').exists())
+        command = psutil.Process(state['service']['pid']).cmdline()
+        self.assertIn('--resource-game', command)
+        self.assertIn(str(self.session.run/'clipmap.bin'), command)
         self.assertEqual(self.session.poll()['service'], state['service'])
         self.session.close()
         self.assertEqual(marker.read_text(), '0')
@@ -97,13 +106,13 @@ class MatchSessionTests(unittest.TestCase):
                 path.write_bytes(content)
 
     def test_changed_native_dependency_fails_before_arm_or_host_start(self):
-        path = self.runtime / 'server/match-host/mainframe-verification/collision319.exe'
+        path = self.runtime / 'server/match-host/collision319.exe'
         original = path.read_bytes()
         try:
             path.write_bytes(b'unknown binary')
             state = self.ready()
             self.assertEqual(state['phase'], 'error')
-            self.assertIn('collision319.exe', state['error'])
+            self.assertIn('native build', state['error'])
             self.assertIsNone(state['service'])
             self.assertEqual((self.runtime / 'server/match-host/arm-loopback319.txt').read_text(), '0')
         finally:
@@ -125,7 +134,7 @@ from live_sim319 import LiveSim
 from playerdata_classes319 import classes, weapon_index
 from weapon_composite319 import compose
 root = Path(os.environ['CODOL319_SERVER_ROOT']) / 'match-host'
-collision = Collision(root / 'collision319/config319-27572-clipmap.bin')
+collision = Collision(root / 'clipmap-fixture.bin')
 sim = LiveSim([1370,-384,248], yaw=180, weapon=187, viewmodels=(4,5), weapflags=128, collision=collision)
 try:
     payload = sim.payload(1000)

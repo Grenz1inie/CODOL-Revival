@@ -1,5 +1,6 @@
 """Server responses must work with an empty instance and tracked definitions only."""
 import base64
+from concurrent.futures import ThreadPoolExecutor
 import json
 import os
 from pathlib import Path
@@ -17,6 +18,20 @@ SERVER = Path(__file__).resolve().parents[1] / 'server'
 
 
 class FreshServerTests(unittest.TestCase):
+    def test_inventory_waits_for_publication_but_login_and_balance_do_not(self):
+        from games.codol.versions.v3_19_26_22.tests.lobby_client319 import connect_lobby
+        from games.codol.versions.v3_19_26_22.client.resource_export import publish
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            request = connect_lobby(self, root)
+            self.assertTrue(request(bytes([80, 3, 130])))
+            with ThreadPoolExecutor(max_workers=1) as executor:
+                pending = executor.submit(request, bytes([80, 3, 203]))
+                time.sleep(0.2)
+                self.assertFalse(pending.done(), 'Inventory replied before its resource tables existed')
+                publish(root, {'item-registry319.json': b'{"items":[]}'}, {'pid': 1, 'created': 1})
+                self.assertTrue(pending.result(timeout=3))
+
     def run_server_code(self, root, code):
         result = subprocess.run([sys.executable, '-B', '-X', 'utf8', '-c', code], cwd=SERVER,
             env={**os.environ, 'CODOL319_SERVER_ROOT': str(root)}, capture_output=True, text=True, timeout=15)

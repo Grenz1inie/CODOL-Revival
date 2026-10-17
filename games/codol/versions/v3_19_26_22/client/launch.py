@@ -14,9 +14,11 @@ ROOT = Path(__file__).resolve().parents[5]
 VERSION = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from games.codol.versions.v3_19_26_22.client.lifecycle import Services, alive, identity, lobby_ready, service_status
-from games.codol.versions.v3_19_26_22.client.preparation import CLIENT, NATIVE_HASHES, check_client, digest, grant_runtime_access, prepare
+from games.codol.versions.v3_19_26_22.client.preparation import CLIENT, check_client, digest, grant_runtime_access, prepare
+from games.codol.versions.v3_19_26_22.client import native_build
 from games.codol.versions.v3_19_26_22.client.settings import apply_options, read_options
 from games.codol.versions.v3_19_26_22.client.match import MatchSession
+from games.codol.versions.v3_19_26_22.client.resource_export import export_common
 
 def save(runtime, state):
     temporary = runtime / 'startup.tmp'
@@ -73,7 +75,7 @@ def stop(runtime):
 def start(source, runtime):
     if status(runtime)['running']:
         raise ValueError('此安装的游戏或服务仍在运行，请先停止')
-    prepare(source, runtime, ROOT / 'runtime/packages/codol-3.19.26.22')
+    prepare(source, runtime)
     (runtime / 'stop.request').unlink(missing_ok=True)
     save(runtime, {'phase': 'pending'})
     elevate(runtime)
@@ -98,9 +100,10 @@ def supervise(runtime):
         save(runtime, state)
         game = runtime / 'game'
         check_client(game)
-        for relative, expected in NATIVE_HASHES.items():
-            if digest(runtime / relative) != expected:
-                raise ValueError(f'启动组件指纹不匹配：{relative}')
+        native_build.validate(runtime / 'server/match-host')
+        if digest(game / 'version.dll') != digest(runtime / 'server/match-host/version.dll'):
+            raise ValueError('启动组件指纹不匹配：game/version.dll')
+        (runtime / 'server/common-ready.json').unlink(missing_ok=True)
         # Logs from a previous elevated run may predate the inherited user ACL.
         for directory in (runtime / 'logs', runtime / 'server'):
             for path in directory.rglob('*'):
@@ -129,6 +132,8 @@ def supervise(runtime):
         state['loader'] = identity(loader.pid)
         save(runtime, state)
         deadline = time.monotonic() + 60
+        resources_ready = False
+        resource_deadline = None
         while loader.poll() is None and not (runtime / 'stop.request').exists():
             if any(p.poll() is not None for p in services.processes):
                 raise RuntimeError('本地服务退出，请查看 logs')
@@ -140,10 +145,25 @@ def supervise(runtime):
                         state['match'] = match.snapshot()
                         save(runtime, state)
                         break
+            if state.get('game') and not resources_ready:
+                try:
+                    export_common(runtime / 'server', state['game'], game / CLIENT)
+                    resources_ready = True
+                    state['resource_error'] = ''
+                except (OSError, ValueError) as error:
+                    if state.get('resource_error') != str(error):
+                        state['resource_error'] = str(error)
+                        save(runtime, state)
             if state['phase'] != 'lobby':
-                if alive(state.get('game', {})) and lobby_ready(runtime / 'server/lsg-handshake.jsonl', since):
+                logged_in = alive(state.get('game', {})) and lobby_ready(runtime / 'server/lsg-handshake.jsonl', since)
+                if logged_in and resources_ready:
                     state['phase'] = 'lobby'
                     save(runtime, state)
+                elif logged_in:
+                    if resource_deadline is None:
+                        resource_deadline = time.monotonic() + 30
+                    elif time.monotonic() >= resource_deadline:
+                        raise TimeoutError('游戏资源生成失败：' + state.get('resource_error', ''))
                 elif 'game' not in state and time.monotonic() >= deadline:
                     raise TimeoutError('加载器未创建游戏进程，请查看 logs/loader.log')
             if state['phase'] == 'lobby' and match is not None:

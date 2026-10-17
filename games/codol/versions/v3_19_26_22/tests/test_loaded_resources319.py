@@ -49,12 +49,21 @@ class LoadedResourcesTests(unittest.TestCase):
         m.put(0x10000100, label.encode()+bytes(256-len(label)))
         header = [233, 1248641861, 0, 0, 8, 0, 40, 0, 0, 0, 5, 0, 15767, 3927, 0x10010000, 0]
         m.words(0x10000200, *header)
-        m.words(0x10010000, *[i*4 for i in range(3927)])
+        offsets = [i*4 for i in range(3927)]
+        m.words(0x10010000, *offsets)
         r = LoadedResources(m.read)
         layout = r.classes()
         self.assertEqual(layout['loadoutVersion'], 926*4)
         self.assertEqual(layout['classes'][0]['primary'], (1607+22)*4)
         self.assertEqual(layout['classes'][-1]['secondary_attach'], [(1607+59*37+23+j)*4 for j in range(6)])
+        # Other DDL members encode bit offsets, not byte offsets (live v233 schema).
+        offsets[1614] = 0x1a0d0
+        m.words(0x10010000, *offsets)
+        self.assertEqual(r.classes(), layout)
+        offsets[1607+22] = 32763
+        m.words(0x10010000, *offsets)
+        with self.assertRaisesRegex(ValueError, 'offset'):
+            r.classes()
         header[1] ^= 1
         m.words(0x10000200, *header)
         with self.assertRaisesRegex(ValueError, 'schema'):

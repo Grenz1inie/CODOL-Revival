@@ -48,14 +48,9 @@ MANTLE_TOTAL_MS = {i: 600 for i in range(7)}
 # Ladders: brushes with a SURF_LADDER (0x8) face (clipmap_materials319.py --ladders-json; Seatown
 # has three). While the player is against one the host stops gravity, climbs with forward/back
 # (down when looking steeply down) and follows the client's reported origin, as for mantles.
-LADDER_FILE = ROOT / 'collision319' / 'ladders-mp_seatown.json'
 LADDER_REACH = 20.0            # horizontal distance from the ladder brush (player half-width 15 + 5)
 LADDER_SPEED = 110.0           # climb speed, units/s
 LADDER_DOWN_PITCH = 30.0       # looking further down than this, forward climbs down
-try:
-    LADDERS = json.loads(LADDER_FILE.read_text(encoding='utf-8'))
-except (OSError, ValueError):
-    LADDERS = []
 PREDICTION_TOLERANCE = 16.0   # units; larger disagreements are corrected by the host
 C1_GROUND_SNAP = 9.0
 
@@ -72,12 +67,14 @@ def wish_speed(speed, fwd, right, weapon_scale):
 class Collision:
     """Pipe to collision319.exe: box sweeps against the captured clipMap."""
     def __init__(self, clipmap, exe=None):
-        exe = exe or ROOT / 'mainframe-verification/collision319.exe'
+        self.ladders = json.loads(Path(clipmap).with_suffix('.ladders.json').read_text(encoding='utf-8'))
+        exe = exe or ROOT / 'collision319.exe'
         self.proc = subprocess.Popen([str(exe), str(clipmap)], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                      stderr=subprocess.DEVNULL, text=True, bufsize=1,
                                      creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
         ready = self.proc.stdout.readline()
         if not ready.startswith('READY'):
+            self.close()
             raise ValueError('collision319: ' + ready)
         self.traces = 0
 
@@ -109,6 +106,8 @@ class Collision:
     def close(self):
         if self.proc.poll() is None:
             self.proc.stdin.close(); self.proc.wait(timeout=5)
+        self.proc.stdin.close()
+        self.proc.stdout.close()
 
 
 def _dot(a, b):
@@ -359,7 +358,7 @@ class CollisionMovement:
 
     def ladder_at(self):
         o = self.origin
-        for lad in LADDERS:
+        for lad in self.collision.ladders:
             mn, mx = lad['mins'], lad['maxs']
             if (mn[0] - LADDER_REACH <= o[0] <= mx[0] + LADDER_REACH and
                     mn[1] - LADDER_REACH <= o[1] <= mx[1] + LADDER_REACH and mn[2] - 8 <= o[2] <= mx[2] - 4):

@@ -34,6 +34,8 @@ class InventoryFixture(unittest.TestCase):
         self.root = Path(self.temp.name)
         self.data = self.root / 'local-profiles319'
         self.data.mkdir()
+        # These unit fixtures supply their own tables; production publishes this last.
+        (self.root / 'common-ready.json').write_text('{}')
         (self.data / 'wallet.json').write_text('{"1":2100,"2":57}')
         self.profile = load_profile(self.root)
 

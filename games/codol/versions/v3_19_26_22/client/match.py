@@ -8,18 +8,10 @@ import sys
 import time
 
 from .lifecycle import Services, alive, lobby_event
-from .preparation import digest
+from .preparation import CLIENT
+from . import native_build
+from .resource_export import validate_common
 from ..server.match_host.snapshot_codec319 import encode
-
-NATIVE_HASHES = {
-    'match-host/mainframe-verification/collision319.exe': 'e57ca57182ab677dffaa979ca2151849ae4f9938adc9960b09f890387d1f5b4a',
-}
-ASSETS = (*NATIVE_HASHES, 'match-host/collision319/config319-27572-clipmap.bin',
-          'match-host/collision319/ladders-mp_seatown.json', 'match-host/weapons319.txt',
-          'match-host/playerdata_classes319.json', 'match-host/server-commands319.txt',
-          'match-host/viewmodel-arms56.txt', 'weapon-parts319.txt', 'item-ids319.txt',
-          'rankTable319.csv')
-
 
 def initial_snapshot():
     # Reproduces the historical Seatown floor baseline byte for byte.
@@ -59,12 +51,8 @@ class MatchSession:
 
     def start(self):
         self.marker.write_text('0', encoding='ascii')
-        for name in ASSETS:
-            if not (self.assets / name).is_file():
-                raise FileNotFoundError(f'缺少 3.19 对局组件：{name}')
-        for name, expected in NATIVE_HASHES.items():
-            if digest(self.assets / name) != expected:
-                raise ValueError(f'对局组件指纹不匹配：{name}')
+        native_build.validate(self.assets / 'match-host')
+        validate_common(self.assets)
         self.run = self.runtime / 'matches' / str(time.time_ns())
         self.run.mkdir(parents=True)
         # Preserve existing progress before this match can award XP or currency.
@@ -85,7 +73,8 @@ class MatchSession:
                    '--stop-file', str(self.run / 'stop.request'), '--sequenced-probe', '3',
                    '--gamestate-probe-capture', str(self.runtime / 'game' / f"config319-{self.game['pid']}-first-netchan.txt"),
                    '--snapshot-probe-payload', str(snapshot), '--weapon', '187', '--viewmodels', '4', '5',
-                   '--weapflags', '128', '--collision-map', str(self.assets / 'match-host/collision319/config319-27572-clipmap.bin'),
+                   '--weapflags', '128', '--collision-map', str(self.run / 'clipmap.bin'),
+                   '--resource-game', str(self.game['pid']), str(self.game['created']), str(self.runtime / 'game' / CLIENT),
                    '--live-sim-seconds', '500', '--ack-client-commands', '--delta-continuation']
         self.services = Services(self.run, [{'name': 'match', 'port': self.port, 'protocol': 'UDP', 'command': command}],
                                  {**os.environ, 'CODOL319_SERVER_ROOT': str(self.assets), 'PYTHONUTF8': '1'})

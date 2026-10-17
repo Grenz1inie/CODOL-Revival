@@ -46,10 +46,10 @@ def files(client, playlist):
                  f'category={category}\r\ncaption=Welcome\r\nmessage=Local CODOL 3.19 server.\r\n'
                  'beViewed=1\r\nformat=0\r\nsender=CODOL\r\notherSender=\r\nimagePath=\r\n')
     downloads = {
-        'configs_s.info': config_crypt((SOURCE / 'configs_s.ini').read_bytes(), key),
+        'configs_s.info': config_crypt((SOURCE / 'configs_s.ini').read_text(encoding='utf-8').encode('utf-8'), key),
         'MOTD.info': config_crypt(motd.encode('ascii'), key),
         'mp_playlists_shipRetail_release.info': zlib.compress(offline_playlist(playlist)),
-        'market_ui.info': zlib.compress((SOURCE / 'market_ui.ini').read_bytes()),
+        'market_ui.info': zlib.compress((SOURCE / 'market_ui.ini').read_text(encoding='utf-8').encode('utf-8')),
         'daily_challenge_config.info': zlib.compress(b'; Local diagnostic: no daily challenges configured.\n'),
         'activities_v1.info': b'  ',
         'broadcast.info': b'<MSG T=1570255261,P=0/>',

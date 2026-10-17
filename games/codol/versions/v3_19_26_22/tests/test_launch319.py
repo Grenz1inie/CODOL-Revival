@@ -14,6 +14,44 @@ from games.codol.versions.v3_19_26_22.client.lifecycle import Services
 
 
 class LaunchTests(unittest.TestCase):
+    def test_lobby_readiness_waits_for_generated_resources_and_retries_unloaded_tables(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            runtime=Path(tmp)
+            (runtime/'logs').mkdir()
+            (runtime/'server').mkdir()
+            (runtime/'server/common-ready.json').write_text('stale previous session')
+            loader=Mock(pid=12345)
+            loader.poll.side_effect=[None,None,0,0]
+            services=Mock(records=[],processes=[])
+            child=Mock(pid=12346)
+            child.exe.return_value=str(runtime/'game'/preparation.CLIENT)
+            phases=[]
+            original_save=launch.save
+            def save(path,state):
+                phases.append(state['phase'])
+                original_save(path,state)
+            def extract(*args):
+                self.assertFalse((runtime/'server/common-ready.json').exists())
+                if extract.calls==0:
+                    extract.calls+=1
+                    raise ValueError('not loaded yet')
+            extract.calls=0
+            with patch.object(launch,'check_client'),patch.object(launch.native_build,'validate'), \
+                    patch.object(launch,'digest',return_value='verified'),patch.object(launch,'apply_options',return_value=''), \
+                    patch.object(launch,'Services',return_value=services),patch.object(launch,'MatchSession'), \
+                    patch.object(launch,'identity',side_effect=lambda pid:{'pid':pid,'created':1}), \
+                    patch.object(launch,'alive',return_value=True),patch.object(launch,'lobby_ready',return_value=True), \
+                    patch.object(launch,'save',side_effect=save),patch.object(launch,'export_common',side_effect=extract) as export, \
+                    patch('psutil.Process') as info,patch('subprocess.Popen',return_value=loader),patch.object(launch.time,'sleep'):
+                info.return_value.children.return_value=[child]
+                launch.MatchSession.return_value.snapshot.return_value={'phase':'waiting'}
+                launch.MatchSession.return_value.poll.return_value={'phase':'waiting'}
+                launch.supervise(runtime)
+            self.assertEqual(export.call_count,2)
+            self.assertIn('lobby',phases)
+            self.assertEqual(launch.read(runtime)['phase'],'stopped')
+            self.assertEqual(launch.read(runtime)['resource_error'],'')
+
     def test_supervisor_passes_display_and_language_options_to_loader(self):
         for language in ('zh-CN', 'en'):
             with self.subTest(language=language), tempfile.TemporaryDirectory() as tmp:
@@ -33,7 +71,7 @@ class LaunchTests(unittest.TestCase):
                 connections = [SimpleNamespace(laddr=SimpleNamespace(ip='127.0.0.1', port=port),
                     pid=100 + i, status='LISTEN') for i, port in enumerate((31900, 31901, 8319))]
                 with patch.object(preparation, 'CLIENT_SHA256', hashlib.sha256(b'client').hexdigest()), \
-                        patch.object(launch, 'NATIVE_HASHES', {}), patch('socket.socket'), \
+                        patch.object(launch.native_build, 'validate'), patch.object(launch, 'digest', return_value='verified'), patch('socket.socket'), \
                         patch('psutil.net_connections', return_value=connections), \
                         patch('psutil.Process') as process_info, patch('subprocess.Popen', side_effect=spawn):
                     process_info.return_value.create_time.return_value = 1.0
@@ -99,6 +137,7 @@ class LaunchTests(unittest.TestCase):
             state = launch.status(runtime)
             self.assertTrue(state['game_running'])
             self.assertFalse(state['lobby_ready'])
-            with patch.object(launch, 'prepare'), patch.object(launch, 'elevate'), patch.object(launch, 'save'), \
+            with patch.object(launch, 'prepare') as prepare, patch.object(launch, 'elevate'), patch.object(launch, 'save'), \
                     patch.object(launch, 'status', side_effect=[{'running': False}, state]):
                 launch.start(runtime / 'original', runtime)
+                prepare.assert_called_once_with(runtime/'original',runtime)

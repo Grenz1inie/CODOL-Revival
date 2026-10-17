@@ -1,4 +1,6 @@
 import unittest
+from pathlib import Path
+import tempfile
 import zlib
 from unittest.mock import patch
 
@@ -6,6 +8,17 @@ from games.codol.versions.v3_19_26_22.client import publisher
 
 
 class PublisherBuildTests(unittest.TestCase):
+    def test_git_checkout_newlines_do_not_change_downloads(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory)
+            with patch.object(publisher, 'SOURCE', source), patch.object(publisher, 'config_key', return_value=bytes(24)):
+                outputs = []
+                for newline in (b'\n', b'\r\n'):
+                    for name in ('configs_s.ini', 'market_ui.ini'):
+                        (source/name).write_bytes(b'[version]'+newline+b'value=319'+newline)
+                    outputs.append(publisher.files(b'client', b'playlist'))
+                self.assertEqual(outputs[0], outputs[1])
+
     def test_playlist_changes_only_existing_offline_rules(self):
         original = (b'version 797\r\nrule requireOpenNat 1 \r\nrule party_minlobbytime 60 \r\n'
                     b'playlist 110\nrule party_minplayers 12\nrule party_maxplayers 18\n'

@@ -15,24 +15,33 @@ class PreparationTests(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.root = Path(self.tmp.name)
-        self.game, self.runtime, self.package = [self.root / n for n in ('original', 'instance', 'package')]
+        self.game, self.runtime, self.generated = [self.root / n for n in ('original', 'instance', 'generated')]
         for name, data in {'codoMP_client_shipRetail.exe': b'client', 'localization.txt': b'Chinese',
                            'IIPS/IIPSDownload/ff_init_common_gfx_V109.ifs': b'original resource',
                            'players/save.dat': b'save', 'Cross/overlay.dll': b'overlay'}.items():
             self.write(self.game / name, data)
         for name, data in {'patches/localization.txt': b'English',
                            'patches/ff_init_common_gfx_V109.ifs': b'patched resource',
-                           'server/match-host/version.dll': b'proxy',
-                           'server/match-host/client_loopback319.dll': b'loopback',
-                           'server/loader/Client-english-fixed-resources.exe': b'loader',
-                           'server/profile319.json': b'{"rank":1,"experience":0}',
-                           'server/local-profiles319/economy319.json': b'{}'}.items():
-            self.write(self.package / name, data)
+                           'publisher-files/configs_s.info': b'generated config',
+                           'profile319.json': b'never import player data'}.items():
+            self.write(self.generated / name, data)
         self.system = self.root / 'system-version.dll'
         self.system.write_bytes(b'system dll')
         self.hash_patch = patch.object(preparation, 'CLIENT_SHA256', hashlib.sha256(b'client').hexdigest())
         self.hash_patch.start()
         self.addCleanup(self.hash_patch.stop)
+        self.native_patch = patch.object(preparation.native_build, 'build', side_effect=self.build_native)
+        self.native = self.native_patch.start()
+        self.addCleanup(self.native_patch.stop)
+        self.boot_patch = patch.object(preparation.boot_assets, 'build', return_value=self.generated)
+        self.boot = self.boot_patch.start()
+        self.addCleanup(self.boot_patch.stop)
+
+    def build_native(self, target):
+        for name, data in {'version.dll': b'proxy', 'client_loopback319.dll': b'bridge',
+                           'collision319.exe': b'collision', 'ifs-read.exe': b'reader'}.items():
+            self.write(target/name, data)
+        return target
 
     @staticmethod
     def write(path, data):
@@ -40,7 +49,7 @@ class PreparationTests(unittest.TestCase):
         path.write_bytes(data)
 
     def prepare(self):
-        return preparation.prepare(self.game, self.runtime, self.package, self.system)
+        return preparation.prepare(self.game, self.runtime, self.system)
 
     def test_copy_patches_only_isolated_game_and_preserves_progress_on_repeat(self):
         before = {p.relative_to(self.game): p.read_bytes() for p in self.game.rglob('*') if p.is_file()}
@@ -50,6 +59,8 @@ class PreparationTests(unittest.TestCase):
         self.assertEqual((game / 'localization.txt.original').read_bytes(), b'Chinese')
         self.assertEqual((game / 'version_system319.dll').read_bytes(), b'system dll')
         self.assertFalse((game / 'Cross').exists())
+        self.assertFalse((self.runtime / 'server/profile319.json').exists())
+        self.assertEqual((self.runtime/'server/publisher-files/configs_s.info').read_bytes(), b'generated config')
         self.assertEqual((game / 'codol319-root.txt').read_text().strip(), str(self.runtime / 'server/match-host') + '\\')
         (game / 'players/save.dat').write_bytes(b'new save')
         (self.runtime / 'server/profile319.json').write_text('{"experience":100}')
@@ -65,14 +76,15 @@ class PreparationTests(unittest.TestCase):
         self.assertFalse(self.runtime.exists())
 
         (self.game / preparation.CLIENT).write_bytes(b'client')
-        (self.package / 'server/match-host/version.dll').unlink()
+        self.native.side_effect = FileNotFoundError('compiler missing')
         with self.assertRaises(FileNotFoundError):
             self.prepare()
-        self.assertFalse(self.runtime.exists())
+        self.assertFalse((self.runtime/'game').exists())
 
-    def test_preparation_does_not_require_the_old_loader(self):
-        (self.package / 'server/loader/Client-english-fixed-resources.exe').unlink()
+    def test_preparation_builds_dependencies_without_a_startup_package(self):
         self.assertEqual(self.prepare(), self.runtime / 'game')
+        self.native.assert_called_once_with(self.runtime/'server/match-host')
+        self.boot.assert_called_once_with(self.game, self.runtime/'generated/boot319', self.runtime/'server/match-host')
 
     def test_language_round_trip_preserves_original_resources_and_progress(self):
         before = {p.relative_to(self.game): p.read_bytes() for p in self.game.rglob('*') if p.is_file()}
@@ -98,7 +110,7 @@ class PreparationTests(unittest.TestCase):
 
     def test_first_chinese_language_launch_needs_only_original_language_resources(self):
         for name in ('localization.txt', 'ff_init_common_gfx_V109.ifs'):
-            (self.package / 'patches' / name).unlink()
+            (self.generated / 'patches' / name).unlink()
         settings.save_options(self.runtime, {'player_name': 'Player', 'fov': 90,
             'max_fps': 0, 'game_language': 'zh-CN'})
         game = self.prepare()
@@ -115,19 +127,14 @@ class PreparationTests(unittest.TestCase):
             self.prepare()
         self.assertEqual(before, {p.relative_to(game): p.read_bytes() for p in game.rglob('*') if p.is_file()})
 
-    def test_import_retains_assets_without_copying_reference_service_code(self):
-        self.write(self.package / 'server/start319.py', b'not our entrypoint')
-        destination = self.root / 'imported'
-        hashes = {p: hashlib.sha256((self.package / p).read_bytes()).hexdigest()
-                  for p in preparation.NATIVE_HASHES}
-        with patch.dict(preparation.NATIVE_HASHES, hashes, clear=True):
-            preparation.import_package(self.package, destination)
-            self.assertFalse((destination / 'server/start319.py').exists())
-            self.assertEqual((destination / 'server/profile319.json').read_bytes(), b'{"rank":1,"experience":0}')
-            self.write(self.package / 'server/match-host/version.dll', b'changed')
-            with self.assertRaisesRegex(ValueError, '指纹'):
-                preparation.import_package(self.package, self.root / 'bad-import')
-            self.assertFalse((self.root / 'bad-import').exists())
+    def test_changed_generated_downloads_are_refreshed_without_resetting_profile(self):
+        self.prepare()
+        profile = self.runtime/'server/profile319.json'
+        profile.write_bytes(b'{"experience":12345}')
+        self.write(self.generated/'publisher-files/configs_s.info', b'new generated config')
+        self.prepare()
+        self.assertEqual((self.runtime/'server/publisher-files/configs_s.info').read_bytes(), b'new generated config')
+        self.assertEqual(profile.read_bytes(),b'{"experience":12345}')
 
     def test_low_space_is_checked_on_destination_volume_before_copy(self):
         from collections import namedtuple

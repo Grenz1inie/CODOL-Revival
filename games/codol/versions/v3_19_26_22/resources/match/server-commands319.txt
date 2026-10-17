@@ -1,0 +1,9 @@
+# Established Seatown composite registrations (3.19 NCS weapon indices).
+0.5 bin-weapon 1136 78 0 0
+0.6 bin-weapon 1137 78 1 0
+0.7 bin-weapon 1138 78 0 1
+0.8 bin-weapon 1139 583 0 0
+0.9 bin-weapon 1140 583 1 0
+1.0 bin-weapon 1141 583 0 1
+1.1 bin-weapon 1142 583 2 0
+1.2 bin-weapon 1143 583 0 2

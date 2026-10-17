@@ -65,8 +65,6 @@ class LoadedResources:
         if header[:2] != (233, 1248641861) or header[10:14] != (5, 0, 15767, 3927):
             raise ValueError('Unsupported public player schema')
         offsets = self.words(header[14], header[13])
-        if any(offset >= 32764 for offset in offsets):
-            raise ValueError('Player schema offset exceeds profile')
         fields = {'character': 0, 'lethal': 6, 'tactical': 32, 'primary': 22, 'secondary': 29,
                   'primary_attach': (16, 6), 'secondary_attach': (23, 6), 'perks': (10, 6)}
         classes = []
@@ -74,6 +72,13 @@ class LoadedResources:
             base = 1607 + i * 37
             classes.append({k: list(offsets[base+v[0]:base+v[0]+v[1]]) if isinstance(v, tuple)
                             else offsets[base+v] for k, v in fields.items()})
+        # Unselected DDL fields may encode bit offsets. Only these typed fields
+        # are consumed as bytes by playerdata_classes319.
+        for entry in [*classes, {'loadoutVersion': offsets[926]}]:
+            for key, value in entry.items():
+                width = 2 if key == 'character' else 4
+                if any(offset + width > header[12] for offset in (value if isinstance(value, list) else [value])):
+                    raise ValueError('Player schema offset exceeds profile')
         return {'classes': classes, 'loadoutVersion': offsets[926]}
 
     def clipmap(self, map_name):

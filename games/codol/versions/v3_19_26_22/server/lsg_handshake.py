@@ -4,6 +4,8 @@ import os
 import socket,struct,json,time,hashlib,hmac,sys,threading
 root=Path(os.environ['CODOL319_SERVER_ROOT'])
 sys.path.insert(0,str(root))
+sys.path.insert(0,str(Path(__file__).resolve().parents[5]))
+from games.codol.versions.v3_19_26_22.client.resource_export import wait_ready
 from lsg_codec import decode,encode,empty_task_reply,empty_task_reply_total
 if "--reply-total" in sys.argv: empty_task_reply=empty_task_reply_total
 import local_profile319
@@ -83,6 +85,9 @@ while time.monotonic()<deadline:
                     # experiment for the fixed 18 s waits between login bursts.
                     txn=0 if '--txn-zero' in sys.argv else request_number
                     emit('service_request',service=service,task=task)
+                    if (service,task) in ((80,203),(80,230),(80,154)) or (
+                            (service,task)==(93,131) and local_profile319.purchase_item_id(body) is not None):
+                        wait_ready(root)
                     previous_room = (room.phase, room.observed_count)
                     room_reply, room_pushes = room.handle(body, txn)
                     if (room.phase, room.observed_count) != previous_room:

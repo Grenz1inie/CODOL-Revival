@@ -29,6 +29,7 @@ class Marketplace319Tests(unittest.TestCase):
             '500 10 2200\n501 10 2200\n502 11 2252\n503 12 2200 2252\n504 13 99\n')
         (self.server / 'sku-prices319.txt').write_text(
             '500 1 1200 0\n501 2 20 30\n502 2 25 0\n503 1 1500 0\n504 2 60 0\n')
+        (self.server / 'common-ready.json').write_text('{}')
         self.profile = load_profile(self.server)
 
     def snapshot(self):

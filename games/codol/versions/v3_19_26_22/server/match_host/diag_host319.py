@@ -48,7 +48,9 @@ SAFETY
 import os
 import argparse, re, socket, struct, sys, time, json, zlib, hashlib
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[6]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from games.codol.versions.v3_19_26_22.client.resource_export import export_map
 ASSETS = Path(os.environ['CODOL319_SERVER_ROOT']) / 'match-host'
 from server_message319 import server_packet, server_command, binary_command, register_weapon_command
 
@@ -162,8 +164,12 @@ def challenge_for(peer):
     return h or 1
 
 
+class ResourceError(ValueError):
+    """A local preparation failure must stop the match, not consume a bad packet."""
+
+
 class DiagHost:
-    def __init__(self, port, mapname, gametype, maxclients, protocol, logdir, sequenced_probe=0, gamestate_capture=None, snapshot_payload=None, snapshot_stream=None, delta_continuation=False, ack_client_commands=False, live_seconds=0, live_origin=(1370.0,-384.0,248.0,180.0), weapon=0, eflags_test=False, viewmodels=(0,0), weapflags=0, collision_map=None):
+    def __init__(self, port, mapname, gametype, maxclients, protocol, logdir, sequenced_probe=0, gamestate_capture=None, snapshot_payload=None, snapshot_stream=None, delta_continuation=False, ack_client_commands=False, live_seconds=0, live_origin=(1370.0,-384.0,248.0,180.0), weapon=0, eflags_test=False, viewmodels=(0,0), weapflags=0, collision_map=None, resource_game=None):
         if not isinstance(sequenced_probe, int) or not 0 <= sequenced_probe <= 3:
             raise ValueError('Sequenced probe must be 0..3 packets')
         self.snapshot_payload = None
@@ -212,15 +218,14 @@ class DiagHost:
         if not isinstance(weapflags,int) or not 0<=weapflags<1<<24 or (weapflags and not any(viewmodels)):
             raise ValueError('Invalid --weapflags')
         self.weapflags = weapflags
-        # Captured clipMap (bridge capture_clipmap319) for host collision; loaded once,
-        # shared by every live simulation.
+        # The game loads its map after connect; extract it before the first snapshot.
         self.collision = None
+        self.collision_map = Path(collision_map) if collision_map else None
+        self.resource_game = resource_game
         self.server_commands = load_server_commands()
         if collision_map:
-            if not live_seconds or not Path(collision_map).is_file():
-                raise ValueError('--collision-map needs --live-sim-seconds and an existing file')
-            from collision_move319 import Collision
-            self.collision = Collision(collision_map)
+            if not live_seconds or (not resource_game and not Path(collision_map).is_file()):
+                raise ValueError('--collision-map needs live simulation and a resource game or existing file')
         # Experiment: 40 s normal, 30 s eFlags 0x400, 30 s eFlags 0x800, then 0.
         self.eflags_test = bool(eflags_test)
         self.weapon_name = None
@@ -396,6 +401,17 @@ class DiagHost:
             if peer in self.snapshot_attempted:
                 self.emit('initial_snapshot_ignored', peer=key, reason='one_shot_already_attempted')
                 return
+            if self.collision_map and self.collision is None:
+                try:
+                    if self.resource_game:
+                        pid, created, executable = self.resource_game
+                        export_map(self.collision_map, {'pid': int(pid), 'created': float(created)},
+                                   Path(executable), self.mapname)
+                    from collision_move319 import Collision
+                    self.collision = Collision(self.collision_map)
+                except (OSError, ValueError) as error:
+                    self.emit('map_resource_failed', error=str(error))
+                    raise ResourceError('3.19 map preparation failed: ' + str(error)) from error
             self.snapshot_attempted.add(peer)
             sequence = self.gamestate_sequences[peer] + 1
             response = server_packet(self.snapshot_payload, sequence=sequence,
@@ -755,6 +771,8 @@ class DiagHost:
                 continue
             try:
                 self.handle(sock, packet, peer)
+            except ResourceError:
+                raise
             except Exception as ex:  # never die on one bad datagram
                 self.emit("handler_error", error=repr(ex))
         for peer in list(self.stream_peers):self.stop_stream(peer,'host_deadline')
@@ -839,7 +857,9 @@ def main():
                     metavar=('X','Y','Z','YAW'))
     ap.add_argument('--weapon', type=int, default=0, help='Weapon definition number (weapons319.txt), e.g. 78 = ak47_mp')
     ap.add_argument('--viewmodels', type=int, nargs=2, default=(0,0), metavar=('ARMS','HANDS'), help='CS_MODELS indices for first-person arms/hands, e.g. 4 5')
-    ap.add_argument('--collision-map', default=None, help='Captured clipMap (config319-<pid>-clipmap.bin) for host collision')
+    ap.add_argument('--collision-map', default=None, help='Per-match clipMap output for host collision')
+    ap.add_argument('--resource-game', nargs=3, metavar=('PID', 'CREATED', 'EXE'),
+                    help='Identified local game to read after its map has loaded')
     ap.add_argument('--weapflags', type=lambda s:int(s,0), default=0, help='Player field 77 (+0x400); 0x80 skips the HUD weapon-name draw')
     ap.add_argument('--eflags-test', action='store_true', help='Experiment: timed eFlags 0x400/0x800 phases')
     a = ap.parse_args()
@@ -847,7 +867,7 @@ def main():
         selftest(); return
     host = DiagHost(a.port, a.map, a.gametype, a.maxclients, a.protocol, a.logdir,
              a.sequenced_probe, a.gamestate_probe_capture, a.snapshot_probe_payload,a.snapshot_stream,
-             a.delta_continuation, a.ack_client_commands, a.live_sim_seconds, a.live_origin, a.weapon, a.eflags_test, tuple(a.viewmodels), a.weapflags, a.collision_map)
+             a.delta_continuation, a.ack_client_commands, a.live_sim_seconds, a.live_origin, a.weapon, a.eflags_test, tuple(a.viewmodels), a.weapflags, a.collision_map, a.resource_game)
     host.match_pay = True
     try:
         host.serve(a.seconds, a.stop_file)
