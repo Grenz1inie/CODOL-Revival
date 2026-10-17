@@ -1,7 +1,7 @@
 """Authoritative single-player movement for the diagnostic host (version 1).
 
 Consumes decoded 3.19 usercmds (client_message319.read_usercmd) in serverTime
-order and produces the player state the live encoder (snapshot319_live.exe)
+order and produces the player state the source encoder (snapshot_codec319)
 writes each tick. Version 1 limits, by design:
   * horizontal Q3-style ground movement only (accelerate/friction at speed 190);
   * without a collision map z is held at the spawn height; with one
@@ -12,12 +12,12 @@ client and host can still disagree around them.
 """
 import math
 import struct
-import subprocess
 import time
 import os
 from pathlib import Path
 
 from client_message319 import FORWARD, BACK, RIGHT, LEFT, short_to_degrees
+from snapshot_codec319 import encode
 from collision_move319 import CollisionMovement, ENTITYNUM_NONE, wish_speed, BUTTON_JUMP, BUTTON_SPRINT, SPRINT_SCALE
 
 ROOT = Path(os.environ['CODOL319_SERVER_ROOT']) / 'match-host'
@@ -70,15 +70,13 @@ except (OSError, ValueError, IndexError):
 
 
 class LiveSim(CollisionMovement):
-    def __init__(self, origin, yaw=0.0, encoder=None, weapon=0, viewmodels=(0, 0), weapflags=0, collision=None):
+    def __init__(self, origin, yaw=0.0, weapon=0, viewmodels=(0, 0), weapflags=0, collision=None):
         self.origin = [float(v) for v in origin]
         self.velocity = [0.0, 0.0, 0.0]
         self.pitch = 0.0
         self.yaw = float(yaw)
         self.command_time = 0
         self.commands = 0
-        self.encoder_path = encoder or ROOT / 'mainframe-verification/snapshot319_live.exe'
-        self.proc = None
         self.weapon = int(weapon)
         # First-person arms/hands CS_MODELS indices (encoder fields 57 / 118); need a weapon.
         self.viewmodels = tuple(int(v) for v in viewmodels)
@@ -169,18 +167,6 @@ class LiveSim(CollisionMovement):
         return True
 
     # ---- encoding ---------------------------------------------------
-    def _encoder(self):
-        if self.proc is None or self.proc.poll() is not None:
-            args = [str(self.encoder_path)] + ([str(self.weapon)] if self.weapon else [])
-            if any(self.viewmodels):
-                args += [str(v) for v in self.viewmodels]
-                if self.weapflags:
-                    args.append(str(self.weapflags))
-            self.proc = subprocess.Popen(args, stdin=subprocess.PIPE,
-                                         stdout=subprocess.PIPE, text=True, bufsize=1,
-                                         creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
-        return self.proc
-
     def weapflags_override(self, server_time):
         if self.first_server_time is None:
             self.first_server_time = server_time
@@ -292,21 +278,13 @@ class LiveSim(CollisionMovement):
             return None
 
     def set_weapon(self, weapon):
-        """Switch the held weapon (in-match class choice). The encoder is restarted with the new
-        weapon; field 39 then changes and the client adopts it (otherFlags 0x1000)."""
+        """Switch field 39; the client adopts the weapon with otherFlags 0x1000."""
         self.weapon = int(weapon)
         self.weapon_scale = WEAPON_MOVE_SCALE.get(self.weapon, 1.0)
         self.clip = self.ammo = None
         self.max_clip = 0
         self.ammo_override = None
         self.reload_done_at = None
-        if self.proc is not None and self.proc.poll() is None:
-            self.proc.stdin.close()
-            try:
-                self.proc.wait(timeout=5)
-            except Exception:
-                self.proc.kill()
-        self.proc = None
 
     def check_reload(self, buttons):
         pressed = bool(buttons & BUTTON_RELOAD)
@@ -394,14 +372,8 @@ class LiveSim(CollisionMovement):
                            + (tuple('F%d=%d' % kv for kv in sorted(self.movement_fields().items())) if self.collision else ())
                            + self.weapflags_override(server_time)
                            + self.bot_tokens())
-        proc = self._encoder()
-        proc.stdin.write(request + '\n'); proc.stdin.flush()
-        line = proc.stdout.readline().strip()
-        if not line or line.startswith('ERR'):
-            raise ValueError('live encoder: ' + (line or 'no output'))
-        return bytes.fromhex(line.split()[0])
+        return encode(request, self.weapon, self.viewmodels, self.weapflags)
 
     def close(self):
         # The Collision process is owned by the host (shared across peers).
-        if self.proc is not None and self.proc.poll() is None:
-            self.proc.stdin.close(); self.proc.wait(timeout=5)
+        pass

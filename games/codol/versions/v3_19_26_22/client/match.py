@@ -9,17 +9,21 @@ import time
 
 from .lifecycle import Services, alive, lobby_event
 from .preparation import digest
+from ..server.match_host.snapshot_codec319 import encode
 
 NATIVE_HASHES = {
     'match-host/mainframe-verification/collision319.exe': 'e57ca57182ab677dffaa979ca2151849ae4f9938adc9960b09f890387d1f5b4a',
-    'match-host/mainframe-verification/snapshot319_live.exe': 'd91ccd7f02fb7fd5e92bd95746972bd67d192cb32b49bb55e6a5366f79900167',
 }
-INITIAL = 'match-host/activation-analysis319/initial-snapshot-living-loadout78-arms4-hands5-wf80-v2047-floor.bin'
-ASSETS = (*NATIVE_HASHES, INITIAL, 'match-host/collision319/config319-27572-clipmap.bin',
+ASSETS = (*NATIVE_HASHES, 'match-host/collision319/config319-27572-clipmap.bin',
           'match-host/collision319/ladders-mp_seatown.json', 'match-host/weapons319.txt',
           'match-host/playerdata_classes319.json', 'match-host/server-commands319.txt',
           'match-host/viewmodel-arms56.txt', 'weapon-parts319.txt', 'item-ids319.txt',
           'rankTable319.csv')
+
+
+def initial_snapshot():
+    # Reproduces the historical Seatown floor baseline byte for byte.
+    return encode('100000 100000 1370 -384 233.908 0 0 0 0 180 0 2046', 78, (4, 5), 128)
 
 
 class MatchSession:
@@ -71,7 +75,7 @@ class MatchSession:
                 target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(source, target)
         snapshot = self.run / 'initial-snapshot.bin'
-        shutil.copy2(self.assets / INITIAL, snapshot)
+        snapshot.write_bytes(initial_snapshot())
         script = Path(__file__).resolve().parents[1] / 'server/match_host/diag_host319.py'
         python = Path(sys.executable)
         if python.name.lower() == 'pythonw.exe':

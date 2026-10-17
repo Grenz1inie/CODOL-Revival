@@ -80,6 +80,8 @@ class MatchSessionTests(unittest.TestCase):
             'match-host/mainframe-verification/test_native_ncs319.exe',
             'match-host/mainframe-verification/config-reader-relocated.bin',
             'iips-memory/codoMP_client_shipRetail.exe.9076736.bin',
+            'match-host/mainframe-verification/snapshot319_live.exe',
+            'match-host/activation-analysis319/initial-snapshot-living-loadout78-arms4-hands5-wf80-v2047-floor.bin',
         )
         saved = {}
         try:
@@ -95,13 +97,13 @@ class MatchSessionTests(unittest.TestCase):
                 path.write_bytes(content)
 
     def test_changed_native_dependency_fails_before_arm_or_host_start(self):
-        path = self.runtime / 'server/match-host/mainframe-verification/snapshot319_live.exe'
+        path = self.runtime / 'server/match-host/mainframe-verification/collision319.exe'
         original = path.read_bytes()
         try:
             path.write_bytes(b'unknown binary')
             state = self.ready()
             self.assertEqual(state['phase'], 'error')
-            self.assertIn('snapshot319_live.exe', state['error'])
+            self.assertIn('collision319.exe', state['error'])
             self.assertIsNone(state['service'])
             self.assertEqual((self.runtime / 'server/match-host/arm-loopback319.txt').read_text(), '0')
         finally:

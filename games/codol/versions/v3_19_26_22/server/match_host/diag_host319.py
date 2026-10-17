@@ -189,7 +189,7 @@ class DiagHost:
             raise ValueError('Client command acknowledgement requires a snapshot stream')
         self.ack_client_commands = bool(ack_client_commands)
         # Live mode: authoritative movement from decoded usercmds (live_sim319),
-        # encoded per tick by snapshot319_live.exe. Bounded by live_seconds.
+        # encoded per tick by snapshot_codec319. Bounded by live_seconds.
         if live_seconds and not (0 < live_seconds <= 900):
             raise ValueError('Live simulation must be bounded to 900 seconds')
         if live_seconds and not (self.snapshot_payload and delta_continuation and ack_client_commands):
