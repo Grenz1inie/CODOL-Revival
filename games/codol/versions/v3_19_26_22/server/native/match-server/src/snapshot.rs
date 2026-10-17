@@ -79,6 +79,24 @@ impl Snapshot {
         Ok(Self { values })
     }
 
+    /// Player state for the current tick: origin (8/11/10), velocity
+    /// (14/13/16), pitch (19) and yaw (18), as snapshot_codec319.py lays them
+    /// out from the movement model.
+    pub fn set_player(&mut self, origin: [f32; 3], velocity: [f32; 3], pitch: f32, yaw: f32)
+                      -> Result<(), &'static str> {
+        let bad = |v: f32| !v.is_finite() || v.abs() > 131072.0;
+        if origin.iter().any(|v| bad(*v)) || velocity.iter().any(|v| bad(*v))
+            || bad(pitch) || bad(yaw) {
+            return Err("invalid player state");
+        }
+        for (index, value) in [(8, origin[0]), (11, origin[1]), (10, origin[2]),
+                               (14, velocity[0]), (13, velocity[1]), (16, velocity[2]),
+                               (19, pitch), (18, yaw)] {
+            self.values[index] = value.to_bits();
+        }
+        Ok(())
+    }
+
     pub fn encode(&self, stamp: u32, command_time: u32, delta: u8) -> Result<Vec<u8>, &'static str> {
         if !(1..=0x7fff_ffff).contains(&stamp) || command_time > 0x7fff_ffff || delta > 15 {
             return Err("invalid snapshot time or delta");

@@ -1,6 +1,7 @@
 //! Version 3.19.26.22 match rules and room state.
 
 mod room_wire;
+pub mod movement;
 pub mod transport;
 pub mod snapshot;
 

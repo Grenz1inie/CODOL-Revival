@@ -1,5 +1,5 @@
 //! Current 3.19 loopback-proxy transport; native stats sender 0x7f6ec0.
-use crate::{NuketownRoom, snapshot::Snapshot};
+use crate::{NuketownRoom, movement::Movement, snapshot::Snapshot};
 use flate2::{Decompress, FlushDecompress, Status};
 use std::net::SocketAddr;
 
@@ -82,39 +82,182 @@ pub struct ClientControl {
     pub sequence: u32,
     pub ack: u32,
     pub commands: Vec<(u32, Vec<u8>)>,
+    pub move_data: Option<MoveData>,
 }
 
-/// Native 0x4709e0 and 0x5b2c90. No server commands are published in this phase.
-/// Only the reliable prefix is consumed; movement remains for the simulation phase.
-pub fn client_control(packet: &[u8], challenge: u32) -> Option<ClientControl> {
+/// One decoded usercmd; layout is the inverse of the native writer 0x66f410
+/// (0x2c-byte usercmd at client+0x3cd0) as verified in match_host/client_message319.py.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct UserCmd {
+    pub server_time: u32,
+    pub buttons: u32,
+    pub angles: [u16; 3],
+    pub move_class: u8,
+    pub w14: u16,
+    pub w16: u16,
+    pub w18: u16,
+    pub b20: u8,
+    pub w22: u16,
+    pub a1c: u16,
+    pub b24: u8,
+    pub b25: u8,
+    pub b26: u8,
+    pub b27: u8,
+    pub b28: u8,
+}
+
+pub struct MoveData {
+    pub delta: bool,
+    pub count: u8,
+    pub cmds: Vec<UserCmd>,
+    /// Client-predicted origin and its command time, as the native packet
+    /// writer appends them after the command list.
+    pub predicted: Option<([f32; 3], u32)>,
+}
+
+/// Native independent byte/bit cursors: whole-byte reads advance `read` and
+/// leave the bit pointer; a bit group starting on a boundary claims the next
+/// unread byte.
+struct Cursor<'a> { data: &'a [u8], read: usize, bit: usize }
+
+impl Cursor<'_> {
+    fn bits(&mut self, count: usize) -> Option<u32> {
+        let mut value = 0;
+        for i in 0..count {
+            if self.bit % 8 == 0 {
+                self.bit = self.read * 8;
+                self.read += 1;
+            }
+            value |= u32::from((self.data.get(self.bit / 8)? >> (self.bit % 8)) & 1) << i;
+            self.bit += 1;
+        }
+        Some(value)
+    }
+    fn byte(&mut self) -> Option<u8> { let v = *self.data.get(self.read)?; self.read += 1; Some(v) }
+    fn u16(&mut self) -> Option<u16> {
+        let v = self.data.get(self.read..self.read + 2)?.try_into().ok().map(u16::from_le_bytes)?;
+        self.read += 2;
+        Some(v)
+    }
+    fn u32(&mut self) -> Option<u32> {
+        let v = self.data.get(self.read..self.read + 4)?.try_into().ok().map(u32::from_le_bytes)?;
+        self.read += 4;
+        Some(v)
+    }
+}
+
+/// Inverse of the native usercmd delta writer 0x66f410: cases A (unchanged),
+/// B and C, with per-field XOR of the packet key (0x5b2e96: server command
+/// hash ^ server message sequence ^ checksumFeed; no server commands are
+/// published so it is the packet's server ack).
+fn read_usercmd(c: &mut Cursor, key: u32, old: &UserCmd) -> Option<UserCmd> {
+    macro_rules! angle { ($new:expr, $index:expr, $k:expr) => {
+        if c.bits(1)? == 1 { $new.angles[$index] = c.u16()? ^ ($k as u16); }
+    } }
+    macro_rules! field { ($new:expr, $target:ident, $width:expr, $mask:expr, $ty:ty, $k:expr) => {
+        if c.bits(1)? == 1 { $new.$target = (((c.bits($width)? ^ $k) & $mask) as $ty); }
+    } }
+    let mut new = old.clone();
+    if c.bits(1)? == 1 {
+        new.server_time = old.server_time.wrapping_add(c.byte()? as u32);
+    } else {
+        new.server_time = c.u32()?;
+    }
+    let kbit = key & 1;
+    if (c.bits(1)? ^ kbit) == 0 {                       // case A: unchanged
+        if c.bits(3)? != 7 { return None; }
+        return Some(new);
+    }
+    if (c.bits(1)? ^ kbit) == 0 {                       // case B (0x66f5d5)
+        let k = key ^ new.server_time;
+        new.buttons = (old.buttons & !1) | ((c.bits(1)? ^ k) & 1);
+        angle!(new, 0, k);
+        angle!(new, 1, k);
+        field!(new, move_class, 4, 0xf, u8, k);
+        if c.bits(3)? != 2 { return None; }
+        return Some(new);
+    }
+    let k = key;                                        // case C (0x66f656)
+    let bit0 = (c.bits(1)? ^ k) & 1;
+    angle!(new, 0, k);
+    angle!(new, 1, k);
+    field!(new, move_class, 4, 0xf, u8, k);
+    let k = key ^ new.server_time;
+    angle!(new, 2, k);
+    let mut high = old.buttons >> 1;
+    if c.bits(1)? == 1 { high = (c.bits(29)? ^ k) & 0x1fff_ffff; }
+    new.buttons = (high << 1) | bit0;
+    field!(new, w14, 11, 0x7ff, u16, k);
+    field!(new, w18, 11, 0x7ff, u16, k);
+    field!(new, w16, 11, 0x7ff, u16, k);
+    if new.buttons & 0x20000 != 0 {
+        field!(new, b24, 8, 0xff, u8, k);
+        field!(new, b25, 8, 0xff, u8, k);
+        field!(new, b26, 8, 0xff, u8, k);
+    }
+    if new.buttons & 0x200000 != 0 {
+        field!(new, b27, 8, 0xff, u8, k);
+        field!(new, b28, 8, 0xff, u8, k);
+    }
+    if new.buttons & 4 != 0 {
+        if c.bits(1)? == 1 { new.a1c = c.u16()? ^ (k as u16); }
+        field!(new, b20, 8, 0xff, u8, k);
+        field!(new, w22, 11, 0x7ff, u16, k);
+    }
+    if c.bits(3)? != 5 { return None; }
+    Some(new)
+}
+
+fn parse_move(c: &mut Cursor, delta: bool, key: u32, baseline: Option<&UserCmd>) -> Option<MoveData> {
+    let count = c.byte()?;
+    let mut old = baseline.cloned().unwrap_or_default();
+    let mut cmds = Vec::new();
+    for _ in 0..count {
+        old = read_usercmd(c, key, &old)?;
+        cmds.push(old.clone());
+    }
+    let predicted = (|| {
+        let mut raw = [0; 4];
+        for slot in &mut raw { *slot = c.u32()?; }
+        let origin = [f32::from_bits(raw[0]), f32::from_bits(raw[1]), f32::from_bits(raw[2])];
+        origin.iter().all(|v| v.is_finite() && v.abs() < 131072.0).then_some((origin, raw[3]))
+    })();
+    Some(MoveData { delta, count, cmds, predicted })
+}
+
+/// Native 0x4709e0 and 0x5b2c90. No server commands are published in this
+/// phase, so neither the payload mix nor the usercmd key includes one.
+/// `baseline` is the previous packet's newest command; delta moves chain from
+/// it, moveNoDelta or a missing baseline starts from a zeroed command.
+pub fn client_control(packet: &[u8], challenge: u32, baseline: Option<&UserCmd>) -> Option<ClientControl> {
     if packet.len() < 14 || packet[4] > 1 || packet[9..13] != [0; 4] { return None; }
     let sequence = u32::from_le_bytes(packet[..4].try_into().ok()?);
     let ack = u32::from_le_bytes(packet[5..9].try_into().ok()?);
     if !(1..=0x1fff_ffff).contains(&sequence) || ack > 0x1fff_ffff { return None; }
     let key = (ack ^ challenge ^ packet[4] as u32) as u8;
     let plain: Vec<_> = packet[13..].iter().map(|b| b ^ key).collect();
-    let (mut read, mut bit) = (0, 0);
+    let mut c = Cursor { data: &plain, read: 0, bit: 0 };
     let mut commands = Vec::new();
+    let mut move_data = None;
     loop {
-        let mut op = 0;
-        for shift in 0..3 {
-            if bit % 8 == 0 { bit = read * 8; read += 1; }
-            op |= ((plain.get(bit / 8)? >> (bit % 8)) & 1) << shift;
-            bit += 1;
-        }
-        match op {
-            0 | 1 | 3 => return Some(ClientControl { sequence, ack, commands }),
+        match c.bits(3)? {
+            3 => break,                                  // EOF
             2 => {
-                let number = u32::from_le_bytes(plain.get(read..read+4)?.try_into().ok()?);
+                let number = u32::from_le_bytes(c.data.get(c.read..c.read + 4)?.try_into().ok()?);
                 if number == 0 || number > 0x7fff_ffff { return None; }
-                read += 4;
-                let length = plain[read..].iter().take(1024).position(|&b| b == 0)?;
-                commands.push((number, plain[read..read+length].to_vec()));
-                read += length + 1;
+                c.read += 4;
+                let length = c.data[c.read..].iter().take(1024).position(|&b| b == 0)?;
+                commands.push((number, c.data[c.read..c.read + length].to_vec()));
+                c.read += length + 1;
+            }
+            op @ (0 | 1) => {
+                move_data = Some(parse_move(&mut c, op == 0, ack, baseline)?);
+                break;
             }
             _ => return None,
         }
     }
+    Some(ClientControl { sequence, ack, commands, move_data })
 }
 
 pub struct Session {
@@ -129,6 +272,9 @@ pub struct Session {
     server_sequence: u32,
     loaded: bool,
     snapshot: Option<Snapshot>,
+    spawn: Option<([f32; 3], f32)>,
+    movement: Option<Movement>,
+    baseline: Option<UserCmd>,
     first_frame: Option<(u32, Vec<u8>)>,
     first_tick: Option<u64>,
     due: u64,
@@ -141,22 +287,26 @@ impl Session {
     pub fn new(room: NuketownRoom, challenge: u32) -> Self {
         Self { room, challenge, peer: None, connected: false, upload: None,
             gamestate: None, gamestate_packet: None, client_sequence: 0, server_sequence: 0, loaded: false,
-            snapshot: None, first_frame: None, first_tick: None, due: 0, last_ack: 0,
+            snapshot: None, spawn: None, movement: None, baseline: None,
+            first_frame: None, first_tick: None, due: 0, last_ack: 0,
             command_sequence: 0, command: Vec::new() }
     }
 
     pub fn room(&self) -> &NuketownRoom { &self.room }
     pub fn profile(&self) -> Option<&[u8]> { self.upload.as_ref().and_then(StatsUpload::profile) }
     pub fn map_loaded(&self) -> bool { self.loaded }
+    pub fn movement(&self) -> Option<&Movement> { self.movement.as_ref() }
 
     pub fn set_spawn(&mut self, origin: [f32; 3], yaw: f32) -> Result<(), &'static str> {
         self.snapshot = Some(Snapshot::new(origin, yaw)?);
+        self.movement = Some(Movement::new(origin, yaw)?);
+        self.spawn = Some((origin, yaw));
         Ok(())
     }
 
     pub fn tick(&mut self, now: u64) -> Option<(SocketAddr, Vec<u8>)> {
         if !self.connected || !self.loaded || now < self.due { return None; }
-        let snapshot = self.snapshot.as_ref()?;
+        if self.snapshot.is_none() { return None; }
         let peer = self.peer?;
         self.due = now + 50;
         if let Some((sequence, packet)) = &self.first_frame {
@@ -164,12 +314,19 @@ impl Session {
         }
         let first = *self.first_tick.get_or_insert(now);
         let stamp = u32::try_from(1000 + now.saturating_sub(first)).ok()?;
+        let snapshot = self.snapshot.as_mut()?;
+        if let Some(movement) = &self.movement {
+            snapshot.set_player(movement.origin, movement.velocity, movement.pitch, movement.yaw).ok()?;
+        }
+        let command_time = self.movement.as_ref()
+            .filter(|movement| movement.command_time > 0)
+            .map_or(stamp, |movement| movement.command_time);
         self.server_sequence += 1;
         let delta = if self.first_frame.is_none() { 0 } else {
             let gap = self.server_sequence - self.last_ack;
             if (1..=15).contains(&gap) { gap as u8 } else { 1 }
         };
-        let payload = snapshot.encode(stamp, stamp, delta).ok()?;
+        let payload = snapshot.encode(stamp, command_time, delta).ok()?;
         let packet = server_packet(&payload, self.server_sequence, self.command_sequence,
                                    self.challenge, &self.command).ok()?;
         if self.first_frame.is_none() { self.first_frame = Some((self.server_sequence, packet.clone())); }
@@ -189,19 +346,26 @@ impl Session {
         if !self.connected || self.peer != Some(peer) || self.profile().is_none() || packet.len() < 14 {
             return None;
         }
-        let control = client_control(packet, self.challenge)?;
+        let control = client_control(packet, self.challenge, self.baseline.as_ref())?;
         let ack = control.ack;
         if control.sequence <= self.client_sequence || ack > self.server_sequence { return None; }
         let (mut number, mut command) = (self.command_sequence, self.command.clone());
-        for (next, text) in control.commands {
-            if next <= number { continue; }
-            if next != number + 1 { return None; }
-            number = next; command = text;
+        for (next, text) in &control.commands {
+            if *next <= number { continue; }
+            if *next != number + 1 { return None; }
+            number = *next; command = text.clone();
         }
         self.client_sequence = control.sequence;
         self.last_ack = self.last_ack.max(ack);
         self.command_sequence = number;
         self.command = command;
+        if let Some(mv) = &control.move_data {
+            if let Some(last) = mv.cmds.last() { self.baseline = Some(last.clone()); }
+            if let Some(movement) = &mut self.movement {
+                for cmd in &mv.cmds { movement.apply(cmd); }
+                if let Some((origin, time)) = mv.predicted { movement.reconcile(origin, time); }
+            }
+        }
         if self.loaded { return None; }
         if let Some(sent) = &self.gamestate_packet {
             return (ack < self.server_sequence).then(|| sent.clone());
@@ -266,6 +430,10 @@ impl Session {
             self.client_sequence = 0;
             self.server_sequence = 0;
             self.loaded = false;
+            if let Some((origin, yaw)) = self.spawn {
+                self.movement = Movement::new(origin, yaw).ok();
+            }
+            self.baseline = None;
             self.first_frame = None;
             self.first_tick = None;
             self.due = 0;

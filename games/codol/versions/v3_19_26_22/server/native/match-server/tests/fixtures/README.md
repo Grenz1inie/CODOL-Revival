@@ -57,3 +57,27 @@ local evidence and snapshot are `work/codol319-nuketown/udp-rea.evidence.json`
 and `udp-rea.snapshot.json`. Set `CODOL319_NATIVE_PYTHON` to run these replays;
 without that variable native checks are skipped. Live Nuketown UDP, game
 state, movement and AI remain unverified.
+
+## Real move packet fixtures (2026-10-17 Nuketown session)
+
+`move319-head.json` (frames 676..735), `move319-moving.json` (frames
+3420..3500, the window where the user held LEFT) and `move319-tail.json`
+(frames 322643..322664) are real client datagrams from
+`work/codol319-map-live-20261017/session.pcapng` (client port 58436, Rust
+UDP 28970, challenge 0, no server commands published). Each record carries
+the raw packet plus the usercmds decoded by the verified parser
+`match_host/client_message319.py` (inverse of native writer `0x66f410`;
+usercmd key from `0x5b2e96` is the packet's server ack here), with the
+baseline chained from the session's first move packet and conditional byte
+fields materialized. `move319-trajectory.json` is the reference movement
+output of `work/codol319-move-input/move_reference319.py`: per-command
+origin/velocity/angles through the live_sim319 no-collision integrator with
+C1 wish scaling and 16-unit reconcile, plus four snapshot byte references
+from `snapshot_codec319.py`. No game assets or player data beyond the
+loopback capture are included.
+
+The same capture shows the client's own predicted origin never moved while
+LEFT was held for ~1.3 s (buttons bit 0x8000000 held, fire bit pressed
+early): client-side prediction was frozen in that run. The fixtures
+therefore verify decode and server-side movement only, not that the client
+moves itself; see the Nuketown wiki's movement section.
