@@ -1,9 +1,13 @@
 //! First-phase player movement over decoded 3.19 usercmds. The integrator is
 //! the version's Python reference (match_host/live_sim319 no-collision branch:
-//! Q3 friction 6.0 / accelerate 10.0 / stop speed 100 / 200 ms step cap / z
-//! held at the spawn height), with C1 wish scaling (match_host/collision_move319:
-//! back 0.7, strafe 0.8, sprint 1.5) and predicted-origin reconciliation within
-//! 16 units. Collision, jumping and mantling stay later phases.
+//! Q3 friction 6.0 / accelerate 10.0 / stop speed 100 / 200 ms step cap), with
+//! C1 wish scaling (match_host/collision_move319: back 0.7, strafe 0.8, sprint
+//! 1.5) and spawn-relative angle accumulation. The host has no clipmap in this
+//! phase, so the client's predicted origin report always wins (the 2026-10-17
+//! live round showed the client falling 40 units to its real floor while a
+//! tolerance-gated host kept correcting it back up, bouncing the view); z is
+//! never integrated or reset by the host. Collision, jumping and mantling stay
+//! later phases.
 use crate::transport::UserCmd;
 
 const FORWARD: u8 = 1;
@@ -20,7 +24,6 @@ const STRAFE_SCALE: f32 = 0.8;
 const SPRINT_SCALE: f32 = 1.5;
 const BUTTON_SPRINT: u32 = 0x2;
 const PITCH_LIMIT: f32 = 85.0;
-const PREDICTION_TOLERANCE: f32 = 16.0;
 const DEG_PER_SHORT: f32 = 360.0 / 65536.0;
 
 fn wish_speed(forward: f32, right: f32) -> f32 {
@@ -42,8 +45,6 @@ pub struct Movement {
     pub command_time: u32,
     pub applied: u32,
     pub reconciled: u32,
-    pub corrected: u32,
-    spawn_z: f32,
     last_pitch: Option<u16>,
     last_yaw: Option<u16>,
 }
@@ -54,14 +55,12 @@ impl Movement {
         if origin.iter().any(|v| bad(*v)) || bad(yaw) { return Err("invalid movement spawn"); }
         Ok(Self {
             origin,
-            spawn_z: origin[2],
             velocity: [0.0; 3],
             pitch: 0.0,
             yaw,
             command_time: 0,
             applied: 0,
             reconciled: 0,
-            corrected: 0,
             last_pitch: None,
             last_yaw: None,
         })
@@ -116,26 +115,23 @@ impl Movement {
         }
         self.origin[0] += self.velocity[0] * dt;
         self.origin[1] += self.velocity[1] * dt;
-        self.origin[2] = self.spawn_z;
         self.velocity[2] = 0.0;
         true
     }
 
-    /// Adopt the client's predicted origin for the command time just run when
-    /// it is within 16 units; beyond that the host result stands and corrects
-    /// the client. Returns the distance, or None if the report is stale.
+    /// Adopt the client's predicted origin for the command time just run.
+    /// The client owns the clipmap (the live round fell 40 units to its real
+    /// floor), so the report always wins; between reports the host integrates
+    /// xy only and never touches z. Returns the distance, or None for a stale
+    /// report.
     pub fn reconcile(&mut self, origin: [f32; 3], time: u32) -> Option<f32> {
         if time != self.command_time { return None; }
         let dx = origin[0] - self.origin[0];
         let dy = origin[1] - self.origin[1];
         let dz = origin[2] - self.origin[2];
         let distance = (dx * dx + dy * dy + dz * dz).sqrt();
-        if distance <= PREDICTION_TOLERANCE {
-            self.origin = origin;
-            self.reconciled += 1;
-        } else {
-            self.corrected += 1;
-        }
+        self.origin = origin;
+        self.reconciled += 1;
         Some(distance)
     }
 }

@@ -105,7 +105,7 @@ fn commands_are_ordered_capped_and_strafe_follows_the_yaw() {
     assert!(!movement.apply(&cmd(900, 0, [0; 3], 0)), "older time ignored");
     assert_eq!(movement.command_time, 1000);
 
-    // A 4-second gap integrates at most 200 ms; z stays at the spawn height.
+    // A 4-second gap integrates at most 200 ms; z is never integrated by the host.
     assert!(movement.apply(&cmd(5000, 0, [0; 3], 1)));
     let speed = movement.velocity[0].hypot(movement.velocity[1]);
     assert!(speed > 0.0 && speed <= 190.0, "speed {speed}");
@@ -146,16 +146,26 @@ fn angles_accumulate_relative_to_the_spawn_and_clamp_the_pitch() {
 }
 
 #[test]
-fn reconcile_adopts_within_tolerance_corrects_beyond_and_ignores_other_times() {
+fn reconcile_follows_the_client_report_and_z_never_fights_back() {
+    // The live 2026-10-17 round: the client fell from the spawn z -24 to its
+    // real floor at -63.88 while the host kept sending -24, bouncing the view
+    // 2835 times. The host has no clipmap, so a time-matching report always
+    // wins and apply never moves z again afterwards.
     let mut movement = Movement::new([0.0, 0.0, 0.0], 0.0).unwrap();
     movement.apply(&cmd(1000, 0, [0; 3], 1));
     assert_eq!(movement.reconcile([3.0, 4.0, 0.0], 999), None, "not this command time");
     let distance = movement.reconcile([3.0, 4.0, 0.0], 1000).unwrap();
     assert!((distance - 5.0).abs() < 0.01);
-    assert_eq!(movement.origin, [3.0, 4.0, 0.0], "within 16 units the client prediction wins");
-    assert_eq!(movement.reconcile([200.0, 0.0, 0.0], 1000).unwrap() > 16.0, true);
-    assert_eq!(movement.origin, [3.0, 4.0, 0.0], "beyond tolerance the host result stands");
-    assert_eq!((movement.reconciled, movement.corrected), (1, 1));
+    assert_eq!(movement.origin, [3.0, 4.0, 0.0]);
+    // Far reports win too: the client owns collision, the host cannot correct it.
+    assert!(movement.reconcile([200.0, 0.0, -50.0], 1000).unwrap() > 190.0);
+    assert_eq!(movement.origin, [200.0, 0.0, -50.0], "client prediction is authoritative");
+    // Later commands integrate xy only; the adopted height is kept.
+    movement.apply(&cmd(1006, 0, [0; 3], 0));
+    movement.apply(&cmd(1012, 0, [0; 3], 0));
+    assert_eq!(movement.origin[2], -50.0, "z is never reset to the spawn height");
+    assert_eq!(movement.origin[0], 200.0, "no keys: xy unchanged");
+    assert_eq!(movement.reconciled, 2);
 }
 
 #[test]
@@ -236,7 +246,6 @@ fn session_feeds_real_moves_into_the_snapshot_state() {
     let movement = session.movement().expect("moves reached the session movement");
     assert_eq!(movement.applied, expected.applied);
     assert_eq!(movement.reconciled, expected.reconciled);
-    assert_eq!(movement.corrected, expected.corrected);
     for (got, want) in movement.origin.iter().zip(expected.origin.iter()) {
         assert!((got - want).abs() < 1e-3, "session origin {:?} vs {:?}", movement.origin, expected.origin);
     }

@@ -110,13 +110,15 @@ class ReferenceMovement:
         return True
 
     def reconcile(self, predicted):
+        """The client owns the clipmap: a time-matching report always wins
+        (the 2026-10-17 live round fell 40 units to its real floor; a
+        tolerance gate made the host bounce the view 2835 times)."""
         xyz, t = predicted
         if t != self.command_time:
             return None
         d = math.dist(self.origin, xyz)
-        if d <= PREDICTION_TOLERANCE:
-            self.origin = list(xyz)
-        self.reconciles.append((t, round(d, 3), d <= PREDICTION_TOLERANCE))
+        self.origin = list(xyz)
+        self.reconciles.append((t, round(d, 3), True))
         return d
 
 
