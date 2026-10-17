@@ -36,7 +36,12 @@ class ControllerTests(unittest.TestCase):
             'sha256':hashlib.sha256(b'client').hexdigest()}])
         selected = installations.select(str(game))
         self.runtime = installations.prepare(selected)
-        self.server = create_server(self.root, port=0, game_status=lambda: self.running, installations=installations)
+        self.lab_stop_calls = []
+        def lab_stop():
+            self.lab_stop_calls.append(True)
+            return False
+        self.server = create_server(self.root, port=0, game_status=lambda: self.running, installations=installations,
+                                    lab_stop=lab_stop)
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
         self.thread.start()
         self.url = f'http://127.0.0.1:{self.server.server_port}'

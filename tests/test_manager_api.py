@@ -30,8 +30,18 @@ class ManagerApiTests(unittest.TestCase):
             'sha256': hashlib.sha256(b'client').hexdigest()}])
         self.running = False
         self.choice = None
+        self.lab_session = False
+        self.lab_stop_calls = []
+        def lab_stop():
+            self.lab_stop_calls.append(True)
+            if self.lab_session:
+                self.lab_session = False
+                self.running = False
+                return True
+            return False
         self.server = create_server(self.root, 0, game_status=lambda: self.running,
-                                    installations=self.manager, choose_directory=lambda: self.choice)
+                                    installations=self.manager, choose_directory=lambda: self.choice,
+                                    lab_stop=lab_stop)
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
         self.thread.start()
         self.url = f'http://127.0.0.1:{self.server.server_port}'
@@ -45,6 +55,27 @@ class ManagerApiTests(unittest.TestCase):
                           data=None if data is None else json.dumps(data).encode())
         with urlopen(request) as response:
             return json.load(response)
+
+    def test_stop_closes_an_out_of_band_lab_experiment_session(self):
+        """The game may run from the fixed A-drive lab, outside the manager's
+        own runtime (2026-10-17 Nuketown rounds); the stop button must still
+        close it through the lab's stop signal instead of reporting failure."""
+        self.call('installation/select', {'path': str(self.game)})
+        self.running = True
+        self.lab_session = True
+        with patch('controller.subprocess.run',
+                   return_value=subprocess.CompletedProcess([], 0, b'', b'')) as run:
+            self.assertIn('message', self.call('game/stop', {}))
+            self.assertIn('stop', run.call_args.args[0], 'manager session is stopped first')
+        self.assertFalse(self.running)
+        self.assertTrue(self.lab_stop_calls)
+
+    def test_stop_closes_the_lab_game_even_without_a_selected_installation(self):
+        self.running = True
+        self.lab_session = True
+        self.assertIn('message', self.call('game/stop', {}))
+        self.assertFalse(self.running)
+        self.assertTrue(self.lab_stop_calls)
 
     def test_unmatched_cannot_launch_or_write_and_versions_are_available(self):
         self.assertEqual(self.call('status')['installation']['state'], 'unselected')

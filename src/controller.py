@@ -13,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import importlib
 from manager.installations import Installations
 from manager.folder_picker import choose_folder
+from manager import experiments
 
 
 def game_running():
@@ -35,7 +36,8 @@ def under(directory, name):
     return path
 
 
-def create_server(root, port=8765, *, game_status=game_running, installations=None, choose_directory=choose_folder):
+def create_server(root, port=8765, *, game_status=game_running, installations=None,
+                  choose_directory=choose_folder, lab_stop=experiments.stop):
     root = Path(root).resolve()
     mutation_lock = threading.RLock()
     installs = installations or Installations(root)
@@ -138,6 +140,11 @@ def create_server(root, port=8765, *, game_status=game_running, installations=No
                         stopping = url.path == '/api/game/stop'
                         adapter = session_adapter() if stopping else (adapter_for(selection) if selection['state'] == 'matched' else None)
                         if not adapter:
+                            # A game from the fixed A-drive lab can run without any
+                            # selected installation; stop still has to close it.
+                            if stopping and game_status() and lab_stop():
+                                (root / 'config/session.json').unlink(missing_ok=True)
+                                self.reply({'message': '游戏与服务器已停止。'}); return
                             if url.path == '/api/settings' and not writing:
                                 self.reply({'skip_tutorial': True}); return
                             self.reply({'error': selection['reason']}, 409); return
@@ -174,6 +181,8 @@ def create_server(root, port=8765, *, game_status=game_running, installations=No
                                 detail = '\n'.join(output.decode('utf-8-sig', errors='replace').strip()
                                                    for output in (result.stdout, result.stderr) if output)
                                 self.reply({'error': '游戏与服务器操作失败', 'detail': detail}, 500); return
+                            if stopping and game_status():
+                                lab_stop()  # out-of-band lab session; the check below decides
                             if game_status() != launching:
                                 self.reply({'error': '启动未完成，游戏未运行。' if launching else '停止未完成，游戏仍在运行。'}, 500); return
                             if stopping: (root / 'config/session.json').unlink(missing_ok=True)
