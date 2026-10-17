@@ -1,8 +1,8 @@
 # 3.19 本地桥接源码
 
-`native_build.py` 使用公开 x86 MinGW GCC 构建 `version.dll` 与 `client_loopback319.dll`。用环境变量 `CODOL319_CC` 指定编译器；有效构建按源码和产物摘要复用，不要求重复安装编译器。Windows 自带的32位 `version.dll` 仍由实例准备复制为 `version_system319.dll`，用于17个标准API转发。
+`native_build.py` 使用公开 x86 MinGW GCC/G++ 构建 `version.dll`、`client_loopback319.dll` 和 `collision319.exe`。用环境变量 `CODOL319_CC` 指定32位编译器的 `gcc.exe`（须同时安装C++支持）；有效构建按源码和产物摘要复用，不要求重复安装编译器。Windows 自带的32位 `version.dll` 仍由实例准备复制为 `version_system319.dll`，用于17个标准API转发。
 
-来源为对用户提供组件的行为恢复：旧代理SHA256 `b9e297174c9c652f10835ee39cd001b9c85e1fd4b70813adf4dafddc653dc97d`，旧桥接SHA256 `ffc616e8534b31292cedabf48e31d4f6915693f63a8503414b26622adf894e56`。生产构建不读取这些二进制。REA/Ghidra 12.1.4分析与必要的反编译边界修正脚本见 `../../reverse/tools/ExportNative319.java`；本机分析产物位于被忽略的 `work/codol319-rebuild/`。
+来源为对用户提供组件的行为恢复：旧代理SHA256 `b9e297174c9c652f10835ee39cd001b9c85e1fd4b70813adf4dafddc653dc97d`，旧桥接SHA256 `ffc616e8534b31292cedabf48e31d4f6915693f63a8503414b26622adf894e56`。生产构建不读取这些二进制。REA/Ghidra 12.1.4分析与必要的反编译边界修正脚本见 `../../reverse/tools/ExportNative319.java`；本机分析产物位于 `work/codol319-rebuild/`，不参与构建或交付。
 
 恢复的必要行为：
 
@@ -11,4 +11,6 @@
 - 首个有序报文触发当前客户端NCS采集。只发布完整采集，失败保留上次结果；范围表与校验算法位于仓库，数据来自本次原游戏装载。
 - 限于3.19.26.22，地址和字段不得用于3.3。客户端EXE文件保持不变；生成DLL和采集文件不提交。
 
-`test_native_build319.py` 从源码构建DLL与受控32位消费者，验证系统API、入口拒绝、请求排队、预测状态、NCS采集/失败保护，以及无编译器复用与损坏产物拒绝。它未执行真实游戏场景转换，不能替代大厅和对局人工验收。当前构建模块尚待与全部资源生成流程一起接入实例准备；碰撞、快照及其他资源输入尚未全部解除旧包依赖。
+`collision.cpp` 恢复旧碰撞工具（SHA256 `e57ca57182ab677dffaa979ca2151849ae4f9938adc9960b09f890387d1f5b4a`）的必要协议：CM319记录读取、材质过滤、盒体/胶囊体/翻越检测，保留0.125接触偏移和胶囊边缘补面。C++运行库静态链接，不需要外部DLL。`test_collision_build319.py` 使用源码构造几何体，对照固定旧工具输出，并拒绝截断输入。另以现有Seatown数据做140次确定性差分：14965个brush、77343个三角形，结果无差异；新程序含加载共0.986秒，旧程序0.282秒。
+
+`test_native_build319.py` 从源码构建DLL与受控32位消费者，验证系统API、入口拒绝、请求排队、预测状态、NCS采集/失败保护，以及无编译器复用与损坏产物拒绝。它未执行真实游戏场景转换，不能替代大厅和对局人工验收。当前构建模块尚待与全部资源生成流程一起接入实例准备；碰撞数据和其他游戏资源输入尚未全部解除旧包依赖。

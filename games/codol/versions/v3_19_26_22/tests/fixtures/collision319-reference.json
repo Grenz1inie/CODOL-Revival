@@ -1,0 +1,162 @@
+{
+  "source": "collision319.exe SHA256 e57ca57182ab677dffaa979ca2151849ae4f9938adc9960b09f890387d1f5b4a",
+  "geometry_sha256": "cbf752105c6e1335df5eaf84c39eaa81ff2586c1f2131907437c14624f91a6bd",
+  "ready": "READY 5 2",
+  "cases": [
+    {
+      "name": "floor_capsule",
+      "request": "C 0 0 30 0 0 -30 15 0 70",
+      "expected": "0.497917 0.0000 0.0000 1.0000 0 0"
+    },
+    {
+      "name": "floor_box",
+      "request": "T 0 0 30 0 0 -30 -15 -15 0 15 15 70",
+      "expected": "0.497917 0.0000 0.0000 1.0000 0 0"
+    },
+    {
+      "name": "wall_capsule",
+      "request": "C 0 0 10 100 0 10 15 0 70",
+      "expected": "0.248750 -1.0000 0.0000 0.0000 0 0"
+    },
+    {
+      "name": "wall_box",
+      "request": "T 0 0 10 100 0 10 -15 -15 0 15 15 50",
+      "expected": "0.248750 -1.0000 0.0000 0.0000 0 0"
+    },
+    {
+      "name": "free",
+      "request": "C 0 -300 30 100 -300 30 15 0 70",
+      "expected": "1.000000 0.0000 0.0000 0.0000 0 0"
+    },
+    {
+      "name": "inside",
+      "request": "C 45 0 10 45 0 10 15 0 70",
+      "expected": "0.000000 0.0000 0.0000 0.0000 1 1"
+    },
+    {
+      "name": "escape",
+      "request": "C 45 0 10 90 0 150 15 0 70",
+      "expected": "1.000000 0.0000 0.0000 0.0000 1 0"
+    },
+    {
+      "name": "slope_capsule",
+      "request": "C -100 0 150 -100 0 0 15 0 70",
+      "expected": "0.624067 -0.7071 0.0000 0.7071 0 0"
+    },
+    {
+      "name": "slope_box",
+      "request": "T -100 0 150 -100 0 0 -15 -15 0 15 15 70",
+      "expected": "0.565488 -0.7071 0.0000 0.7071 0 0"
+    },
+    {
+      "name": "corner",
+      "request": "C 15 -230 10 35 -190 10 15 0 70",
+      "expected": "0.571705 -0.9487 -0.3162 0.0000 0 0"
+    },
+    {
+      "name": "mantle",
+      "request": "M 90 0 0 110 0 0",
+      "expected": "0.488750 -1.0000 0.0000 0.0000 0 0"
+    },
+    {
+      "name": "mantle_filter",
+      "request": "M 0 0 10 100 0 10",
+      "expected": "0.997750 -1.0000 0.0000 0.0000 0 0"
+    },
+    {
+      "name": "nonsolid_filter",
+      "request": "C 0 30 10 0 90 10 15 0 70",
+      "expected": "1.000000 0.0000 0.0000 0.0000 0 0"
+    },
+    {
+      "name": "triangle_floor",
+      "request": "C 350 0 100 350 0 -50 15 0 70",
+      "expected": "0.665833 0.0000 0.0000 1.0000 0 0"
+    },
+    {
+      "name": "triangle_floor_box",
+      "request": "T 350 0 100 350 0 -50 -10 -10 0 10 10 30",
+      "expected": "0.665833 0.0000 0.0000 1.0000 0 0"
+    },
+    {
+      "name": "triangle_edge",
+      "request": "C 290 0 100 290 0 -50 15 0 70",
+      "expected": "0.690733 -0.7071 0.0000 0.7071 0 0"
+    },
+    {
+      "name": "triangle_reverse_slope",
+      "request": "C 650 0 160 650 0 -20 15 0 70",
+      "expected": "0.600499 -0.0000 -0.4472 0.8944 0 0"
+    },
+    {
+      "name": "triangle_reverse_box",
+      "request": "T 650 0 160 650 0 -20 -10 -10 0 10 10 30",
+      "expected": "0.582557 0.0000 -0.4472 0.8944 0 0"
+    },
+    {
+      "name": "round_corner_0",
+      "request": "C 15 -220 10 15 -180 10 15 0 70",
+      "expected": "1.000000 0.0000 0.0000 0.0000 0 0"
+    },
+    {
+      "name": "round_corner_1",
+      "request": "C 16 -220 10 16 -180 10 15 0 70",
+      "expected": "1.000000 0.0000 0.0000 0.0000 0 0"
+    },
+    {
+      "name": "round_corner_2",
+      "request": "C 17 -220 10 17 -180 10 15 0 70",
+      "expected": "1.000000 0.0000 0.0000 0.0000 0 0"
+    },
+    {
+      "name": "round_corner_3",
+      "request": "C 18 -220 10 18 -180 10 15 0 70",
+      "expected": "1.000000 0.0000 0.0000 0.0000 0 0"
+    },
+    {
+      "name": "round_corner_4",
+      "request": "C 19 -220 10 19 -180 10 15 0 70",
+      "expected": "1.000000 0.0000 0.0000 0.0000 0 0"
+    },
+    {
+      "name": "round_corner_5",
+      "request": "C 20 -220 10 20 -180 10 15 0 70",
+      "expected": "1.000000 0.0000 0.0000 0.0000 0 0"
+    },
+    {
+      "name": "round_corner_6",
+      "request": "C 21 -220 10 21 -180 10 15 0 70",
+      "expected": "1.000000 0.0000 0.0000 0.0000 0 0"
+    },
+    {
+      "name": "round_corner_7",
+      "request": "C 22 -220 10 22 -180 10 15 0 70",
+      "expected": "1.000000 0.0000 0.0000 0.0000 0 0"
+    },
+    {
+      "name": "round_corner_8",
+      "request": "C 23 -220 10 23 -180 10 15 0 70",
+      "expected": "1.000000 0.0000 0.0000 0.0000 0 0"
+    },
+    {
+      "name": "round_corner_9",
+      "request": "C 24 -220 10 24 -180 10 15 0 70",
+      "expected": "1.000000 0.0000 0.0000 0.0000 0 0"
+    },
+    {
+      "name": "round_corner_10",
+      "request": "C 25 -220 10 25 -180 10 15 0 70",
+      "expected": "0.429264 -0.9487 -0.3162 0.0000 0 0"
+    },
+    {
+      "name": "round_corner_11",
+      "request": "C 26 -220 10 26 -180 10 15 0 70",
+      "expected": "0.354264 -0.9487 -0.3162 0.0000 0 0"
+    },
+    {
+      "name": "bad_request",
+      "request": "C 1 2",
+      "expected": "ERR parse"
+    }
+  ]
+}

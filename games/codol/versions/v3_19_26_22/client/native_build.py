@@ -8,7 +8,7 @@ import subprocess
 import tempfile
 
 SOURCE = Path(__file__).with_name('native')
-OUTPUTS = ('version.dll', 'client_loopback319.dll')
+OUTPUTS = ('version.dll', 'client_loopback319.dll', 'collision319.exe')
 
 
 def digest(path):
@@ -49,10 +49,12 @@ def build(directory):
     with tempfile.TemporaryDirectory(prefix='.native319-', dir=directory.parent) as temporary:
         stage = Path(temporary)
         for output, sources in [('version.dll', ['version.c', 'version.def']),
-                                ('client_loopback319.dll', ['bridge.c', 'capture.c'])]:
-            result = subprocess.run([cc, '-m32', '-std=gnu99', '-O2', '-Wall', '-Wextra',
-                '-shared', '-static-libgcc', '-o', str(stage / output),
-                *[str(SOURCE / s) for s in sources], '-lws2_32'],
+                                ('client_loopback319.dll', ['bridge.c', 'capture.c']),
+                                ('collision319.exe', ['collision.cpp'])]:
+            flags = ['-std=c++11', '-static', '-lstdc++', '-msse2', '-mfpmath=sse'] if output.endswith('.exe') else [
+                '-std=gnu99', '-shared', '-static-libgcc', '-lws2_32']
+            result = subprocess.run([cc, '-m32', '-O2', '-Wall', '-Wextra',
+                '-o', str(stage / output), *[str(SOURCE / s) for s in sources], *flags],
                 env=compiler_env(cc), capture_output=True, text=True, timeout=60)
             if result.returncode:
                 raise RuntimeError('3.19 bridge requires x86 MinGW GCC:\n' + result.stderr)
