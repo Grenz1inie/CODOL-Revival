@@ -1,14 +1,27 @@
 # 3.19 启动链路证据
 
-2026-10-17可重建交付第一阶段：认证的Tiger常量改用带来源说明的仓库源码，私有档案读取仓库内版本定义；HTTP认证不再要求旧包中的证书和私钥。空实例的真实HTTP认证、已固定时间的票据、档案CRC/字段及进度保护已验证，26项相关测试通过。此阶段仅解除上述数据依赖，加载器、桥接及对局辅助程序仍待替换，不代表整个启动包已移除。
+2026-10-17可重建交付：生产启动已移除旧包依赖。输入为仓库源码、匹配原游戏、Python依赖和公开x86 MinGW工具链。认证Tiger常量、私有档案定义、快照字段和NCS范围均有版本来源；启动资源从原归档生成，运行时数据从已核验的自有客户端只读导出。新部署步骤与实机验收边界见[启动说明](../../../../../docs/wiki/v3_19_26_22-startup.md)。
 
 来源为用户提供的CODOL319-TestBuild；18份选择性移植Python文件的原始SHA256见[source-manifest.json](source-manifest.json)。保留提供包内的来源注释。服务数据根目录统一为 `CODOL319_SERVER_ROOT`，主启动和对局编排另行实现，未引入提供包按端口清理其他服务的行为。对局移植还包含正常停止、原生子进程清理和结算写入失败回滚；原始源码保持不变。
 
-原生组件身份在 [preparation.py](../client/preparation.py) 的 `NATIVE_HASHES` 中固定；导入及执行前校验。原始二进制仅在被忽略的本地runtime包中保存。
+源码及生成路径：
+
+| 旧输入 | 生产替代 |
+| --- | --- |
+| `Client-english-fixed-resources.exe` | [loader.py](../client/loader.py)：创建自有客户端、命名映射、原字节验证后的内存配置 |
+| `version.dll`、`client_loopback319.dll` | [native/](../client/native/)：版本代理、主线程回环、资源注册采集；由[native_build.py](../client/native_build.py)构建和校验 |
+| `collision319.exe` | 同目录`collision.cpp`；刷子/三角形、胶囊及翻越碰撞，受控几何与140条Seatown原生对照轨迹一致 |
+| `snapshot319_live.exe`、`test_native_ncs319.exe`及旧转储 | [snapshot_codec319.py](../server/match_host/snapshot_codec319.py)、[reconstruct_ncs319.py](../server/match_host/reconstruct_ncs319.py)与仓库字段定义 |
+| 英文IFS、发布文件 | [boot_assets.py](../client/boot_assets.py)：原游戏IFS2与源码IFS读取器提取；[英文来源](../resources/english/README.md)、[配置来源](../resources/publisher/README.md) |
+| 物品、SKU、武器、配装、地图及梯子 | [resource_export.py](../client/resource_export.py)：PID/创建时间/路径/EXE指纹校验，`OpenProcess(0x410)`只读提取，完整发布后写标记 |
+
+构建记录包含源码和输出哈希；旧包二进制指纹不再是生产依赖。IFS读取器复用仓库中已有源码，因为3.3和3.19原游戏的`IFS2.dll`哈希相同；没有复用3.3的游戏地址或注册编号。Ghidra 12.1.4和Capstone辅助确认3.19原生消费者：无签名FF只解密首个256KiB读取块，IFS尾部为16KiB块MD5表及表摘要。重建完整英文归档与原有效补丁逐字节一致，SHA256见英文来源文档。
+
+公共DDL包含字节偏移和位偏移。导出只验证所消费的配装字段及其宽度，不能将其他位字段当作越界字节偏移；真实v233表已用于复现并建立回归。地图数据在客户端完成加载后提取，错误地图和部分读取不会生成可用地图；提取失败先于首帧发送。
 
 2026-10-17加载器阶段：[loader.py](../client/loader.py) 替代旧 `Client-english-fixed-resources.exe`，生产入口直接运行仓库Python源码。按下述反编译证据生成TCLS共享内存，等待原客户端解包后，仅在原字节匹配时配置HTTP认证、关闭远程NAT探测并隔离UDP端口；英文分支保留原有资源入口选择。读取与写入限于新建的游戏子进程，文件EXE不变。18项准备/启停/协议测试通过，另一个受控32位子进程实际消费命名映射并验证三处修改、页面保护恢复和磁盘EXE不变（6.99秒）。这不替代真实客户端大厅和对局验收；代理、桥接和资产生成仍在后续阶段。
 
-对局使用的两个原生组件身份另固定于 [match.py](../client/match.py)：`collision319.exe`、`snapshot319_live.exe`。迁入的 [match_host](../server/match_host/) 调用这些组件处理本版本的碰撞和快照，没有混入3.3.3.3地址。原生快照、配装读取及碰撞进程生命周期已通过离线测试；游戏内效果仍需人工验收。
+以下分阶段记录描述当时进度；最终生产依赖以上表为准。已有组件的人工游戏验收不能代替源码替换后的整套启动验收。
 
 2026-10-17 NCS阶段：运行时配置表改由仓库Python算法重建，移除 `test_native_ncs319.exe`、`config-reader-relocated.bin` 和旧rdata转储依赖。23项范围定义直接从原版客户端 `0x00da9808` 提取，来源与客户端SHA256见 [ncs319.json](../resources/definitions/ncs319.json)。[固定对照样本](../tests/fixtures/ncs319-reference.json) 保存旧原生程序的校验值、注册表摘要和地图消息摘要；测试覆盖跨列表去重、列表内重复、排序、跳过类型及不完整采集拒绝。删除这三个旧文件的真实服务启动与相关用例共8项通过；客户端自身的地图校验继续生效。
 
@@ -32,4 +45,4 @@ REA会话已保存为同目录下的 `rea-loader.snapshot.json` 并关闭；包�
 
 REA静态核验原EXE：20480字节，SHA256 `a3af8a5d79420757acb5f63978a589ecdca87029373e5266c884354c01371f11`，PE/CLI托管CIL，程序集版本 `3.19.26.22`。证据ID：`ev_a109d7d3436ae37f003e681e28608fde2e4cf5382904c898cdb6a1d52337e258`。此次读取现成恢复源码和程序集元数据，未重编译，也未验证恢复源码与原EXE的完整行为等价性。
 
-提供目录的 `binary-source-map.md` 另列6个尚未恢复源码的原生组件，包括启动所用 `Client-english-fixed-resources.exe`、`version.dll` 和 `client_loopback319.dll`。上述C#源码不能替代这些组件；本轮保留已通过大厅人工验收的启动方式，后续原生迁移分别以对应二进制证据为准。第三方恢复源码保留在原目录，未整包复制或提交。
+提供目录的`binary-source-map.md`当时列出6个缺源码的原生组件；上述C#源码只对应图形启动器。2026-10-17按上表恢复或替代这些组件需要的行为，未将现成二进制随仓库分发。第三方恢复源码保留在原目录，未整包复制或提交。

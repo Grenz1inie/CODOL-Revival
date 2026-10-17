@@ -1,5 +1,7 @@
 {
   "source": "CODOL319-TestBuild/server (user-supplied local package)",
+  "purpose": "Historical provenance of imported source, not a runtime package requirement",
+  "runtime_inputs": ["repository source and tracked text definitions", "matching original 3.19 game", "Python dependencies", "public x86 MinGW toolchain", "Windows system version.dll"],
   "scope": "Local launcher, authentication, lobby, web resources and Seatown test match",
   "files": {
     "auth_capture.py": "0c9dfe9dba73e921e5e46ec54b6eb8dd78254d92ffc488aa01e3f243cd16b316",

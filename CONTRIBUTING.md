@@ -62,6 +62,13 @@ python -B -m unittest discover -s games/codol/versions/v3_3_3_3/tests -p test_re
 未设置游戏路径时，仅跳过该项真实资源集成，其他资源边界测试仍运行。
 不要用本机历史包替代首次生成验收；全量测试集中执行一次。
 
+3.19首次启动需要x86 MinGW GCC（含C++编译器和32位Windows链接库），通过
+`$env:CODOL319_CC='C:\mingw32\bin\gcc.exe'`指定。准备入口自动构建四个原生组件并从
+匹配原游戏生成启动资源；已有有效产物可在没有编译器时复用。加载器和快照/NCS处理
+使用仓库Python源码，不再导入`CODOL319-TestBuild`。该Seatown链路无需3.3的Rust产物；
+工具/实例目录须为较短英文路径，原游戏路径可含中文。完整步骤、数据来源及人工验收
+边界见[3.19启动](docs/wiki/v3_19_26_22-startup.md)。
+
 ## 文件归属
 
 - `src/`：共用管理器；版本源码、逆向工具、模拟服和测试归入 `games/codol/versions/<版本>/`。导入模块不得启动监听器。
