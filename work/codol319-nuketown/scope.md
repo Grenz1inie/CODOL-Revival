@@ -63,3 +63,12 @@
 - skills/ops/role-map.md
 - skills/ops/timeline-workitem.md
 - skills/ops/IDENTITY.md
+
+## 2026-10-17 explicit Ready experiment authorization
+
+User selected: 允许隔离实验中的Ready门控（推荐）.
+Allowed target: `A:/CODOL-Lab/ready319-20261017/game/codoMP_client_shipRetail.exe`,
+SHA-256 `36997674b18f2896de5e9d755686f6922af10708f355175714058d0a0172b537`.
+Only the local Nuketown human-host Ready gate may change this experimental
+process's memory. Profile copies are backed up. Original game files, formal
+profiles and system settings remain out of scope. Game UI remains manual.
