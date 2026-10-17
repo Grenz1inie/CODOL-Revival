@@ -1,0 +1,290 @@
+chinese
+
+
+
+WIN_CONFIGURE_UPDATED_TITLE
+"Recommended Settings Updated"
+
+
+
+WIN_CONFIGURE_UPDATED_BODY
+"The recommended settings have been updated since you last ran Call of Duty Online.
+Would you like to optimize your game configuration with these new settings?
+The recommended settings work best for most people. This changes your graphics settings but not your control settings."
+
+
+
+WIN_CONFIGURE_UPDATED_FORCED_BODY
+"The recommended settings have been updated and must be applied before running Call of Duty Online."
+
+
+WIN_CONFIGURE_UPDATED_PERFORMANCE_TITLE
+"Settings Update"
+
+WIN_CONFIGURE_UPDATED_PERFORMANCE_LOW_BODY
+"Your computer can support better visuals. Would you like to raise your graphics settings? You can set graphics quality from the icon at the top right of the home screen."
+
+WIN_CONFIGURE_UPDATED_PERFORMANCE_HIGH_BODY
+"You can improve your game experience by adjusting the graphics quality. Would you like to reset your graphics quality? You can set it from the icon at the top right of the home screen."
+
+
+WIN_LOW_MEMORY_BODY
+"Your virtual memory appears to be low.
+This can make the game run slowly or stop completely.
+It is strongly recommended that you close some programs before running Call of Duty Online.
+Do you still want to run Call of Duty Online?"
+
+
+
+WIN_LOW_MEMORY_TITLE
+"Low Memory"
+
+
+
+WIN_COLORDEPTH_WARN_BODY
+"The game window will most likely not display correctly at the current desktop color depth.
+To continue, choose OK. To quit, press Cancel."
+
+
+
+WIN_COLORDEPTH_WARN_TITLE
+"Low Desktop Color Depth"
+
+
+
+WIN_COMPUTER_CHANGE_BODY
+"Your computer appears to have changed since you last ran Call of Duty Online.
+Would you like the game to optimize its configuration for your new hardware?
+This works best for most people.
+This changes your graphics settings but not your control settings."
+
+
+
+WIN_COMPUTER_CHANGE_TITLE
+"Optimize Settings?"
+
+
+
+WIN_DISK_FULL_BODY
+"Call of Duty Online could not write a file. Your hard disk is most likely full."
+
+
+
+WIN_DISK_FULL_TITLE
+"File Write Error"
+
+
+
+WIN_IMPROPER_QUIT_BODY
+"Call of Duty Online does not appear to have closed properly last time.
+Would you like to run the game in safe mode?
+This works best for most people.
+This changes your graphics settings but not your control settings."
+
+
+
+WIN_IMPROPER_QUIT_TITLE
+"Run in Safe Mode?"
+
+
+
+WIN_ERROR
+"Fatal Error"
+
+
+
+WIN_NO_STEAM
+"Steam must be running to play this game."
+
+
+
+WIN_OUT_OF_MEM_BODY
+"Out of memory. Your hard disk is most likely low on space."
+
+
+
+WIN_OUT_OF_MEM_TITLE
+"Out of Memory"
+
+
+
+WIN_UNABLE_LOAD_DLL_BODY
+"A DLL could not be loaded. Memory may be low, the hard disk may be full, or the DLL may be missing."
+
+
+
+WIN_DIRECTX_INIT_TITLE
+"DirectX Error"
+
+
+
+WIN_DIRECTX_INIT_BODY
+"DirectX encountered an unrecoverable error.
+See the DirectX readme for possible solutions."
+
+WIN_DIRECTX_LOW_RESOLUTION_INIT_BODY
+"Call of Duty Online requires a screen resolution of 1024x768 or higher."
+
+WIN_MSS_INIT_FAILED
+"The Miles Sound System failed to start.
+Make sure you have the latest sound card drivers and DirectX installed."
+
+
+
+WIN_COULDNT_START_PROCESS
+"Could not start the process"
+
+@SF_UI_DW_LIVE_DISCONNECTED
+"Lost connection to the lobby service"
+
+@SF_UI_DW_LIVE_CONNECTING_FAILED
+"Could not connect to the lobby service!"
+
+@SF_UI_SYS_QQID_NOT_ACTIVATED
+"Your account is not activated. Please activate it and sign in again."
+
+@SF_UI_NOTE_PLAYER_BANNED_PERMANENT
+"This account has been permanently suspended for cheating or other violations of the User Agreement and Player Rules. (Contact support if you disagree.)"
+
+@SF_UI_NOTE_PLAYER_BANNED
+"This account has been suspended until %d-%d-%d for cheating or other violations of the User Agreement and Player Rules. (Contact support if you disagree.)"
+
+WIN_GAME_SAVE_ERROR
+"Game error: could not save the game"
+
+WIN_DISK_ERROR
+"Disk read error"
+
+WIN_FILE_READ_ERROR
+"File read error"
+
+WIN_EXCEEDED_LIMIT
+"Exceeded the limit of %d '%s' assets"
+
+WIN_ALLOCATE_ERROR
+"Could not allocate the asset"
+
+WIN_EXCEEDED_ERROR
+"Limit exceeded"
+
+WIN_MAPBSP_ERROR
+"Could not find the bsp for this map"
+
+WIN_LOAD_ASSET_ERROR
+"Could not load the default asset"
+
+WIN_OVERRIDE_ERROR
+"Trying to override an asset"
+
+WIN_MAX_ZONE_ERROR
+"Exceeded the maximum number of zones"
+
+WIN_ZONE_ERROR
+"Error: could not find the file '%s'"
+
+WIN_DBTHREAD_ERROR
+"Could not create the database thread"
+
+WIN_NOT_USE_PHYSICS_ERROR
+"Error: an effect was changed to not use physics; please restart the map"
+
+WIN_USE_PHYSICS_ERROR
+"Error: an effect was changed to use physics; please restart the map"
+
+WIN_INVALID_SAVE
+"Invalid save file"
+
+WIN_RECURSIVE_ERRORS
+"Too many recursive errors"
+
+WIN_INIT_FAILED
+"Initialization failed after %s"
+
+WIN_INIT_ERROR
+"Error during initialization:
+%s"
+
+WIN_SCRIPT_OVERFLOW
+"Internal script stack overflow"
+
+WIN_IWD_MODIFIED
+"An IWD file has been modified"
+
+WIN_IWD_TOOMANY
+"Too many IWD files"
+
+WIN_HUNK_ALLOCATE_ERROR
+"Hunk memory allocation failed"
+
+WIN_SNDTHREAD_FAILED
+"Could not create the sound thread"
+
+WIN_GETOS_FAILED
+"Could not get operating system information"
+
+WIN_WIN_VERSION
+"Windows 4 or later is required"
+
+WIN_WIN32S
+"Cannot run under Win32s"
+
+WIN_UNLOAD_BSP_INUSE
+"Cannot unload the bsp file while it is in use"
+
+WIN_FILE_NOT_FOUND
+"Could not find the file '%s'.
+Your client data appears to be incomplete or damaged. Please uninstall the client and install the latest version."
+
+WIN_NOTE_PLAYER_BANNED
+"This account has been suspended until %d-%d-%d for cheating or other violations of the User Agreement and Player Rules. (Contact support if you disagree.)"
+
+WIN_FILE_CORRUPT
+"Your client data is incomplete or damaged. Please uninstall the client and install the latest version."
+
+WIN_NO_TCLS
+"Please start the game with the game launcher (Client.exe in the TCLS folder)."
+
+WIN_INVALID_CLIENT_VERSION
+"Wrong client version."
+
+WIN_IIPS_DLL_ERROR
+"Could not load iips.dll."
+
+WIN_IIPS_INIT_ERROR
+"IIPS initialization error: %x."
+
+WIN_IIPS_INIT_FAILED
+"IIPS initialization failed: %x."
+
+WIN_IIPS_PREDOWNLOAD_ERROR
+"Your client data is incomplete or damaged. Try these steps to repair it:
+1. In Task Manager, end the IIPSHostApp.exe process.
+2. Run /IIPS/IIPSHostApp.exe from the client folder (or run the desktop shortcut again; it will fail again but starts IIPSHostApp).
+3. Click the mini-client download icon in the taskbar to watch the progress; when it reaches 100%%, run the game shortcut again."
+
+WIN_PICMIP_UPDATING
+"Reducing texture resolution"
+
+WIN_ANTIBOT_CREATE_OBJ_ERROR
+"AntiBot initialization failed."
+
+WIN_VIDEO_DRIVER_IN_BLACK_LIST
+"Your graphics driver version (%s) is not compatible with the game. Please update your graphics driver and try again."
+
+WIN_VIDEO_DRIVER_TOO_OLD
+"Your graphics driver version (%s) is older than the minimum the game requires (%s). Please update your graphics driver and try again."
+
+WIN_WARNING
+"Note"
+
+WIN_VIDEO_DRIVER_WARNING_BODY
+"Your graphics driver version (%s) is older than the recommended version (%s). If you see graphics problems in game, consider updating to the recommended version or later."
+
+WIN_OUT_OF_VRAM_REDUCED
+"Out of video memory; texture quality was lowered automatically."
+
+WIN_OUT_OF_VRAM_FATAL
+"Out of video memory, and texture quality cannot be lowered further."
+
+WIN_PROFILE_DOWNLOAD_FAILURE
+"Could not download player information (%s). Please contact technical support."

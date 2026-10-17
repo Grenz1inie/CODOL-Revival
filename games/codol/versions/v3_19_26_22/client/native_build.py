@@ -8,7 +8,8 @@ import subprocess
 import tempfile
 
 SOURCE = Path(__file__).with_name('native')
-OUTPUTS = ('version.dll', 'client_loopback319.dll', 'collision319.exe')
+IFS_READER = SOURCE.parents[2] / 'v3_3_3_3/reverse/tools/ifs-read.c'
+OUTPUTS = ('version.dll', 'client_loopback319.dll', 'collision319.exe', 'ifs-read.exe')
 
 
 def digest(path):
@@ -27,7 +28,7 @@ def compiler_env(path):
 
 
 def inputs():
-    return {p.name: digest(p) for p in [Path(__file__), *sorted(SOURCE.glob('*'))] if p.is_file()}
+    return {p.name: digest(p) for p in [Path(__file__), IFS_READER, *sorted(SOURCE.glob('*'))] if p.is_file()}
 
 
 def validate(directory):
@@ -50,9 +51,11 @@ def build(directory):
         stage = Path(temporary)
         for output, sources in [('version.dll', ['version.c', 'version.def']),
                                 ('client_loopback319.dll', ['bridge.c', 'capture.c']),
-                                ('collision319.exe', ['collision.cpp'])]:
-            flags = ['-std=c++11', '-static', '-lstdc++', '-msse2', '-mfpmath=sse'] if output.endswith('.exe') else [
-                '-std=gnu99', '-shared', '-static-libgcc', '-lws2_32']
+                                ('collision319.exe', ['collision.cpp']),
+                                ('ifs-read.exe', [str(IFS_READER)])]:
+            flags = ['-std=c++11', '-static', '-lstdc++', '-msse2', '-mfpmath=sse'] if output == 'collision319.exe' else (
+                ['-std=gnu99', '-static-libgcc'] if output == 'ifs-read.exe' else
+                ['-std=gnu99', '-shared', '-static-libgcc', '-lws2_32'])
             result = subprocess.run([cc, '-m32', '-O2', '-Wall', '-Wextra',
                 '-o', str(stage / output), *[str(SOURCE / s) for s in sources], *flags],
                 env=compiler_env(cc), capture_output=True, text=True, timeout=60)

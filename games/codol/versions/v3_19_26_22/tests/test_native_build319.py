@@ -20,6 +20,11 @@ class NativeBuildTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             built = native_build.build(root / 'native')
+            with pefile.PE(str(built / 'ifs-read.exe')) as reader:
+                self.assertEqual(reader.FILE_HEADER.Machine, 0x14c)
+            usage = subprocess.run([str(built / 'ifs-read.exe')], capture_output=True, timeout=5)
+            self.assertEqual(usage.returncode, 2)
+            self.assertIn(b'ARCHIVE_COPY', usage.stderr)
             for name in ('version.dll', 'client_loopback319.dll'):
                 with pefile.PE(str(built / name)) as image:
                     self.assertEqual(image.FILE_HEADER.Machine, 0x14c)
