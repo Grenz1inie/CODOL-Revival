@@ -1,6 +1,7 @@
 """Production lobby dispatch and Rust admissions over an isolated TCP listener."""
 import hashlib
 import hmac
+import json
 import os
 import socket
 import struct
@@ -96,6 +97,10 @@ runpy.run_path('lsg_handshake.py', run_name='__main__')
             request(READY_BROADCAST, 6)
             owner = {'uid': 1000001, 'name': 'LocalPlayer'}
             self.assertEqual(receive(2), room319.message_event(channel, owner, b'\x20\x02'))
+            handoff = json.loads((self.root / 'nuketown-ready.json').read_text())
+            self.assertEqual(handoff['uid'], owner['uid'])
+            self.assertEqual(handoff['name'], owner['name'])
+            self.assertEqual(bytes(handoff['roster']), (FIXTURES / 'roster-native.bin').read_bytes())
             connection.settimeout(0.1)
             with self.assertRaises(TimeoutError):
                 connection.recv(1)

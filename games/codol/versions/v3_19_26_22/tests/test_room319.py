@@ -97,6 +97,25 @@ class Room319Tests(unittest.TestCase):
             self.assertEqual(self.room.handle(channel_message(channel, payload), 6)[1], [])
         self.assertEqual(self.room.handle(channel_message(channel + 1, b'\x20\x02'), 7)[1], [])
 
+    def test_match_request_waits_for_roster_confirmation_and_human_ready(self):
+        self.enter()
+        self.room.handle(FIRST_BROADCAST, 3)
+        roster = (FIXTURES / 'roster-native.bin').read_bytes()
+        self.room.handle(channel_message(self.room.channel, roster), 4)
+        self.room.handle(READY_BROADCAST, 5)
+        self.assertIsNone(self.room.match_request())
+        self.room.handle(channel_message(self.room.channel, roster), 6)
+        request = self.room.match_request()
+        self.assertEqual(request, {'uid': 1000001, 'name': 'Player', 'roster': list(roster)})
+        self.room.handle(channel_message(self.room.channel, b'\x20\0'), 7)
+        self.assertIsNone(self.room.match_request())
+        self.room.handle(READY_BROADCAST, 8)
+        self.assertEqual(self.room.match_request(), request)
+        other = bytearray(SEARCH)
+        struct.pack_into('<I', other, 49, 190)
+        self.room.handle(bytes(other), 9)
+        self.assertIsNone(self.room.match_request())
+
 
 class NativeRoomPush319Tests(unittest.TestCase):
     def test_native_ready_message_updates_only_its_sender(self):

@@ -85,6 +85,13 @@ class Room:
         self.phase = 'idle'
         self.players = []
         self.observed_count = 0
+        self.roster = None
+        self.ready = False
+
+    def match_request(self):
+        if self.phase == 'bots_sent' and self.ready and self.observed_count == 18 and self.roster:
+            return {'uid': self.owner, 'name': self.players[0]['name'], 'roster': list(self.roster)}
+        return None
 
     def handle(self, body, transaction):
         if len(body) < 3:
@@ -99,6 +106,7 @@ class Room:
                         and body[48:53] == b'\x07' + struct.pack('<I', 110))
             self.phase = 'selected' if selected else 'idle'
             self.channel, self.players, self.observed_count = 0, [], 0
+            self.roster, self.ready = None, False
             return None, []
         if self.phase == 'idle' or service != 11:
             return None, []
@@ -131,6 +139,7 @@ class Room:
                 ready = [payload for payload in messages(wrapped[4:4 + length], self.owner)
                          if payload in (b'\x20\0', b'\x20\x02')]
                 if ready:
+                    self.ready = ready[-1] == b'\x20\x02'
                     # Native 0x6301a0 sends message 16; only its channel echo
                     # reaches 0x634870 and updates the sender's ready bit.
                     return None, [message_event(self.channel, self.players[0], payload) for payload in ready]
@@ -143,6 +152,7 @@ class Room:
             if self.phase == 'host_requested':
                 # Rust recovers the host's actual team and compatibility fields.
                 self.players = self.manifest(payload)['players']
+                self.roster = payload
                 self.phase = 'bots_sent'
                 pushes = [message_event(self.channel, player, bytes(player['join']))
                           for player in self.players[1:]]

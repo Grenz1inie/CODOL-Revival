@@ -59,6 +59,7 @@ while time.monotonic()<deadline:
             request_number=0
             room = Room(local_profile319.UID, lambda roster=None:
                 native_manifest(local_profile319.UID, local_profile319.player_name(), roster))
+            started_channel = 0
             # --wake: send an empty keepalive frame every 0.5 s so the client's network loop wakes
             # (experiment for the fixed 18 s gaps between its login request bursts).
             send_lock=threading.Lock();alive=[True]
@@ -90,6 +91,14 @@ while time.monotonic()<deadline:
                         wait_ready(root)
                     previous_room = (room.phase, room.observed_count)
                     room_reply, room_pushes = room.handle(body, txn)
+                    match_request = room.match_request()
+                    if match_request is not None and started_channel != room.channel:
+                        target = root / 'nuketown-ready.json'
+                        temporary = target.with_suffix('.tmp')
+                        temporary.write_text(json.dumps({**match_request, 'time': time.time()}), encoding='utf-8')
+                        temporary.replace(target)
+                        started_channel = room.channel
+                        emit('nuketown_ready', channel=room.channel)
                     if (room.phase, room.observed_count) != previous_room:
                         emit('room_state',phase=room.phase,channel=room.channel,observed_count=room.observed_count,
                              players=[{key: p[key] for key in ('uid','name','team','slot')} for p in room.players])
