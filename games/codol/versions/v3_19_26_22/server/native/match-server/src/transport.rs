@@ -1,5 +1,5 @@
 //! Current 3.19 loopback-proxy transport; native stats sender 0x7f6ec0.
-use crate::NuketownRoom;
+use crate::{NuketownRoom, snapshot::Snapshot};
 use flate2::{Decompress, FlushDecompress, Status};
 use std::net::SocketAddr;
 
@@ -78,21 +78,144 @@ pub fn server_packet(payload: &[u8], sequence: u32, ack: u32, challenge: u32,
     Ok(output)
 }
 
+pub struct ClientControl {
+    pub sequence: u32,
+    pub ack: u32,
+    pub commands: Vec<(u32, Vec<u8>)>,
+}
+
+/// Native 0x4709e0 and 0x5b2c90. No server commands are published in this phase.
+/// Only the reliable prefix is consumed; movement remains for the simulation phase.
+pub fn client_control(packet: &[u8], challenge: u32) -> Option<ClientControl> {
+    if packet.len() < 14 || packet[4] > 1 || packet[9..13] != [0; 4] { return None; }
+    let sequence = u32::from_le_bytes(packet[..4].try_into().ok()?);
+    let ack = u32::from_le_bytes(packet[5..9].try_into().ok()?);
+    if !(1..=0x1fff_ffff).contains(&sequence) || ack > 0x1fff_ffff { return None; }
+    let key = (ack ^ challenge ^ packet[4] as u32) as u8;
+    let plain: Vec<_> = packet[13..].iter().map(|b| b ^ key).collect();
+    let (mut read, mut bit) = (0, 0);
+    let mut commands = Vec::new();
+    loop {
+        let mut op = 0;
+        for shift in 0..3 {
+            if bit % 8 == 0 { bit = read * 8; read += 1; }
+            op |= ((plain.get(bit / 8)? >> (bit % 8)) & 1) << shift;
+            bit += 1;
+        }
+        match op {
+            0 | 1 | 3 => return Some(ClientControl { sequence, ack, commands }),
+            2 => {
+                let number = u32::from_le_bytes(plain.get(read..read+4)?.try_into().ok()?);
+                if number == 0 || number > 0x7fff_ffff { return None; }
+                read += 4;
+                let length = plain[read..].iter().take(1024).position(|&b| b == 0)?;
+                commands.push((number, plain[read..read+length].to_vec()));
+                read += length + 1;
+            }
+            _ => return None,
+        }
+    }
+}
+
 pub struct Session {
     room: NuketownRoom,
     challenge: u32,
     peer: Option<SocketAddr>,
     connected: bool,
     upload: Option<StatsUpload>,
+    gamestate: Option<Vec<u8>>,
+    gamestate_packet: Option<Vec<u8>>,
+    client_sequence: u32,
+    server_sequence: u32,
+    loaded: bool,
+    snapshot: Option<Snapshot>,
+    first_frame: Option<(u32, Vec<u8>)>,
+    first_tick: Option<u64>,
+    due: u64,
+    last_ack: u32,
+    command_sequence: u32,
+    command: Vec<u8>,
 }
 
 impl Session {
     pub fn new(room: NuketownRoom, challenge: u32) -> Self {
-        Self { room, challenge, peer: None, connected: false, upload: None }
+        Self { room, challenge, peer: None, connected: false, upload: None,
+            gamestate: None, gamestate_packet: None, client_sequence: 0, server_sequence: 0, loaded: false,
+            snapshot: None, first_frame: None, first_tick: None, due: 0, last_ack: 0,
+            command_sequence: 0, command: Vec::new() }
     }
 
     pub fn room(&self) -> &NuketownRoom { &self.room }
     pub fn profile(&self) -> Option<&[u8]> { self.upload.as_ref().and_then(StatsUpload::profile) }
+    pub fn map_loaded(&self) -> bool { self.loaded }
+
+    pub fn set_spawn(&mut self, origin: [f32; 3], yaw: f32) -> Result<(), &'static str> {
+        self.snapshot = Some(Snapshot::new(origin, yaw)?);
+        Ok(())
+    }
+
+    pub fn tick(&mut self, now: u64) -> Option<(SocketAddr, Vec<u8>)> {
+        if !self.connected || !self.loaded || now < self.due { return None; }
+        let snapshot = self.snapshot.as_ref()?;
+        let peer = self.peer?;
+        self.due = now + 50;
+        if let Some((sequence, packet)) = &self.first_frame {
+            if self.last_ack < *sequence { return Some((peer, packet.clone())); }
+        }
+        let first = *self.first_tick.get_or_insert(now);
+        let stamp = u32::try_from(1000 + now.saturating_sub(first)).ok()?;
+        self.server_sequence += 1;
+        let delta = if self.first_frame.is_none() { 0 } else {
+            let gap = self.server_sequence - self.last_ack;
+            if (1..=15).contains(&gap) { gap as u8 } else { 1 }
+        };
+        let payload = snapshot.encode(stamp, stamp, delta).ok()?;
+        let packet = server_packet(&payload, self.server_sequence, self.command_sequence,
+                                   self.challenge, &self.command).ok()?;
+        if self.first_frame.is_none() { self.first_frame = Some((self.server_sequence, packet.clone())); }
+        Some((peer, packet))
+    }
+
+    /// Prepared from this process's NCS capture by the version-specific resource builder.
+    pub fn set_gamestate(&mut self, payload: Vec<u8>) -> Result<(), &'static str> {
+        if payload.len() < 14 || payload.len() > 1024 || payload[0] != 3 || payload.last() != Some(&5) {
+            return Err("unsupported gamestate payload");
+        }
+        self.gamestate = Some(payload);
+        Ok(())
+    }
+
+    fn load_map(&mut self, peer: SocketAddr, packet: &[u8]) -> Option<Vec<u8>> {
+        if !self.connected || self.peer != Some(peer) || self.profile().is_none() || packet.len() < 14 {
+            return None;
+        }
+        let control = client_control(packet, self.challenge)?;
+        let ack = control.ack;
+        if control.sequence <= self.client_sequence || ack > self.server_sequence { return None; }
+        let (mut number, mut command) = (self.command_sequence, self.command.clone());
+        for (next, text) in control.commands {
+            if next <= number { continue; }
+            if next != number + 1 { return None; }
+            number = next; command = text;
+        }
+        self.client_sequence = control.sequence;
+        self.last_ack = self.last_ack.max(ack);
+        self.command_sequence = number;
+        self.command = command;
+        if self.loaded { return None; }
+        if let Some(sent) = &self.gamestate_packet {
+            return (ack < self.server_sequence).then(|| sent.clone());
+        }
+        if self.server_sequence < 3 {
+            self.server_sequence += 1;
+            return server_packet(&[5], self.server_sequence, 0, self.challenge, b"").ok();
+        }
+        let state = self.gamestate.as_ref()?;
+        self.server_sequence += 1;
+        let reply = server_packet(state, self.server_sequence, 0, self.challenge, b"").ok()?;
+        self.gamestate_packet = Some(reply.clone());
+        Some(reply)
+    }
 
     fn accept_stats(&mut self, body: &[u8]) -> Result<u32, &'static str> {
         if body.len() < 3 { return Err("truncated stats header"); }
@@ -102,6 +225,7 @@ impl Session {
     }
 
     pub fn handle(&mut self, peer: SocketAddr, packet: &[u8]) -> Option<Vec<u8>> {
+        if !packet.starts_with(b"\xff\xff\xff\xff") { return self.load_map(peer, packet); }
         if let Some(body) = packet.strip_prefix(b"\xff\xff\xff\xffstats\0") {
             if !self.connected || self.peer != Some(peer) { return None; }
             let mask = self.accept_stats(body).unwrap_or_else(|_| { self.upload = None; RESET });
@@ -138,6 +262,19 @@ impl Session {
             self.connected = false;
             self.upload = None;
             self.peer = None;
+            self.gamestate_packet = None;
+            self.client_sequence = 0;
+            self.server_sequence = 0;
+            self.loaded = false;
+            self.first_frame = None;
+            self.first_tick = None;
+            self.due = 0;
+            self.last_ack = 0;
+            self.command_sequence = 0;
+            self.command.clear();
+        }
+        if text == "gamestateupdate 6" && self.peer == Some(peer) && self.gamestate_packet.is_some() {
+            self.loaded = true;
         }
         None
     }

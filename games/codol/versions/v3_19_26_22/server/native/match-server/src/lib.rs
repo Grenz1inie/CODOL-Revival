@@ -2,6 +2,7 @@
 
 mod room_wire;
 pub mod transport;
+pub mod snapshot;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Team {

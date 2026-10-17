@@ -14,7 +14,12 @@ fn real_udp_owns_one_room_upload_and_stops_on_request() {
     std::fs::create_dir(&dir).unwrap();
     let stop = dir.join("stop.request");
     let config = dir.join("room.json");
+    let gamestate = dir.join("gamestate.bin");
+    let spawn = dir.join("spawn.json");
+    std::fs::write(&gamestate, [3,0,0,0,0,b'm',0,b'c',0,1,2,3,4,5]).unwrap();
+    std::fs::write(&spawn, json!({"map":"mp_nuked","origin":[100,200,300],"yaw":90}).to_string()).unwrap();
     std::fs::write(&config, json!({"uid":1000001,"name":"Player","port":0,"stop_file":stop,
+        "gamestate_file":gamestate,"spawn_file":spawn,
         "roster":include_bytes!("fixtures/roster-native.bin").as_slice()}).to_string()).unwrap();
     let mut server = Server(Command::new(env!("CARGO_BIN_EXE_codol-match319"))
         .args(["serve", config.to_str().unwrap()]).stdout(Stdio::piped()).stderr(Stdio::piped()).spawn().unwrap());
@@ -41,6 +46,32 @@ fn real_udp_owns_one_room_upload_and_stops_on_request() {
     let wire = include_bytes!("fixtures/stats-zlib.bin");
     let packet = [b"\xff\xff\xff\xffstats\0\0".as_slice(), &(wire.len() as u16).to_le_bytes(), wire].concat();
     assert_eq!(exchange(&packet), b"\xff\xff\xff\xffstatResponse 0\0");
+    for seq in 1u32..=4 {
+        let ack = seq-1;
+        let packet = [seq.to_le_bytes().as_slice(), &[0], &ack.to_le_bytes(), &[0;4], &[3 ^ ack as u8]].concat();
+        assert_eq!(exchange(&packet)[0], seq as u8);
+    }
+    let baseline = exchange(b"\xff\xff\xff\xffgamestateupdate 6");
+    assert_eq!(&baseline[..8], &[5,0,0,0,0,0,0,0]);
+    assert_eq!([baseline[13]^5, baseline[14]^5], [0,8]);
+    let command = b"qtalk.hal 0 0 0 0 0 0";
+    let plain = [b"\x1a\x01\0\0\0".as_slice(), command, b"\0"].concat();
+    let mut ack = vec![5,0,0,0,1,5,0,0,0,0,0,0,0];
+    ack.extend(plain.iter().map(|b| b ^ 4));
+    let mut next = exchange(&ack);
+    while next[0] == 5 {
+        let mut buffer = [0;2048];
+        let (size,_) = socket.recv_from(&mut buffer).unwrap(); next=buffer[..size].to_vec();
+    }
+    assert_eq!(u32::from_le_bytes(next[4..8].try_into().unwrap()), 1, "Reliable prefix acknowledged");
+    let sequence = u32::from_le_bytes(next[..4].try_into().unwrap());
+    let mut key = sequence as u8;
+    let decoded: Vec<_> = next[8..].iter().enumerate().map(|(i,b)| {
+        key ^= command[i % command.len()].wrapping_shl((i & 1) as u32); b ^ key
+    }).collect();
+    assert_eq!(decoded[0], 0);
+    assert_eq!(decoded[6], 0, "Render continuation clears initialization flags");
+    assert_eq!(*decoded.last().unwrap(), 5);
     std::fs::write(&stop, b"").unwrap();
     let deadline = std::time::Instant::now() + Duration::from_secs(3);
     loop {
@@ -50,5 +81,7 @@ fn real_udp_owns_one_room_upload_and_stops_on_request() {
     }
     std::fs::remove_file(config).unwrap();
     std::fs::remove_file(stop).unwrap();
+    std::fs::remove_file(gamestate).unwrap();
+    std::fs::remove_file(spawn).unwrap();
     std::fs::remove_dir(dir).unwrap();
 }

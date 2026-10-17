@@ -1,0 +1,12 @@
+{
+  "version": "3.19.26.22",
+  "archive": "IIPS/IIPSDownload/ff_init_mp_nuked_V74.ifs",
+  "archive_sha256": "6949721e772917b17cfed32e3f2e212852a2c1d466595d58a7822dc81627a810",
+  "ff_sha256": "cba6309d58ab5614f5ab1eb85238700cf743addc907cc8387ad7d7e8886590a0",
+  "zone_sha256": "0c6171361ee9f450cc973471360a5aea5254f6c94b00421bbece144bc67ecf38",
+  "entity_offset": 40173273,
+  "entity_bytes": 130443,
+  "source": "FF461 clipMap asset 15; native 0x662e41 copies clipMap, 0x617045 reads MapEnts at clipMap+0x98 and entityString at MapEnts+4",
+  "coverage": "Current original archive only; spawn coordinate extraction",
+  "unverified": "Original team-side spawn selection, native map mounting, collision and gameplay"
+}

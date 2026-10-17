@@ -29,7 +29,7 @@ fn serve(path: &str) -> Result<Value, Box<dyn std::error::Error>> {
     use std::io::{ErrorKind, Write};
     use std::net::UdpSocket;
     use std::path::Path;
-    use std::time::Duration;
+    use std::time::{Duration, Instant};
     let config: Value = serde_json::from_reader(std::fs::File::open(path)?)?;
     let uid = config["uid"].as_u64().ok_or("missing player UID")?;
     let name = config["name"].as_str().ok_or("missing player name")?;
@@ -38,21 +38,56 @@ fn serve(path: &str) -> Result<Value, Box<dyn std::error::Error>> {
     let port = u16::try_from(config["port"].as_u64().ok_or("missing UDP port")?)?;
     let stop = Path::new(config["stop_file"].as_str().ok_or("missing stop file")?);
     let socket = UdpSocket::bind((std::net::Ipv4Addr::LOCALHOST, port))?;
-    socket.set_read_timeout(Some(Duration::from_millis(100)))?;
+    socket.set_read_timeout(Some(Duration::from_millis(20)))?;
     let players: Vec<_> = room.players().iter().map(|p| json!({"uid":p.uid,"slot":p.slot,
         "name":p.name,"team":if p.team == Team::One {1} else {2},"bot":p.is_bot})).collect();
     println!("{}", json!({"event":"listening","address":socket.local_addr()?.to_string(),"players":players}));
     std::io::stdout().flush()?;
     // The provided local proxy starts with connect/challenge=0, without getchallenge.
     let mut session = Session::new(room, 0);
+    let gamestate = config["gamestate_file"].as_str().map(Path::new);
+    let spawn = config["spawn_file"].as_str().map(Path::new);
+    let mut prepared = false;
+    let mut spawn_ready = false;
+    let started = Instant::now();
     let mut buffer = [0; 65535];
     while !stop.exists() {
+        if !prepared {
+            if let Some(path) = gamestate.filter(|p| p.is_file()) {
+                session.set_gamestate(std::fs::read(path)?)?;
+                prepared = true;
+                println!("{}", json!({"event":"gamestate_ready"}));
+            }
+        }
+        if !spawn_ready {
+            if let Some(path) = spawn.filter(|p| p.is_file()) {
+                let value: Value = serde_json::from_reader(std::fs::File::open(path)?)?;
+                if value["map"] != "mp_nuked" { return Err("spawn belongs to another map".into()); }
+                let origin: [f32; 3] = serde_json::from_value(value["origin"].clone())?;
+                let yaw = value["yaw"].as_f64().ok_or("missing spawn yaw")? as f32;
+                session.set_spawn(origin, yaw)?;
+                spawn_ready = true;
+                println!("{}", json!({"event":"spawn_ready","origin":origin,"yaw":yaw}));
+            }
+        }
         match socket.recv_from(&mut buffer) {
             Ok((size, peer)) => {
-                if let Some(response) = session.handle(peer, &buffer[..size]) { socket.send_to(&response, peer)?; }
+                let loaded = session.map_loaded();
+                println!("{}", json!({"event":"received","peer":peer.to_string(),"data":&buffer[..size]}));
+                if let Some(response) = session.handle(peer, &buffer[..size]) {
+                    socket.send_to(&response, peer)?;
+                    println!("{}", json!({"event":"sent","peer":peer.to_string(),"data":response}));
+                }
+                if !loaded && session.map_loaded() { println!("{}", json!({"event":"map_loaded","map":"mp_nuked","gametype":"cha"})); }
+                std::io::stdout().flush()?;
             }
             Err(error) if matches!(error.kind(), ErrorKind::WouldBlock | ErrorKind::TimedOut) => {}
             Err(error) => return Err(error.into()),
+        }
+        if let Some((peer, response)) = session.tick(started.elapsed().as_millis() as u64) {
+            socket.send_to(&response, peer)?;
+            println!("{}", json!({"event":"snapshot_sent","peer":peer.to_string(),"data":response}));
+            std::io::stdout().flush()?;
         }
     }
     Ok(json!({"event":"stopped"}))

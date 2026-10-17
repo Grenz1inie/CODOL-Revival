@@ -12,6 +12,7 @@ from .preparation import CLIENT
 from . import native_build
 from .resource_export import validate_common
 from ..server.match_host.snapshot_codec319 import encode
+from . import nuketown
 
 def initial_snapshot():
     # Reproduces the historical Seatown floor baseline byte for byte.
@@ -27,13 +28,27 @@ class MatchSession:
         self.services = None
         self.run = None
         self.result = None
+        self.nuketown = None
 
     def snapshot(self):
+        if self.nuketown:
+            return self.nuketown.snapshot()
         return {'phase': self.phase, 'error': self.error, 'run': str(self.run) if self.run else None,
                 'service': self.services.records[0] if self.services and self.services.records else None,
                 'result': self.result}
 
     def poll(self):
+        room = nuketown.request(self.runtime, self.since) if self.phase == 'waiting' and not self.nuketown else None
+        if self.nuketown or (room and alive(self.game)):
+            try:
+                if self.nuketown is None:
+                    self.nuketown = nuketown.NuketownSession(self.runtime, self.game, self.port)
+                    self.nuketown.start(room)
+                return self.nuketown.poll()
+            except Exception as error:
+                self.nuketown.phase, self.nuketown.error = 'error', str(error)
+                self.nuketown.close()
+                return self.nuketown.snapshot()
         if not alive(self.game):
             self.close()
         elif self.phase == 'waiting' and lobby_event(self.assets / 'lsg-handshake.jsonl', 'room_ready', self.since):
@@ -85,6 +100,9 @@ class MatchSession:
         self.phase = 'running'
 
     def close(self):
+        if self.nuketown:
+            self.nuketown.close()
+            return
         if self.marker.parent.exists():
             self.marker.write_text('0', encoding='ascii')
         if self.services:
