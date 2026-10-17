@@ -378,6 +378,35 @@ A盘实验房间交接文件已备份更新，保留此前验收的启动组件�
 画面证据。已有出生点、封包和状态机测试未重复执行。地图载入阶段完成，完整
 9V9对局、同队角色展示、武器/移动/AI及小地图仍在后续范围。
 
+### 移动输入解码与服务端移动（2026-10-17晚间，离线）
+
+无新增反编译：usercmd 布局复用本版本已验证的 Python 参考
+（`match_host/client_message319.py`，原生写入器`0x66F410`的逆、密钥`0x5B2E96`、
+包写入器`0x5B2C10`、正文变换`0x4709E0`），全部结论以2026-10-17真实回环抓包核对。
+本轮没有重启游戏；运行现场（PID50876/47152等）保持交接时状态。
+
+最终抓包 `work/codol319-map-live-20261017/session.pcapng` 已由tshark按计划
+于21:12:43结束收尾，共322,664包、1764.6秒：客户端→服务器289,472包，其中
+289,460个move包全部为增量op0、0条moveNoDelta、0条解码错误；首个move在帧676
+（基线确认后），每包2条usercmd（重复上包最新+新增），server_time自1000起、
+每条5～6ms（约180fps逐帧生成）。
+
+| 证据 / 结论 | 来源与覆盖 | 未验证项 |
+| --- | --- | --- |
+| Rust usercmd解码与Python参考逐字段一致（134个真实包×3窗口：head/moving/tail） | `tests/client_move.rs` 对 `tests/fixtures/move319-*.json`；fixtures由已验证解析器从全链基线生成，含buttons/angles/move_class/条件字节字段/预测尾迹 | 非空可靠服务端命令下的正文混入与命令哈希（本轮服务端未发布服务端命令） |
+| 客户端预测origin全程冻结在出生点 | 真实抓包：用户按住LEFT（cls=8）约1.3秒、buttons位0x8000000保持、早期按过开火位0；预测尾迹始终为出生点[-1601.8,1176.2,-24]且时间正常推进 | 预测冻结原因未定位：截图无菜单遮挡、HUD/小地图在、无武器（弹药0、按1提示）；候选：无武器状态、pm_type/flags或武器状态机阻断pmove，需新REA（CL_Frame/pmove门控）或实机对照 |
+| 移动窗口内含可靠命令18～21（`n 85`等） | fixture解析统计：60包无命令、14包携带 | 这些命令的语义未查；session严格连续编号门控如实拒绝跳号包 |
+| Rust服务端移动闭环 | `src/movement.rs`：live_sim319无碰撞积分器（Q3摩擦6.0/加速10.0/速度190/步长上限200ms/z锁定）+C1wish缩放（后0.7/侧0.8/疾跑1.5）+16单位reconcile；角度按short差分累计到出生朝向（首条cmd yaw=0而出生yaw=330） | 实机客户端跟随服务器origin的画面表现；碰撞、跳跃、攀爬未实现 |
+| 快照逐字节对齐Python编码器（4个移动状态含负速度/pitch） | `tests/movement.rs` 的 `snapshot_bytes_match_the_python_codec_for_moving_player_states`；`Snapshot::set_player`更新origin 8/11/10、velocity 14/13/16、pitch 19、yaw 18 | 原生CG对移动中快照的实际消费 |
+| 真实移动轨迹复现参考 | `move319-trajectory.json` golden：74包reconcile全采纳（冻结客户端把服务器拉回出生点，符合容差设计）；无reconcile纯积分向yaw330左侧移动约18单位（方向与+0.5/+0.866期望一致） | 实机闭环时客户端回显服务器新origin后的反馈 |
+
+Session按包链维护usercmd基线并驱动Movement；tick把origin/velocity/pitch/yaw
+写入快照、command_time取最后执行的命令时间（未收到move前仍为stamp）；
+disconnect重置基线与移动状态。可靠命令前缀、加载门控与快照基线行为保持
+原回归（40项通过，release构建验证）。生成脚本与case记录在
+`work/codol319-move-input/`。此阶段只完成解码与服务端模拟：移动的实际画面、
+手感与客户端冻结问题的实机结论待下一次启动验收，用户已同意随时联调。
+
 ## 定向测试
 
 ```powershell
@@ -389,3 +418,12 @@ python -B -m unittest discover -s games/codol/versions/v3_19_26_22/tests -p 'tes
 Rust新增host_roster、room_cli各2项测试均先失败后通过；Python房间状态/原生
 事件解析4项与生产TCP联调1项通过。大厅改动后库存7项回归通过，包括真实
 TCP登录任务和原生读取；没有重跑全项目套件。此阶段不证明实际游戏画面。
+
+移动输入阶段新增`client_move` 2项、`movement` 6项测试（真实包解码对照、
+合成边界、golden轨迹、reconcile容差、快照字节、session集成），先红后绿；
+全套crate回归40项通过，release在临时target目录验证（正式release输出被
+运行中的实验进程锁定，未打断现场）：
+
+```powershell
+powershell -NoProfile -File scripts/Invoke-MatchCargo.ps1 test --offline --manifest-path "$PWD/games/codol/versions/v3_19_26_22/server/native/match-server/Cargo.toml" --target-dir "$PWD/runtime/builds/codol/v3_19_26_22/rust-match" --test client_move --test movement
+```
