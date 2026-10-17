@@ -60,4 +60,13 @@ REA证据与快照：`room-results-rea.evidence.json`、`room-results-rea.snapsh
 
 `python -B -m unittest discover -s work/codol319-nuketown -p "test_ready_*.py" -v`
 
-当前正在等待释放正式会话端口后启动实验，尚无实机Ready结论。
+### 实机24416：门控等待成功，Ready回送缺失
+
+用户确认双方各9人、点击Ready无反应。门控回读保持，18人ready均为0；
+真实抓包帧644已发出消息16/true，但服务端未回送。`room319.py`补回真人
+频道消息，真实报文回归先失败后通过；原生`0x634870/0x629090`已验证Ready和
+取消只修改发送者准备位，TCP联调也收到事件7。共9项相关测试通过。
+完整地址、哈希及覆盖范围见Wiki本次“隔离门控实测与Ready回送修正”。
+
+第二次实验沿用原门控，仅更新A盘冻结源中的大厅消息回送；实机结果待验收。
+用户补充场景应显示8名同队角色；当前只有名单，角色展示及对局AI仍待实现。

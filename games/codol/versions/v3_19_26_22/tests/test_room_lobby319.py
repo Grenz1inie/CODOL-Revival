@@ -9,7 +9,7 @@ import sys
 
 from games.codol.versions.v3_19_26_22.server import lsg_codec, room319
 from test_inventory319 import InventoryFixture, SERVER
-from test_room319 import SEARCH, FIXTURES, FIRST_BROADCAST, channel_message
+from test_room319 import SEARCH, FIXTURES, FIRST_BROADCAST, READY_BROADCAST, channel_message
 
 
 class RoomLobby319Tests(InventoryFixture):
@@ -93,6 +93,9 @@ runpy.run_path('lsg_handshake.py', run_name='__main__')
             self.assertEqual(receive(2), room319.message_event(channel, bot, b'\x1a\0'))
             # Repeated host state must not inject the same bots a second time.
             request(channel_message(channel, (FIXTURES / 'roster-native.bin').read_bytes()), 5)
+            request(READY_BROADCAST, 6)
+            owner = {'uid': 1000001, 'name': 'LocalPlayer'}
+            self.assertEqual(receive(2), room319.message_event(channel, owner, b'\x20\x02'))
             connection.settimeout(0.1)
             with self.assertRaises(TimeoutError):
                 connection.recv(1)

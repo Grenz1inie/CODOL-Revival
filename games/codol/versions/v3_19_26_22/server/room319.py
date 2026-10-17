@@ -127,6 +127,13 @@ class Room:
                       for i, player in enumerate(self.players[1:])]
             return None, pushes + [message_event(self.channel, first_bot, b'\x1a\0')]
         try:
+            if self.phase == 'bots_sent':
+                ready = [payload for payload in messages(wrapped[4:4 + length], self.owner)
+                         if payload in (b'\x20\0', b'\x20\x02')]
+                if ready:
+                    # Native 0x6301a0 sends message 16; only its channel echo
+                    # reaches 0x634870 and updates the sender's ready bit.
+                    return None, [message_event(self.channel, self.players[0], payload) for payload in ready]
             incoming = messages(wrapped[4:4 + length], first_bot['uid'])
         except ValueError:
             return None, []

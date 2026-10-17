@@ -15,6 +15,9 @@ FIRST_BROADCAST = bytes.fromhex('0b03040a010090310000000013081a00000016000000020
                                 '30000000e068ab5bab63ab030000000000080100000000')
 SESSION_SEARCH = bytes.fromhex('15030508010000000800000000080a00000007abad92d6'
                                '6b0804000000010000000000000000')
+# Frame 644, room-ready-gated.pcapng: one aggregate containing native Ready 16/true.
+READY_BROADCAST = bytes.fromhex('0b03040a01009031000000001308100000000c000000'
+                               '020200000008000000800800080100000000')
 
 
 def channel_message(channel, payload):
@@ -82,8 +85,51 @@ class Room319Tests(unittest.TestCase):
         self.assertEqual(self.room.channel, channel)
         self.assertEqual(self.room.phase, 'created')
 
+    def test_ready_and_cancel_are_returned_with_the_human_sender(self):
+        channel = self.enter()
+        self.room.handle(FIRST_BROADCAST, 3)
+        self.room.handle(channel_message(channel, (FIXTURES / 'roster-native.bin').read_bytes()), 4)
+        for request, payload in ((READY_BROADCAST, b'\x20\x02'),
+                                 (channel_message(channel, b'\x20\0'), b'\x20\0')):
+            _, pushes = self.room.handle(request, 5)
+            self.assertEqual(pushes, [room319.message_event(channel, self.room.players[0], payload)])
+        for payload in (b'\x20', b'\x20\x04', b'\x20\x02\0', b'\x22\0'):
+            self.assertEqual(self.room.handle(channel_message(channel, payload), 6)[1], [])
+        self.assertEqual(self.room.handle(channel_message(channel + 1, b'\x20\x02'), 7)[1], [])
+
 
 class NativeRoomPush319Tests(unittest.TestCase):
+    def test_native_ready_message_updates_only_its_sender(self):
+        from client_inventory319 import InventoryReader319
+        from unicorn import UC_HOOK_CODE
+        from unicorn.x86_const import UC_X86_REG_ESP, UC_X86_REG_EIP, UC_X86_REG_EAX
+        m = InventoryReader319()
+        cpu, room, buffer, vtable = m.cpu, m.object, 0x20070000, 0x20050000
+        cpu.mem_map(0x82e1000, 0x1000)
+        m.write32(room, vtable)
+        m.write32(room + 0x1c, 0x20060000)
+        m.write32(room + 0x105d8, 18)
+        for slot in range(18):
+            cpu.mem_write(room + 0xe368 + slot * 0x1d0,
+                          struct.pack('<Q', 1000001 if slot == 0 else 0x600000000 + slot))
+        m.write32(vtable + 0x60, 0xf00200)
+        def hook(cpu, address, size, _):
+            # Room availability and downstream notifications; native parsing and
+            # member lookup/write in 0x634870/0x629090 execute without replacements.
+            sp = cpu.reg_read(UC_X86_REG_ESP)
+            cpu.reg_write(UC_X86_REG_EAX, int(address == 0xf00200))
+            cpu.reg_write(UC_X86_REG_ESP, sp + (8 if address == 0x632d00 else 4))
+            cpu.reg_write(UC_X86_REG_EIP, m.u32(sp))
+        for address in (0xf00200, 0x632d00, 0x632a70):
+            cpu.hook_add(UC_HOOK_CODE, hook, begin=address, end=address)
+        for ready in (1, 0):
+            cpu.mem_write(m.data, bytes([0x20, ready * 2]))
+            m.call(0xb779a0, buffer, m.data, 16, 1)
+            m.write32(buffer + 4, 100)
+            m.call(0x634870, 0, room, 0, 0, 1000001, 0, buffer)
+            self.assertEqual([cpu.mem_read(room + 0xe3f8 + i * 0x1d0, 1)[0]
+                              for i in range(18)], [ready] + [0] * 17)
+
     def test_native_channel_decoders_receive_owner_name_and_room_payload(self):
         try:
             from client_inventory319 import InventoryReader319
